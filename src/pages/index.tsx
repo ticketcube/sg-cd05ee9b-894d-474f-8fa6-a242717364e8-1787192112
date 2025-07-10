@@ -1,21 +1,129 @@
-import React from 'react'
-import Head from 'next/head'
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { Artist, artistService } from '@/services/artistService';
+import { ArtistChart } from '@/components/ArtistChart';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+export default function HomePage() {
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [isVotingOpen, setIsVotingOpen] = useState(false);
+  const [username, setUsername] = useState('');
+  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
+  const [uniqueCategories, setUniqueCategories] = useState<string[]>([]);
+  const [uniqueGenres, setUniqueGenres] = useState<string[]>([]);
+
+  useEffect(() => {
+    loadArtists();
+  }, [selectedCategory, selectedGenres]);
+
+  const loadArtists = async () => {
+    const data = await artistService.getArtists({
+      category: selectedCategory,
+      genres: selectedGenres
+    });
+    setArtists(data);
+
+    // Extract unique categories and genres
+    const categories = [...new Set(data.map(a => a.artist_otwcategory))];
+    const genres = [...new Set(data.flatMap(a => a.artist_genre))];
+    
+    setUniqueCategories(categories);
+    setUniqueGenres(genres);
+  };
+
+  const handleVote = async (artist: Artist) => {
+    if (!username) {
+      setIsVotingOpen(true);
+      return;
+    }
+
+    if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.artist_otwid)) {
+      alert('You can only select up to 25 artists!');
+      return;
+    }
+
+    if (selectedArtists.includes(artist.artist_otwid)) {
+      setSelectedArtists(prev => prev.filter(id => id !== artist.artist_otwid));
+    } else {
+      setSelectedArtists(prev => [...prev, artist.artist_otwid]);
+    }
+
+    try {
+      await artistService.submitVote({ username, artist_otwid: artist.artist_otwid });
+    } catch (error) {
+      console.error('Error submitting vote:', error);
+    }
+  };
+
   return (
-    <>
-      <Head>
-        <title>Hello World</title>
-        <meta name="description" content="Welcome to my app" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <div className="min-h-screen bg-black text-white p-8">
+      <h1 className="text-3xl font-bold mb-8">Artist Chart</h1>
       
-      <main className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900">Hello World</h1>
-          <p className="text-lg text-gray-600">This is going to be your softgen app, start by describing your project.</p>
-        </div>
-      </main>
-    </>
-  )
+      <div className="mb-8 flex gap-4">
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All Categories</SelectItem>
+            {uniqueCategories.map(category => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={selectedGenres[0]}
+          onValueChange={(value) => setSelectedGenres([value])}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Genre" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All Genres</SelectItem>
+            {uniqueGenres.map(genre => (
+              <SelectItem key={genre} value={genre}>
+                {genre}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <ArtistChart artists={artists} onVote={handleVote} />
+
+      <Button
+        className="mt-8 w-full text-xl py-8"
+        onClick={() => setIsVotingOpen(true)}
+      >
+        VOTE FOR YOUR TOP 25 FAVORITE ARTISTS
+      </Button>
+
+      <Dialog open={isVotingOpen} onOpenChange={setIsVotingOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enter Your Username</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <p className="text-sm text-gray-500">
+            Selected: {selectedArtists.length}/25 artists
+          </p>
+          <Button onClick={() => setIsVotingOpen(false)}>
+            Start Voting
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

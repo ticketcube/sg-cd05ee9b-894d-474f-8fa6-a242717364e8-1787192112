@@ -1,0 +1,143 @@
+
+import { useEffect, useRef, useState } from 'react';
+import { Chart } from 'chart.js/auto';
+import { Artist } from '@/services/artistService';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+interface ArtistChartProps {
+  artists: Artist[];
+  onVote: (artist: Artist) => void;
+}
+
+export function ArtistChart({ artists, onVote }: ArtistChartProps) {
+  const chartRef = useRef<HTMLCanvasElement>(null);
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [chartInstance, setChartInstance] = useState<Chart | null>(null);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    if (chartInstance) {
+      chartInstance.destroy();
+    }
+
+    const ctx = chartRef.current.getContext('2d');
+    if (!ctx) return;
+
+    const newChart = new Chart(ctx, {
+      type: 'scatter',
+      data: {
+        datasets: [{
+          data: artists.map(artist => ({
+            x: artist.artist_totallisteners,
+            y: artist.artist_totalwatchers,
+            artist: artist
+          })),
+          backgroundColor: 'rgba(255, 255, 255, 0.6)',
+          pointRadius: 6,
+          pointHoverRadius: 8,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          tooltip: {
+            enabled: false,
+            external: function(context) {
+              const artist = context.tooltip.dataPoints?.[0]?.raw?.artist as Artist;
+              if (artist) {
+                setSelectedArtist(artist);
+              } else {
+                setSelectedArtist(null);
+              }
+            }
+          },
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Total Listeners',
+              color: 'white'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+              color: 'white'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Total Watchers',
+              color: 'white'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+              color: 'white'
+            }
+          }
+        }
+      }
+    });
+
+    setChartInstance(newChart);
+
+    return () => {
+      newChart.destroy();
+    };
+  }, [artists]);
+
+  return (
+    <div className="w-full h-[600px] bg-black p-4 rounded-lg">
+      <canvas ref={chartRef}></canvas>
+      
+      <Dialog open={!!selectedArtist} onOpenChange={() => setSelectedArtist(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedArtist?.artist_name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p>Created: {new Date(selectedArtist?.artist_otwcreateddate || '').toLocaleDateString()}</p>
+            <div className="flex gap-2">
+              <a
+                href={selectedArtist?.artist_videolink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                WATCH
+              </a>
+              <a
+                href={selectedArtist?.artist_audiolink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              >
+                LISTEN
+              </a>
+              <button
+                onClick={() => selectedArtist && onVote(selectedArtist)}
+                className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+              >
+                TOP 25 VOTE
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
