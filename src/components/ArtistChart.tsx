@@ -23,9 +23,8 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
   useEffect(() => {
     if (!chartRef.current) return;
 
-    const chartInstance = chartInstanceRef.current;
-    if (chartInstance) {
-      chartInstance.destroy();
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
     }
 
     const ctx = chartRef.current.getContext("2d");
