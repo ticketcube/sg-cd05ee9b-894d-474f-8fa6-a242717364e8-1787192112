@@ -100,7 +100,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
     return () => {
       newChart.destroy();
     };
-  }, [artists, chartInstance]);
+  }, [artists]);
 
   return (
     <div 

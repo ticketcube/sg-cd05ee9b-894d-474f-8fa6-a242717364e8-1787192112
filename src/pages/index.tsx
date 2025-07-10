@@ -62,7 +62,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
-      <h1 className="text-3xl font-bold mb-8">Artist Chart</h1>
+      <h1 className="text-3xl font-bold mb-8">10 Years of OTW Artists</h1>
+      
+      <Button
+        className="mb-8 w-full text-xl py-8 bg-white text-black hover:bg-gray-100"
+        onClick={() => setIsVotingOpen(true)}
+      >
+        VOTE FOR YOUR TOP 25 FAVORITE ARTISTS
+      </Button>
       
       <div className="mb-8 flex gap-4">
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -98,13 +105,6 @@ export default function HomePage() {
       </div>
 
       <ArtistChart artists={artists} onVote={handleVote} selectedArtists={selectedArtists} />
-
-      <Button
-        className="mt-8 w-full text-xl py-8"
-        onClick={() => setIsVotingOpen(true)}
-      >
-        VOTE FOR YOUR TOP 25 FAVORITE ARTISTS
-      </Button>
 
       <Dialog open={isVotingOpen} onOpenChange={setIsVotingOpen}>
         <DialogContent>
