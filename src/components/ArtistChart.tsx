@@ -103,8 +103,27 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
   }, [artists, chartInstance]);
 
   return (
-    <div className="w-full h-[600px] bg-black p-4 rounded-lg">
-      <canvas ref={chartRef}></canvas>
+    <div 
+      className="w-full h-[600px] bg-black p-4 rounded-lg relative"
+      style={{
+        backgroundImage: 'url(/OTWLogocolor.png)',
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        backgroundOpacity: '0.1'
+      }}
+    >
+      <div 
+        className="absolute inset-0 rounded-lg"
+        style={{
+          background: 'rgba(0, 0, 0, 0.85)',
+          zIndex: 1
+        }}
+      />
+      <canvas 
+        ref={chartRef} 
+        className="relative z-10"
+      />
       
       <Dialog open={!!selectedArtist} onOpenChange={() => setSelectedArtist(null)}>
         <DialogContent>
