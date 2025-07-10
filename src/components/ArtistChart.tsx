@@ -109,8 +109,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
         backgroundImage: 'url(/OTWLogocolor.png)',
         backgroundSize: 'contain',
         backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-        backgroundOpacity: '0.1'
+        backgroundPosition: 'center'
       }}
     >
       <div 
