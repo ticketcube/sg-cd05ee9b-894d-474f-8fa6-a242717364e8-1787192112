@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Vote {
@@ -64,7 +63,7 @@ export const votingService = {
     const userId = authData?.user?.id;
 
     // Then save to ticket entries table using raw SQL to avoid type issues
-    const { data, error } = await supabase.rpc('insert_ticket_entry', {
+    const { data, error } = await (supabase as any).rpc('insert_ticket_entry', {
       p_email: email,
       p_username: username,
       p_user_id: userId
