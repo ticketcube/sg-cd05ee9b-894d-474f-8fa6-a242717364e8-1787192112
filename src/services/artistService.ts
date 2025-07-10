@@ -1,20 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
-export interface Artist {
-  artist_otwid: string;
-  artist_name: string;
-  artist_home: string | null;
-  artist_otwcreateddate: string | null;
-  artist_videolink: string | null;
-  artist_audiolink: string | null;
-  artist_image: string | null;
-  artist_totallisteners: number | null;
-  artist_totalwatchers: number | null;
-  artist_otwcategory: string | null;
-  artist_genre: string[] | null;
-  artist_relatedartists: string[] | null;
-  artist_bio: string | null;
-}
+export type Artist = Database['public']['Tables']['artists']['Row'];
 
 export interface Top25Vote {
   username: string;
@@ -35,7 +22,7 @@ export const artistService = {
     
     const { data, error } = await query;
     if (error) throw error;
-    return data as Artist[];
+    return data;
   },
 
   async getVoteCount(artist_otwid: string) {
