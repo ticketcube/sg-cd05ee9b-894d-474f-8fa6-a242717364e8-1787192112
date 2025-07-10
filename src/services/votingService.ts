@@ -42,11 +42,11 @@ export const votingService = {
 
   async enterTicketDrawing(email: string, username: string) {
     // First, sign up the user with Supabase Auth
-    const {  authData, error: authError } = await supabase.auth.signUp({
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password: Math.random().toString(36).substring(2, 15), // Generate random password
       options: {
-         {
+        data: {
           username: username
         }
       }
@@ -63,15 +63,12 @@ export const votingService = {
     // If a new user was created, use their ID. If they already existed, authData.user will be null.
     const userId = authData?.user?.id;
 
-    // Then save to ticket entries table
-    const { data, error } = await supabase
-      .from('ticket_entries')
-      .insert([{
-        email,
-        username,
-        user_id: userId // This may be null if user already existed, which is acceptable for this flow
-      }])
-      .select();
+    // Then save to ticket entries table using raw SQL to avoid type issues
+    const { data, error } = await supabase.rpc('insert_ticket_entry', {
+      p_email: email,
+      p_username: username,
+      p_user_id: userId
+    });
 
     if (error) {
         // Handle potential unique constraint violation on email if they've already entered
