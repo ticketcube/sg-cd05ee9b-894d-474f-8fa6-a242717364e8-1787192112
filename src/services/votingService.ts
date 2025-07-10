@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Vote {
@@ -41,17 +42,28 @@ export const votingService = {
 
   async enterTicketDrawing(email: string, username: string) {
     // First, sign up the user with Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const {  authData, error: authError } = await supabase.auth.signUp({
       email,
       password: Math.random().toString(36).substring(2, 15), // Generate random password
       options: {
-        data: {
+         {
           username: username
         }
       }
     });
 
-    if (authError) throw authError;
+    if (authError) {
+        // If user already exists, we can just ignore the error and proceed,
+        // as the main goal is to get them into the ticket drawing.
+        if (!authError.message.includes('User already registered')) {
+            throw authError;
+        }
+    }
+    
+    // If a new user was created, use their ID. If they already existed, we need to get their ID.
+    // For simplicity in this flow, we'll proceed without linking if signup fails,
+    // but a more robust solution might query for the user.
+    const userId = authData?.user?.id;
 
     // Then save to ticket entries table
     const { data, error } = await supabase
@@ -59,11 +71,19 @@ export const votingService = {
       .insert([{
         email,
         username,
-        user_id: authData.user?.id
+        user_id: userId
       }])
       .select();
 
-    if (error) throw error;
+    if (error) {
+        // Handle potential unique constraint violation on email if they've already entered
+        if (error.message.includes('duplicate key value violates unique constraint')) {
+            // You can either inform the user they've already entered or just silently ignore it.
+            // We'll ignore it silently to proceed to the "Thank You" screen.
+            return null;
+        }
+        throw error;
+    }
     return data;
   }
 };
