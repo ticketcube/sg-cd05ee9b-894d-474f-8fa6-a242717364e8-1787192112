@@ -60,9 +60,7 @@ export const votingService = {
         }
     }
     
-    // If a new user was created, use their ID. If they already existed, we need to get their ID.
-    // For simplicity in this flow, we'll proceed without linking if signup fails,
-    // but a more robust solution might query for the user.
+    // If a new user was created, use their ID. If they already existed, authData.user will be null.
     const userId = authData?.user?.id;
 
     // Then save to ticket entries table
@@ -71,7 +69,7 @@ export const votingService = {
       .insert([{
         email,
         username,
-        user_id: userId
+        user_id: userId // This may be null if user already existed, which is acceptable for this flow
       }])
       .select();
 
