@@ -12,7 +12,7 @@ export default function HomePage() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [isVotingOpen, setIsVotingOpen] = useState(false);
   const [username, setUsername] = useState('');
-  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
+  const [selectedArtists, setSelectedArtists] = useState<number[]>([]);
   const [uniqueCategories, setUniqueCategories] = useState<string[]>([]);
   const [uniqueGenres, setUniqueGenres] = useState<string[]>([]);
 
@@ -42,19 +42,19 @@ export default function HomePage() {
       return;
     }
 
-    if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.artist_otwid)) {
+    if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.otwid || 0)) {
       alert('You can only select up to 25 artists!');
       return;
     }
 
-    if (selectedArtists.includes(artist.artist_otwid)) {
-      setSelectedArtists(prev => prev.filter(id => id !== artist.artist_otwid));
+    if (selectedArtists.includes(artist.otwid || 0)) {
+      setSelectedArtists(prev => prev.filter(id => id !== (artist.otwid || 0)));
     } else {
-      setSelectedArtists(prev => [...prev, artist.artist_otwid]);
+      setSelectedArtists(prev => [...prev, artist.otwid || 0]);
     }
 
     try {
-      await artistService.submitVote({ username, artist_otwid: artist.artist_otwid });
+      await artistService.submitVote({ username, artist_otwid: artist.otwid || null });
     } catch (error) {
       console.error('Error submitting vote:', error);
     }
