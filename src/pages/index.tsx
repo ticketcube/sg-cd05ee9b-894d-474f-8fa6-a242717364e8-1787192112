@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Artist, artistService } from '@/services/artistService';
 import { ArtistChart } from '@/components/ArtistChart';
 import { Button } from '@/components/ui/button';
@@ -17,24 +16,25 @@ export default function HomePage() {
   const [uniqueCategories, setUniqueCategories] = useState<string[]>([]);
   const [uniqueGenres, setUniqueGenres] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadArtists();
-  }, [selectedCategory, selectedGenres]);
-
-  const loadArtists = async () => {
+  const loadArtists = useCallback(async () => {
     const data = await artistService.getArtists({
       category: selectedCategory,
       genres: selectedGenres
     });
     setArtists(data);
 
-    // Extract unique categories and genres
-    const categories = [...new Set(data.map(a => a.artist_otwcategory))];
-    const genres = [...new Set(data.flatMap(a => a.artist_genre))];
+    // Extract unique categories and genres from all artists, not just filtered ones
+    const allArtists = await artistService.getArtists();
+    const categories = [...new Set(allArtists.map(a => a.artist_otwcategory).filter(Boolean) as string[])];
+    const genres = [...new Set(allArtists.flatMap(a => a.artist_genre).filter(Boolean) as string[])];
     
     setUniqueCategories(categories);
     setUniqueGenres(genres);
-  };
+  }, [selectedCategory, selectedGenres]);
+
+  useEffect(() => {
+    loadArtists();
+  }, [loadArtists]);
 
   const handleVote = async (artist: Artist) => {
     if (!username) {
@@ -97,7 +97,7 @@ export default function HomePage() {
         </Select>
       </div>
 
-      <ArtistChart artists={artists} onVote={handleVote} />
+      <ArtistChart artists={artists} onVote={handleVote} selectedArtists={selectedArtists} />
 
       <Button
         className="mt-8 w-full text-xl py-8"

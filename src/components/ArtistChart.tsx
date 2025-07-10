@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { Chart } from 'chart.js/auto';
 import { Artist } from '@/services/artistService';
@@ -8,13 +7,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from '@/lib/utils';
 
 interface ArtistChartProps {
   artists: Artist[];
   onVote: (artist: Artist) => void;
+  selectedArtists: string[];
 }
 
-export function ArtistChart({ artists, onVote }: ArtistChartProps) {
+export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
@@ -98,7 +99,7 @@ export function ArtistChart({ artists, onVote }: ArtistChartProps) {
     return () => {
       newChart.destroy();
     };
-  }, [artists]);
+  }, [artists, chartInstance]);
 
   return (
     <div className="w-full h-[600px] bg-black p-4 rounded-lg">
@@ -130,9 +131,14 @@ export function ArtistChart({ artists, onVote }: ArtistChartProps) {
               </a>
               <button
                 onClick={() => selectedArtist && onVote(selectedArtist)}
-                className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+                className={cn(
+                  "text-white px-4 py-2 rounded",
+                  selectedArtists.includes(selectedArtist?.artist_otwid || '') 
+                    ? "bg-green-500 hover:bg-green-600" 
+                    : "bg-purple-500 hover:bg-purple-600"
+                )}
               >
-                TOP 25 VOTE
+                {selectedArtists.includes(selectedArtist?.artist_otwid || '') ? 'VOTED' : 'TOP 25 VOTE'}
               </button>
             </div>
           </div>

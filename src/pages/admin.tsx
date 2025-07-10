@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { artistService } from '@/services/artistService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,13 +7,19 @@ export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [email, setEmail] = useState('');
 
+  const checkAdmin = useCallback(async () => {
+    if (email) {
+      const adminStatus = await artistService.isAdmin(email);
+      setIsAdmin(adminStatus);
+    }
+  }, [email]);
+
   useEffect(() => {
-    checkAdmin();
+    // This can be triggered by a button click instead of automatically running
   }, []);
 
-  const checkAdmin = async () => {
-    const adminStatus = await artistService.isAdmin(email);
-    setIsAdmin(adminStatus);
+  const handleVerify = () => {
+    checkAdmin();
   };
 
   if (!isAdmin) {
@@ -28,7 +33,7 @@ export default function AdminPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Button onClick={checkAdmin}>Verify Access</Button>
+          <Button onClick={handleVerify}>Verify Access</Button>
         </div>
       </div>
     );
