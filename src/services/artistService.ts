@@ -1,20 +1,19 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Artist {
   artist_otwid: string;
   artist_name: string;
-  artist_home: string;
-  artist_otwcreateddate: string;
-  artist_videolink: string;
-  artist_audiolink: string;
-  artist_image: string;
-  artist_totallisteners: number;
-  artist_totalwatchers: number;
-  artist_otwcategory: string;
-  artist_genre: string[];
-  artist_relatedartists: string[];
-  artist_bio: string;
+  artist_home: string | null;
+  artist_otwcreateddate: string | null;
+  artist_videolink: string | null;
+  artist_audiolink: string | null;
+  artist_image: string | null;
+  artist_totallisteners: number | null;
+  artist_totalwatchers: number | null;
+  artist_otwcategory: string | null;
+  artist_genre: string[] | null;
+  artist_relatedartists: string[] | null;
+  artist_bio: string | null;
 }
 
 export interface Top25Vote {

@@ -26,7 +26,7 @@ export default function HomePage() {
     // Extract unique categories and genres from all artists, not just filtered ones
     const allArtists = await artistService.getArtists();
     const categories = [...new Set(allArtists.map(a => a.artist_otwcategory).filter(Boolean) as string[])];
-    const genres = [...new Set(allArtists.flatMap(a => a.artist_genre).filter(Boolean) as string[])];
+    const genres = [...new Set(allArtists.flatMap(a => a.artist_genre || []).filter(Boolean) as string[])];
     
     setUniqueCategories(categories);
     setUniqueGenres(genres);

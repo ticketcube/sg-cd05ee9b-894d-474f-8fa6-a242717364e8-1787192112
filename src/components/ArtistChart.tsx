@@ -35,8 +35,8 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
       data: {
         datasets: [{
           data: artists.map(artist => ({
-            x: artist.artist_totallisteners,
-            y: artist.artist_totalwatchers,
+            x: artist.artist_totallisteners || 0,
+            y: artist.artist_totalwatchers || 0,
             artist: artist
           })),
           backgroundColor: 'rgba(255, 255, 255, 0.6)',
@@ -114,22 +114,26 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
           <div className="space-y-4">
             <p>Created: {new Date(selectedArtist?.artist_otwcreateddate || '').toLocaleDateString()}</p>
             <div className="flex gap-2">
-              <a
-                href={selectedArtist?.artist_videolink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                WATCH
-              </a>
-              <a
-                href={selectedArtist?.artist_audiolink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-              >
-                LISTEN
-              </a>
+              {selectedArtist?.artist_videolink && (
+                <a
+                  href={selectedArtist.artist_videolink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  WATCH
+                </a>
+              )}
+              {selectedArtist?.artist_audiolink && (
+                <a
+                  href={selectedArtist.artist_audiolink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                >
+                  LISTEN
+                </a>
+              )}
               <button
                 onClick={() => selectedArtist && onVote(selectedArtist)}
                 className={cn(
