@@ -47,18 +47,21 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const element = elements[0];
+            const datasetIndex = element.datasetIndex;
+            const index = element.index;
+            const rawData = newChart.data.datasets[datasetIndex].data[index] as { artist: Artist };
+            const artist = rawData?.artist;
+            if (artist) {
+              setSelectedArtist(artist);
+            }
+          }
+        },
         plugins: {
           tooltip: {
-            enabled: false,
-            external: function(context) {
-              const rawData = context.tooltip.dataPoints?.[0]?.raw as { artist: Artist };
-              const artist = rawData?.artist;
-              if (artist) {
-                setSelectedArtist(artist);
-              } else {
-                setSelectedArtist(null);
-              }
-            }
+            enabled: false
           },
           legend: {
             display: false
