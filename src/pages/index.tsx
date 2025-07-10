@@ -62,7 +62,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
-      <h1 className="text-3xl font-bold mb-8">10 Years of OTW Artists</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center text-blue-500">10 Years of OTW Artists</h1>
       
       <Button
         className="mb-8 w-full text-xl py-8 bg-white text-black hover:bg-gray-100"
