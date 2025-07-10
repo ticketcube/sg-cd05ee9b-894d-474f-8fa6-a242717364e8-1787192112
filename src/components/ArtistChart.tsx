@@ -107,7 +107,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
 
   return (
     <div 
-      className="w-full h-[600px] bg-black p-4 rounded-lg relative"
+      className="w-full h-[calc(100vh-280px)] bg-black p-4 rounded-lg relative"
       style={{
         backgroundImage: "url(/OTWLogocolor.png)",
         backgroundSize: "contain",

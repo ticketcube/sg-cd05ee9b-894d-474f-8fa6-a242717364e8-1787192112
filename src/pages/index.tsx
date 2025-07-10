@@ -163,18 +163,18 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <h1 className="text-3xl font-bold mb-8 text-center text-blue-500">10 Years of OTW Artists</h1>
+    <div className="h-screen bg-black text-white p-4">
+      <h1 className="text-3xl font-bold mb-4 text-center text-blue-500">10 Years of OTW Artists</h1>
       
       <Button
-        className="mb-8 w-full text-xl py-8 bg-white text-black hover:bg-gray-100"
+        className="mb-4 w-full text-xl py-6 bg-white text-black hover:bg-gray-100"
         onClick={handleMainButtonClick}
         disabled={votingState === 'submitted'}
       >
         {getMainButtonText()}
       </Button>
       
-      <div className="mb-8 flex gap-4">
+      <div className="mb-4 flex gap-4">
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger>
             <SelectValue placeholder="Select Category" />
