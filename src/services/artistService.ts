@@ -5,7 +5,7 @@ export type Artist = Database['public']['Tables']['artists']['Row'];
 
 export interface Top25Vote {
   username: string;
-  artist_otwid: string;
+  artist_otwid: string | null;
 }
 
 export const artistService = {
@@ -38,7 +38,7 @@ export const artistService = {
   async submitVote(vote: Top25Vote) {
     const { data, error } = await supabase
       .from('top25_votes')
-      .insert([vote])
+      .insert(vote)
       .select();
     
     if (error) throw error;
@@ -52,7 +52,7 @@ export const artistService = {
       .eq('username', username);
     
     if (error) throw error;
-    return data.map(vote => vote.artist_otwid);
+    return data.map(vote => vote.artist_otwid).filter(Boolean) as string[];
   },
 
   async isAdmin(email: string) {
