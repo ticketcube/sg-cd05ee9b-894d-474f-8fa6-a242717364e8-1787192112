@@ -51,7 +51,8 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
           tooltip: {
             enabled: false,
             external: function(context) {
-              const artist = context.tooltip.dataPoints?.[0]?.raw?.artist as Artist;
+              const rawData = context.tooltip.dataPoints?.[0]?.raw as { artist: Artist };
+              const artist = rawData?.artist;
               if (artist) {
                 setSelectedArtist(artist);
               } else {
