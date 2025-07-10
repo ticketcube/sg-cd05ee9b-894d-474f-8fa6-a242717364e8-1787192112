@@ -1,5 +1,5 @@
 
-    import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Chart } from "chart.js/auto";
 import { Artist } from "@/services/artistService";
 import {
@@ -174,4 +174,3 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
     </div>
   );
 }
-  
