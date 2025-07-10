@@ -33,9 +33,9 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
 
     const newChart = new Chart(ctx, {
       type: "scatter",
-       {
+      data: {
         datasets: [{
-           artists.map(artist => ({
+          data: artists.map(artist => ({
             x: artist.artist_totallisteners || 0,
             y: artist.artist_totalwatchers || 0,
             artist: artist
