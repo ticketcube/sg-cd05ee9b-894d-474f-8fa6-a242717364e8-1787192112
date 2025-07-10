@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import { Chart } from 'chart.js/auto';
-import { Artist } from '@/services/artistService';
+import { useEffect, useRef, useState } from "react";
+import { Chart } from "chart.js/auto";
+import { Artist } from "@/services/artistService";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface ArtistChartProps {
   artists: Artist[];
@@ -17,29 +17,30 @@ interface ArtistChartProps {
 
 export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
+  const chartInstanceRef = useRef<Chart | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
-  const [chartInstance, setChartInstance] = useState<Chart | null>(null);
 
   useEffect(() => {
     if (!chartRef.current) return;
 
+    const chartInstance = chartInstanceRef.current;
     if (chartInstance) {
       chartInstance.destroy();
     }
 
-    const ctx = chartRef.current.getContext('2d');
+    const ctx = chartRef.current.getContext("2d");
     if (!ctx) return;
 
     const newChart = new Chart(ctx, {
-      type: 'scatter',
-      data: {
+      type: "scatter",
+       {
         datasets: [{
-          data: artists.map(artist => ({
+           artists.map(artist => ({
             x: artist.artist_totallisteners || 0,
             y: artist.artist_totalwatchers || 0,
             artist: artist
           })),
-          backgroundColor: 'rgba(255, 255, 255, 0.6)',
+          backgroundColor: "rgba(255, 255, 255, 0.6)",
           pointRadius: 6,
           pointHoverRadius: 8,
         }]
@@ -71,11 +72,11 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
           x: {
             title: {
               display: true,
-              text: 'Total Listeners',
-              color: 'white'
+              text: "Total Listeners",
+              color: "white"
             },
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
+              color: "rgba(255, 255, 255, 0.1)"
             },
             ticks: {
               display: false
@@ -84,11 +85,11 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
           y: {
             title: {
               display: true,
-              text: 'Total Watchers',
-              color: 'white'
+              text: "Total Watchers",
+              color: "white"
             },
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
+              color: "rgba(255, 255, 255, 0.1)"
             },
             ticks: {
               display: false
@@ -98,7 +99,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
       }
     });
 
-    setChartInstance(newChart);
+    chartInstanceRef.current = newChart;
 
     return () => {
       newChart.destroy();
@@ -109,16 +110,16 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
     <div 
       className="w-full h-[600px] bg-black p-4 rounded-lg relative"
       style={{
-        backgroundImage: 'url(/OTWLogocolor.png)',
-        backgroundSize: 'contain',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center'
+        backgroundImage: "url(/OTWLogocolor.png)",
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center"
       }}
     >
       <div 
         className="absolute inset-0 rounded-lg"
         style={{
-          background: 'rgba(0, 0, 0, 0.85)',
+          background: "rgba(0, 0, 0, 0.85)",
           zIndex: 1
         }}
       />
@@ -133,7 +134,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
             <DialogTitle>{selectedArtist?.artist_name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p>Created: {new Date(selectedArtist?.artist_otwcreateddate || '').toLocaleDateString()}</p>
+            <p>Created: {new Date(selectedArtist?.artist_otwcreateddate || "").toLocaleDateString()}</p>
             <div className="flex gap-2">
               {selectedArtist?.artist_videolink && (
                 <a
@@ -164,7 +165,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
                     : "bg-purple-500 hover:bg-purple-600"
                 )}
               >
-                {selectedArtists.includes(selectedArtist?.artist_otwid || 0) ? 'VOTED' : 'TOP 25 VOTE'}
+                {selectedArtists.includes(selectedArtist?.artist_otwid || 0) ? "VOTED" : "TOP 25 VOTE"}
               </button>
             </div>
           </div>

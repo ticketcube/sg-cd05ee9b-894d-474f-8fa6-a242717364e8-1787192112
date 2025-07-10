@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 
 export interface Artist {
   UUID: string;
@@ -25,24 +24,24 @@ interface GetArtistsParams {
 
 export const artistService = {
   async getArtists(params?: GetArtistsParams): Promise<Artist[]> {
-    let query = supabase.from('artists').select('*');
+    let query = supabase.from("artists").select("*");
     
     if (params?.category) {
-      query = query.eq('artist_otwcategory', params.category);
+      query = query.eq("artist_otwcategory", params.category);
     }
     
     if (params?.genres && params.genres.length > 0) {
       // Since genre is now a text field, we'll use ilike for partial matching
       const genreConditions = params.genres.map(genre => 
         `artist_genre.ilike.%${genre}%`
-      ).join(',');
+      ).join(",");
       query = query.or(genreConditions);
     }
     
     const { data, error } = await query;
     
     if (error) {
-      console.error('Error fetching artists:', error);
+      console.error("Error fetching artists:", error);
       throw error;
     }
     
@@ -51,13 +50,28 @@ export const artistService = {
 
   async submitVote(vote: { username: string; artist_otwid: number | null }): Promise<void> {
     const { error } = await supabase
-      .from('top25_votes')
+      .from("top25_votes")
       .insert([vote]);
     
     if (error) {
-      console.error('Error submitting vote:', error);
+      console.error("Error submitting vote:", error);
       throw error;
     }
+  },
+
+  async isAdmin(email: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from("admin_users")
+      .select("email")
+      .eq("email", email)
+      .single();
+
+    if (error) {
+      console.error("Error checking admin status:", error.message);
+      return false;
+    }
+
+    return !!data;
   }
 };
 
