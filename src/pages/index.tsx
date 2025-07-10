@@ -27,7 +27,14 @@ export default function HomePage() {
     const allArtists = await artistService.getArtists();
     const categories = [...new Set(allArtists.map(a => a.artist_otwcategory).filter(Boolean) as string[])]
       .filter(category => category !== '["Top100","Top25"]'); // Remove Top 100/Top 25 option
-    const genres = [...new Set(allArtists.flatMap(a => a.artist_genre || []).filter(Boolean) as string[])];
+    
+    // Since genre is now a text field, we need to split and extract individual genres
+    const allGenres = allArtists
+      .map(a => a.artist_genre)
+      .filter(Boolean)
+      .flatMap(genre => genre?.split(',').map(g => g.trim()) || [])
+      .filter(Boolean);
+    const genres = [...new Set(allGenres)];
     
     setUniqueCategories(categories);
     setUniqueGenres(genres);

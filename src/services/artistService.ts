@@ -1,70 +1,63 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
-export type Artist = Database['public']['Tables']['artists']['Row'];
+export interface Artist {
+  UUID: string;
+  artist_name: string;
+  artist_home?: string | null;
+  artist_otwcreateddate?: string | null;
+  artist_videolink?: string | null;
+  artist_audiolink?: string | null;
+  artist_image?: string | null;
+  artist_totallisteners?: number | null;
+  artist_totalwatchers?: number | null;
+  artist_otwcategory?: string | null;
+  artist_genre?: string | null;
+  artist_relatedartists?: string[] | null;
+  artist_bio?: string | null;
+  artist_otwid?: number | null;
+}
 
-export interface Top25Vote {
-  username: string;
-  artist_otwid: number | null;
+interface GetArtistsParams {
+  category?: string;
+  genres?: string[];
 }
 
 export const artistService = {
-  async getArtists(filters?: { category?: string; genres?: string[] }) {
+  async getArtists(params?: GetArtistsParams): Promise<Artist[]> {
     let query = supabase.from('artists').select('*');
     
-    if (filters?.category) {
-      query = query.eq('artist_otwcategory', filters.category);
+    if (params?.category) {
+      query = query.eq('artist_otwcategory', params.category);
     }
     
-    if (filters?.genres && filters.genres.length > 0) {
-      query = query.overlaps('artist_genre', filters.genres);
+    if (params?.genres && params.genres.length > 0) {
+      // Since genre is now a text field, we'll use ilike for partial matching
+      const genreConditions = params.genres.map(genre => 
+        `artist_genre.ilike.%${genre}%`
+      ).join(',');
+      query = query.or(genreConditions);
     }
     
     const { data, error } = await query;
-    if (error) throw error;
-    return data;
+    
+    if (error) {
+      console.error('Error fetching artists:', error);
+      throw error;
+    }
+    
+    return data || [];
   },
 
-  async getVoteCount(artist_otwid: number) {
-    const { count, error } = await supabase
+  async submitVote(vote: { username: string; artist_otwid: number | null }): Promise<void> {
+    const { error } = await supabase
       .from('top25_votes')
-      .select('*', { count: 'exact' })
-      .eq('artist_otwid', artist_otwid);
+      .insert([vote]);
     
-    if (error) throw error;
-    return count || 0;
-  },
-
-  async submitVote(vote: Top25Vote) {
-    const { data, error } = await supabase
-      .from('top25_votes')
-      .insert(vote)
-      .select();
-    
-    if (error) throw error;
-    return data[0];
-  },
-
-  async getUserVotes(username: string) {
-    const { data, error } = await supabase
-      .from('top25_votes')
-      .select('artist_otwid')
-      .eq('username', username);
-    
-    if (error) throw error;
-    return data.map(vote => vote.artist_otwid).filter(Boolean) as number[];
-  },
-
-  async isAdmin(email: string) {
-    const { data, error } = await supabase
-      .from('admin_users')
-      .select('*')
-      .eq('email', email)
-      .single();
-    
-    if (error) return false;
-    return !!data;
+    if (error) {
+      console.error('Error submitting vote:', error);
+      throw error;
+    }
   }
 };
 
