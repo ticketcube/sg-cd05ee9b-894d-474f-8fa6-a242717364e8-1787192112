@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -5,7 +6,7 @@ export type Artist = Database['public']['Tables']['artists']['Row'];
 
 export interface Top25Vote {
   username: string;
-  artist_otwid: string | null;
+  artist_otwid: number | null;
 }
 
 export const artistService = {
@@ -25,7 +26,7 @@ export const artistService = {
     return data;
   },
 
-  async getVoteCount(artist_otwid: string) {
+  async getVoteCount(artist_otwid: number) {
     const { count, error } = await supabase
       .from('top25_votes')
       .select('*', { count: 'exact' })
@@ -52,7 +53,7 @@ export const artistService = {
       .eq('username', username);
     
     if (error) throw error;
-    return data.map(vote => vote.artist_otwid).filter(Boolean) as string[];
+    return data.map(vote => vote.artist_otwid).filter(Boolean) as number[];
   },
 
   async isAdmin(email: string) {
