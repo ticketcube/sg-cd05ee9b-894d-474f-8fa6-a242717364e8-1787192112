@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Chart } from "chart.js/auto";
 import { Artist } from "@/services/artistService";
@@ -134,7 +133,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
             <DialogTitle>{selectedArtist?.artist_name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p>Created: {new Date(selectedArtist?.artist_otwcreateddate || "").toLocaleDateString()}</p>
+            <p>OnesToWatch Class of: {new Date(selectedArtist?.artist_otwcreateddate || "").getFullYear()}</p>
             <div className="flex gap-2">
               {selectedArtist?.artist_videolink && (
                 <a

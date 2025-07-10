@@ -63,6 +63,7 @@ export const votingService = {
     const userId = authData?.user?.id;
 
     // Then save to ticket entries table using raw SQL to avoid type issues
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('insert_ticket_entry', {
       p_email: email,
       p_username: username,
