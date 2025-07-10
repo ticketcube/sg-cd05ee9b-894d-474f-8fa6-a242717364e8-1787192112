@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export default function HomePage() {
   const [artists, setArtists] = useState<Artist[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [isVotingOpen, setIsVotingOpen] = useState(false);
   const [username, setUsername] = useState('');
@@ -18,8 +18,8 @@ export default function HomePage() {
 
   const loadArtists = useCallback(async () => {
     const data = await artistService.getArtists({
-      category: selectedCategory,
-      genres: selectedGenres
+      category: selectedCategory === 'all' ? undefined : selectedCategory,
+      genres: selectedGenres.length > 0 ? selectedGenres : undefined
     });
     setArtists(data);
 
@@ -70,7 +70,7 @@ export default function HomePage() {
             <SelectValue placeholder="Select Category" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="all">All Categories</SelectItem>
             {uniqueCategories.map(category => (
               <SelectItem key={category} value={category}>
                 {category}
@@ -80,14 +80,14 @@ export default function HomePage() {
         </Select>
 
         <Select
-          value={selectedGenres[0]}
-          onValueChange={(value) => setSelectedGenres([value])}
+          value={selectedGenres[0] || "all"}
+          onValueChange={(value) => setSelectedGenres(value === "all" ? [] : [value])}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select Genre" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Genres</SelectItem>
+            <SelectItem value="all">All Genres</SelectItem>
             {uniqueGenres.map(genre => (
               <SelectItem key={genre} value={genre}>
                 {genre}
