@@ -75,7 +75,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
               color: 'rgba(255, 255, 255, 0.1)'
             },
             ticks: {
-              color: 'white'
+              display: false
             }
           },
           y: {
@@ -88,7 +88,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
               color: 'rgba(255, 255, 255, 0.1)'
             },
             ticks: {
-              color: 'white'
+              display: false
             }
           }
         }
