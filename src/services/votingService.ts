@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Vote {
@@ -22,7 +21,7 @@ export const votingService = {
     }));
 
     const { data, error } = await supabase
-      .from('votes')
+      .from('top25_votes')
       .insert(votes)
       .select();
 
@@ -32,7 +31,7 @@ export const votingService = {
 
   async getUserVotes(username: string) {
     const { data, error } = await supabase
-      .from('votes')
+      .from('top25_votes')
       .select('*')
       .eq('username', username);
 

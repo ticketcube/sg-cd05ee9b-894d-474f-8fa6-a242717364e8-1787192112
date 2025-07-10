@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Artist, artistService } from '@/services/artistService';
 import { votingService } from '@/services/votingService';
@@ -16,7 +15,6 @@ export default function HomePage() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [isUsernameDialogOpen, setIsUsernameDialogOpen] = useState(false);
   const [isSubmissionDialogOpen, setIsSubmissionDialogOpen] = useState(false);
-  const [isTicketDialogOpen, setIsTicketDialogOpen] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -105,7 +103,6 @@ export default function HomePage() {
     try {
       await votingService.enterTicketDrawing(email, username);
       setIsSubmissionDialogOpen(false);
-      setIsTicketDialogOpen(false);
       setShowThankYou(true);
       setTimeout(() => {
         resetVoting();
@@ -123,7 +120,6 @@ export default function HomePage() {
     setSelectedArtists([]);
     setIsUsernameDialogOpen(false);
     setIsSubmissionDialogOpen(false);
-    setIsTicketDialogOpen(false);
     setShowThankYou(false);
   };
 
