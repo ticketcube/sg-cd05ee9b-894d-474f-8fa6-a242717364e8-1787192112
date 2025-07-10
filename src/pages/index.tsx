@@ -42,19 +42,19 @@ export default function HomePage() {
       return;
     }
 
-    if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.otwid || 0)) {
+    if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.artist_otwid || 0)) {
       alert('You can only select up to 25 artists!');
       return;
     }
 
-    if (selectedArtists.includes(artist.otwid || 0)) {
-      setSelectedArtists(prev => prev.filter(id => id !== (artist.otwid || 0)));
+    if (selectedArtists.includes(artist.artist_otwid || 0)) {
+      setSelectedArtists(prev => prev.filter(id => id !== (artist.artist_otwid || 0)));
     } else {
-      setSelectedArtists(prev => [...prev, artist.otwid || 0]);
+      setSelectedArtists(prev => [...prev, artist.artist_otwid || 0]);
     }
 
     try {
-      await artistService.submitVote({ username, artist_otwid: artist.otwid || null });
+      await artistService.submitVote({ username, artist_otwid: artist.artist_otwid || null });
     } catch (error) {
       console.error('Error submitting vote:', error);
     }
