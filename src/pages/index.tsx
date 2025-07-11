@@ -18,7 +18,7 @@ export default function HomePage() {
   const [showThankYou, setShowThankYou] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [selectedArtists, setSelectedArtists] = useState<number[]>([]);
+  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
   const [uniqueCategories, setUniqueCategories] = useState<string[]>([]);
   const [uniqueGenres, setUniqueGenres] = useState<string[]>([]);
   const [votingState, setVotingState] = useState<VotingState>('initial');
@@ -57,15 +57,15 @@ export default function HomePage() {
       return;
     }
 
-    if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.artist_otwid || 0)) {
+    if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.UUID)) {
       alert('You can only select up to 25 artists!');
       return;
     }
 
-    if (selectedArtists.includes(artist.artist_otwid || 0)) {
-      setSelectedArtists(prev => prev.filter(id => id !== (artist.artist_otwid || 0)));
+    if (selectedArtists.includes(artist.UUID)) {
+      setSelectedArtists(prev => prev.filter(id => id !== artist.UUID));
     } else {
-      setSelectedArtists(prev => [...prev, artist.artist_otwid || 0]);
+      setSelectedArtists(prev => [...prev, artist.UUID]);
     }
   };
 
@@ -86,14 +86,14 @@ export default function HomePage() {
 
     try {
       // Create vote objects with artist UUIDs
-      const votes = selectedArtists.map(artistOtwId => {
-        const artist = artists.find(a => a.artist_otwid === artistOtwId);
+      const votes = selectedArtists.map(artistUUID => {
+        const artist = artists.find(a => a.UUID === artistUUID);
         return {
           username,
-          artist_uuid: artist?.UUID || '',
-          artist_otwid: artistOtwId
+          artist_uuid: artistUUID,
+          artist_otwid: artist?.artist_otwid || null
         };
-      }).filter(vote => vote.artist_uuid); // Filter out any votes without valid UUIDs
+      });
 
       await votingService.submitVotes(votes);
       setVotingState('submitted');

@@ -13,7 +13,7 @@ import { TikTokEmbed } from "@/components/TikTokEmbed";
 interface ArtistChartProps {
   artists: Artist[];
   onVote: (artist: Artist) => void;
-  selectedArtists: number[];
+  selectedArtists: string[];
 }
 
 export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartProps) {
@@ -158,12 +158,12 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
                   onClick={() => selectedArtist && onVote(selectedArtist)}
                   className={cn(
                     "text-white px-4 py-2 rounded",
-                    selectedArtists.includes(selectedArtist?.artist_otwid || 0) 
+                    selectedArtists.includes(selectedArtist?.UUID || '') 
                       ? "bg-green-500 hover:bg-green-600" 
                       : "bg-purple-500 hover:bg-purple-600"
                   )}
                 >
-                  {selectedArtists.includes(selectedArtist?.artist_otwid || 0) ? "VOTED" : "TOP 25 VOTE"}
+                  {selectedArtists.includes(selectedArtist?.UUID || '') ? "VOTED" : "TOP 25 VOTE"}
                 </button>
               </div>
             </div>
