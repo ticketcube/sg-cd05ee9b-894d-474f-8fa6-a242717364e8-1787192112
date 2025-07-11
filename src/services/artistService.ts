@@ -49,10 +49,14 @@ export const artistService = {
     return data || [];
   },
 
-  async submitVote(vote: { username: string; artist_otwid: number | null }): Promise<void> {
+  async submitVote(vote: { username: string; artist_uuid: string; artist_otwid: number | null }): Promise<void> {
     const { error } = await supabase
       .from("top25_votes")
-      .insert([vote]);
+      .insert([{
+        username: vote.username,
+        artist_uuid: vote.artist_uuid,
+        artist_otwid: vote.artist_otwid,
+      }]);
     
     if (error) {
       console.error("Error submitting vote:", error);

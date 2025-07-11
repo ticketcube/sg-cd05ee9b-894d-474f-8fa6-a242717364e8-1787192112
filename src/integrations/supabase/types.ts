@@ -115,27 +115,44 @@ export type Database = {
           username: string
           created_at: string | null
           artist_otwid: number | null
+          artist_uuid: string | null
         }
         Insert: {
           UUID?: string
           username: string
           created_at?: string | null
           artist_otwid?: number | null
+          artist_uuid: string
         }
         Update: {
           UUID?: string
           username?: string
           created_at?: string | null
           artist_otwid?: number | null
+          artist_uuid?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "top25_votes_artist_uuid_fkey"
+            columns: ["artist_uuid"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["UUID"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_artist_vote_counts: {
+        Args: Record<string, never>
+        Returns: {
+          artist_name: string
+          vote_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
