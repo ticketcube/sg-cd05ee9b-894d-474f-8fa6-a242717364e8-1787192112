@@ -44,24 +44,18 @@ export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartPr
           data: sortedData.map(item => item.vote_count),
           backgroundColor: colors,
           borderColor: colors.map(color => color.replace("0.8", "1")),
-          borderWidth: 1,
-          barThickness: 25
+          borderWidth: 1
         }]
       },
       options: {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        onClick: (event, elements, chart) => {
-          // Only trigger if we have elements and they are from the bar dataset
+        onClick: (event, elements) => {
           if (elements.length > 0 && onArtistClick) {
-            const element = elements[0];
-            // Check if the click was on a bar (not on labels)
-            if (element && element.datasetIndex === 0) {
-              const index = element.index;
-              const artistName = sortedData[index].artist_name;
-              onArtistClick(artistName);
-            }
+            const index = elements[0].index;
+            const artistName = sortedData[index].artist_name;
+            onArtistClick(artistName);
           }
         },
         plugins: {
@@ -76,22 +70,23 @@ export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartPr
         },
         scales: {
           x: {
-            display: false, // Hide the x-axis
+            beginAtZero: true,
             grid: {
-              display: false // Hide x-axis grid lines
+              color: "rgba(255, 255, 255, 0.1)"
+            },
+            ticks: {
+              color: "white"
             }
           },
           y: {
             grid: {
-              display: false // Hide y-axis grid lines
+              color: "rgba(255, 255, 255, 0.1)"
             },
             ticks: {
               color: "white",
               font: {
-                size: 16, // Increased font size
-                weight: 'bold' // Make text bold
-              },
-              padding: 20 // Add more padding between text and bars
+                size: 12
+              }
             }
           }
         }
@@ -106,7 +101,7 @@ export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartPr
   }, [voteData, onArtistClick]);
 
   return (
-    <div className="w-full h-[calc(100vh-100px)] bg-black p-4 rounded-lg"> {/* Increased height */}
+    <div className="w-full h-[calc(100vh-200px)] bg-black p-4 rounded-lg">
       <canvas ref={chartRef} />
     </div>
   );
