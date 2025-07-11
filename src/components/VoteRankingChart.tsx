@@ -52,11 +52,16 @@ export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartPr
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        onClick: (event, elements) => {
+        onClick: (event, elements, chart) => {
+          // Only trigger if we have elements and they are from the bar dataset
           if (elements.length > 0 && onArtistClick) {
-            const index = elements[0].index;
-            const artistName = sortedData[index].artist_name;
-            onArtistClick(artistName);
+            const element = elements[0];
+            // Check if the click was on a bar (not on labels)
+            if (element && element.datasetIndex === 0) {
+              const index = element.index;
+              const artistName = sortedData[index].artist_name;
+              onArtistClick(artistName);
+            }
           }
         },
         plugins: {
