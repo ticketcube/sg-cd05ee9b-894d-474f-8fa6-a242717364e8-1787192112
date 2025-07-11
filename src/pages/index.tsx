@@ -85,7 +85,17 @@ export default function HomePage() {
     }
 
     try {
-      await votingService.submitVotes(username, selectedArtists);
+      // Create vote objects with artist UUIDs
+      const votes = selectedArtists.map(artistOtwId => {
+        const artist = artists.find(a => a.artist_otwid === artistOtwId);
+        return {
+          username,
+          artist_uuid: artist?.UUID || '',
+          artist_otwid: artistOtwId
+        };
+      }).filter(vote => vote.artist_uuid); // Filter out any votes without valid UUIDs
+
+      await votingService.submitVotes(votes);
       setVotingState('submitted');
       setIsSubmissionDialogOpen(true);
     } catch (error) {
