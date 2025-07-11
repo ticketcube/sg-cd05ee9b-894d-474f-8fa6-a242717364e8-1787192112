@@ -32,11 +32,8 @@ export const artistService = {
     }
     
     if (params?.genres && params.genres.length > 0) {
-      // Since genre is now a text field, we'll use ilike for partial matching
-      const genreConditions = params.genres.map(genre => 
-        `artist_genre.ilike.%${genre}%`
-      ).join(",");
-      query = query.or(genreConditions);
+      // Use exact match for genre filtering
+      query = query.in('artist_genre', params.genres);
     }
     
     const { data, error } = await query;
