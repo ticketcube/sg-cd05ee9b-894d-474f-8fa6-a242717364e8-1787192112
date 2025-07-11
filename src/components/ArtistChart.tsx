@@ -31,15 +31,16 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
     const ctx = chartRef.current.getContext("2d");
     if (!ctx) return;
 
-    const uniqueGenres = Array.from(new Set(artists.map(artist => artist.artist_genre)));
+    // Get unique genres and sort them alphabetically
+    const uniqueGenres = [...new Set(artists.map(artist => artist.artist_genre).filter(Boolean))].sort();
 
     const newChart = new Chart(ctx, {
       type: "scatter",
       data: {
         datasets: [{
           data: artists.map(artist => ({
-            x: artist.artist_otwcreateddate || 0,
-            y: uniqueGenres.indexOf(artist.artist_genre),
+            x: new Date(artist.artist_otwcreateddate || "").getTime(),
+            y: uniqueGenres.indexOf(artist.artist_genre || ""),
             artist: artist
           })),
           backgroundColor: "rgba(255, 255, 255, 0.6)",
@@ -55,7 +56,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
             const element = elements[0];
             const datasetIndex = element.datasetIndex;
             const index = element.index;
-            const rawData = newChart.data.datasets[datasetIndex].data[index] as { artist: Artist };
+            const rawData = newChart.data.datasets[datasetIndex].data[index] as any;
             const artist = rawData?.artist;
             if (artist) {
               setSelectedArtist(artist);
