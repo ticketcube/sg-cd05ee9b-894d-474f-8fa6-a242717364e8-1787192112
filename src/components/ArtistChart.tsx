@@ -10,6 +10,14 @@ import {
 import { cn } from "@/lib/utils";
 import { TikTokEmbed } from "@/components/TikTokEmbed";
 
+Chart.register(...registerables);
+
+interface ChartDataPoint {
+  x: number;
+  y: number;
+  artist: Artist;
+}
+
 interface ArtistChartProps {
   artists: Artist[];
   onVote: (artist: Artist) => void;
@@ -56,7 +64,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
             const element = elements[0];
             const datasetIndex = element.datasetIndex;
             const index = element.index;
-            const rawData = newChart.data.datasets[datasetIndex].data[index] as any;
+            const rawData = newChart.data.datasets[datasetIndex].data[index] as ChartDataPoint;
             const artist = rawData?.artist;
             if (artist) {
               setSelectedArtist(artist);
