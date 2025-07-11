@@ -21,17 +21,26 @@ export function TikTokEmbed({
   }, [tiktokUrl]);
 
   return (
-    <blockquote
-      className="tiktok-embed"
-      cite={tiktokUrl}
-      data-video-id={videoId}
-      data-embed-type="video"
-      data-autoplay="1"
-      data-controls="0"
-      data-branding="0"
-      style={{ maxWidth: "200px", minWidth: "150px" }}
+    <div 
+      className="overflow-hidden rounded-lg"
+      style={{ 
+        maxWidth: "325px", 
+        minWidth: "225px",
+        height: "400px"
+      }}
     >
-      <section>Loading...</section>
-    </blockquote>
+      <blockquote
+        className="tiktok-embed"
+        cite={tiktokUrl}
+        data-video-id={videoId}
+        data-embed-type="video"
+        data-autoplay="1"
+        data-controls="0"
+        data-branding="0"
+        style={{ maxWidth: "325px", minWidth: "225px" }}
+      >
+        <section>Loading...</section>
+      </blockquote>
+    </div>
   );
 }
