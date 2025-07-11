@@ -33,10 +33,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
     }
   }, [selectedArtist]);
 
-    function extractVideoId(url) {
-        const match = url.match(/video\/(\d+)/);
-        return match ? match[1] : null;
-    }
+    
 
   useEffect(() => {
     if (!chartRef.current) return;
