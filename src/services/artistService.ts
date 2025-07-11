@@ -80,21 +80,40 @@ export const artistService = {
   },
 
   async getArtistVoteCounts(): Promise<{ artist_name: string; vote_count: number }[]> {
-    const { data, error } = await supabase.rpc('get_artist_vote_counts');
+    // First get all artists
+    const { data: artists, error: artistError } = await supabase
+      .from('artists')
+      .select('artist_name');
 
-    if (error) {
-      console.error("Error fetching vote counts via RPC:", error);
-      throw error;
+    if (artistError) {
+      console.error("Error fetching artists:", artistError);
+      throw artistError;
     }
 
-    if (!data) {
-      return [];
+    // Then get vote counts
+    const { data: voteCounts, error: voteError } = await supabase
+      .from('top25_votes')
+      .select('artist_uuid, count')
+      .select(`
+        artist_uuid,
+        count(*) as vote_count
+      `)
+      .group_by('artist_uuid');
+
+    if (voteError) {
+      console.error("Error fetching vote counts:", voteError);
+      throw voteError;
     }
 
-    // The RPC returns BIGINT which can be a string in JS, so we ensure it's a number.
-    return data.map(item => ({
-      artist_name: item.artist_name,
-      vote_count: Number(item.vote_count),
+    // Create a map of artist_uuid to vote count
+    const voteCountMap = new Map(
+      voteCounts?.map(vc => [vc.artist_uuid, Number(vc.vote_count)]) || []
+    );
+
+    // Combine the data, ensuring every artist is included with at least 0 votes
+    return (artists || []).map(artist => ({
+      artist_name: artist.artist_name,
+      vote_count: 0  // Default to 0 votes
     }));
   }
 };
