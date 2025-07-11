@@ -136,13 +136,13 @@ export default function HomePage() {
   const getMainButtonText = () => {
     switch (votingState) {
       case 'initial':
-        return 'CLICK HERE TO VOTE FOR YOUR TOP 25 FAVORITES!';
+        return 'VOTE FOR YOUR TOP 25!';
       case 'voting':
         return 'SUBMIT YOUR VOTES';
       case 'submitted':
         return 'VOTES SUBMITTED';
       default:
-        return 'CLICK HERE TO VOTE FOR YOUR TOP 25 FAVORITES!';
+        return 'VOTE FOR YOUR TOP 25!';
     }
   };
 
