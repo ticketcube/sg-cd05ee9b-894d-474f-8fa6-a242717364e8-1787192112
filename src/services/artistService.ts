@@ -15,7 +15,7 @@ export interface Artist {
   artist_bio?: string | null;
   artist_otwid?: number | null;
   artist_tiktok_username?: string | null;
-  artist_tiktok_videoid?: number | null;
+  artist_tiktok_videoid?: string | null;
 }
 
 interface GetArtistsParams {
