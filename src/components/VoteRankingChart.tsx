@@ -1,8 +1,6 @@
 
-import { useEffect, useRef } from "react";
-
 interface VoteRankingProps {
-  data: {
+   {
     artist_name: string;
     vote_count: number;
   }[];
@@ -18,7 +16,7 @@ export function VoteRankingChart({ data }: VoteRankingProps) {
 
   return (
     <div className="w-full space-y-4 p-6 bg-black rounded-lg">
-      {data.map((item, index) => (
+      {data.map((item) => (
         <div key={item.artist_name} className="flex items-center gap-4">
           <div className="w-48 text-white truncate">{item.artist_name}</div>
           <div className="flex-1 h-8 bg-gray-800 rounded-lg overflow-hidden">
