@@ -5,7 +5,6 @@ export interface Artist {
   artist_name: string;
   artist_home?: string | null;
   artist_otwcreateddate?: string | null;
-  artist_videolink?: string | null;
   artist_audiolink?: string | null;
   artist_image?: string | null;
   artist_totallisteners?: number | null;
@@ -15,6 +14,8 @@ export interface Artist {
   artist_relatedartists?: string[] | null;
   artist_bio?: string | null;
   artist_otwid?: number | null;
+  artist_tiktok_username?: string | null;
+  artist_tiktok_videoid?: string | null;
 }
 
 interface GetArtistsParams {

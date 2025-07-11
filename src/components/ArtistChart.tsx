@@ -21,21 +21,6 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
   const chartInstanceRef = useRef<Chart | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
 
-  // Add TikTok embed script when an artist is selected
-  useEffect(() => {
-    if (selectedArtist?.artist_videolink) {
-      const script = document.createElement('script');
-      script.src = 'https://www.tiktok.com/embed.js';
-      script.async = true;
-      document.body.appendChild(script);
-      return () => {
-        document.body.removeChild(script);
-      };
-    }
-  }, [selectedArtist]);
-
-    
-
   useEffect(() => {
     if (!chartRef.current) return;
 
