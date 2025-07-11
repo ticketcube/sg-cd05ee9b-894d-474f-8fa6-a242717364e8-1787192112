@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { artistService, Artist } from "@/services/artistService";
 import { VoteRankingChart } from "@/components/VoteRankingChart";
@@ -47,7 +46,7 @@ export default function VotesPage() {
     }
   };
 
-  const handleVote = (artist: Artist) => {
+  const handleVote = () => {
     alert("Please return to the main page to vote for artists!");
   };
 
@@ -96,7 +95,7 @@ export default function VotesPage() {
                   </a>
                 )}
                 <button
-                  onClick={() => selectedArtist && handleVote(selectedArtist)}
+                  onClick={handleVote}
                   className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded"
                 >
                   TOP 25 VOTE
