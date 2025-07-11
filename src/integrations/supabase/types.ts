@@ -69,6 +69,8 @@ export type Database = {
                     artist_otwcreateddate: string | null
                     artist_otwid: number | null
                     artist_relatedartists: string[] | null
+                    artist_tiktok_username: string | null
+                    artist_tiktok_videoid: number | null
                     artist_totallisteners: number | null
                     artist_totalwatchers: number | null
                     artist_videolink: string | null
@@ -85,6 +87,8 @@ export type Database = {
                     artist_otwcreateddate?: string | null
                     artist_otwid?: number | null
                     artist_relatedartists?: string[] | null
+                    artist_tiktok_username?: string | null
+                    artist_tiktok_videoid?: number | null
                     artist_totallisteners?: number | null
                     artist_totalwatchers?: number | null
                     artist_videolink?: string | null
@@ -101,10 +105,36 @@ export type Database = {
                     artist_otwcreateddate?: string | null
                     artist_otwid?: number | null
                     artist_relatedartists?: string[] | null
+                    artist_tiktok_username?: string | null
+                    artist_tiktok_videoid?: number | null
                     artist_totallisteners?: number | null
                     artist_totalwatchers?: number | null
                     artist_videolink?: string | null
                     UUID?: string
+                }
+                Relationships: []
+            }
+            ticket_entries: {
+                Row: {
+                    created_at: string | null
+                    email: string
+                    id: string
+                    user_id: string | null
+                    username: string | null
+                }
+                Insert: {
+                    created_at?: string | null
+                    email: string
+                    id?: string
+                    user_id?: string | null
+                    username?: string | null
+                }
+                Update: {
+                    created_at?: string | null
+                    email?: string
+                    id?: string
+                    user_id?: string | null
+                    username?: string | null
                 }
                 Relationships: []
             }
@@ -134,7 +164,10 @@ export type Database = {
             [_ in never]: never
         }
         Functions: {
-            [_ in never]: never
+            insert_ticket_entry: {
+                Args: { p_email: string; p_username: string; p_user_id?: string }
+                Returns: Json
+            }
         }
         Enums: {
             [_ in never]: never
