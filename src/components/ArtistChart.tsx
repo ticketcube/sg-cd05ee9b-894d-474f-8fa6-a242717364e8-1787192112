@@ -31,22 +31,13 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
     const ctx = chartRef.current.getContext("2d");
     if (!ctx) return;
 
-    // Get unique genres and sort them alphabetically
-    const uniqueGenres = [...new Set(artists.map(artist => artist.artist_genre).filter(Boolean))].sort();
-    
-    // Create a mapping of genres to y-axis positions
-    const genreToPosition = uniqueGenres.reduce((acc, genre, index) => {
-      acc[genre] = index;
-      return acc;
-    }, {} as Record<string, number>);
-
     const newChart = new Chart(ctx, {
       type: "scatter",
       data: {
         datasets: [{
           data: artists.map(artist => ({
-            x: new Date(artist.artist_otwcreateddate || "").getTime(),
-            y: genreToPosition[artist.artist_genre || ""] ?? 0,
+            x: artist.artist_totallisteners || 0,
+            y: artist.artist_totalwatchers || 0,
             artist: artist
           })),
           backgroundColor: "rgba(255, 255, 255, 0.6)",
@@ -79,42 +70,30 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
         },
         scales: {
           x: {
-            type: 'time',
-            time: {
-              unit: 'year'
-            },
             title: {
               display: true,
-              text: "OTW Created Date",
+              text: "Total Listeners",
               color: "white"
             },
             grid: {
               color: "rgba(255, 255, 255, 0.1)"
             },
             ticks: {
-              color: "white"
+              display: false
             }
           },
           y: {
-            type: 'linear',
             title: {
               display: true,
-              text: "Genres",
+              text: "Total Watchers",
               color: "white"
             },
             grid: {
               color: "rgba(255, 255, 255, 0.1)"
             },
             ticks: {
-              color: "white",
-              callback: function(value) {
-                const index = Math.round(value as number);
-                return uniqueGenres[index] || '';
-              },
-              stepSize: 1
-            },
-            min: -0.5,
-            max: uniqueGenres.length - 0.5
+              display: false
+            }
           }
         }
       }
