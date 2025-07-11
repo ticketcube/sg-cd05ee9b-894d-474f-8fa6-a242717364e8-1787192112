@@ -1,6 +1,6 @@
 
 interface VoteRankingProps {
-   {
+  data: {
     artist_name: string;
     vote_count: number;
   }[];
