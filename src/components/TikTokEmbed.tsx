@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 
 export function TikTokEmbed({
@@ -26,7 +25,11 @@ export function TikTokEmbed({
       className="tiktok-embed"
       cite={tiktokUrl}
       data-video-id={videoId}
-      style={{ maxWidth: "325px", minWidth: "225px" }}
+      data-embed-type="video"
+      data-autoplay="1"
+      data-controls="0"
+      data-branding="0"
+      style={{ maxWidth: "200px", minWidth: "150px" }}
     >
       <section>Loading...</section>
     </blockquote>
