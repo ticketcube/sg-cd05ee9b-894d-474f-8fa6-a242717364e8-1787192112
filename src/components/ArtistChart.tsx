@@ -65,6 +65,14 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: {
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: 20
+          }
+        },
         onClick: (event, elements) => {
           if (elements.length > 0) {
             const element = elements[0];
@@ -87,6 +95,13 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
         },
         scales: {
           x: {
+            type: 'time',
+            time: {
+              unit: 'year',
+              displayFormats: {
+                year: 'yyyy'
+              }
+            },
             title: {
               display: true,
               text: "OTW CLASS OF",
@@ -97,9 +112,13 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
             },
             ticks: {
               display: false
-            }
+            },
+            min: new Date('2020-01-01').getTime(),
+            max: new Date('2025-12-31').getTime()
           },
           y: {
+            min: -1,
+            max: uniqueGenres.length,
             title: {
               display: true,
               text: "GENRE CATEGORY",
