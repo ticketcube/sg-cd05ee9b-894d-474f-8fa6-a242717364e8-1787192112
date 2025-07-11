@@ -38,6 +38,8 @@ export function TikTokEmbed({
         data-autoplay="true"
         data-controls="0"
         data-branding="0"
+        data-playsinline="true"
+        data-stop-on-pause="true"
         style={{ maxWidth: "400px", minWidth: "300px" }}
       >
         <section>Loading...</section>
