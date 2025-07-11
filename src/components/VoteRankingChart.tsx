@@ -66,7 +66,8 @@ export function VoteRankingChart({ voteData }: VoteRankingChartProps) {
             display: false, // Hide the x-axis
             grid: {
               display: false // Hide x-axis grid lines
-            }
+            },
+            max: 150 // Set maximum scale to 150
           },
           y: {
             grid: {
