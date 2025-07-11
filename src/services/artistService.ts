@@ -73,6 +73,37 @@ export const artistService = {
     }
 
     return !!data;
+  },
+
+  async getArtistVoteCounts(): Promise<{ artist_name: string; vote_count: number }[]> {
+    const { data, error } = await supabase
+      .from('top25_votes')
+      .select(`
+        artist_otwid,
+        count(*) as vote_count
+      `)
+      .groupBy('artist_otwid');
+
+    if (error) {
+      console.error("Error fetching vote counts:", error);
+      throw error;
+    }
+
+    // Get all artists to map IDs to names
+    const { data: artists } = await supabase
+      .from('artists')
+      .select('artist_name, artist_otwid');
+
+    if (!artists) return [];
+
+    const artistMap = new Map(artists.map(a => [a.artist_otwid, a.artist_name]));
+
+    return (data || [])
+      .map(vote => ({
+        artist_name: artistMap.get(vote.artist_otwid) || 'Unknown Artist',
+        vote_count: Number(vote.vote_count)
+      }))
+      .sort((a, b) => b.vote_count - a.vote_count);
   }
 };
 
