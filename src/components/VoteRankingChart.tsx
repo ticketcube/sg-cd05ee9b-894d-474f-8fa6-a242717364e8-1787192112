@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from "react";
 import { Chart } from "chart.js/auto";
 
@@ -8,10 +9,9 @@ interface VoteData {
 
 interface VoteRankingChartProps {
   voteData: VoteData[];
-  onArtistClick?: (artistName: string) => void;
 }
 
-export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartProps) {
+export function VoteRankingChart({ voteData }: VoteRankingChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstanceRef = useRef<Chart | null>(null);
 
@@ -52,33 +52,6 @@ export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartPr
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        onClick: (event, elements, chart) => {
-          // First, check if a bar was clicked directly.
-          if (elements.length > 0 && onArtistClick) {
-            const element = elements[0];
-            if (element) {
-              const index = element.index;
-              const artistName = sortedData[index].artist_name;
-              onArtistClick(artistName);
-              return;
-            }
-          }
-
-          // If no bar was clicked, check if the click was on a Y-axis label.
-          const { canvas } = chart;
-          const rect = canvas.getBoundingClientRect();
-          const x = event.x - rect.left;
-          const y = event.y - rect.top;
-          const yAxis = chart.scales.y;
-
-          if (x >= yAxis.left && x <= yAxis.right && y >= yAxis.top && y <= yAxis.bottom) {
-            const index = yAxis.getValueForPixel(y);
-            if (index !== undefined && sortedData[index] && onArtistClick) {
-              const artistName = sortedData[index].artist_name;
-              onArtistClick(artistName);
-            }
-          }
-        },
         plugins: {
           legend: {
             display: false
@@ -118,10 +91,10 @@ export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartPr
     return () => {
       newChart.destroy();
     };
-  }, [voteData, onArtistClick]);
+  }, [voteData]);
 
   return (
-    <div className="w-full h-[calc(100vh-100px)] bg-black p-4 rounded-lg"> {/* Increased height */}
+    <div className="w-full h-[calc(100vh-100px)] bg-black p-4 rounded-lg">
       <canvas ref={chartRef} />
     </div>
   );
