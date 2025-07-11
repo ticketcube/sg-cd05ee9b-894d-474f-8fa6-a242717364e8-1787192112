@@ -93,7 +93,7 @@ export function VoteRankingChart({ voteData }: VoteRankingChartProps) {
   }, [voteData]);
 
   return (
-    <div className="w-full bg-black p-4 rounded-lg" style={{ height: `${Math.max(600, sortedData.length * 40)}px` }}>
+    <div className="w-full bg-black p-4 rounded-lg" style={{ height: `${Math.max(600, voteData.length * 40)}px` }}>
       <canvas ref={chartRef} />
     </div>
   );
