@@ -24,9 +24,9 @@ export function TikTokEmbed({
     <div 
       className="overflow-hidden rounded-lg"
       style={{ 
-        maxWidth: "325px", 
-        minWidth: "225px",
-        height: "400px"
+        maxWidth: "400px", 
+        minWidth: "300px",
+        height: "500px"
       }}
     >
       <blockquote
@@ -34,10 +34,10 @@ export function TikTokEmbed({
         cite={tiktokUrl}
         data-video-id={videoId}
         data-embed-type="video"
-        data-autoplay="1"
+        data-autoplay="true"
         data-controls="0"
         data-branding="0"
-        style={{ maxWidth: "325px", minWidth: "225px" }}
+        style={{ maxWidth: "400px", minWidth: "300px" }}
       >
         <section>Loading...</section>
       </blockquote>
