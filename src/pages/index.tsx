@@ -219,6 +219,15 @@ export default function HomePage() {
 
       <ArtistChart artists={artists} onVote={handleVote} selectedArtists={selectedArtists} />
 
+      <div className="mt-4 flex justify-center">
+        <Button
+          className="bg-white text-black hover:bg-gray-100 px-8 py-3 text-lg font-semibold"
+          onClick={() => window.location.href = '/rankings'}
+        >
+          VIEW VOTE TOTALS
+        </Button>
+      </div>
+
       {/* Username Dialog */}
       <Dialog open={isUsernameDialogOpen} onOpenChange={setIsUsernameDialogOpen}>
         <DialogContent>
