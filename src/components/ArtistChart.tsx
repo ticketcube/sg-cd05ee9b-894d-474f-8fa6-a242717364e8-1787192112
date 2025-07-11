@@ -10,14 +10,6 @@ import {
 import { cn } from "@/lib/utils";
 import { TikTokEmbed } from "@/components/TikTokEmbed";
 
-Chart.register(...registerables);
-
-interface ChartDataPoint {
-  x: number;
-  y: number;
-  artist: Artist;
-}
-
 interface ArtistChartProps {
   artists: Artist[];
   onVote: (artist: Artist) => void;
@@ -39,16 +31,13 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
     const ctx = chartRef.current.getContext("2d");
     if (!ctx) return;
 
-    // Get unique genres and sort them alphabetically
-    const uniqueGenres = [...new Set(artists.map(artist => artist.artist_genre).filter(Boolean))].sort();
-
     const newChart = new Chart(ctx, {
       type: "scatter",
       data: {
         datasets: [{
           data: artists.map(artist => ({
-            x: new Date(artist.artist_otwcreateddate || "").getTime(),
-            y: uniqueGenres.indexOf(artist.artist_genre || ""),
+            x: artist.artist_totallisteners || 0,
+            y: artist.artist_totalwatchers || 0,
             artist: artist
           })),
           backgroundColor: "rgba(255, 255, 255, 0.6)",
@@ -64,7 +53,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
             const element = elements[0];
             const datasetIndex = element.datasetIndex;
             const index = element.index;
-            const rawData = newChart.data.datasets[datasetIndex].data[index] as ChartDataPoint;
+            const rawData = newChart.data.datasets[datasetIndex].data[index] as { artist: Artist };
             const artist = rawData?.artist;
             if (artist) {
               setSelectedArtist(artist);
@@ -81,42 +70,30 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
         },
         scales: {
           x: {
-            type: 'time',
-            time: {
-              unit: 'year'
-            },
             title: {
               display: true,
-              text: "OTW CLASS OF",
+              text: "Total Listeners",
               color: "white"
             },
             grid: {
               color: "rgba(255, 255, 255, 0.1)"
             },
             ticks: {
-              color: "white"
+              display: false
             }
           },
           y: {
-            type: 'linear',
             title: {
               display: true,
-              text: "GENRE",
+              text: "Total Watchers",
               color: "white"
             },
             grid: {
               color: "rgba(255, 255, 255, 0.1)"
             },
             ticks: {
-              color: "white",
-              callback: function(value) {
-                const index = Math.round(value as number);
-                return uniqueGenres[index] || '';
-              },
-              stepSize: 1
-            },
-            min: -0.5,
-            max: uniqueGenres.length - 0.5
+              display: false
+            }
           }
         }
       }

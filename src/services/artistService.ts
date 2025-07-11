@@ -32,10 +32,10 @@ export const artistService = {
     }
     
     if (params?.genres && params.genres.length > 0) {
-      // Use ilike for partial matching since genres might be comma-separated or have different formatting
+      // Since genre is now a text field, we'll use ilike for partial matching
       const genreConditions = params.genres.map(genre => 
         `artist_genre.ilike.%${genre}%`
-      ).join(',');
+      ).join(",");
       query = query.or(genreConditions);
     }
     
