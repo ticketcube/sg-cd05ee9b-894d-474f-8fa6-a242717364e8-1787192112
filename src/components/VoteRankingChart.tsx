@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from "react";
 import { Chart } from "chart.js/auto";
 
@@ -8,10 +9,9 @@ interface VoteData {
 
 interface VoteRankingChartProps {
   voteData: VoteData[];
-  onArtistClick?: (artistName: string) => void;
 }
 
-export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartProps) {
+export function VoteRankingChart({ voteData }: VoteRankingChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstanceRef = useRef<Chart | null>(null);
 
@@ -44,20 +44,14 @@ export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartPr
           data: sortedData.map(item => item.vote_count),
           backgroundColor: colors,
           borderColor: colors.map(color => color.replace("0.8", "1")),
-          borderWidth: 1
+          borderWidth: 1,
+          barThickness: 25
         }]
       },
       options: {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        onClick: (event, elements) => {
-          if (elements.length > 0 && onArtistClick) {
-            const index = elements[0].index;
-            const artistName = sortedData[index].artist_name;
-            onArtistClick(artistName);
-          }
-        },
         plugins: {
           legend: {
             display: false
@@ -70,23 +64,22 @@ export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartPr
         },
         scales: {
           x: {
-            beginAtZero: true,
+            display: false, // Hide the x-axis
             grid: {
-              color: "rgba(255, 255, 255, 0.1)"
-            },
-            ticks: {
-              color: "white"
+              display: false // Hide x-axis grid lines
             }
           },
           y: {
             grid: {
-              color: "rgba(255, 255, 255, 0.1)"
+              display: false // Hide y-axis grid lines
             },
             ticks: {
               color: "white",
               font: {
-                size: 12
-              }
+                size: 16, // Increased font size
+                weight: 'bold' // Make text bold
+              },
+              padding: 20 // Add more padding between text and bars
             }
           }
         }
@@ -98,10 +91,10 @@ export function VoteRankingChart({ voteData, onArtistClick }: VoteRankingChartPr
     return () => {
       newChart.destroy();
     };
-  }, [voteData, onArtistClick]);
+  }, [voteData]);
 
   return (
-    <div className="w-full h-[calc(100vh-200px)] bg-black p-4 rounded-lg">
+    <div className="w-full h-[calc(100vh-100px)] bg-black p-4 rounded-lg">
       <canvas ref={chartRef} />
     </div>
   );

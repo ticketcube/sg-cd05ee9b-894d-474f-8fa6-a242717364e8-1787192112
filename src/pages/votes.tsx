@@ -1,16 +1,22 @@
+
 import { useEffect, useState } from "react";
 import { artistService } from "@/services/artistService";
 import { VoteRankingChart } from "@/components/VoteRankingChart";
 
-export default function RankingsPage() {
-  const [voteData, setVoteData] = useState<{ artist_name: string; vote_count: number }[]>([]);
+interface VoteData {
+  artist_name: string;
+  vote_count: number;
+}
+
+export default function VotesPage() {
+  const [voteData, setVoteData] = useState<VoteData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadVoteData = async () => {
+    const loadData = async () => {
       try {
-        const data = await artistService.getArtistVoteCounts();
-        setVoteData(data);
+        const voteCounts = await artistService.getArtistVoteCounts();
+        setVoteData(voteCounts);
       } catch (error) {
         console.error("Error loading vote data:", error);
       } finally {
@@ -18,24 +24,21 @@ export default function RankingsPage() {
       }
     };
 
-    loadVoteData();
+    loadData();
   }, []);
 
-  const handleArtistClick = (artist: { artist_name: string; vote_count: number }) => {
-    console.log("Artist clicked:", artist);
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-xl">Loading vote totals...</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-black p-8">
-      <h1 className="text-3xl font-bold text-white mb-8 text-center">Artist Vote Rankings</h1>
-      {loading ? (
-        <div className="text-white text-center">Loading rankings...</div>
-      ) : (
-        <VoteRankingChart 
-          voteData={voteData} 
-          onArtistClick={handleArtistClick}
-        />
-      )}
+    <div className="min-h-screen bg-black text-white p-4">
+      <h1 className="text-3xl font-bold mb-6 text-center text-blue-500">Vote Totals</h1>
+      <VoteRankingChart voteData={voteData} />
     </div>
   );
 }
