@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Artist {
@@ -82,7 +81,7 @@ export const artistService = {
 
   async getArtistVoteCounts(): Promise<{ artist_name: string; vote_count: number }[]> {
     // 1. Fetch all artists
-    const {  artists, error: artistError } = await supabase
+    const { data: artists, error: artistError } = await supabase
       .from('artists')
       .select('UUID, artist_name');
 
@@ -92,7 +91,7 @@ export const artistService = {
     }
 
     // 2. Fetch all votes
-    const {  votes, error: voteError } = await supabase
+    const { data: votes, error: voteError } = await supabase
       .from('top25_votes')
       .select('artist_uuid');
 
