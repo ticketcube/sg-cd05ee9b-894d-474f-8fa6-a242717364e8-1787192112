@@ -72,7 +72,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
           x: {
             title: {
               display: true,
-              text: "Total Listeners",
+              text: "OTW CLASS OF",
               color: "white"
             },
             grid: {
@@ -85,7 +85,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
           y: {
             title: {
               display: true,
-              text: "Total Watchers",
+              text: "GENRE CATEGORY",
               color: "white"
             },
             grid: {
