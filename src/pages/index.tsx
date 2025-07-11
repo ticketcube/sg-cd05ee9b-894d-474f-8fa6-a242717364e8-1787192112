@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import { Artist, artistService } from '@/services/artistService';
 import { votingService } from '@/services/votingService';
 import { ArtistChart } from '@/components/ArtistChart';
@@ -10,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 type VotingState = 'initial' | 'voting' | 'submitted';
 
 export default function HomePage() {
+  const router = useRouter();
   const [artists, setArtists] = useState<Artist[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
@@ -22,6 +24,16 @@ export default function HomePage() {
   const [uniqueCategories, setUniqueCategories] = useState<string[]>([]);
   const [uniqueGenres, setUniqueGenres] = useState<string[]>([]);
   const [votingState, setVotingState] = useState<VotingState>('initial');
+
+  // Check for URL parameters when router is ready
+  useEffect(() => {
+    if (router.isReady) {
+      const { genres } = router.query;
+      if (genres && typeof genres === 'string') {
+        setSelectedGenres([genres]);
+      }
+    }
+  }, [router.isReady, router.query]);
 
   const loadArtists = useCallback(async () => {
     const data = await artistService.getArtists({
