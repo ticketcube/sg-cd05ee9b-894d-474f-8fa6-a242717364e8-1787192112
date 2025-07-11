@@ -138,6 +138,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
               {selectedArtist?.artist_tiktok_username && selectedArtist?.artist_tiktok_videoid && (
                 <div className="w-full flex justify-center">
                   <TikTokEmbed 
+                    username={selectedArtist.artist_tiktok_username}
                     videoId={selectedArtist.artist_tiktok_videoid}
                   />
                 </div>
