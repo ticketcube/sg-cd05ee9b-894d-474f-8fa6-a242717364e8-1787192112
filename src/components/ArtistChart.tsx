@@ -20,6 +20,19 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
   const chartInstanceRef = useRef<Chart | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
 
+  // Add TikTok embed script when an artist is selected
+  useEffect(() => {
+    if (selectedArtist?.artist_videolink) {
+      const script = document.createElement('script');
+      script.src = 'https://www.tiktok.com/embed.js';
+      script.async = true;
+      document.body.appendChild(script);
+      return () => {
+        document.body.removeChild(script);
+      };
+    }
+  }, [selectedArtist]);
+
   useEffect(() => {
     if (!chartRef.current) return;
 
@@ -106,8 +119,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
   }, [artists]);
 
   return (
-    <div 
-      className="w-full h-[calc(100vh-280px)] bg-black p-4 rounded-lg relative"
+    <div className="w-full h-[calc(100vh-280px)] bg-black p-4 rounded-lg relative"
       style={{
         backgroundImage: "url(/OTWLogocolor.png)",
         backgroundSize: "contain",
@@ -128,44 +140,48 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
       />
       
       <Dialog open={!!selectedArtist} onOpenChange={() => setSelectedArtist(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>{selectedArtist?.artist_name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p>OnesToWatch Class of: {new Date(selectedArtist?.artist_otwcreateddate || "").getFullYear()}</p>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-4">
               {selectedArtist?.artist_videolink && (
-                <a
-                  href={selectedArtist.artist_videolink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                >
-                  WATCH
-                </a>
+                <div className="w-full flex justify-center">
+                  <blockquote 
+                    className="tiktok-embed" 
+                    cite={`https://www.tiktok.com/@rolemodel/video/${selectedArtist.artist_videolink}`}
+                    data-video-id={selectedArtist.artist_videolink}
+                    style={{ maxWidth: '325px', minWidth: '325px' }}
+                  >
+                    <section>Loading TikTok...</section>
+                  </blockquote>
+                </div>
               )}
-              {selectedArtist?.artist_audiolink && (
-                <a
-                  href={selectedArtist.artist_audiolink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                >
-                  LISTEN
-                </a>
-              )}
-              <button
-                onClick={() => selectedArtist && onVote(selectedArtist)}
-                className={cn(
-                  "text-white px-4 py-2 rounded",
-                  selectedArtists.includes(selectedArtist?.artist_otwid || 0) 
-                    ? "bg-green-500 hover:bg-green-600" 
-                    : "bg-purple-500 hover:bg-purple-600"
+              <div className="flex gap-2">
+                {selectedArtist?.artist_audiolink && (
+                  <a
+                    href={selectedArtist.artist_audiolink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                  >
+                    LISTEN
+                  </a>
                 )}
-              >
-                {selectedArtists.includes(selectedArtist?.artist_otwid || 0) ? "VOTED" : "TOP 25 VOTE"}
-              </button>
+                <button
+                  onClick={() => selectedArtist && onVote(selectedArtist)}
+                  className={cn(
+                    "text-white px-4 py-2 rounded",
+                    selectedArtists.includes(selectedArtist?.artist_otwid || 0) 
+                      ? "bg-green-500 hover:bg-green-600" 
+                      : "bg-purple-500 hover:bg-purple-600"
+                  )}
+                >
+                  {selectedArtists.includes(selectedArtist?.artist_otwid || 0) ? "VOTED" : "TOP 25 VOTE"}
+                </button>
+              </div>
             </div>
           </div>
         </DialogContent>
