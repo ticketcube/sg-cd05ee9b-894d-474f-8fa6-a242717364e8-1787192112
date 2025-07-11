@@ -222,7 +222,7 @@ export default function HomePage() {
       <div className="mt-4 flex justify-center">
         <Button
           className="bg-white text-black hover:bg-gray-100 px-8 py-3 text-lg font-semibold"
-          onClick={() => window.location.href = '/votes'}
+          onClick={() => window.location.href = '/rankings'}
         >
           VIEW VOTE TOTALS
         </Button>
