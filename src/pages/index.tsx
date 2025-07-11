@@ -52,7 +52,7 @@ export default function HomePage() {
   }, [loadArtists]);
 
   const handleVote = (artist: Artist) => {
-    if (!username) {
+    if (votingState !== 'voting') {
       setIsUsernameDialogOpen(true);
       return;
     }
