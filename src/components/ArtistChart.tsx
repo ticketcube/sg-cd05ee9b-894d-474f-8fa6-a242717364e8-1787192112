@@ -151,7 +151,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
                 <div className="w-full flex justify-center">
                   <blockquote 
                     className="tiktok-embed" 
-                    cite={`https://www.tiktok.com/@rolemodel/video/${selectedArtist.artist_videolink}`}
+                    cite={`https://www.tiktok.com/${selectedArtist.artist_videolink}`}
                     data-video-id={selectedArtist.artist_videolink}
                     style={{ maxWidth: '325px', minWidth: '325px' }}
                   >
