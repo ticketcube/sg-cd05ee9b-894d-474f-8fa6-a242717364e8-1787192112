@@ -115,6 +115,34 @@ export const artistService = {
       artist_name: artist.artist_name,
       vote_count: voteCountMap.get(artist.UUID) || 0
     }));
+  },
+
+  async getGenreCounts(): Promise<{ genre: string; count: number }[]> {
+    const { data: artists, error } = await supabase
+      .from('artists')
+      .select('artist_genre');
+
+    if (error) {
+      console.error("Error fetching artists for genre counts:", error);
+      throw error;
+    }
+
+    // Count genres
+    const genreCountMap = new Map<string, number>();
+    
+    if (artists) {
+      for (const artist of artists) {
+        if (artist.artist_genre && artist.artist_genre.trim()) {
+          const genre = artist.artist_genre.trim();
+          genreCountMap.set(genre, (genreCountMap.get(genre) || 0) + 1);
+        }
+      }
+    }
+
+    // Convert to array and sort by count (descending)
+    return Array.from(genreCountMap.entries())
+      .map(([genre, count]) => ({ genre, count }))
+      .sort((a, b) => b.count - a.count);
   }
 };
 
