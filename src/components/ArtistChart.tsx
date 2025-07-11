@@ -31,32 +31,15 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
     const ctx = chartRef.current.getContext("2d");
     if (!ctx) return;
 
-    // Get unique genres and sort them alphabetically
-    const uniqueGenres = [...new Set(artists.map(artist => artist.artist_genre).filter(Boolean))].sort();
-
-    // Log data for debugging
-    console.log('Total artists:', artists.length);
-    console.log('Artists with no genre:', artists.filter(a => !a.artist_genre).length);
-    console.log('Artists with no date:', artists.filter(a => !a.artist_otwcreateddate).length);
-
-    // Add small random offset to y-values for same genre/date combinations
-    const dataPoints = artists.map(artist => {
-      const baseY = uniqueGenres.indexOf(artist.artist_genre || "");
-      const jitter = Math.random() * 0.4 - 0.2; // Random value between -0.2 and 0.2
-      return {
-        x: new Date(artist.artist_otwcreateddate || "").getTime(),
-        y: baseY + jitter,
-        artist: artist
-      };
-    });
-
-    console.log('Data points created:', dataPoints.length);
-
     const newChart = new Chart(ctx, {
       type: "scatter",
       data: {
         datasets: [{
-          data: dataPoints,
+          data: artists.map(artist => ({
+            x: artist.artist_totallisteners || 0,
+            y: artist.artist_totalwatchers || 0,
+            artist: artist
+          })),
           backgroundColor: "rgba(255, 255, 255, 0.6)",
           pointRadius: 6,
           pointHoverRadius: 8,
@@ -65,14 +48,6 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        layout: {
-          padding: {
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: 20
-          }
-        },
         onClick: (event, elements) => {
           if (elements.length > 0) {
             const element = elements[0];
@@ -95,16 +70,9 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
         },
         scales: {
           x: {
-            type: 'time',
-            time: {
-              unit: 'year',
-              displayFormats: {
-                year: 'yyyy'
-              }
-            },
             title: {
               display: true,
-              text: "OTW CLASS OF",
+              text: "Total Listeners",
               color: "white"
             },
             grid: {
@@ -112,16 +80,12 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
             },
             ticks: {
               display: false
-            },
-            min: new Date('2020-01-01').getTime(),
-            max: new Date('2025-12-31').getTime()
+            }
           },
           y: {
-            min: -1,
-            max: uniqueGenres.length,
             title: {
               display: true,
-              text: "GENRE CATEGORY",
+              text: "Total Watchers",
               color: "white"
             },
             grid: {
