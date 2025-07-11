@@ -14,19 +14,19 @@ export interface VoteSubmission {
 }
 
 export const votingService = {
-  async submitVotes(username: string, artistIds: number[]) {
-    const votes = artistIds.map(artistId => ({
-      username,
-      artist_otwid: artistId
-    }));
-
-    const { data, error } = await supabase
-      .from('top25_votes')
-      .insert(votes)
-      .select();
-
-    if (error) throw error;
-    return data;
+  async submitVotes(votes: { username: string; artist_uuid: string; artist_otwid: number | null }[]): Promise<void> {
+    const { error } = await supabase
+      .from("top25_votes")
+      .insert(votes.map(vote => ({
+        username: vote.username,
+        artist_uuid: vote.artist_uuid,
+        artist_otwid: vote.artist_otwid,
+      })));
+    
+    if (error) {
+      console.error("Error submitting votes:", error);
+      throw error;
+    }
   },
 
   async getUserVotes(username: string) {
