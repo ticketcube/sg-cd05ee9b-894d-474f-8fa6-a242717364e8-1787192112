@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { Chart } from "chart.js/auto";
 
@@ -94,7 +93,7 @@ export function VoteRankingChart({ voteData }: VoteRankingChartProps) {
   }, [voteData]);
 
   return (
-    <div className="w-full h-[calc(100vh-100px)] bg-black p-4 rounded-lg">
+    <div className="w-full bg-black p-4 rounded-lg" style={{ height: `${Math.max(600, sortedData.length * 40)}px` }}>
       <canvas ref={chartRef} />
     </div>
   );
