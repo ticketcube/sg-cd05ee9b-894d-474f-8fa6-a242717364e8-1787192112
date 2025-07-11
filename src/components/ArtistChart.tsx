@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { TikTokEmbed } from "@/components/TikTokEmbed";
 
 interface ArtistChartProps {
   artists: Artist[];
@@ -149,16 +150,12 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
           <div className="space-y-4">
             <p>OnesToWatch Class of: {new Date(selectedArtist?.artist_otwcreateddate || "").getFullYear()}</p>
             <div className="flex flex-col gap-4">
-              {selectedArtist?.artist_videolink && (
+              {selectedArtist?.artist_tiktok_username && selectedArtist?.artist_tiktok_videoid && (
                 <div className="w-full flex justify-center">
-                  <blockquote 
-                    className="tiktok-embed" 
-                    cite={selectedArtist.artist_videolink}
-                    data-video-id={extractVideoId(selectedArtist.artist_videolink)}
-                    style={{ maxWidth: '325px', minWidth: '325px' }}
-                  >
-                    <section>Loading TikTok...</section>
-                  </blockquote>
+                  <TikTokEmbed 
+                    username={selectedArtist.artist_tiktok_username}
+                    videoId={selectedArtist.artist_tiktok_videoid}
+                  />
                 </div>
               )}
               <div className="flex gap-2">
