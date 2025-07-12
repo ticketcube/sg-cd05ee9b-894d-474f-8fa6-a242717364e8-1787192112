@@ -80,8 +80,7 @@ export function VoteRankingChart({ voteData }: VoteRankingChartProps) {
                 weight: 'bold' // Make text bold
               },
               padding: 20, // Add more padding between text and bars
-              align: 'start', // This will align the text to the left
-              textAlign: 'left' // Additional alignment property
+              align: 'start' // This will align the text to the left
             }
           }
         }
