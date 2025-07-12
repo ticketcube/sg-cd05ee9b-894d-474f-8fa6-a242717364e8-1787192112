@@ -79,7 +79,9 @@ export function VoteRankingChart({ voteData }: VoteRankingChartProps) {
                 size: 16, // Increased font size
                 weight: 'bold' // Make text bold
               },
-              padding: 20 // Add more padding between text and bars
+              padding: 20, // Add more padding between text and bars
+              align: 'start', // This will align the text to the left
+              textAlign: 'left' // Additional alignment property
             }
           }
         }
