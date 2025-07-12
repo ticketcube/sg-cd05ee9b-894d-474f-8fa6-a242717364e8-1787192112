@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { Chart } from "chart.js/auto";
 import { Artist } from "@/services/artistService";
@@ -20,6 +21,8 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstanceRef = useRef<Chart | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [showVideo, setShowVideo] = useState(false);
+  const videoTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -106,6 +109,24 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
     };
   }, [artists]);
 
+  const handleShowVideo = () => {
+    setShowVideo(true);
+    if (videoTimeoutRef.current) {
+      clearTimeout(videoTimeoutRef.current);
+    }
+    videoTimeoutRef.current = setTimeout(() => {
+      setShowVideo(false);
+    }, 15000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (videoTimeoutRef.current) {
+        clearTimeout(videoTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="w-full h-[calc(100vh-280px)] bg-black p-4 rounded-lg relative"
       style={{
@@ -135,14 +156,6 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
           <div className="space-y-4">
             <p>OnesToWatch Class of: {new Date(selectedArtist?.artist_otwcreateddate || "").getFullYear()}</p>
             <div className="flex flex-col gap-4">
-              {selectedArtist?.artist_tiktok_username && selectedArtist?.artist_tiktok_videoid && (
-                <div className="w-full flex justify-center">
-                  <TikTokEmbed 
-                    username={selectedArtist.artist_tiktok_username}
-                    videoId={selectedArtist.artist_tiktok_videoid}
-                  />
-                </div>
-              )}
               <div className="flex gap-2">
                 {selectedArtist?.artist_audiolink && (
                   <a
@@ -153,6 +166,14 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
                   >
                     LISTEN
                   </a>
+                )}
+                {selectedArtist?.artist_tiktok_username && selectedArtist?.artist_tiktok_videoid && (
+                  <button
+                    onClick={handleShowVideo}
+                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  >
+                    WATCH
+                  </button>
                 )}
                 <button
                   onClick={() => selectedArtist && onVote(selectedArtist)}
@@ -168,6 +189,22 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showVideo} onOpenChange={setShowVideo}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>{selectedArtist?.artist_name} - Video</DialogTitle>
+          </DialogHeader>
+          {selectedArtist?.artist_tiktok_username && selectedArtist?.artist_tiktok_videoid && (
+            <div className="w-full flex justify-center">
+              <TikTokEmbed 
+                username={selectedArtist.artist_tiktok_username}
+                videoId={selectedArtist.artist_tiktok_videoid}
+              />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
