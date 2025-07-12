@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Chart } from "chart.js/auto";
 import { Artist } from "@/services/artistService";
@@ -149,7 +148,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
       />
       
       <Dialog open={!!selectedArtist} onOpenChange={() => setSelectedArtist(null)}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>{selectedArtist?.artist_name}</DialogTitle>
           </DialogHeader>
@@ -193,7 +192,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
       </Dialog>
 
       <Dialog open={showVideo} onOpenChange={setShowVideo}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>{selectedArtist?.artist_name} - Video</DialogTitle>
           </DialogHeader>
