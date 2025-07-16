@@ -67,14 +67,14 @@ export type Database = {
           artist_name: string
           artist_otwcategory: string | null
           artist_otwcreateddate: string | null
-          artist_otwid: number | null
+          artist_otwid: string | null
           artist_relatedartists: string[] | null
           artist_tiktok_username: string | null
           artist_tiktok_videoid: string | null
           artist_totallisteners: number | null
           artist_totalwatchers: number | null
           artist_videolink: string | null
-          Top_List: number | null
+          Top_List: string | null
           UUID: string
         }
         Insert: {
@@ -86,14 +86,14 @@ export type Database = {
           artist_name: string
           artist_otwcategory?: string | null
           artist_otwcreateddate?: string | null
-          artist_otwid?: number | null
+          artist_otwid?: string | null
           artist_relatedartists?: string[] | null
           artist_tiktok_username?: string | null
           artist_tiktok_videoid?: string | null
           artist_totallisteners?: number | null
           artist_totalwatchers?: number | null
           artist_videolink?: string | null
-          Top_List?: number | null
+          Top_List?: string | null
           UUID?: string
         }
         Update: {
@@ -105,14 +105,14 @@ export type Database = {
           artist_name?: string
           artist_otwcategory?: string | null
           artist_otwcreateddate?: string | null
-          artist_otwid?: number | null
+          artist_otwid?: string | null
           artist_relatedartists?: string[] | null
           artist_tiktok_username?: string | null
           artist_tiktok_videoid?: string | null
           artist_totallisteners?: number | null
           artist_totalwatchers?: number | null
           artist_videolink?: string | null
-          Top_List?: number | null
+          Top_List?: string | null
           UUID?: string
         }
         Relationships: []
