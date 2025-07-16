@@ -31,7 +31,10 @@ export function Top100ArtistPopup({
   const [imgSrc, setImgSrc] = useState("/otwcolor-md6dlfkk.png");
 
   useEffect(() => {
-    if (artist?.artist_image && artist.artist_image.trim() !== '') {
+    // Check for null, empty string, or the literal string "null"
+    if (artist?.artist_image && 
+        artist.artist_image.trim() !== '' && 
+        artist.artist_image.toLowerCase() !== 'null') {
       setImgSrc(artist.artist_image);
     } else {
       setImgSrc("/otwcolor-md6dlfkk.png");
