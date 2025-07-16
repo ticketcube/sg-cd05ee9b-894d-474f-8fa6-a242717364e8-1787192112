@@ -16,6 +16,7 @@ export interface Artist {
   artist_otwid?: number | null;
   artist_tiktok_username?: string | null;
   artist_tiktok_videoid?: string | null;
+  Top_List?: string | null;
 }
 
 interface GetArtistsParams {
@@ -143,6 +144,53 @@ export const artistService = {
     return Array.from(genreCountMap.entries())
       .map(([genre, count]) => ({ genre, count }))
       .sort((a, b) => b.count - a.count);
+  },
+
+  async getTop100Artists(): Promise<(Artist & { vote_count: number })[]> {
+    // 1. Fetch artists with Top_List = "100"
+    const { data: artists, error: artistError } = await supabase
+      .from('artists')
+      .select('*')
+      .eq('Top_List', '100');
+
+    if (artistError) {
+      console.error("Error fetching Top 100 artists:", artistError);
+      throw artistError;
+    }
+
+    // 2. Fetch all votes
+    const { data: votes, error: voteError } = await supabase
+      .from('top25_votes')
+      .select('artist_uuid');
+
+    if (voteError) {
+      console.error("Error fetching votes:", voteError);
+      throw voteError;
+    }
+
+    // 3. Create a map of artist_uuid to vote count
+    const voteCountMap = new Map<string, number>();
+    if (votes) {
+      for (const vote of votes) {
+        if (vote.artist_uuid) {
+          voteCountMap.set(vote.artist_uuid, (voteCountMap.get(vote.artist_uuid) || 0) + 1);
+        }
+      }
+    }
+
+    // 4. Combine artists with vote counts and sort
+    const artistsWithVotes = (artists || []).map(artist => ({
+      ...artist,
+      vote_count: voteCountMap.get(artist.UUID) || 0
+    }));
+
+    // 5. Sort by vote count (descending), then alphabetically by name
+    return artistsWithVotes.sort((a, b) => {
+      if (a.vote_count !== b.vote_count) {
+        return b.vote_count - a.vote_count;
+      }
+      return a.artist_name.localeCompare(b.artist_name);
+    });
   }
 };
 
