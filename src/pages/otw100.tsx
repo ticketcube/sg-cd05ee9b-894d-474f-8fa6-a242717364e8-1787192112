@@ -1,16 +1,20 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
-import Top100ArtistPopup from "@/components/Top100ArtistPopup";
+import { Top100ArtistPopup } from "@/components/Top100ArtistPopup";
 
 type Artist = Database["public"]["Tables"]["artists"]["Row"];
 
+type ArtistWithVotes = Artist & {
+  votes: { count: number }[];
+};
+
 export default function OTW100Page() {
-  const [artists, setArtists] = useState<Artist[]>([]);
+  const [artists, setArtists] = useState<ArtistWithVotes[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
-  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [selectedArtist, setSelectedArtist] = useState<ArtistWithVotes | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [page, setPage] = useState(0);
   const ITEMS_PER_PAGE = 20;
@@ -19,8 +23,7 @@ export default function OTW100Page() {
     try {
       setLoading(true);
       
-      // Get artists with top_list = 100, ordered by vote count (desc) then alphabetically
-      const { data: artistsData, error } = await supabase
+      const {  artistsData, error } = await supabase
         .from("artists")
         .select(`
           *,
@@ -35,16 +38,16 @@ export default function OTW100Page() {
       }
 
       if (artistsData) {
-        // Sort by vote count (descending) then alphabetically
-        const sortedArtists = artistsData.sort((a, b) => {
-          const aVotes = Array.isArray(a.votes) ? a.votes.length : (a.votes as any)?.count || 0;
-          const bVotes = Array.isArray(b.votes) ? b.votes.length : (b.votes as any)?.count || 0;
+        const typedArtistsData = artistsData as ArtistWithVotes[];
+
+        const sortedArtists = [...typedArtistsData].sort((a, b) => {
+          const aVotes = a.votes[0]?.count || 0;
+          const bVotes = b.votes[0]?.count || 0;
           
           if (aVotes !== bVotes) {
-            return bVotes - aVotes; // Higher votes first
+            return bVotes - aVotes;
           }
           
-          // If votes are equal, sort alphabetically
           return (a.artist_name || "").localeCompare(b.artist_name || "");
         });
 
@@ -75,7 +78,6 @@ export default function OTW100Page() {
     loadArtists(0, true);
   }, [loadArtists]);
 
-  // Infinite scroll
   useEffect(() => {
     const handleScroll = () => {
       if (
@@ -90,7 +92,7 @@ export default function OTW100Page() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [loadMoreArtists]);
 
-  const handleArtistClick = (artist: Artist) => {
+  const handleArtistClick = (artist: ArtistWithVotes) => {
     setSelectedArtist(artist);
     setShowPopup(true);
   };
@@ -127,9 +129,7 @@ export default function OTW100Page() {
                   {artist.artist_name}
                 </h3>
                 <div className="text-sm text-gray-400">
-                  {Array.isArray(artist.votes) 
-                    ? artist.votes.length 
-                    : (artist.votes as any)?.count || 0} votes
+                  {artist.votes[0]?.count || 0} votes
                 </div>
               </div>
             </div>
