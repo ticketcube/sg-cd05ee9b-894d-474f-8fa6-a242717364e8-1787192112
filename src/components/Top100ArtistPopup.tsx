@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Artist } from "@/services/artistService";
@@ -32,22 +31,24 @@ export function Top100ArtistPopup({
   const [imgSrc, setImgSrc] = useState("/otwcolor-md6dlfkk.png");
 
   useEffect(() => {
-    if (artist?.artist_image) {
+    if (artist?.artist_image && artist.artist_image.trim() !== '') {
       setImgSrc(artist.artist_image);
     } else {
       setImgSrc("/otwcolor-md6dlfkk.png");
     }
   }, [artist]);
 
-
   const handleShowVideo = () => {
-    setShowVideo(true);
-    if (videoTimeoutRef.current) {
-      clearTimeout(videoTimeoutRef.current);
+    // Only show video if artist has video data
+    if (artist?.artist_tiktok_username && artist?.artist_tiktok_videoid) {
+      setShowVideo(true);
+      if (videoTimeoutRef.current) {
+        clearTimeout(videoTimeoutRef.current);
+      }
+      videoTimeoutRef.current = setTimeout(() => {
+        setShowVideo(false);
+      }, 15000);
     }
-    videoTimeoutRef.current = setTimeout(() => {
-      setShowVideo(false);
-    }, 15000);
   };
 
   useEffect(() => {
@@ -86,22 +87,26 @@ export function Top100ArtistPopup({
                   {selectedArtists.includes(artist.UUID) ? "VOTED" : "TOP 25 VOTE"}
                 </button>
 
-                {hasVideo && (
-                  <div className="flex flex-col items-center">
-                    <Image
-                      src={imgSrc}
-                      alt={artist.artist_name}
-                      width={64}
-                      height={64}
-                      className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={handleShowVideo}
-                      onError={() => {
-                        setImgSrc("/otwcolor-md6dlfkk.png");
-                      }}
-                    />
-                    <span className="text-xs text-gray-500 mt-1 text-center">Click To Watch</span>
-                  </div>
-                )}
+                {/* Always show image - either artist image or fallback logo */}
+                <div className="flex flex-col items-center">
+                  <Image
+                    src={imgSrc}
+                    alt={artist.artist_name}
+                    width={64}
+                    height={64}
+                    className={cn(
+                      "w-16 h-16 object-cover rounded transition-opacity",
+                      hasVideo ? "cursor-pointer hover:opacity-80" : "opacity-75"
+                    )}
+                    onClick={hasVideo ? handleShowVideo : undefined}
+                    onError={() => {
+                      setImgSrc("/otwcolor-md6dlfkk.png");
+                    }}
+                  />
+                  <span className="text-xs text-gray-500 mt-1 text-center">
+                    {hasVideo ? "Click To Watch" : "No Video"}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
