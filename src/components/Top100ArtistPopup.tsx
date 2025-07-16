@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { Artist } from "@/services/artistService";
 import {
   Dialog,
@@ -27,6 +28,17 @@ export function Top100ArtistPopup({
 }: Top100ArtistPopupProps) {
   const [showVideo, setShowVideo] = useState(false);
   const videoTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  const [imgSrc, setImgSrc] = useState("/otwcolor-md6dlfkk.png");
+
+  useEffect(() => {
+    if (artist?.artist_image) {
+      setImgSrc(artist.artist_image);
+    } else {
+      setImgSrc("/otwcolor-md6dlfkk.png");
+    }
+  }, [artist]);
+
 
   const handleShowVideo = () => {
     setShowVideo(true);
@@ -48,7 +60,6 @@ export function Top100ArtistPopup({
 
   if (!artist) return null;
 
-  const artistImageSrc = artist.artist_image || "/otwcolor-md6dlfkk.png";
   const hasVideo = artist.artist_tiktok_username && artist.artist_tiktok_videoid;
 
   return (
@@ -77,14 +88,15 @@ export function Top100ArtistPopup({
 
                 {hasVideo && (
                   <div className="flex flex-col items-center">
-                    <img
-                      src={artistImageSrc}
+                    <Image
+                      src={imgSrc}
                       alt={artist.artist_name}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={handleShowVideo}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "/otwcolor-md6dlfkk.png";
+                      onError={() => {
+                        setImgSrc("/otwcolor-md6dlfkk.png");
                       }}
                     />
                     <span className="text-xs text-gray-500 mt-1 text-center">Click To Watch</span>

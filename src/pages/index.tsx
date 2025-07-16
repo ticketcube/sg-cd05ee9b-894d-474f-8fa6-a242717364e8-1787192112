@@ -91,7 +91,7 @@ export default function HomePage() {
         return {
           username,
           artist_uuid: artistUUID,
-          artist_otwid: artist?.artist_otwid || null
+          artist_otwid: artist?.artist_otwid ? parseInt(artist.artist_otwid, 10) : null
         };
       });
 
@@ -219,12 +219,18 @@ export default function HomePage() {
 
       <ArtistChart artists={artists} onVote={handleVote} selectedArtists={selectedArtists} />
 
-      <div className="mt-4 flex justify-center">
+      <div className="mt-4 flex justify-center gap-4">
         <Button
           className="bg-white text-black hover:bg-gray-100 px-8 py-3 text-lg font-semibold"
           onClick={() => window.location.href = '/votes'}
         >
           VIEW VOTE TOTALS
+        </Button>
+        <Button
+          className="bg-blue-500 text-white hover:bg-blue-600 px-8 py-3 text-lg font-semibold"
+          onClick={() => window.location.href = '/top100'}
+        >
+          VIEW TOP 100
         </Button>
       </div>
 

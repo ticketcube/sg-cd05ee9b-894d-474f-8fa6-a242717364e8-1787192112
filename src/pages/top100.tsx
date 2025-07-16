@@ -1,12 +1,12 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Artist, artistService } from '@/services/artistService';
 import { votingService } from '@/services/votingService';
 import { Top100ArtistPopup } from '@/components/Top100ArtistPopup';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 
 type VotingState = 'initial' | 'voting' | 'submitted';
 
@@ -21,21 +21,58 @@ export default function Top100Page() {
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
   const [votingState, setVotingState] = useState<VotingState>('initial');
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  
+  const observerRef = useRef<IntersectionObserver>();
+  const lastArtistElementRef = useCallback((node: HTMLDivElement) => {
+    if (loading || loadingMore) return;
+    if (observerRef.current) observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMoreArtists();
+      }
+    });
+    if (node) observerRef.current.observe(node);
+  }, [loading, loadingMore, hasMore]);
 
-  const loadArtists = useCallback(async () => {
+  const loadArtists = useCallback(async (pageNum: number = 0, reset: boolean = true) => {
     try {
-      setLoading(true);
-      const data = await artistService.getTop100Artists();
-      setArtists(data);
+      if (reset) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      
+      const data = await artistService.getTop100ArtistsPaginated(pageNum, 20);
+      
+      if (reset) {
+        setArtists(data.artists);
+      } else {
+        setArtists(prev => [...prev, ...data.artists]);
+      }
+      
+      setHasMore(data.hasMore);
+      setTotalCount(data.totalCount);
+      setPage(pageNum);
     } catch (error) {
       console.error('Error loading Top 100 artists:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, []);
 
+  const loadMoreArtists = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      loadArtists(page + 1, false);
+    }
+  }, [page, loadingMore, hasMore, loadArtists]);
+
   useEffect(() => {
-    loadArtists();
+    loadArtists(0, true);
   }, [loadArtists]);
 
   const handleVote = (artist: Artist) => {
@@ -77,13 +114,16 @@ export default function Top100Page() {
         return {
           username,
           artist_uuid: artistUUID,
-          artist_otwid: artist?.artist_otwid || null
+          artist_otwid: artist?.artist_otwid ? parseInt(String(artist.artist_otwid), 10) : null
         };
       });
 
       await votingService.submitVotes(votes);
       setVotingState('submitted');
       setIsSubmissionDialogOpen(true);
+      
+      // Refresh the artists list to show updated vote counts
+      loadArtists(0, true);
     } catch (error) {
       console.error('Error submitting votes:', error);
       alert('Error submitting votes. Please try again.');
@@ -162,6 +202,7 @@ export default function Top100Page() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Loading Top 100 Artists...</h1>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto" />
         </div>
       </div>
     );
@@ -180,7 +221,12 @@ export default function Top100Page() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Chart
           </Button>
-          <h1 className="text-2xl md:text-3xl font-bold text-blue-500">Top 100 OTW Artists</h1>
+          <div className="flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-blue-500">Top 100 OTW Artists</h1>
+            <p className="text-sm text-gray-400">
+              Showing {artists.length} of {totalCount} artists
+            </p>
+          </div>
         </div>
         
         <Button
@@ -200,36 +246,54 @@ export default function Top100Page() {
 
       <div className="p-4">
         <div className="grid gap-3">
-          {artists.map((artist, index) => (
-            <div
-              key={artist.UUID}
-              className="bg-gray-900 rounded-lg p-4 flex items-center justify-between hover:bg-gray-800 transition-colors cursor-pointer"
-              onClick={() => setSelectedArtist(artist)}
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-2xl font-bold text-gray-500 w-8">
-                  {index + 1}
+          {artists.map((artist, index) => {
+            const isLast = index === artists.length - 1;
+            return (
+              <div
+                key={artist.UUID}
+                ref={isLast ? lastArtistElementRef : null}
+                className="bg-gray-900 rounded-lg p-4 flex items-center justify-between hover:bg-gray-800 transition-colors cursor-pointer"
+                onClick={() => setSelectedArtist(artist)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="text-2xl font-bold text-gray-500 w-8">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{artist.artist_name}</h3>
+                    <p className="text-sm text-gray-400">
+                      Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}
+                      {artist.vote_count > 0 && (
+                        <span className="ml-2 text-blue-400">• {artist.vote_count} votes</span>
+                      )}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{artist.artist_name}</h3>
-                  <p className="text-sm text-gray-400">
-                    Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}
-                    {artist.vote_count > 0 && (
-                      <span className="ml-2 text-blue-400">• {artist.vote_count} votes</span>
-                    )}
-                  </p>
+                
+                <div className="flex items-center gap-2">
+                  {selectedArtists.includes(artist.UUID) && (
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  )}
+                  <div className="text-gray-400">→</div>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-2">
-                {selectedArtists.includes(artist.UUID) && (
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                )}
-                <div className="text-gray-400">→</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+        
+        {loadingMore && (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin mr-2" />
+            <span className="text-gray-400">Loading more artists...</span>
+          </div>
+        )}
+        
+        {!hasMore && artists.length > 0 && (
+          <div className="text-center py-8 text-gray-400">
+            <p>You've reached the end of the Top 100 list!</p>
+            <p className="text-sm mt-2">Total votes counted: {artists.reduce((sum, artist) => sum + artist.vote_count, 0)}</p>
+          </div>
+        )}
       </div>
 
       <Top100ArtistPopup

@@ -13,7 +13,7 @@ export interface Artist {
   artist_genre?: string | null;
   artist_relatedartists?: string[] | null;
   artist_bio?: string | null;
-  artist_otwid?: number | null;
+  artist_otwid?: string | null;
   artist_tiktok_username?: string | null;
   artist_tiktok_videoid?: string | null;
   Top_List?: string | null;
@@ -191,6 +191,77 @@ export const artistService = {
       }
       return a.artist_name.localeCompare(b.artist_name);
     });
+  },
+
+  async getTop100ArtistsPaginated(page: number = 0, pageSize: number = 20): Promise<{
+    artists: (Artist & { vote_count: number })[];
+    hasMore: boolean;
+    totalCount: number;
+  }> {
+    // 1. Get total count of Top 100 artists
+    const { count: totalCount, error: countError } = await supabase
+      .from('artists')
+      .select('*', { count: 'exact', head: true })
+      .eq('Top_List', '100');
+
+    if (countError) {
+      console.error("Error fetching Top 100 artists count:", countError);
+      throw countError;
+    }
+
+    // 2. Fetch artists with Top_List = "100" with pagination
+    const { data: artists, error: artistError } = await supabase
+      .from('artists')
+      .select('*')
+      .eq('Top_List', '100')
+      .range(page * pageSize, (page + 1) * pageSize - 1);
+
+    if (artistError) {
+      console.error("Error fetching Top 100 artists:", artistError);
+      throw artistError;
+    }
+
+    // 3. Fetch all votes for these specific artists
+    const artistUUIDs = (artists || []).map(artist => artist.UUID);
+    const { data: votes, error: voteError } = await supabase
+      .from('top25_votes')
+      .select('artist_uuid')
+      .in('artist_uuid', artistUUIDs);
+
+    if (voteError) {
+      console.error("Error fetching votes:", voteError);
+      throw voteError;
+    }
+
+    // 4. Create a map of artist_uuid to vote count
+    const voteCountMap = new Map<string, number>();
+    if (votes) {
+      for (const vote of votes) {
+        if (vote.artist_uuid) {
+          voteCountMap.set(vote.artist_uuid, (voteCountMap.get(vote.artist_uuid) || 0) + 1);
+        }
+      }
+    }
+
+    // 5. Combine artists with vote counts and sort
+    const artistsWithVotes = (artists || []).map(artist => ({
+      ...artist,
+      vote_count: voteCountMap.get(artist.UUID) || 0
+    }));
+
+    // 6. Sort by vote count (descending), then alphabetically by name
+    const sortedArtists = artistsWithVotes.sort((a, b) => {
+      if (a.vote_count !== b.vote_count) {
+        return b.vote_count - a.vote_count;
+      }
+      return a.artist_name.localeCompare(b.artist_name);
+    });
+
+    return {
+      artists: sortedArtists,
+      hasMore: (page + 1) * pageSize < (totalCount || 0),
+      totalCount: totalCount || 0
+    };
   }
 };
 
