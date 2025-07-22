@@ -6,6 +6,7 @@ export interface Artist {
   artist_home?: string | null;
   artist_otwcreateddate?: string | null;
   artist_audiolink?: string | null;
+  artist_videolink?: string | null;
   artist_image?: string | null;
   artist_totallisteners?: number | null;
   artist_totalwatchers?: number | null;
