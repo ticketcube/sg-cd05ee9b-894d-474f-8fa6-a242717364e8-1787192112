@@ -1,8 +1,8 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Artist, artistService } from '@/services/artistService';
 import { votingService } from '@/services/votingService';
 import { Top100ArtistPopup } from '@/components/Top100ArtistPopup';
+import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -252,14 +252,13 @@ export default function Top100Page() {
               <div
                 key={artist.UUID}
                 ref={isLast ? lastArtistElementRef : null}
-                className="bg-gray-900 rounded-lg p-4 flex items-center justify-between hover:bg-gray-800 transition-colors cursor-pointer"
-                onClick={() => setSelectedArtist(artist)}
+                className="bg-gray-900 rounded-lg p-4 flex items-center justify-between hover:bg-gray-800 transition-colors"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => setSelectedArtist(artist)}>
                   <div className="text-2xl font-bold text-gray-500 w-8">
                     {index + 1}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold text-lg">{artist.artist_name}</h3>
                     <p className="text-sm text-gray-400">
                       Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}
@@ -270,11 +269,20 @@ export default function Top100Page() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  {selectedArtists.includes(artist.UUID) && (
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  )}
-                  <div className="text-gray-400">→</div>
+                <div className="flex items-center gap-4">
+                  {/* Video Player Component */}
+                  <ArtistVideoPlayer 
+                    artist={artist}
+                    size="md"
+                    className="flex-shrink-0"
+                  />
+                  
+                  <div className="flex items-center gap-2">
+                    {selectedArtists.includes(artist.UUID) && (
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    )}
+                    <div className="text-gray-400 cursor-pointer" onClick={() => setSelectedArtist(artist)}>→</div>
+                  </div>
                 </div>
               </div>
             );
