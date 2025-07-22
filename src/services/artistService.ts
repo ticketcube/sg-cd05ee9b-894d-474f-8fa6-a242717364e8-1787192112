@@ -210,24 +210,23 @@ export const artistService = {
       throw countError;
     }
 
-    // 2. Fetch artists with Top_List = "100" with pagination
-    const { data: artists, error: artistError } = await supabase
+    // 2. Fetch ALL artists with Top_List = "100" (no pagination yet)
+    const { data: allArtists, error: artistError } = await supabase
       .from('artists')
       .select('*')
-      .eq('Top_List', '100')
-      .range(page * pageSize, (page + 1) * pageSize - 1);
+      .eq('Top_List', '100');
 
     if (artistError) {
       console.error("Error fetching Top 100 artists:", artistError);
       throw artistError;
     }
 
-    // 3. Fetch all votes for these specific artists
-    const artistUUIDs = (artists || []).map(artist => artist.UUID);
+    // 3. Fetch ALL votes for ALL Top 100 artists
+    const allArtistUUIDs = (allArtists || []).map(artist => artist.UUID);
     const { data: votes, error: voteError } = await supabase
       .from('top25_votes')
       .select('artist_uuid')
-      .in('artist_uuid', artistUUIDs);
+      .in('artist_uuid', allArtistUUIDs);
 
     if (voteError) {
       console.error("Error fetching votes:", voteError);
@@ -244,23 +243,28 @@ export const artistService = {
       }
     }
 
-    // 5. Combine artists with vote counts and sort
-    const artistsWithVotes = (artists || []).map(artist => ({
+    // 5. Combine ALL artists with vote counts and sort by vote count
+    const allArtistsWithVotes = (allArtists || []).map(artist => ({
       ...artist,
       vote_count: voteCountMap.get(artist.UUID) || 0
     }));
 
-    // 6. Sort by vote count (descending), then alphabetically by name
-    const sortedArtists = artistsWithVotes.sort((a, b) => {
+    // 6. Sort ALL artists by vote count (descending), then alphabetically by name
+    const sortedAllArtists = allArtistsWithVotes.sort((a, b) => {
       if (a.vote_count !== b.vote_count) {
         return b.vote_count - a.vote_count;
       }
       return a.artist_name.localeCompare(b.artist_name);
     });
 
+    // 7. Apply pagination to the sorted results
+    const startIndex = page * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedArtists = sortedAllArtists.slice(startIndex, endIndex);
+
     return {
-      artists: sortedArtists,
-      hasMore: (page + 1) * pageSize < (totalCount || 0),
+      artists: paginatedArtists,
+      hasMore: endIndex < sortedAllArtists.length,
       totalCount: totalCount || 0
     };
   }
