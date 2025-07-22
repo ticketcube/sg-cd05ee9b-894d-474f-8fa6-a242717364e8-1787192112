@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
@@ -19,7 +18,7 @@ export function LogoSection() {
         transition={{ type: "spring", stiffness: 300 }}
       >
         <Image
-          src="/otw-logo.png"
+          src="/OTWLogocolor.png"
           alt="Ones to Watch Logo"
           width={400}
           height={200}
