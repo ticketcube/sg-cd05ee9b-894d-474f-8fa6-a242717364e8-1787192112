@@ -20,8 +20,8 @@ export function LogoSection() {
         <Image
           src="/OTWLogocolor.png"
           alt="Ones to Watch Logo"
-          width={100%}
-          height={100%}
+          width={400}
+          height={200}
           priority
           className="w-auto h-auto"
         />
@@ -36,7 +36,7 @@ export function LogoSection() {
           size="lg"
           className="text-xl font-semibold bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl"
         >
-          OTW STAFF VOTE HERE!
+          OTW STAFF: VOTE FOR YOUR TOP 25
         </Button>
       </motion.div>
     </motion.div>
