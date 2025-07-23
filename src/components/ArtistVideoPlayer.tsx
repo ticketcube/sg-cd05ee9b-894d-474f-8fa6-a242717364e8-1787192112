@@ -140,19 +140,6 @@ export default function ArtistVideoPlayer({
             </div>
           </div>
         )}
-
-        {/* Video Type Badge */}
-        <div className="absolute top-1 right-1">
-          <span className={`text-xs px-2 py-1 rounded text-white font-semibold ${
-            videoContent.type === "tiktok" 
-              ? "bg-pink-500" 
-              : videoContent.type === "youtube" 
-                ? "bg-red-500" 
-                : "bg-gray-500"
-          }`}>
-            {videoContent.type === "tiktok" ? "TT" : videoContent.type === "youtube" ? "YT" : "IMG"}
-          </span>
-        </div>
       </div>
 
       {/* Video Modal */}
