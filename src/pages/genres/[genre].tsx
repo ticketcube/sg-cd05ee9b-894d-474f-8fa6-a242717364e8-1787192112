@@ -3,9 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { artistService } from "@/services/artistService";
 import type { Artist } from "@/services/artistService";
-import ArtistChart from "@/components/ArtistChart";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { ArtistChart } from "@/components/ArtistChart";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -15,15 +13,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface ArtistWithVotes extends Artist {
+  vote_count: number;
+}
+
 const GenrePage = () => {
   const router = useRouter();
   const { genre } = router.query;
 
-  const [artists, setArtists] = useState<Artist[]>([]);
+  const [artists, setArtists] = useState<ArtistWithVotes[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("vote_count_desc");
   const [visibleArtists, setVisibleArtists] = useState(25);
+  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
 
   useEffect(() => {
     if (typeof genre === 'string' && genre) {
@@ -32,7 +35,14 @@ const GenrePage = () => {
           setIsLoading(true);
           const decodedGenre = decodeURIComponent(genre);
           const fetchedArtists = await artistService.getArtistsByGenre(decodedGenre);
-          setArtists(fetchedArtists);
+          
+          // Add vote_count property to each artist (set to 0 for now)
+          const artistsWithVotes: ArtistWithVotes[] = fetchedArtists.map(artist => ({
+            ...artist,
+            vote_count: 0
+          }));
+          
+          setArtists(artistsWithVotes);
         } catch (error) {
           console.error(`Error fetching artists for genre ${genre}:`, error);
         } finally {
@@ -55,9 +65,20 @@ const GenrePage = () => {
     setVisibleArtists((prev) => prev + 25);
   };
 
+  const handleVote = (artist: Artist) => {
+    // Toggle vote for this artist
+    setSelectedArtists(prev => {
+      if (prev.includes(artist.UUID)) {
+        return prev.filter(id => id !== artist.UUID);
+      } else {
+        return [...prev, artist.UUID];
+      }
+    });
+  };
+
   const filteredAndSortedArtists = artists
     .filter((artist) =>
-      artist.name.toLowerCase().includes(searchTerm.toLowerCase())
+      artist.artist_name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       switch (sortOrder) {
@@ -66,9 +87,9 @@ const GenrePage = () => {
         case "vote_count_asc":
           return (a.vote_count ?? 0) - (b.vote_count ?? 0);
         case "name_asc":
-          return a.name.localeCompare(b.name);
+          return a.artist_name.localeCompare(b.artist_name);
         case "name_desc":
-          return b.name.localeCompare(a.name);
+          return b.artist_name.localeCompare(a.artist_name);
         default:
           return 0;
       }
@@ -80,11 +101,6 @@ const GenrePage = () => {
     <div className="container mx-auto p-4 bg-black text-white min-h-screen">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
         <h1 className="text-3xl font-bold text-center sm:text-left">{genreName} Artists</h1>
-        <Link href="/top100" passHref>
-          <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-black">
-            Vote for the Top 25
-          </Button>
-        </Link>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -114,12 +130,19 @@ const GenrePage = () => {
         </div>
       ) : (
         <>
-          <ArtistChart artists={filteredAndSortedArtists.slice(0, visibleArtists)} />
+          <ArtistChart 
+            artists={filteredAndSortedArtists.slice(0, visibleArtists)} 
+            onVote={handleVote}
+            selectedArtists={selectedArtists}
+          />
           {visibleArtists < filteredAndSortedArtists.length && (
             <div className="text-center mt-8">
-              <Button onClick={loadMoreArtists} variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-black">
+              <button 
+                onClick={loadMoreArtists} 
+                className="bg-transparent border border-white text-white hover:bg-white hover:text-black px-4 py-2 rounded"
+              >
                 Load More
-              </Button>
+              </button>
             </div>
           )}
           {filteredAndSortedArtists.length === 0 && (
@@ -134,4 +157,3 @@ const GenrePage = () => {
 };
 
 export default GenrePage;
-    

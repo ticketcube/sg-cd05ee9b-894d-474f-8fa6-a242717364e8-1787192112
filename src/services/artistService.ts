@@ -161,6 +161,19 @@ export const artistService = {
       .sort((a, b) => b.count - a.count);
   },
 
+  async getAllArtists(): Promise<Artist[]> {
+    const { data, error } = await supabase
+      .from('artists')
+      .select('*');
+
+    if (error) {
+      console.error("Error fetching all artists:", error);
+      throw error;
+    }
+
+    return data || [];
+  },
+
   async getTop100Artists(): Promise<(Artist & { vote_count: number })[]> {
     // 1. Fetch artists with Top_List = "100"
     const { data: artists, error: artistError } = await supabase
