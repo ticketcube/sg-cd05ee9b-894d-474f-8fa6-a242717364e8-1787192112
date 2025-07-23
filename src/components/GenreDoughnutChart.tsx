@@ -1,7 +1,6 @@
 
 import { useEffect, useRef } from "react";
 import { Chart } from "chart.js/auto";
-import { useRouter } from "next/router";
 
 interface GenreData {
   genre: string;
@@ -10,12 +9,12 @@ interface GenreData {
 
 interface GenreDoughnutChartProps {
   genreData: GenreData[];
+  onGenreClick: (genre: string) => void;
 }
 
-export function GenreDoughnutChart({ genreData }: GenreDoughnutChartProps) {
+export function GenreDoughnutChart({ genreData, onGenreClick }: GenreDoughnutChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstanceRef = useRef<Chart | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     if (!chartRef.current || !genreData.length) return;
@@ -39,6 +38,8 @@ export function GenreDoughnutChart({ genreData }: GenreDoughnutChartProps) {
       "rgba(249, 115, 22, 0.8)",   // Orange
       "rgba(156, 163, 175, 0.8)",  // Gray
       "rgba(99, 102, 241, 0.8)",   // Indigo
+      "rgba(245, 101, 101, 0.8)",  // Light Red
+      "rgba(72, 187, 120, 0.8)",   // Light Green
     ];
 
     const backgroundColors = genreData.map((_, index) => colors[index % colors.length]);
@@ -53,7 +54,7 @@ export function GenreDoughnutChart({ genreData }: GenreDoughnutChartProps) {
           backgroundColor: backgroundColors,
           borderColor: borderColors,
           borderWidth: 2,
-          hoverOffset: 4
+          hoverOffset: 8
         }]
       },
       options: {
@@ -65,15 +66,35 @@ export function GenreDoughnutChart({ genreData }: GenreDoughnutChartProps) {
             labels: {
               color: 'white',
               font: {
-                size: 14
+                size: 12
               },
-              padding: 20
+              padding: 15,
+              usePointStyle: true
             }
           },
           tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            titleColor: 'white',
+            bodyColor: 'white',
+            borderColor: 'rgba(255, 255, 255, 0.2)',
+            borderWidth: 1,
+            titleFont: {
+              size: 16,
+              weight: 'bold'
+            },
+            bodyFont: {
+              size: 14
+            },
+            padding: 12,
             callbacks: {
+              title: (tooltipItems) => {
+                return tooltipItems[0].label;
+              },
               label: (context) => {
-                return context.label || '';
+                return `# of Artists Covered: ${context.parsed}`;
+              },
+              afterLabel: () => {
+                return 'Click to view artists';
               }
             }
           }
@@ -82,9 +103,13 @@ export function GenreDoughnutChart({ genreData }: GenreDoughnutChartProps) {
           if (elements.length > 0) {
             const elementIndex = elements[0].index;
             const selectedGenre = genreData[elementIndex].genre;
-            
-            // Navigate to home page with genre filter
-            router.push(`/?genres=${encodeURIComponent(selectedGenre)}`);
+            onGenreClick(selectedGenre);
+          }
+        },
+        onHover: (event, chartElement) => {
+          const target = event.native?.target as HTMLElement;
+          if (target) {
+            target.style.cursor = chartElement[0] ? 'pointer' : 'default';
           }
         }
       }
@@ -95,10 +120,10 @@ export function GenreDoughnutChart({ genreData }: GenreDoughnutChartProps) {
     return () => {
       newChart.destroy();
     };
-  }, [genreData, router]);
+  }, [genreData, onGenreClick]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-black p-6 rounded-lg" style={{ height: "500px" }}>
+    <div className="w-full bg-gray-900 p-6 rounded-lg" style={{ height: "500px" }}>
       <canvas ref={chartRef} />
     </div>
   );

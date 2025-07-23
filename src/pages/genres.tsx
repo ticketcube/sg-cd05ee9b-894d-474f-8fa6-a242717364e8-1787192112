@@ -1,9 +1,8 @@
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { artistService } from "@/services/artistService";
 import { GenreDoughnutChart } from "@/components/GenreDoughnutChart";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 interface GenreData {
   genre: string;
@@ -13,12 +12,18 @@ interface GenreData {
 export default function GenresPage() {
   const [genreData, setGenreData] = useState<GenreData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalArtists, setTotalArtists] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const genreCounts = await artistService.getGenreCounts();
         setGenreData(genreCounts);
+        
+        // Calculate total artists
+        const total = genreCounts.reduce((sum, item) => sum + item.count, 0);
+        setTotalArtists(total);
       } catch (error) {
         console.error("Error loading genre data:", error);
       } finally {
@@ -28,6 +33,10 @@ export default function GenresPage() {
 
     loadData();
   }, []);
+
+  const handleGenreClick = (genre: string) => {
+    router.push(`/genres/${encodeURIComponent(genre)}`);
+  };
 
   if (loading) {
     return (
@@ -39,19 +48,33 @@ export default function GenresPage() {
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center text-blue-500">Artist Genres</h1>
-      <div className="flex justify-center mb-6">
-        <Link href="/">
-          <Button className="bg-white text-black hover:bg-gray-200 font-bold px-6 py-3">
-            VOTE FOR YOUR TOP 25!
-          </Button>
-        </Link>
-      </div>
-      <div className="flex justify-center">
-        <GenreDoughnutChart genreData={genreData} />
-      </div>
-      <div className="text-center mt-6 text-gray-400">
-        <p>Click on any genre to filter artists on the home page</p>
+      <div className="container mx-auto max-w-6xl">
+        <h1 className="text-4xl font-bold mb-6 text-center text-blue-500">10 Years of Discovery</h1>
+        <p className="text-center mb-8 text-lg text-gray-300">Total Artists Covered: {totalArtists}</p>
+        
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="w-full lg:w-2/3">
+            <GenreDoughnutChart genreData={genreData} onGenreClick={handleGenreClick} />
+          </div>
+          
+          <div className="w-full lg:w-1/3">
+            <h2 className="text-2xl font-bold mb-4 text-center lg:text-left">Genre Breakdown</h2>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {genreData.map((item) => (
+                <div 
+                  key={item.genre}
+                  onClick={() => handleGenreClick(item.genre)}
+                  className="flex justify-between items-center p-3 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer transition-colors"
+                >
+                  <span className="font-medium">{item.genre}</span>
+                  <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-bold">
+                    {item.count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

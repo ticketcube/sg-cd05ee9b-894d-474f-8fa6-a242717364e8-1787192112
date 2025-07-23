@@ -51,6 +51,20 @@ export const artistService = {
     return data || [];
   },
 
+  async getArtistsByGenre(genre: string): Promise<Artist[]> {
+    const { data, error } = await supabase
+      .from('artists')
+      .select('*')
+      .eq('artist_genre', genre);
+
+    if (error) {
+      console.error(`Error fetching artists for genre ${genre}:`, error);
+      throw error;
+    }
+
+    return data || [];
+  },
+
   async submitVote(vote: { username: string; artist_uuid: string; artist_otwid: number | null }): Promise<void> {
     const { error } = await supabase
       .from("top25_votes")
