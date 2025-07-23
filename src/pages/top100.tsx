@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Artist, artistService } from '@/services/artistService';
 import { votingService } from '@/services/votingService';
@@ -212,113 +211,118 @@ export default function Top100Page() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
-        <div className="flex items-center gap-4 mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => window.location.href = '/'}
-            className="text-white hover:bg-gray-800"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Chart
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl md:text-3xl font-bold text-blue-500">Top 100 OTW Artists</h1>
-            <p className="text-sm text-gray-400">
-              Showing {artists.length} of {totalCount} artists
-            </p>
+      <div className="sticky top-0 bg-black z-10 p-3 sm:p-4 border-b border-gray-800">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.location.href = '/'}
+              className="text-white hover:bg-gray-800 flex-shrink-0"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Back to Chart</span>
+              <span className="sm:hidden">Back</span>
+            </Button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 truncate">Top 100 OTW Artists</h1>
+              <p className="text-xs sm:text-sm text-gray-400">
+                Showing {artists.length} of {totalCount} artists
+              </p>
+            </div>
           </div>
+          
+          <Button
+            className="w-full text-base sm:text-lg md:text-xl py-3 sm:py-4 md:py-6 bg-white text-black hover:bg-gray-100"
+            onClick={handleMainButtonClick}
+            disabled={votingState === 'submitted'}
+          >
+            {getMainButtonText()}
+          </Button>
+          
+          {votingState === 'voting' && (
+            <p className="text-center text-xs sm:text-sm text-gray-400 mt-2">
+              Selected: {selectedArtists.length}/25 artists
+            </p>
+          )}
         </div>
-        
-        <Button
-          className="w-full text-lg md:text-xl py-4 md:py-6 bg-white text-black hover:bg-gray-100"
-          onClick={handleMainButtonClick}
-          disabled={votingState === 'submitted'}
-        >
-          {getMainButtonText()}
-        </Button>
-        
-        {votingState === 'voting' && (
-          <p className="text-center text-sm text-gray-400 mt-2">
-            Selected: {selectedArtists.length}/25 artists
-          </p>
-        )}
       </div>
 
       <div className="p-4">
-        <div className="grid gap-4">
-          {artists.map((artist, index) => {
-            const isLast = index === artists.length - 1;
-            const isSelected = selectedArtists.includes(artist.UUID);
-            
-            return (
-              <div
-                key={artist.UUID}
-                ref={isLast ? lastArtistElementRef : null}
-                className={cn(
-                  "bg-gray-900 rounded-lg p-4 hover:bg-gray-800 transition-all duration-200",
-                  isSelected && "ring-2 ring-green-500 bg-gray-800"
-                )}
-              >
-                <div className="flex items-center gap-4">
-                  {/* Rank Number */}
-                  <div className="text-2xl font-bold text-gray-500 w-8 flex-shrink-0">
-                    {index + 1}
-                  </div>
-                  
-                  {/* Artist Info */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate">{artist.artist_name}</h3>
-                    <p className="text-sm text-gray-400">
-                      Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}
-                      {artist.vote_count > 0 && (
-                        <span className="ml-2 text-blue-400">• {artist.vote_count} votes</span>
-                      )}
-                    </p>
-                  </div>
-                  
-                  {/* Right Side: Video Player and Vote Button */}
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    {/* Video Player */}
-                    <div className="flex flex-col items-center">
-                      <ArtistVideoPlayer 
-                        artist={artist} 
-                        size="md"
-                        className="hover:scale-105 transition-transform duration-200"
-                      />
-                      <span className="text-xs text-gray-500 mt-1 text-center">
-                        Watch
-                      </span>
+        <div className="max-w-4xl mx-auto">
+          <div className="grid gap-3">
+            {artists.map((artist, index) => {
+              const isLast = index === artists.length - 1;
+              const isSelected = selectedArtists.includes(artist.UUID);
+              
+              return (
+                <div
+                  key={artist.UUID}
+                  ref={isLast ? lastArtistElementRef : null}
+                  className={cn(
+                    "bg-gray-900 rounded-lg p-3 sm:p-4 hover:bg-gray-800 transition-all duration-200 max-w-full",
+                    isSelected && "ring-2 ring-green-500 bg-gray-800"
+                  )}
+                >
+                  <div className="flex items-center gap-2 sm:gap-4">
+                    {/* Rank Number */}
+                    <div className="text-xl sm:text-2xl font-bold text-gray-500 w-6 sm:w-8 flex-shrink-0">
+                      {index + 1}
                     </div>
                     
-                    {/* Vote Button */}
-                    <div className="flex flex-col items-center">
-                      <Button
-                        onClick={(e) => handleVote(artist, e)}
-                        className={cn(
-                          "px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 hover:scale-105",
-                          isSelected 
-                            ? "bg-green-500 hover:bg-green-600 text-white" 
-                            : "bg-purple-500 hover:bg-purple-600 text-white"
+                    {/* Artist Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base sm:text-lg truncate">{artist.artist_name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-400">
+                        Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}
+                        {artist.vote_count > 0 && (
+                          <span className="ml-2 text-blue-400">• {artist.vote_count} votes</span>
                         )}
-                      >
-                        {isSelected ? "VOTED" : "VOTE"}
-                      </Button>
-                      <span className="text-xs text-gray-500 mt-1 text-center">
-                        Top 25
-                      </span>
+                      </p>
                     </div>
                     
-                    {/* Selection Indicator */}
-                    {isSelected && (
-                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    )}
+                    {/* Right Side: Video Player and Vote Button */}
+                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                      {/* Video Player */}
+                      <div className="flex flex-col items-center">
+                        <ArtistVideoPlayer 
+                          artist={artist} 
+                          size="md"
+                          className="hover:scale-105 transition-transform duration-200"
+                        />
+                        <span className="text-xs text-gray-500 mt-1 text-center hidden sm:block">
+                          Watch
+                        </span>
+                      </div>
+                      
+                      {/* Vote Button */}
+                      <div className="flex flex-col items-center">
+                        <Button
+                          onClick={(e) => handleVote(artist, e)}
+                          className={cn(
+                            "px-2 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 hover:scale-105 min-w-0",
+                            isSelected 
+                              ? "bg-green-500 hover:bg-green-600 text-white" 
+                              : "bg-purple-500 hover:bg-purple-600 text-white"
+                          )}
+                        >
+                          {isSelected ? "VOTED" : "VOTE"}
+                        </Button>
+                        <span className="text-xs text-gray-500 mt-1 text-center hidden sm:block">
+                          Top 25
+                        </span>
+                      </div>
+                      
+                      {/* Selection Indicator */}
+                      {isSelected && (
+                        <div className="w-2 sm:w-3 h-2 sm:h-3 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
         
         {loadingMore && (
