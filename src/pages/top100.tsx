@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Artist, artistService } from '@/services/artistService';
 import { votingService } from '@/services/votingService';
-import TinyInlineVideoPlayer from '@/components/TinyInlineVideoPlayer';
+import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -281,11 +281,12 @@ export default function Top100Page() {
                       </div>
                     </div>
                     
-                    {/* Right Side: Tiny Video Player and Vote Button */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {/* Tiny Video Player */}
-                      <TinyInlineVideoPlayer 
+                    {/* Right Side: Video Player and Vote Button */}
+                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                      {/* Video Player */}
+                      <ArtistVideoPlayer 
                         artist={artist}
+                        size="sm"
                         className="hover:scale-105 transition-transform duration-200"
                       />
                       
@@ -293,7 +294,7 @@ export default function Top100Page() {
                       <Button
                         onClick={(e) => handleVote(artist, e)}
                         className={cn(
-                          "px-2 py-1 rounded text-xs font-semibold transition-all duration-200 hover:scale-105 min-w-0",
+                          "px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm font-semibold transition-all duration-200 hover:scale-105",
                           isSelected 
                             ? "bg-green-500 hover:bg-green-600 text-white" 
                             : "bg-purple-500 hover:bg-purple-600 text-white"
