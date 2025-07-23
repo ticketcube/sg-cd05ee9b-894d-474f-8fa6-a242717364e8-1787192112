@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Artist, artistService } from '@/services/artistService';
 import { votingService } from '@/services/votingService';
-import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
+import TinyInlineVideoPlayer from '@/components/TinyInlineVideoPlayer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -248,9 +248,9 @@ export default function Top100Page() {
         </div>
       </div>
 
-      <div className="p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid gap-3">
+      <div className="p-2 sm:p-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="grid gap-2">
             {artists.map((artist, index) => {
               const isLast = index === artists.length - 1;
               const isSelected = selectedArtists.includes(artist.UUID);
@@ -260,20 +260,20 @@ export default function Top100Page() {
                   key={artist.UUID}
                   ref={isLast ? lastArtistElementRef : null}
                   className={cn(
-                    "bg-gray-900 rounded-lg p-3 sm:p-4 hover:bg-gray-800 transition-all duration-200 max-w-full",
+                    "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
                     isSelected && "ring-2 ring-green-500 bg-gray-800"
                   )}
                 >
-                  <div className="flex items-center gap-2 sm:gap-4">
+                  <div className="flex items-center gap-2">
                     {/* Rank Number */}
-                    <div className="text-xl sm:text-2xl font-bold text-gray-500 w-6 sm:w-8 flex-shrink-0">
+                    <div className="text-lg sm:text-xl font-bold text-gray-500 w-5 sm:w-6 flex-shrink-0">
                       {index + 1}
                     </div>
                     
                     {/* Artist Info */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base sm:text-lg truncate">{artist.artist_name}</h3>
-                      <div className="text-xs sm:text-sm text-gray-400">
+                      <h3 className="font-semibold text-sm sm:text-base truncate">{artist.artist_name}</h3>
+                      <div className="text-xs text-gray-400">
                         <p>Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}</p>
                         {artist.vote_count > 0 && (
                           <p className="text-blue-400">{artist.vote_count} votes</p>
@@ -281,41 +281,30 @@ export default function Top100Page() {
                       </div>
                     </div>
                     
-                    {/* Right Side: Video Player and Vote Button */}
-                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                      {/* Video Player */}
-                      <div className="flex flex-col items-center">
-                        <ArtistVideoPlayer 
-                          artist={artist} 
-                          size="md"
-                          className="hover:scale-105 transition-transform duration-200"
-                        />
-                        <span className="text-xs text-gray-500 mt-1 text-center hidden sm:block">
-                          Watch
-                        </span>
-                      </div>
+                    {/* Right Side: Tiny Video Player and Vote Button */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {/* Tiny Video Player */}
+                      <TinyInlineVideoPlayer 
+                        artist={artist}
+                        className="hover:scale-105 transition-transform duration-200"
+                      />
                       
                       {/* Vote Button */}
-                      <div className="flex flex-col items-center">
-                        <Button
-                          onClick={(e) => handleVote(artist, e)}
-                          className={cn(
-                            "px-2 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 hover:scale-105 min-w-0",
-                            isSelected 
-                              ? "bg-green-500 hover:bg-green-600 text-white" 
-                              : "bg-purple-500 hover:bg-purple-600 text-white"
-                          )}
-                        >
-                          {isSelected ? "VOTED" : "VOTE"}
-                        </Button>
-                        <span className="text-xs text-gray-500 mt-1 text-center hidden sm:block">
-                          Top 25
-                        </span>
-                      </div>
+                      <Button
+                        onClick={(e) => handleVote(artist, e)}
+                        className={cn(
+                          "px-2 py-1 rounded text-xs font-semibold transition-all duration-200 hover:scale-105 min-w-0",
+                          isSelected 
+                            ? "bg-green-500 hover:bg-green-600 text-white" 
+                            : "bg-purple-500 hover:bg-purple-600 text-white"
+                        )}
+                      >
+                        {isSelected ? "✓" : "VOTE"}
+                      </Button>
                       
                       {/* Selection Indicator */}
                       {isSelected && (
-                        <div className="w-2 sm:w-3 h-2 sm:h-3 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
                       )}
                     </div>
                   </div>
