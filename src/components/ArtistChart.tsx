@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { TikTokEmbed } from "@/components/TikTokEmbed";
+import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 
 interface ArtistChartProps {
   artists: Artist[];
@@ -166,7 +166,7 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
                     LISTEN
                   </a>
                 )}
-                {selectedArtist?.artist_tiktok_username && selectedArtist?.artist_tiktok_videoid && (
+                {(selectedArtist?.artist_videolink || (selectedArtist?.artist_tiktok_username && selectedArtist?.artist_tiktok_videoid)) && (
                   <button
                     onClick={handleShowVideo}
                     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -192,18 +192,27 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
       </Dialog>
 
       <Dialog open={showVideo} onOpenChange={setShowVideo}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle>{selectedArtist?.artist_name} - Video</DialogTitle>
-          </DialogHeader>
-          {selectedArtist?.artist_tiktok_username && selectedArtist?.artist_tiktok_videoid && (
-            <div className="w-full flex justify-center">
-              <TikTokEmbed 
-                username={selectedArtist.artist_tiktok_username}
-                videoId={selectedArtist.artist_tiktok_videoid}
-              />
-            </div>
-          )}
+        <DialogContent className="max-w-4xl w-full p-0 bg-black">
+          <div className="relative">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowVideo(false)}
+              className="absolute top-2 right-2 z-10 text-white hover:bg-white hover:bg-opacity-20 bg-black bg-opacity-50 rounded-full p-2"
+            >
+              ✕
+            </button>
+
+            {/* Video Content */}
+            {selectedArtist && (
+              <div className="aspect-video w-full">
+                <ArtistVideoPlayer 
+                  artist={selectedArtist}
+                  showPlayButton={false}
+                  className="w-full h-full rounded-none"
+                />
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
