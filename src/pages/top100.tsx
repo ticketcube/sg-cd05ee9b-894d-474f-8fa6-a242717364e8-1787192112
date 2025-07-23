@@ -273,12 +273,12 @@ export default function Top100Page() {
                     {/* Artist Info */}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-base sm:text-lg truncate">{artist.artist_name}</h3>
-                      <p className="text-xs sm:text-sm text-gray-400">
-                        Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}
+                      <div className="text-xs sm:text-sm text-gray-400">
+                        <p>Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}</p>
                         {artist.vote_count > 0 && (
-                          <span className="ml-2 text-blue-400">• {artist.vote_count} votes</span>
+                          <p className="text-blue-400">{artist.vote_count} votes</p>
                         )}
-                      </p>
+                      </div>
                     </div>
                     
                     {/* Right Side: Video Player and Vote Button */}
