@@ -66,6 +66,7 @@ export type Database = {
           artist_image: string | null
           artist_name: string
           artist_otwcategory: string | null
+          artist_otwcoverage: number | null
           artist_otwcreateddate: string | null
           artist_otwid: string | null
           artist_relatedartists: string[] | null
@@ -85,6 +86,7 @@ export type Database = {
           artist_image?: string | null
           artist_name: string
           artist_otwcategory?: string | null
+          artist_otwcoverage?: number | null
           artist_otwcreateddate?: string | null
           artist_otwid?: string | null
           artist_relatedartists?: string[] | null
@@ -104,6 +106,7 @@ export type Database = {
           artist_image?: string | null
           artist_name?: string
           artist_otwcategory?: string | null
+          artist_otwcoverage?: number | null
           artist_otwcreateddate?: string | null
           artist_otwid?: string | null
           artist_relatedartists?: string[] | null
