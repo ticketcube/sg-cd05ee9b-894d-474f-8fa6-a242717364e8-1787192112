@@ -53,7 +53,7 @@ export default function ArtistVideoPlayer({
       if (videoId) {
         return {
           type: "youtube",
-          embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`,
+          embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&muted=1&rel=0&controls=1`,
           thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
           thumbnailText: "YouTube Video"
         };
