@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Play, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -48,16 +47,7 @@ export default function ArtistVideoPlayer({
 
   // Determine what to display based on available content
   const getVideoContent = () => {
-    // Priority 1: TikTok video
-    if (artist.artist_tiktok_username && artist.artist_tiktok_videoid) {
-      return {
-        type: "tiktok",
-        embedUrl: getTikTokEmbedUrl(artist.artist_tiktok_username, artist.artist_tiktok_videoid),
-        thumbnailText: "TikTok Video"
-      };
-    }
-    
-    // Priority 2: YouTube video
+    // Priority 1: YouTube video (changed from TikTok to YouTube)
     if (artist.artist_videolink) {
       const videoId = getYouTubeVideoId(artist.artist_videolink);
       if (videoId) {
@@ -68,6 +58,15 @@ export default function ArtistVideoPlayer({
           thumbnailText: "YouTube Video"
         };
       }
+    }
+    
+    // Priority 2: TikTok video (moved to second priority, preserved for later use)
+    if (artist.artist_tiktok_username && artist.artist_tiktok_videoid) {
+      return {
+        type: "tiktok",
+        embedUrl: getTikTokEmbedUrl(artist.artist_tiktok_username, artist.artist_tiktok_videoid),
+        thumbnailText: "TikTok Video"
+      };
     }
     
     // Priority 3: Artist image/logo
