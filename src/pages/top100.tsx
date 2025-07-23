@@ -1,17 +1,18 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Artist, artistService } from '@/services/artistService';
 import { votingService } from '@/services/votingService';
-import { Top100ArtistPopup } from '@/components/Top100ArtistPopup';
+import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type VotingState = 'initial' | 'voting' | 'submitted';
 
 export default function Top100Page() {
   const [artists, setArtists] = useState<(Artist & { vote_count: number })[]>([]);
-  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [isUsernameDialogOpen, setIsUsernameDialogOpen] = useState(false);
   const [isSubmissionDialogOpen, setIsSubmissionDialogOpen] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
@@ -74,7 +75,9 @@ export default function Top100Page() {
     loadArtists(0, true);
   }, [loadArtists]);
 
-  const handleVote = (artist: Artist) => {
+  const handleVote = (artist: Artist, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
     if (votingState !== 'voting') {
       setIsUsernameDialogOpen(true);
       return;
@@ -244,22 +247,29 @@ export default function Top100Page() {
       </div>
 
       <div className="p-4">
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {artists.map((artist, index) => {
             const isLast = index === artists.length - 1;
+            const isSelected = selectedArtists.includes(artist.UUID);
+            
             return (
               <div
                 key={artist.UUID}
                 ref={isLast ? lastArtistElementRef : null}
-                className="bg-gray-900 rounded-lg p-4 flex items-center justify-between hover:bg-gray-800 transition-colors cursor-pointer"
-                onClick={() => setSelectedArtist(artist)}
+                className={cn(
+                  "bg-gray-900 rounded-lg p-4 hover:bg-gray-800 transition-all duration-200",
+                  isSelected && "ring-2 ring-green-500 bg-gray-800"
+                )}
               >
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="text-2xl font-bold text-gray-500 w-8">
+                <div className="flex items-center gap-4">
+                  {/* Rank Number */}
+                  <div className="text-2xl font-bold text-gray-500 w-8 flex-shrink-0">
                     {index + 1}
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{artist.artist_name}</h3>
+                  
+                  {/* Artist Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg truncate">{artist.artist_name}</h3>
                     <p className="text-sm text-gray-400">
                       Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}
                       {artist.vote_count > 0 && (
@@ -267,13 +277,44 @@ export default function Top100Page() {
                       )}
                     </p>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  {selectedArtists.includes(artist.UUID) && (
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  )}
-                  <div className="text-gray-400">→</div>
+                  
+                  {/* Right Side: Video Player and Vote Button */}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {/* Video Player */}
+                    <div className="flex flex-col items-center">
+                      <ArtistVideoPlayer 
+                        artist={artist} 
+                        size="md"
+                        className="hover:scale-105 transition-transform duration-200"
+                      />
+                      <span className="text-xs text-gray-500 mt-1 text-center">
+                        Watch
+                      </span>
+                    </div>
+                    
+                    {/* Vote Button */}
+                    <div className="flex flex-col items-center">
+                      <Button
+                        onClick={(e) => handleVote(artist, e)}
+                        className={cn(
+                          "px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 hover:scale-105",
+                          isSelected 
+                            ? "bg-green-500 hover:bg-green-600 text-white" 
+                            : "bg-purple-500 hover:bg-purple-600 text-white"
+                        )}
+                      >
+                        {isSelected ? "VOTED" : "VOTE"}
+                      </Button>
+                      <span className="text-xs text-gray-500 mt-1 text-center">
+                        Top 25
+                      </span>
+                    </div>
+                    
+                    {/* Selection Indicator */}
+                    {isSelected && (
+                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -294,14 +335,6 @@ export default function Top100Page() {
           </div>
         )}
       </div>
-
-      <Top100ArtistPopup
-        artist={selectedArtist}
-        isOpen={!!selectedArtist}
-        onClose={() => setSelectedArtist(null)}
-        onVote={handleVote}
-        selectedArtists={selectedArtists}
-      />
 
       <Dialog open={isUsernameDialogOpen} onOpenChange={setIsUsernameDialogOpen}>
         <DialogContent>
