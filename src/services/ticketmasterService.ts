@@ -44,27 +44,17 @@ export interface ArtistWithEvents {
 }
 
 class TicketmasterService {
-  private apiKey: string;
-  private baseUrl = "https://app.ticketmaster.com/discovery/v2";
-
-  constructor() {
-    this.apiKey = process.env.TM_API_KEY || "";
-  }
-
   async getArtistEvents(attractionId: string, size: number = 3): Promise<TicketmasterEvent[]> {
     try {
-      const url = `${this.baseUrl}/events.json?attractionId=${attractionId}&apikey=${this.apiKey}&size=${size}&sort=date,asc`;
-      
-      const response = await fetch(url);
+      const response = await fetch(`/api/ticketmaster/events?attractionId=${attractionId}&size=${size}`);
       
       if (!response.ok) {
-        console.error(`Ticketmaster API error: ${response.status} ${response.statusText}`);
+        console.error(`API error: ${response.status} ${response.statusText}`);
         return [];
       }
 
-      const data: TicketmasterResponse = await response.json();
-      
-      return data._embedded?.events || [];
+      const data = await response.json();
+      return data.events || [];
     } catch (error) {
       console.error("Error fetching Ticketmaster events:", error);
       return [];
@@ -73,17 +63,14 @@ class TicketmasterService {
 
   async checkArtistHasEvents(attractionId: string): Promise<boolean> {
     try {
-      const url = `${this.baseUrl}/events.json?attractionId=${attractionId}&apikey=${this.apiKey}&size=1`;
-      
-      const response = await fetch(url);
+      const response = await fetch(`/api/ticketmaster/events?attractionId=${attractionId}&size=1`);
       
       if (!response.ok) {
         return false;
       }
 
-      const data: TicketmasterResponse = await response.json();
-      
-      return (data.page?.totalElements || 0) > 0;
+      const data = await response.json();
+      return (data.totalElements || 0) > 0;
     } catch (error) {
       console.error("Error checking artist events:", error);
       return false;
