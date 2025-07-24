@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +7,7 @@ import { ExternalLink, Calendar, MapPin } from "lucide-react";
 import { tourService } from "@/services/tourService";
 import { ticketmasterService } from "@/services/ticketmasterService";
 import type { ArtistWithEvents } from "@/services/ticketmasterService";
+import Image from "next/image";
 
 export default function OnTourPage() {
   const [artists, setArtists] = useState<ArtistWithEvents[]>([]);
@@ -124,9 +124,11 @@ export default function OnTourPage() {
               <CardHeader>
                 <div className="flex items-center gap-4">
                   {artist.artist_image ? (
-                    <img
+                    <Image
                       src={artist.artist_image}
                       alt={artist.artist_name}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded-full object-cover"
                     />
                   ) : (

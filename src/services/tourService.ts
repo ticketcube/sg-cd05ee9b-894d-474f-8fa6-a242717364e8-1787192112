@@ -1,83 +1,70 @@
-import { supabase } from "@/integrations/supabase/client";
+
+    import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService, ArtistWithEvents } from "./ticketmasterService";
 
 export class TourService {
   async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
     try {
-      // First, get all tmid records
-      const { data: tmidData, error: tmidError } = await supabase
+      // Use a single query with a join for efficiency
+      const { data: joinedData, error: joinError } = await supabase
         .from("tmid")
-        .select("artist_uuid, tmid")
+        .select(`
+          artist_uuid,
+          tmid,
+          artists (
+            artist_name,
+            artist_image
+          )
+        `)
         .not("tmid", "is", null);
 
-      if (tmidError) {
-        console.error("Error fetching TMIDs:", tmidError);
+      if (joinError) {
+        console.error("Error fetching artists with TMIDs:", joinError);
         return [];
       }
 
-      if (!tmidData || tmidData.length === 0) {
-        console.log("No TMID records found");
+      if (!joinedData || joinedData.length === 0) {
+        console.log("No artists with TMID records found");
         return [];
       }
+      
+      console.log("Fetched joined data:", joinedData.length, "records");
 
-      console.log("Fetched TMID data:", tmidData.length, "records");
-
-      // Get all unique artist UUIDs
-      const artistUuids = tmidData.map(item => item.artist_uuid);
-
-      // Fetch artist details for these UUIDs
-      const { data: artistsData, error: artistsError } = await supabase
-        .from("artists")
-        .select('"UUID", artist_name, artist_image')
-        .in('"UUID"', artistUuids);
-
-      if (artistsError) {
-        console.error("Error fetching artists:", artistsError);
-        return [];
-      }
-
-      console.log("Fetched artist data:", artistsData?.length, "records");
-
-      // Create a map for quick artist lookup
-      const artistMap = new Map();
-      artistsData?.forEach(artist => {
-        artistMap.set(artist.UUID, artist);
-      });
-
-      const artistsWithEvents: ArtistWithEvents[] = [];
-
-      for (const tmidItem of tmidData) {
-        const artist = artistMap.get(tmidItem.artist_uuid);
-        
-        if (!artist) {
-          console.log("Artist not found for UUID:", tmidItem.artist_uuid);
-          continue;
+      // Use Promise.all for concurrent Ticketmaster API calls
+      const promises = joinedData.map(async (item) => {
+        if (!item.artists) {
+          return null;
         }
 
-        console.log(`Fetching events for ${artist.artist_name} (TMID: ${tmidItem.tmid})`);
+        console.log(`Fetching events for ${item.artists.artist_name} (TMID: ${item.tmid})`);
         
-        const events = await ticketmasterService.getArtistEvents(tmidItem.tmid, 3);
+        const events = await ticketmasterService.getArtistEvents(item.tmid, 3);
         const hasEvents = events.length > 0;
 
-        console.log(`${artist.artist_name}: ${events.length} events found`);
+        console.log(`${item.artists.artist_name}: ${events.length} events found`);
 
-        artistsWithEvents.push({
-          artist_uuid: tmidItem.artist_uuid,
-          artist_name: artist.artist_name,
-          artist_image: artist.artist_image,
-          tmid: tmidItem.tmid,
+        return {
+          artist_uuid: item.artist_uuid,
+          artist_name: item.artists.artist_name,
+          artist_image: item.artists.artist_image,
+          tmid: item.tmid,
           hasEvents,
           events
-        });
-      }
+        };
+      });
 
-      console.log(`Total artists processed: ${artistsWithEvents.length}`);
+      const results = await Promise.all(promises);
+      
+      const validResults = results.filter(Boolean) as ArtistWithEvents[];
 
-      return artistsWithEvents.sort((a, b) => {
+      console.log(`Total artists processed: ${validResults.length}`);
+
+      return validResults.sort((a, b) => {
         if (a.hasEvents && !b.hasEvents) return -1;
         if (!a.hasEvents && b.hasEvents) return 1;
         return a.artist_name.localeCompare(b.artist_name);
       });
+
     } catch (error) {
       console.error("Error in getArtistsWithTmids:", error);
       return [];
@@ -86,3 +73,4 @@ export class TourService {
 }
 
 export const tourService = new TourService();
+  
