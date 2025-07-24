@@ -33,13 +33,13 @@ export default function OnTourPage() {
   }, []);
 
   const loadTestArtist = async () => {
-    setLoading(true);
+    setLoading(true);a
     setError(null);
     try {
       const { data, error: dbError } = await supabase
         .from("artists")
         .select("*")
-        .eq("tmid", "2783377")
+        .eq("attractionId", "2783377")
         .single();
 
       if (dbError) throw dbError;
@@ -56,12 +56,12 @@ export default function OnTourPage() {
   };
 
   const testTicketmasterAPI = async () => {
-    if (!testArtist?.tmid) return;
+    if (!testArtist?.attractionId) return;
     setTesting(true);
     setError(null);
     setApiResponse(null);
     try {
-      const response = await fetch(`/api/ticketmaster/events?attractionId=${testArtist.tmid}&size=5`);
+      const response = await fetch(`/api/ticketmaster/events?attractionId=${testArtist.attractionId}&size=5`);
       const data: ApiResponse = await response.json();
       
       setApiResponse(data);
@@ -79,11 +79,11 @@ export default function OnTourPage() {
   };
 
   const cacheEventsToDatabase = async () => {
-    if (!testArtist?.uuid || !testArtist?.tmid) return;
+    if (!testArtist?.uuid || !testArtist?.attractionId) return;
     setCaching(true);
     setError(null);
     try {
-      await eventCacheService.refreshEventsForArtist(testArtist.uuid, testArtist.tmid);
+      await eventCacheService.refreshEventsForArtist(testArtist.uuid, testArtist.attractionId);
       await loadCachedEvents(); // Refresh cached events view
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to cache events";
@@ -196,7 +196,7 @@ export default function OnTourPage() {
               )}
               <div>
                 <h3 className="text-xl font-semibold">{testArtist.artist_name}</h3>
-                <p className="text-sm text-muted-foreground">TMID: {testArtist.tmid}</p>
+                <p className="text-sm text-muted-foreground">: {testArtist.attractionId}</p>
               </div>
             </div>
           ) : (
