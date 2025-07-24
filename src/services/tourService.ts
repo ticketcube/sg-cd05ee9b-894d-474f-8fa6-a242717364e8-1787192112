@@ -1,18 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { eventCacheService } from "./eventCacheService";
 import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
-
-// Define local interfaces for Supabase query results to avoid deep type instantiation issues
-interface TmidRecord {
-  artist_uuid: string;
-  tmid: string;
-}
-
-interface ArtistRecord {
-  UUID: string;
-  artist_name: string;
-  artist_image: string | null;
-}
 
 export class TourService {
   async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
@@ -35,7 +24,7 @@ export class TourService {
       console.log(`Fetched ${tmidData.length} TMID records.`);
 
       // Step 2: Get all corresponding artist records
-      const artistUuids = (tmidData as TmidRecord[]).map(item => item.artist_uuid);
+      const artistUuids = tmidData.map(item => item.artist_uuid);
       const { data: artistsData, error: artistsError } = await supabase
         .from("artists")
         .select(`"UUID", artist_name, artist_image`)
@@ -48,8 +37,8 @@ export class TourService {
       console.log(`Fetched ${artistsData?.length || 0} artist records.`);
 
       // Create a map for efficient artist lookup
-      const artistMap = new Map<string, { artist_name: string; artist_image: string | null; }>();
-      (artistsData as ArtistRecord[])?.forEach(artist => {
+      const artistMap = new Map();
+      artistsData?.forEach((artist: any) => {
         artistMap.set(artist.UUID, {
           artist_name: artist.artist_name,
           artist_image: artist.artist_image,
@@ -59,7 +48,7 @@ export class TourService {
       // Step 3: Get cached events for each artist
       const results: ArtistWithEvents[] = [];
       
-      for (const tmidItem of (tmidData as TmidRecord[])) {
+      for (const tmidItem of tmidData) {
         if (!tmidItem.tmid) continue; // Skip if tmid is null or empty
 
         const artistDetails = artistMap.get(tmidItem.artist_uuid);
