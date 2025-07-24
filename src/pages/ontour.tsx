@@ -75,8 +75,8 @@ export default function OnTourPage() {
     try {
       setTesting(true);
       setError(null);
-      setEvents([]);
       setApiResponse(null);
+      // Don't clear events here - let's see what we get first
 
       console.log(`Testing Ticketmaster API for ${testArtist.artist_name} (TMID: ${testArtist.tmid})`);
 
@@ -93,6 +93,7 @@ export default function OnTourPage() {
       }
 
       const fetchedEvents = data.events || [];
+      console.log("Setting events to state:", fetchedEvents);
       setEvents(fetchedEvents);
       
       console.log(`Found ${fetchedEvents.length} events for ${testArtist.artist_name}`);
@@ -112,6 +113,7 @@ export default function OnTourPage() {
       setTesting(true);
       setError(null);
       setApiResponse(null);
+      // Don't clear events here either
 
       console.log(`Testing DIRECT Ticketmaster API for ${testArtist.artist_name} (TMID: ${testArtist.tmid})`);
 
@@ -133,6 +135,7 @@ export default function OnTourPage() {
       }
 
       const fetchedEvents = data.events || [];
+      console.log("Setting events to state:", fetchedEvents);
       setEvents(fetchedEvents);
       
       console.log(`✅ API Test Complete: Found ${fetchedEvents.length} events for ${testArtist.artist_name}`);
@@ -392,10 +395,10 @@ export default function OnTourPage() {
 
       {/* Events Section */}
       {events.length > 0 && (
-        <Card>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              🎫 Upcoming Events
+              🎫 Upcoming Events from API
               <Badge>{events.length}</Badge>
             </CardTitle>
           </CardHeader>
@@ -433,6 +436,26 @@ export default function OnTourPage() {
                   </Button>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Show debug info about events state */}
+      {apiResponse && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>🔍 Events Debug</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <p><strong>Events in State:</strong> {events.length}</p>
+              <p><strong>Events from API Response:</strong> {apiResponse.events?.length || 0}</p>
+              <p><strong>Total Elements from API:</strong> {apiResponse.totalElements || 0}</p>
+              <p><strong>Events State Content:</strong></p>
+              <pre className="bg-gray-100 p-2 rounded text-xs overflow-auto max-h-32">
+                {JSON.stringify(events, null, 2)}
+              </pre>
             </div>
           </CardContent>
         </Card>
