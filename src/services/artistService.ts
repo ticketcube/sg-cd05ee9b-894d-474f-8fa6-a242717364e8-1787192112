@@ -305,7 +305,10 @@ export const artistService = {
         artist_image,
         primary_vibe,
         secondary_vibe,
-        artist_genre
+        artist_genre,
+        artist_videolink,
+        artist_tiktok_videoid,
+        artist_tiktok_username
       `)
       .not('primary_vibe', 'is', null)
       .not('artist_name', 'is', null)
