@@ -1,9 +1,18 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService } from "./ticketmasterService";
-import type { ArtistWithEvents } from "@/types/tour";
+
+interface ArtistData {
+  artist_uuid: string;
+  artist_name: string;
+  artist_image: string | null;
+  tmid: string;
+  hasEvents: boolean;
+  events: any[];
+}
 
 export class TourService {
-  async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
+  async getArtistsWithTmids(): Promise<ArtistData[]> {
     try {
       // Step 1: Get all tmid records that are not null
       const { data: tmidData, error: tmidError } = await supabase
@@ -36,7 +45,7 @@ export class TourService {
       console.log(`Fetched ${artistsData?.length || 0} artist records.`);
 
       // Create a map for efficient artist lookup
-      const artistMap = new Map<string, { artist_name: string; artist_image: string | null }>();
+      const artistMap = new Map();
       artistsData?.forEach(artist => {
         artistMap.set(artist.UUID, {
           artist_name: artist.artist_name,
@@ -44,34 +53,33 @@ export class TourService {
         });
       });
 
-      // Step 3: Combine data and fetch Ticketmaster events concurrently
-      const artistPromises = tmidData.map(async (tmidItem): Promise<ArtistWithEvents | null> => {
+      // Step 3: Combine data and fetch Ticketmaster events
+      const results: ArtistData[] = [];
+      
+      for (const tmidItem of tmidData) {
         const artistDetails = artistMap.get(tmidItem.artist_uuid);
         if (!artistDetails) {
           console.warn(`No artist details found for UUID: ${tmidItem.artist_uuid}`);
-          return null;
+          continue;
         }
 
         const events = await ticketmasterService.getArtistEvents(tmidItem.tmid, 3);
         const hasEvents = events.length > 0;
 
-        return {
+        results.push({
           artist_uuid: tmidItem.artist_uuid,
           artist_name: artistDetails.artist_name,
           artist_image: artistDetails.artist_image,
           tmid: tmidItem.tmid,
           hasEvents,
           events,
-        };
-      });
+        });
+      }
 
-      const results = await Promise.all(artistPromises);
-
-      const validResults = results.filter((result): result is ArtistWithEvents => result !== null);
-      console.log(`Successfully processed ${validResults.length} artists with events.`);
+      console.log(`Successfully processed ${results.length} artists with events.`);
 
       // Sort artists with events to the top
-      return validResults.sort((a, b) => {
+      return results.sort((a, b) => {
         if (a.hasEvents && !b.hasEvents) return -1;
         if (!a.hasEvents && b.hasEvents) return 1;
         return a.artist_name.localeCompare(b.artist_name);

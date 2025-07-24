@@ -6,11 +6,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, Calendar, MapPin } from "lucide-react";
 import { tourService } from "@/services/tourService";
 import { ticketmasterService } from "@/services/ticketmasterService";
-import type { ArtistWithEvents } from "@/types/tour";
 import Image from "next/image";
 
+interface ArtistData {
+  artist_uuid: string;
+  artist_name: string;
+  artist_image: string | null;
+  tmid: string;
+  hasEvents: boolean;
+  events: any[];
+}
+
 export default function OnTourPage() {
-  const [artists, setArtists] = useState<ArtistWithEvents[]>([]);
+  const [artists, setArtists] = useState<ArtistData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
