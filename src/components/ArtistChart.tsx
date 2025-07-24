@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Chart } from "chart.js/auto";
-import { Artist } from "@/services/artistService";
+import type { Artist } from "@/types/artists";
 import {
   Dialog,
   DialogContent,
@@ -178,12 +178,12 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
                   onClick={() => selectedArtist && onVote(selectedArtist)}
                   className={cn(
                     "text-white px-4 py-2 rounded",
-                    selectedArtists.includes(selectedArtist?.UUID || '') 
-                      ? "bg-green-500 hover:bg-green-600" 
+                    selectedArtists.includes(selectedArtist?.uuid || "")
+                      ? "bg-green-500 hover:bg-green-600"
                       : "bg-purple-500 hover:bg-purple-600"
                   )}
                 >
-                  {selectedArtists.includes(selectedArtist?.UUID || '') ? "VOTED" : "TOP 25 VOTE"}
+                  {selectedArtists.includes(selectedArtist?.uuid || "") ? "VOTED" : "TOP 25 VOTE"}
                 </button>
               </div>
             </div>
