@@ -39,12 +39,9 @@ const getArtistPosition = (primaryVibe: string | null, chartSize: number, index:
 
 const extractYouTubeVideoId = (url: string): string | null => {
   const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&
-?#]+)/,
-    /youtube\.com\/v\/([^&
-?#]+)/,
-    /youtube\.com\/watch\?.*v=([^&
-?#]+)/
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/,
+    /youtube\.com\/v\/([^&?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&?#]+)/
   ];
   
   for (const pattern of patterns) {
