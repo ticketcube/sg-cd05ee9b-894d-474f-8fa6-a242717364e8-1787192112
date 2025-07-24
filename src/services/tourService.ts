@@ -1,7 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { eventCacheService } from "./eventCacheService";
 import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
-import type { Tables } from "@/integrations/supabase/types";
 
 export class TourService {
   async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {

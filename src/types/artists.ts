@@ -14,3 +14,11 @@ export type VibeArtist = Pick<
   | 'artist_tiktok_videoid'
   | 'artist_tiktok_username'
 >;
+
+export type ArtistColumn = keyof Pick<
+  ArtistRow,
+  | "uuid"
+  | "artist_name"
+  | "artist_genre"
+  | "artist_image"
+>;

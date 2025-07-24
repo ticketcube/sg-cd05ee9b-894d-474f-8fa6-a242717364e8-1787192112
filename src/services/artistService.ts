@@ -1,326 +1,333 @@
+
 import { supabase } from "@/integrations/supabase/client";
+import type { Artist, ArtistWithVoteCount } from "@/types/artists";
 
-export interface Artist {
-  UUID: string;
-  artist_name: string;
-  artist_home?: string | null;
-  artist_otwcreateddate?: string | null;
-  artist_audiolink?: string | null;
-  artist_videolink?: string | null;
-  artist_image?: string | null;
-  artist_totallisteners?: number | null;
-  artist_totalwatchers?: number | null;
-  artist_otwcategory?: string | null;
-  artist_genre?: string | null;
-  artist_relatedartists?: string[] | null;
-  artist_bio?: string | null;
-  artist_otwid?: string | null;
-  artist_tiktok_username?: string | null;
-  artist_tiktok_videoid?: string | null;
-  Top_List?: string | null;
-}
+export class ArtistService {
+  async getArtists(
+    page: number = 1,
+    limit: number = 10,
+    sortBy: string = "artist_name",
+    ascending: boolean = true,
+    searchQuery: string = ""
+  ): Promise<{ artists: Artist[]; count: number }> {
+    try {
+      let query = supabase
+        .from("artists")
+        .select("*", { count: "exact" });
 
-interface GetArtistsParams {
-  category?: string;
-  genres?: string[];
-}
-
-export const artistService = {
-  async getArtists(params?: GetArtistsParams): Promise<Artist[]> {
-    let query = supabase.from("artists").select("*");
-    
-    if (params?.category) {
-      query = query.eq("artist_otwcategory", params.category);
-    }
-    
-    if (params?.genres && params.genres.length > 0) {
-      // Since genre is now a text field, we'll use ilike for partial matching
-      const genreConditions = params.genres.map(genre => 
-        `artist_genre.ilike.%${genre}%`
-      ).join(",");
-      query = query.or(genreConditions);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error("Error fetching artists:", error);
-      throw error;
-    }
-    
-    return data || [];
-  },
-
-  async getArtistsByGenre(genre: string): Promise<Artist[]> {
-    const { data, error } = await supabase
-      .from('artists')
-      .select('*')
-      .eq('artist_genre', genre);
-
-    if (error) {
-      console.error(`Error fetching artists for genre ${genre}:`, error);
-      throw error;
-    }
-
-    return data || [];
-  },
-
-  async submitVote(vote: { username: string; artist_uuid: string; artist_otwid: number | null }): Promise<void> {
-    const { error } = await supabase
-      .from("top25_votes")
-      .insert([{
-        username: vote.username,
-        artist_uuid: vote.artist_uuid,
-        artist_otwid: vote.artist_otwid,
-      }]);
-    
-    if (error) {
-      console.error("Error submitting vote:", error);
-      throw error;
-    }
-  },
-
-  async isAdmin(email: string): Promise<boolean> {
-    const { data, error } = await supabase
-      .from("admin_users")
-      .select("email")
-      .eq("email", email)
-      .single();
-
-    if (error) {
-      console.error("Error checking admin status:", error.message);
-      return false;
-    }
-
-    return !!data;
-  },
-
-  async getArtistVoteCounts(): Promise<{ artist_name: string; vote_count: number }[]> {
-    // 1. Fetch all artists
-    const { data: artists, error: artistError } = await supabase
-      .from('artists')
-      .select('UUID, artist_name');
-
-    if (artistError) {
-      console.error("Error fetching artists:", artistError);
-      throw artistError;
-    }
-
-    // 2. Fetch all votes
-    const { data: votes, error: voteError } = await supabase
-      .from('top25_votes')
-      .select('artist_uuid');
-
-    if (voteError) {
-      console.error("Error fetching votes:", voteError);
-      throw voteError;
-    }
-
-    // 3. Create a map of artist_uuid to vote count
-    const voteCountMap = new Map<string, number>();
-    if (votes) {
-      for (const vote of votes) {
-        if (vote.artist_uuid) {
-            voteCountMap.set(vote.artist_uuid, (voteCountMap.get(vote.artist_uuid) || 0) + 1);
-        }
+      if (searchQuery) {
+        query = query.ilike("artist_name", `%${searchQuery}%`);
       }
-    }
 
-    // 4. Combine artists and vote counts
-    return (artists || []).map(artist => ({
-      artist_name: artist.artist_name,
-      vote_count: voteCountMap.get(artist.UUID) || 0
-    }));
-  },
+      query = query
+        .order(sortBy, { ascending })
+        .range((page - 1) * limit, page * limit - 1);
 
-  async getGenreCounts(): Promise<{ genre: string; count: number }[]> {
-    const { data: artists, error } = await supabase
-      .from('artists')
-      .select('artist_genre');
+      const { data, error, count } = await query;
 
-    if (error) {
-      console.error("Error fetching artists for genre counts:", error);
-      throw error;
-    }
-
-    // Count genres
-    const genreCountMap = new Map<string, number>();
-    
-    if (artists) {
-      for (const artist of artists) {
-        if (artist.artist_genre && artist.artist_genre.trim()) {
-          const genre = artist.artist_genre.trim();
-          genreCountMap.set(genre, (genreCountMap.get(genre) || 0) + 1);
-        }
+      if (error) {
+        console.error("Error fetching artists:", error);
+        throw error;
       }
-    }
 
-    // Convert to array and sort by count (descending)
-    return Array.from(genreCountMap.entries())
-      .map(([genre, count]) => ({ genre, count }))
-      .sort((a, b) => b.count - a.count);
-  },
+      return { artists: data as Artist[], count: count || 0 };
+    } catch (error) {
+      console.error("Unexpected error in getArtists:", error);
+      return { artists: [], count: 0 };
+    }
+  }
 
   async getAllArtists(): Promise<Artist[]> {
-    const { data, error } = await supabase
-      .from('artists')
-      .select('*');
-
-    if (error) {
-      console.error("Error fetching all artists:", error);
-      throw error;
+    try {
+      const { data, error } = await supabase.from("artists").select("*");
+      if (error) {
+        console.error("Error fetching all artists:", error);
+        throw error;
+      }
+      return data as Artist[];
+    } catch (error) {
+      console.error("Unexpected error in getAllArtists:", error);
+      return [];
     }
+  }
 
-    return data || [];
-  },
+  async getArtistsByGenre(genre: string): Promise<Artist[]> {
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("*")
+        .eq("artist_genre", genre);
 
-  async getTop100Artists(): Promise<(Artist & { vote_count: number })[]> {
-    // 1. Fetch artists with Top_List = "100"
-    const { data: artists, error: artistError } = await supabase
-      .from('artists')
-      .select('*')
-      .eq('Top_List', '100');
-
-    if (artistError) {
-      console.error("Error fetching Top 100 artists:", artistError);
-      throw artistError;
+      if (error) {
+        console.error(`Error fetching artists for genre ${genre}:`, error);
+        throw error;
+      }
+      return data as Artist[];
+    } catch (error) {
+      console.error(`Unexpected error in getArtistsByGenre for ${genre}:`, error);
+      return [];
     }
+  }
 
-    // 2. Fetch all votes
-    const { data: votes, error: voteError } = await supabase
-      .from('top25_votes')
-      .select('artist_uuid');
+  async getArtistById(id: string): Promise<Artist | null> {
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("*")
+        .eq("uuid", id)
+        .single();
 
-    if (voteError) {
-      console.error("Error fetching votes:", voteError);
-      throw voteError;
-    }
-
-    // 3. Create a map of artist_uuid to vote count
-    const voteCountMap = new Map<string, number>();
-    if (votes) {
-      for (const vote of votes) {
-        if (vote.artist_uuid) {
-          voteCountMap.set(vote.artist_uuid, (voteCountMap.get(vote.artist_uuid) || 0) + 1);
+      if (error) {
+        if (error.code === "PGRST116") { // "Not a single row was found"
+          console.log(`Artist with id ${id} not found.`);
+          return null;
         }
+        console.error(`Error fetching artist with id ${id}:`, error);
+        throw error;
       }
+      return data as Artist;
+    } catch (error) {
+      console.error(`Unexpected error in getArtistById for id ${id}:`, error);
+      return null;
     }
+  }
 
-    // 4. Combine artists with vote counts and sort
-    const artistsWithVotes = (artists || []).map(artist => ({
-      ...artist,
-      vote_count: voteCountMap.get(artist.UUID) || 0
-    }));
-
-    // 5. Sort by vote count (descending), then alphabetically by name
-    return artistsWithVotes.sort((a, b) => {
-      if (a.vote_count !== b.vote_count) {
-        return b.vote_count - a.vote_count;
+  async getRelatedArtists(artistId: string): Promise<Artist[]> {
+    try {
+      const mainArtist = await this.getArtistById(artistId);
+      if (!mainArtist || !mainArtist.artist_relatedartists) {
+        return [];
       }
-      return a.artist_name.localeCompare(b.artist_name);
-    });
-  },
 
-  async getTop100ArtistsPaginated(page: number = 0, pageSize: number = 20): Promise<{
-    artists: (Artist & { vote_count: number })[];
-    hasMore: boolean;
-    totalCount: number;
-  }> {
-    // 1. Get total count of Top 100 artists
-    const { count: totalCount, error: countError } = await supabase
-      .from('artists')
-      .select('*', { count: 'exact', head: true })
-      .eq('Top_List', '100');
+      const relatedArtistNames = mainArtist.artist_relatedartists;
+      if (relatedArtistNames.length === 0) {
+        return [];
+      }
 
-    if (countError) {
-      console.error("Error fetching Top 100 artists count:", countError);
-      throw countError;
+      const { data, error } = await supabase
+        .from("artists")
+        .select("*")
+        .in("artist_name", relatedArtistNames);
+
+      if (error) {
+        console.error(`Error fetching related artists for ${mainArtist.artist_name}:`, error);
+        return [];
+      }
+
+      return data.filter(artist => artist.uuid !== artistId) as Artist[];
+    } catch (error) {
+      console.error(`Unexpected error in getRelatedArtists for artistId ${artistId}:`, error);
+      return [];
     }
+  }
 
-    // 2. Fetch ALL artists with Top_List = "100" (no pagination yet)
-    const { data: allArtists, error: artistError } = await supabase
-      .from('artists')
-      .select('*')
-      .eq('Top_List', '100');
+  async getGenreCounts(): Promise<{ [key: string]: number }> {
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("artist_genre");
 
-    if (artistError) {
-      console.error("Error fetching Top 100 artists:", artistError);
-      throw artistError;
-    }
+      if (error) {
+        console.error("Error fetching genre counts:", error);
+        return {};
+      }
 
-    // 3. Fetch ALL votes for ALL Top 100 artists
-    const allArtistUUIDs = (allArtists || []).map(artist => artist.UUID);
-    const { data: votes, error: voteError } = await supabase
-      .from('top25_votes')
-      .select('artist_uuid')
-      .in('artist_uuid', allArtistUUIDs);
-
-    if (voteError) {
-      console.error("Error fetching votes:", voteError);
-      throw voteError;
-    }
-
-    // 4. Create a map of artist_uuid to vote count
-    const voteCountMap = new Map<string, number>();
-    if (votes) {
-      for (const vote of votes) {
-        if (vote.artist_uuid) {
-          voteCountMap.set(vote.artist_uuid, (voteCountMap.get(vote.artist_uuid) || 0) + 1);
+      const counts = data.reduce((acc, artist) => {
+        if (artist.artist_genre) {
+          acc[artist.artist_genre] = (acc[artist.artist_genre] || 0) + 1;
         }
-      }
+        return acc;
+      }, {} as { [key: string]: number });
+
+      return counts;
+    } catch (error) {
+      console.error("Unexpected error in getGenreCounts:", error);
+      return {};
     }
+  }
 
-    // 5. Combine ALL artists with vote counts and sort by vote count
-    const allArtistsWithVotes = (allArtists || []).map(artist => ({
-      ...artist,
-      vote_count: voteCountMap.get(artist.UUID) || 0
-    }));
+  async getVibeCounts(): Promise<{ [key: string]: number }> {
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("primary_vibe, secondary_vibe");
 
-    // 6. Sort ALL artists by vote count (descending), then alphabetically by name
-    const sortedAllArtists = allArtistsWithVotes.sort((a, b) => {
-      if (a.vote_count !== b.vote_count) {
-        return b.vote_count - a.vote_count;
+      if (error) {
+        console.error("Error fetching vibe counts:", error);
+        return {};
       }
-      return a.artist_name.localeCompare(b.artist_name);
-    });
 
-    // 7. Apply pagination to the sorted results
-    const startIndex = page * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedArtists = sortedAllArtists.slice(startIndex, endIndex);
+      const counts = data.reduce((acc, artist) => {
+        if (artist.primary_vibe) {
+          acc[artist.primary_vibe] = (acc[artist.primary_vibe] || 0) + 1;
+        }
+        if (artist.secondary_vibe) {
+          acc[artist.secondary_vibe] = (acc[artist.secondary_vibe] || 0) + 1;
+        }
+        return acc;
+      }, {} as { [key: string]: number });
 
-    return {
-      artists: paginatedArtists,
-      hasMore: endIndex < sortedAllArtists.length,
-      totalCount: totalCount || 0
-    };
-  },
-
-  async getAllArtistsForVibes() {
-    const { data, error } = await supabase
-      .from('artists')
-      .select(`
-        UUID,
-        artist_name,
-        artist_image,
-        primary_vibe,
-        secondary_vibe,
-        artist_genre,
-        artist_videolink,
-        artist_tiktok_videoid,
-        artist_tiktok_username
-      `)
-      .not('primary_vibe', 'is', null)
-      .not('artist_name', 'is', null)
-      .limit(500);
-
-    if (error) {
-      console.error('Error fetching artists for vibes chart:', error);
-      throw error;
+      return counts;
+    } catch (error) {
+      console.error("Unexpected error in getVibeCounts:", error);
+      return {};
     }
+  }
 
-    return data;
-  },
-};
+  async getArtistsByVibe(vibe: string): Promise<Artist[]> {
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("*")
+        .or(`primary_vibe.eq.${vibe},secondary_vibe.eq.${vibe}`);
 
-export default artistService;
+      if (error) {
+        console.error(`Error fetching artists for vibe ${vibe}:`, error);
+        throw error;
+      }
+      return data as Artist[];
+    } catch (error) {
+      console.error(`Unexpected error in getArtistsByVibe for vibe ${vibe}:`, error);
+      return [];
+    }
+  }
+
+  async getTopVotedArtists(limit: number = 25): Promise<ArtistWithVoteCount[]> {
+    try {
+      const { data: votes, error: votesError } = await supabase
+        .from("top25_votes")
+        .select("artist_uuid");
+
+      if (votesError) {
+        console.error("Error fetching votes:", votesError);
+        return [];
+      }
+
+      const voteCounts = votes.reduce((acc, vote) => {
+        if (vote.artist_uuid) {
+          acc[vote.artist_uuid] = (acc[vote.artist_uuid] || 0) + 1;
+        }
+        return acc;
+      }, {} as { [key: string]: number });
+
+      const sortedArtistUuids = Object.keys(voteCounts).sort(
+        (a, b) => voteCounts[b] - voteCounts[a]
+      );
+
+      const topArtistUuids = sortedArtistUuids.slice(0, limit);
+
+      if (topArtistUuids.length === 0) {
+        return [];
+      }
+
+      const { data: artists, error: artistsError } = await supabase
+        .from("artists")
+        .select("*")
+        .in("uuid", topArtistUuids);
+
+      if (artistsError) {
+        console.error("Error fetching top voted artists details:", artistsError);
+        return [];
+      }
+
+      const artistsWithVotes = artists.map(artist => ({
+        ...artist,
+        vote_count: voteCounts[artist.uuid] || 0,
+      }));
+
+      artistsWithVotes.sort((a, b) => b.vote_count - a.vote_count);
+
+      return artistsWithVotes as ArtistWithVoteCount[];
+    } catch (error) {
+      console.error("Unexpected error in getTopVotedArtists:", error);
+      return [];
+    }
+  }
+
+  async getArtistsWithTikTok(): Promise<Artist[]> {
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("*")
+        .not("artist_tiktok_username", "is", null)
+        .not("artist_tiktok_username", "eq", "")
+        .not("artist_tiktok_videoid", "is", null)
+        .not("artist_tiktok_videoid", "eq", "");
+
+      if (error) {
+        console.error("Error fetching artists with TikTok:", error);
+        return [];
+      }
+      return data as Artist[];
+    } catch (error) {
+      console.error("Unexpected error in getArtistsWithTikTok:", error);
+      return [];
+    }
+  }
+
+  async getTopArtistsByListeners(limit: number = 100): Promise<Artist[]> {
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("*")
+        .order("artist_totallisteners", { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.error("Error fetching top artists by listeners:", error);
+        return [];
+      }
+      return data as Artist[];
+    } catch (error) {
+      console.error("Unexpected error in getTopArtistsByListeners:", error);
+      return [];
+    }
+  }
+  
+  async getTopVotedArtistsWithDetails(limit: number = 25): Promise<ArtistWithVoteCount[]> {
+    try {
+      const { data: votes, error: votesError } = await supabase
+        .rpc('get_artist_vote_counts');
+
+      if (votesError) {
+        console.error("Error fetching vote counts:", votesError);
+        return [];
+      }
+
+      const topVotes = votes.slice(0, limit);
+      const artistNames = topVotes.map(v => v.artist_name);
+
+      if (artistNames.length === 0) return [];
+
+      const { data: artists, error: artistsError } = await supabase
+        .from("artists")
+        .select("*")
+        .in("artist_name", artistNames);
+
+      if (artistsError) {
+        console.error("Error fetching artist details:", artistsError);
+        return [];
+      }
+
+      const artistMap = new Map(artists.map(a => [a.artist_name, a]));
+
+      const result = topVotes
+        .map(vote => {
+          const artistDetails = artistMap.get(vote.artist_name);
+          if (!artistDetails) return null;
+          return {
+            ...artistDetails,
+            vote_count: vote.vote_count,
+          };
+        })
+        .filter((a): a is ArtistWithVoteCount => a !== null);
+
+      return result;
+    } catch (error) {
+      console.error("Error in getTopVotedArtistsWithDetails:", error);
+      return [];
+    }
+  }
+}
+
+export const artistService = new ArtistService();

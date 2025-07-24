@@ -6,6 +6,29 @@ import { Badge } from '@/components/ui/badge';
 import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
 import Image from 'next/image';
 import type { VibeArtist } from '@/types/artists';
+import { artistService } from "@/services/artistService";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import VibeArtistPopup from "./VibeArtistPopup";
 
 interface VibeChartProps {
   artists: VibeArtist[];
@@ -76,8 +99,46 @@ const getArtistThumbnail = (artist: VibeArtist): string | null => {
   return null;
 };
 
-const VibeChart = ({ artists }: VibeChartProps) => {
-  const chartSize = 700;
+interface VibeData {
+  vibe: string;
+  count: number;
+  fill: string;
+}
+
+export default function VibeChart() {
+  const [chartData, setChartData] = useState<VibeData[]>([]);
+  const [chartConfig, setChartConfig] = useState<ChartConfig>({
+    count: {
+      label: "Count",
+    },
+  });
+
+  useEffect(() => {
+    const getVibeData = async () => {
+      const data = await artistService.getVibeCounts();
+      const formattedData: VibeData[] = Object.entries(data).map(([vibe, count]) => ({
+        vibe,
+        count: Number(count),
+        fill: `var(--color-${vibe})`,
+      }));
+      setChartData(formattedData);
+
+      const vibeConfig = formattedData.reduce((acc, item) => {
+        acc[item.vibe] = {
+          color: item.fill,
+          label: item.vibe,
+        };
+        return acc;
+      }, {} as ChartConfig);
+      setChartConfig(vibeConfig);
+    };
+    getVibeData();
+  }, []);
+
+  const handleBarClick = (vibe: string) => {
+    setSelectedVibe(vibe);
+    setIsPopupOpen(true);
+  };
 
   const positionedArtists = useMemo(() => {
     const artistsByVibe = artists.reduce((acc, artist) => {
@@ -217,6 +278,34 @@ const VibeChart = ({ artists }: VibeChartProps) => {
           </div>
         </div>
       </CardContent>
+      <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+        <BarChart accessibilityLayer data={chartData}>
+          <CartesianGrid vertical={false} />
+          <YAxis
+            tickFormatter={(value) =>
+              chartConfig[value]?.label || value
+            }
+          />
+          <XAxis dataKey="count" type="number" hide />
+          <ChartTooltip
+            cursor={false}
+            content={<ChartTooltipContent hideLabel />}
+          />
+          <Bar dataKey="count" layout="vertical" radius={5}>
+            {chartData.map((entry) => (
+              <Cell
+                key={`cell-${entry.vibe}`}
+                fill={chartConfig[entry.vibe]?.color}
+                onClick={() => handleBarClick(entry.vibe)}
+                className="cursor-pointer"
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ChartContainer>
+      {isPopupOpen && selectedVibe && (
+        <VibeArtistPopup vibe={selectedVibe} onClose={() => setIsPopupOpen(false)} />
+      )}
     </Card>
   );
 };
