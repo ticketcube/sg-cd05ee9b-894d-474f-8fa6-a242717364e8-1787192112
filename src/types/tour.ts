@@ -1,4 +1,3 @@
-
 export interface TicketmasterEvent {
   id: string;
   name: string;
