@@ -9,7 +9,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { votingService } from "@/services/votingService";
-import Top100ArtistPopup from "@/components/Top100ArtistPopup";
+import { Top100ArtistPopup } from "@/components/Top100ArtistPopup";
 
 type VotingState = "initial" | "voting" | "submitted";
 
@@ -28,14 +28,14 @@ export default function Top100Page() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
+  const page = useRef(1);
   const observer = useRef<IntersectionObserver>();
 
   const loadArtists = useCallback(async (pageToLoad: number, refresh = false) => {
-    if (loadingMore) return;
+    if (loadingMore && !refresh) return;
     
     if (refresh) {
       setLoading(true);
@@ -58,6 +58,7 @@ export default function Top100Page() {
   }, [loadingMore]);
 
   useEffect(() => {
+    page.current = 1;
     loadArtists(1, true);
   }, [loadArtists]);
 
@@ -67,10 +68,8 @@ export default function Top100Page() {
     
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) {
-        setPage(prevPage => {
-          loadArtists(prevPage + 1);
-          return prevPage + 1;
-        });
+        page.current += 1;
+        loadArtists(page.current);
       }
     });
     
@@ -129,6 +128,7 @@ export default function Top100Page() {
       await votingService.submitVotes(votes);
       setVotingState("submitted");
       setIsSubmissionDialogOpen(true);
+      page.current = 1;
       loadArtists(1, true);
     } catch (error) {
       console.error("Error submitting votes:", error);
@@ -337,7 +337,10 @@ export default function Top100Page() {
       {selectedArtist && (
         <Top100ArtistPopup 
           artist={selectedArtist} 
+          isOpen={!!selectedArtist}
           onClose={() => setSelectedArtist(null)} 
+          onVote={handleVote}
+          selectedArtists={selectedArtists}
         />
       )}
 

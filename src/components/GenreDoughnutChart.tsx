@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { Chart } from "chart.js/auto";
 
 interface GenreData {
-  genre: string;
+  name: string;
   count: number;
 }
 
@@ -48,7 +48,7 @@ export function GenreDoughnutChart({ genreData, onGenreClick }: GenreDoughnutCha
     const newChart = new Chart(ctx, {
       type: "doughnut",
       data: {
-        labels: genreData.map(item => item.genre),
+        labels: genreData.map(item => item.name),
         datasets: [{
           data: genreData.map(item => item.count),
           backgroundColor: backgroundColors,
@@ -62,9 +62,9 @@ export function GenreDoughnutChart({ genreData, onGenreClick }: GenreDoughnutCha
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'bottom',
+            position: "bottom",
             labels: {
-              color: 'white',
+              color: "white",
               font: {
                 size: 12
               },
@@ -73,14 +73,14 @@ export function GenreDoughnutChart({ genreData, onGenreClick }: GenreDoughnutCha
             }
           },
           tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            titleColor: 'white',
-            bodyColor: 'white',
-            borderColor: 'rgba(255, 255, 255, 0.2)',
+            backgroundColor: "rgba(0, 0, 0, 0.9)",
+            titleColor: "white",
+            bodyColor: "white",
+            borderColor: "rgba(255, 255, 255, 0.2)",
             borderWidth: 1,
             titleFont: {
               size: 16,
-              weight: 'bold'
+              weight: "bold"
             },
             bodyFont: {
               size: 14
@@ -94,7 +94,7 @@ export function GenreDoughnutChart({ genreData, onGenreClick }: GenreDoughnutCha
                 return `# of Artists Covered: ${context.parsed}`;
               },
               afterLabel: () => {
-                return 'Click to view artists';
+                return "Click to view artists";
               }
             }
           }
@@ -102,14 +102,14 @@ export function GenreDoughnutChart({ genreData, onGenreClick }: GenreDoughnutCha
         onClick: (event, elements) => {
           if (elements.length > 0) {
             const elementIndex = elements[0].index;
-            const selectedGenre = genreData[elementIndex].genre;
+            const selectedGenre = genreData[elementIndex].name;
             onGenreClick(selectedGenre);
           }
         },
         onHover: (event, chartElement) => {
           const target = event.native?.target as HTMLElement;
           if (target) {
-            target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+            target.style.cursor = chartElement[0] ? "pointer" : "default";
           }
         }
       }

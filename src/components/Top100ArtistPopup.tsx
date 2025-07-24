@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -5,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import ArtistVideoPlayer from "./ArtistVideoPlayer";
-import { Artist } from "@/services/artistService";
+import type { Artist } from "@/types/artists";
 
 interface Top100ArtistPopupProps {
   artist: Artist | null;
@@ -51,7 +52,7 @@ export function Top100ArtistPopup({
     setVideoError(false);
   };
 
-  const isSelected = selectedArtists.includes(artist.UUID);
+  const isSelected = selectedArtists.includes(artist.uuid);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

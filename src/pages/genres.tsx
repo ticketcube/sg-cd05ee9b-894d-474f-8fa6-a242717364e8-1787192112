@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { artistService } from "@/services/artistService";
@@ -16,6 +17,7 @@ export default function GenresPage() {
 
   useEffect(() => {
     const fetchGenres = async () => {
+      setLoading(true);
       const counts = await artistService.getGenreCounts();
       const genreData: GenreData[] = Object.entries(counts).map(
         ([name, count]) => ({
@@ -25,9 +27,9 @@ export default function GenresPage() {
       );
       setGenreData(genreData);
       
-      // Calculate total artists
       const total = genreData.reduce((sum, item) => sum + item.count, 0);
       setTotalArtists(total);
+      setLoading(false);
     };
     fetchGenres();
   }, []);

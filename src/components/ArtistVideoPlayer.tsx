@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Play, X, VideoOff } from "lucide-react";
-import { Artist } from "@/services/artistService";
+import type { Artist } from "@/types/artists";
 
 interface ArtistForPlayer {
   artist_name: string;
@@ -38,10 +38,10 @@ const extractYouTubeVideoId = (url: string): string | null => {
 };
 
 const isValidImageUrl = (url: string | null | undefined): url is string => {
-  if (!url || typeof url !== 'string' || url.trim() === '' || url === 'null' || url === 'undefined') {
+  if (!url || typeof url !== "string" || url.trim() === "" || url === "null" || url === "undefined") {
     return false;
   }
-  return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('/');
+  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/");
 };
 
 export default function ArtistVideoPlayer({
@@ -155,7 +155,7 @@ export default function ArtistVideoPlayer({
               src={videoContent.thumbnailUrl} 
               alt={`${artist.artist_name} video thumbnail`}
               fill
-              style={{ objectFit: 'cover' }}
+              style={{ objectFit: "cover" }}
               onError={() => setVideoError(true)}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
