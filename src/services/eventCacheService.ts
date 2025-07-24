@@ -115,9 +115,9 @@ export class EventCacheService {
       // Get all artists with TMIDs from the artists table
       const { data: artistsData, error } = await supabase
         .from("artists")
-        .select("UUID, artist_tmid")
-        .not("artist_tmid", "is", null)
-        .not("artist_tmid", "eq", "");
+        .select("UUID, tmid")
+        .not("tmid", "is", null)
+        .not("tmid", "eq", "");
 
       if (error || !artistsData) {
         console.error("Error fetching artists with TMIDs:", error);
@@ -128,10 +128,11 @@ export class EventCacheService {
 
       // Refresh events for each artist (with delay to avoid rate limiting)
       for (let i = 0; i < artistsData.length; i++) {
-        const { UUID: artist_uuid, artist_tmid } = artistsData[i];
+        const { UUID: artist_uuid, tmid } = artistsData[i];
+        if (!tmid) continue;
         console.log(`Refreshing events for artist ${i + 1}/${artistsData.length}: ${artist_uuid}`);
         
-        await this.refreshEventsForArtist(artist_uuid, artist_tmid);
+        await this.refreshEventsForArtist(artist_uuid, tmid);
         
         // Add delay to avoid hitting Ticketmaster rate limits
         if (i < artistsData.length - 1) {

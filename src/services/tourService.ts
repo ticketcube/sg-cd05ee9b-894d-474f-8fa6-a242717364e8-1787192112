@@ -6,12 +6,12 @@ import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
 export class TourService {
   async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
     try {
-      // Query artists table directly for records with artist_tmid
+      // Query artists table directly for records with tmid
       const { data: artistsData, error: artistsError } = await supabase
         .from("artists")
-        .select("UUID, artist_name, artist_image, artist_tmid")
-        .not("artist_tmid", "is", null)
-        .not("artist_tmid", "eq", "");
+        .select("UUID, artist_name, artist_image, tmid")
+        .not("tmid", "is", null)
+        .not("tmid", "eq", "");
 
       if (artistsError) {
         console.error("Error fetching artists with TMIDs:", artistsError);
@@ -29,7 +29,7 @@ export class TourService {
       const results: ArtistWithEvents[] = [];
       
       for (const artist of artistsData) {
-        if (!artist.artist_tmid) continue; // Skip if tmid is null or empty
+        if (!artist.tmid) continue; // Skip if tmid is null or empty
 
         // Get cached events for this artist
         const events: TicketmasterEvent[] = await eventCacheService.getCachedEventsForArtist(artist.UUID);
@@ -39,7 +39,7 @@ export class TourService {
           artist_uuid: artist.UUID,
           artist_name: artist.artist_name,
           artist_image: artist.artist_image,
-          tmid: artist.artist_tmid,
+          tmid: artist.tmid,
           hasEvents,
           events: events.slice(0, 3), // Limit to 3 events for display
         });
