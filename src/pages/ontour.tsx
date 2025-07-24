@@ -16,6 +16,7 @@ export default function OnTourPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [cacheStats, setCacheStats] = useState<{ totalEvents: number; activeArtists: number; lastUpdated: string | null } | null>(null);
+  const [testResults, setTestResults] = useState<string | null>(null);
 
   useEffect(() => {
     loadArtists();
@@ -72,6 +73,52 @@ export default function OnTourPage() {
       }
     } catch (error) {
       console.error("Error testing single artist:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const testApiDirectly = async () => {
+    try {
+      setRefreshing(true);
+      setTestResults("Testing API...");
+      
+      // Test with a known artist - let's use the first one from our database
+      const testTmid = "2503872"; // "August 8" from our database query
+      
+      console.log(`Testing Ticketmaster API directly with TMID: ${testTmid}`);
+      setTestResults(`Testing with TMID: ${testTmid}...`);
+      
+      // Call our API endpoint directly
+      const response = await fetch(`/api/ticketmaster/events?attractionId=${testTmid}&size=5`);
+      const data = await response.json();
+      
+      console.log("API Response:", data);
+      
+      if (response.ok) {
+        const eventCount = data.events?.length || 0;
+        const totalElements = data.totalElements || 0;
+        
+        setTestResults(`✅ API Test Successful!
+        
+Response Status: ${response.status}
+Events Found: ${eventCount}
+Total Available: ${totalElements}
+        
+${eventCount > 0 ? `First Event: ${data.events[0]?.name || 'N/A'}` : 'No events found for this artist'}
+
+Raw Response: ${JSON.stringify(data, null, 2)}`);
+      } else {
+        setTestResults(`❌ API Test Failed!
+        
+Status: ${response.status}
+Error: ${data.message || 'Unknown error'}
+
+Raw Response: ${JSON.stringify(data, null, 2)}`);
+      }
+    } catch (error) {
+      console.error("Direct API test error:", error);
+      setTestResults(`❌ API Test Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setRefreshing(false);
     }
@@ -182,6 +229,10 @@ export default function OnTourPage() {
 
         {/* Action Buttons */}
         <div className="flex gap-2 mb-4">
+          <Button onClick={testApiDirectly} disabled={refreshing} variant="default">
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+            🧪 Test API Directly
+          </Button>
           <Button onClick={testSingleArtist} disabled={refreshing || artists.length === 0} variant="outline">
             <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
             Test Single Artist
@@ -191,6 +242,16 @@ export default function OnTourPage() {
             Refresh All Events {refreshing && "(This may take a few minutes)"}
           </Button>
         </div>
+
+        {/* Test Results */}
+        {testResults && (
+          <div className="bg-muted/50 rounded-lg p-4 mb-4">
+            <h3 className="font-semibold mb-2">API Test Results:</h3>
+            <pre className="text-sm whitespace-pre-wrap font-mono bg-background p-3 rounded border overflow-x-auto">
+              {testResults}
+            </pre>
+          </div>
+        )}
       </div>
 
       {artists.length === 0 ? (
