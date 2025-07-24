@@ -43,10 +43,10 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { tmid, size = "3", testAttraction = "false" } = req.query;
+  const { attractionId, size = "3", testAttraction = "false" } = req.query;
 
-  if (!tmid || typeof tmid !== "string") {
-    return res.status(400).json({ message: "tmid is required" });
+  if (!attractionId || typeof attractionId !== "string") {
+    return res.status(400).json({ message: "attractionId is required" });
   }
 
   const apiKey = process.env.TM_API_KEY;
@@ -58,7 +58,7 @@ export default async function handler(
   try {
     // If testAttraction is true, test the attractions endpoint first
     if (testAttraction === "true") {
-      const attractionUrl = `https://app.ticketmaster.com/discovery/v2/attractions/${tmid}.json?apikey=${apiKey}`;
+      const attractionUrl = `https://app.ticketmaster.com/discovery/v2/attractions/${attractionId}.json?apikey=${apiKey}`;
       console.log("Testing attraction URL:", attractionUrl);
       
       const attractionResponse = await fetch(attractionUrl);
@@ -71,8 +71,8 @@ export default async function handler(
       });
     }
 
-    // Regular events endpoint - Use tmid as attractionId parameter for Ticketmaster API
-    const url = `https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${tmid}&apikey=${apiKey}&size=${size}&sort=date,asc`;
+    // Regular events endpoint - Use attractionId parameter for Ticketmaster API
+    const url = `https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${attractionId}&apikey=${apiKey}&size=${size}&sort=date,asc`;
     console.log("Calling Ticketmaster API:", url.replace(apiKey, "***"));
     
     const response = await fetch(url);
