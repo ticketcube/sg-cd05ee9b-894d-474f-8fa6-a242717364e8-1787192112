@@ -1,6 +1,10 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService } from "./ticketmasterService";
 import type { TicketmasterEvent } from "@/types/tour";
+import type { Tables } from "@/integrations/supabase/types";
+
+type Artist = Tables<"artists">;
 
 interface CachedEvent {
   id: string;
@@ -23,42 +27,36 @@ interface CachedEvent {
 export class EventCacheService {
   async refreshEventsForArtist(artistUuid: string, tmid: string): Promise<void> {
     try {
-      // Fetch fresh events from Ticketmaster
-      const events = await ticketmasterService.getArtistEvents(tmid, 20); // Get more events for caching
+      const events = await ticketmasterService.getArtistEvents(tmid, 20);
       
-      // First, mark all existing events for this artist as inactive
       await supabase
         .from("ticketmaster_events")
         .update({ is_active: false, updated_at: new Date().toISOString() })
         .eq("artist_uuid", artistUuid);
 
-      // Insert or update events
-      for (const event of events) {
-        const venue = event._embedded?.venues?.[0];
-        
-        const eventData = {
-          event_id: event.id,
-          artist_uuid: artistUuid,
-          tmid: tmid,
-          event_name: event.name,
-          event_url: event.url,
-          event_date: event.dates.start.localDate,
-          event_time: event.dates.start.localTime || null,
-          venue_name: venue?.name || null,
-          venue_city: venue?.city.name || null,
-          venue_state: venue?.state?.name || null,
-          venue_country: venue?.country.name || null,
-          is_active: true,
-          updated_at: new Date().toISOString()
-        };
+      if (events.length > 0) {
+        const eventData = events.map(event => {
+          const venue = event._embedded?.venues?.[0];
+          return {
+            event_id: event.id,
+            artist_uuid: artistUuid,
+            tmid: tmid,
+            event_name: event.name,
+            event_url: event.url,
+            event_date: event.dates.start.localDate,
+            event_time: event.dates.start.localTime || null,
+            venue_name: venue?.name || null,
+            venue_city: venue?.city.name || null,
+            venue_state: venue?.state?.name || null,
+            venue_country: venue?.country.name || null,
+            is_active: true,
+            updated_at: new Date().toISOString()
+          };
+        });
 
-        // Use upsert to insert or update
         await supabase
           .from("ticketmaster_events")
-          .upsert(eventData, { 
-            onConflict: "event_id",
-            ignoreDuplicates: false 
-          });
+          .upsert(eventData, { onConflict: "event_id", ignoreDuplicates: false });
       }
 
       console.log(`Refreshed ${events.length} events for artist ${artistUuid}`);
@@ -74,7 +72,7 @@ export class EventCacheService {
         .select("*")
         .eq("artist_uuid", artistUuid)
         .eq("is_active", true)
-        .gte("event_date", new Date().toISOString().split('T')[0]) // Only future events
+        .gte("event_date", new Date().toISOString().split('T')[0])
         .order("event_date", { ascending: true })
         .limit(10);
 
@@ -83,7 +81,6 @@ export class EventCacheService {
         return [];
       }
 
-      // Convert cached events back to TicketmasterEvent format
       return (data as CachedEvent[]).map(event => ({
         id: event.event_id,
         name: event.event_name,
@@ -111,7 +108,6 @@ export class EventCacheService {
 
   async refreshAllArtistEvents(): Promise<void> {
     try {
-      // Get all artists with TMIDs from the artists table
       const { data: artistsData, error } = await supabase
         .from("artists")
         .select("UUID, tmid")
@@ -130,17 +126,13 @@ export class EventCacheService {
 
       console.log(`Starting refresh for ${artistsData.length} artists...`);
 
-      // Refresh events for each artist (with delay to avoid rate limiting)
       for (let i = 0; i < artistsData.length; i++) {
-        const artist = artistsData[i];
+        const artist = artistsData[i] as Artist;
         if (artist && artist.UUID && artist.tmid) {
           console.log(`Refreshing events for artist ${i + 1}/${artistsData.length}: ${artist.UUID}`);
-          
           await this.refreshEventsForArtist(artist.UUID, artist.tmid);
-          
-          // Add delay to avoid hitting Ticketmaster rate limits
           if (i < artistsData.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
+            await new Promise(resolve => setTimeout(resolve, 200));
           }
         }
       }
@@ -153,28 +145,35 @@ export class EventCacheService {
 
   async getEventStats(): Promise<{ totalEvents: number; activeArtists: number; lastUpdated: string | null }> {
     try {
-      const { data: eventCount } = await supabase
+      const { count: totalEvents } = await supabase
         .from("ticketmaster_events")
-        .select("id", { count: "exact" })
+        .select("id", { count: "exact", head: true })
         .eq("is_active", true)
         .gte("event_date", new Date().toISOString().split('T')[0]);
 
-      const { data: artistCount } = await supabase
+      const { data: artistData, error: artistError } = await supabase
         .from("ticketmaster_events")
-        .select("artist_uuid", { count: "exact" })
+        .select("artist_uuid")
         .eq("is_active", true)
         .gte("event_date", new Date().toISOString().split('T')[0]);
 
-      const { data: lastUpdate } = await supabase
+      if(artistError) throw artistError;
+
+      const activeArtists = new Set(artistData?.map(item => item.artist_uuid)).size;
+
+      const { data: lastUpdate, error: lastUpdateError } = await supabase
         .from("ticketmaster_events")
         .select("updated_at")
         .order("updated_at", { ascending: false })
-        .limit(1);
+        .limit(1)
+        .single();
+      
+      if(lastUpdateError) throw lastUpdateError;
 
       return {
-        totalEvents: eventCount?.length || 0,
-        activeArtists: new Set(artistCount?.map(item => item.artist_uuid)).size || 0,
-        lastUpdated: lastUpdate?.[0]?.updated_at || null
+        totalEvents: totalEvents || 0,
+        activeArtists: activeArtists || 0,
+        lastUpdated: lastUpdate?.updated_at || null
       };
     } catch (error) {
       console.error("Error getting event stats:", error);
