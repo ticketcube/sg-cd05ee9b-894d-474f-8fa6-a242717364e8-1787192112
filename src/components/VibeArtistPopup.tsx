@@ -38,10 +38,18 @@ export default function VibeArtistPopup({ artist, isOpen, onClose }: VibeArtistP
   const [videoError, setVideoError] = useState(false);
 
   const getVideoContent = () => {
+    // Debug logging
+    console.log("Artist data:", artist);
+    console.log("Artist video link:", artist.artist_videolink);
+    console.log("Artist TikTok video ID:", artist.artist_tiktok_videoid);
+    
     const sourceUrl = artist.artist_videolink ? artist.artist_videolink.split(",")[0].trim() : null;
+    console.log("Source URL after processing:", sourceUrl);
 
     if (sourceUrl) {
       const extractedVideoId = extractYouTubeVideoId(sourceUrl);
+      console.log("Extracted YouTube video ID:", extractedVideoId);
+      
       if (extractedVideoId) {
         return {
           type: "youtube",
@@ -61,6 +69,7 @@ export default function VibeArtistPopup({ artist, isOpen, onClose }: VibeArtistP
   };
 
   const videoContent = getVideoContent();
+  console.log("Final video content:", videoContent);
 
   const handlePlayVideo = () => {
     if (videoContent.type !== "none") {
