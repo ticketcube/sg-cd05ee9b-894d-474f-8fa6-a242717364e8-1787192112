@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -56,7 +57,6 @@ export default function ArtistVideoPlayer({
 
   const videoContent = useMemo(() => {
     let extractedVideoId: string | null = null;
-    let videoIsTikTok = false;
 
     const sourceUrl = videoOverrideId || (artist.artist_videolink ? artist.artist_videolink.split(",")[0].trim() : null);
 
@@ -74,7 +74,6 @@ export default function ArtistVideoPlayer({
     
     if (!extractedVideoId && artist.artist_tiktok_videoid) {
       extractedVideoId = artist.artist_tiktok_videoid;
-      videoIsTikTok = true;
       const tiktokThumbnail = isValidImageUrl(artist.artist_image) 
         ? artist.artist_image 
         : null;
@@ -150,14 +149,15 @@ export default function ArtistVideoPlayer({
         className={`relative ${sizeClasses[size]} rounded-lg overflow-hidden cursor-pointer group ${className}`}
         onClick={handlePlay}
       >
-        <div className="w-full h-full bg-cover bg-center bg-gray-800">
+        <div className="w-full h-full bg-cover bg-center bg-gray-800 relative">
           {isValidImageUrl(videoContent.thumbnailUrl) ? (
             <Image 
               src={videoContent.thumbnailUrl} 
               alt={`${artist.artist_name} video thumbnail`}
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: 'cover' }}
               onError={() => setVideoError(true)}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600">
