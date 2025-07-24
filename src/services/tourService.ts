@@ -1,10 +1,11 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService, ArtistWithEvents } from "./ticketmasterService";
 
 export class TourService {
   async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
     try {
-      // First, get all tmid records
+      // Step 1: Get all tmid records that are not null
       const { data: tmidData, error: tmidError } = await supabase
         .from("tmid")
         .select("artist_uuid, tmid")
@@ -19,63 +20,57 @@ export class TourService {
         console.log("No TMID records found");
         return [];
       }
+      console.log(`Fetched ${tmidData.length} TMID records.`);
 
-      console.log("Fetched TMID data:", tmidData.length, "records");
-
-      // Get artist UUIDs
+      // Step 2: Get all corresponding artist records
       const artistUuids = tmidData.map(item => item.artist_uuid);
-
-      // Fetch artist details for these UUIDs
       const { data: artistsData, error: artistsError } = await supabase
         .from("artists")
-        .select('"UUID", artist_name, artist_image')
+        .select(`"UUID", artist_name, artist_image`) // Use quoted "UUID" for case-sensitivity
         .in('"UUID"', artistUuids);
 
       if (artistsError) {
         console.error("Error fetching artists:", artistsError);
         return [];
       }
+      console.log(`Fetched ${artistsData?.length || 0} artist records.`);
 
-      console.log("Fetched artist data:", artistsData?.length, "records");
-
-      // Create a map for quick artist lookup
-      const artistMap = new Map();
+      // Create a map for efficient artist lookup
+      const artistMap = new Map<string, { artist_name: string; artist_image: string | null }>();
       artistsData?.forEach(artist => {
-        artistMap.set(artist.UUID, artist);
+        artistMap.set(artist.UUID, {
+          artist_name: artist.artist_name,
+          artist_image: artist.artist_image,
+        });
       });
 
-      // Combine the data and fetch Ticketmaster events
-      const promises = tmidData.map(async (tmidItem) => {
-        const artist = artistMap.get(tmidItem.artist_uuid);
-        
-        if (!artist) {
-          console.log(`No artist found for UUID: ${tmidItem.artist_uuid}`);
+      // Step 3: Combine data and fetch Ticketmaster events concurrently
+      const artistPromises = tmidData.map(async (tmidItem): Promise<ArtistWithEvents | null> => {
+        const artistDetails = artistMap.get(tmidItem.artist_uuid);
+        if (!artistDetails) {
+          console.warn(`No artist details found for UUID: ${tmidItem.artist_uuid}`);
           return null;
         }
 
-        console.log(`Fetching events for ${artist.artist_name} (TMID: ${tmidItem.tmid})`);
-        
         const events = await ticketmasterService.getArtistEvents(tmidItem.tmid, 3);
         const hasEvents = events.length > 0;
 
-        console.log(`${artist.artist_name}: ${events.length} events found`);
-
         return {
           artist_uuid: tmidItem.artist_uuid,
-          artist_name: artist.artist_name,
-          artist_image: artist.artist_image,
+          artist_name: artistDetails.artist_name,
+          artist_image: artistDetails.artist_image,
           tmid: tmidItem.tmid,
           hasEvents,
-          events
+          events,
         };
       });
 
-      const results = await Promise.all(promises);
-      
-      const validResults = results.filter(Boolean) as ArtistWithEvents[];
+      const results = await Promise.all(artistPromises);
 
-      console.log(`Total artists processed: ${validResults.length}`);
+      const validResults = results.filter((result): result is ArtistWithEvents => result !== null);
+      console.log(`Successfully processed ${validResults.length} artists with events.`);
 
+      // Sort artists with events to the top
       return validResults.sort((a, b) => {
         if (a.hasEvents && !b.hasEvents) return -1;
         if (!a.hasEvents && b.hasEvents) return 1;
@@ -83,11 +78,10 @@ export class TourService {
       });
 
     } catch (error) {
-      console.error("Error in getArtistsWithTmids:", error);
+      console.error("An unexpected error occurred in getArtistsWithTmids:", error);
       return [];
     }
   }
 }
 
 export const tourService = new TourService();
-  
