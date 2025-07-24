@@ -294,7 +294,30 @@ export const artistService = {
       hasMore: endIndex < sortedAllArtists.length,
       totalCount: totalCount || 0
     };
-  }
+  },
+
+  async getAllArtistsForVibes() {
+    const { data, error } = await supabase
+      .from('artists')
+      .select(`
+        UUID,
+        artist_name,
+        artist_image,
+        primary_vibe,
+        secondary_vibe,
+        artist_genre
+      `)
+      .not('primary_vibe', 'is', null)
+      .not('artist_name', 'is', null)
+      .limit(500);
+
+    if (error) {
+      console.error('Error fetching artists for vibes chart:', error);
+      throw error;
+    }
+
+    return data;
+  },
 };
 
 export default artistService;
