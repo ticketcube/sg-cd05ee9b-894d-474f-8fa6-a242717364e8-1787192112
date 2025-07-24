@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Artist, artistService } from "@/services/artistService";
 import { votingService } from "@/services/votingService";
@@ -296,11 +295,13 @@ export default function Top100Page() {
                     </div>
                     
                     <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                      <ArtistVideoPlayer 
-                        artist={artist}
-                        size="sm"
-                        className="hover:scale-105 transition-transform duration-200"
-                      />
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <ArtistVideoPlayer 
+                          artist={artist}
+                          size="sm"
+                          className="hover:scale-105 transition-transform duration-200"
+                        />
+                      </div>
                       
                       <Button
                         onClick={(e) => handleVote(artist, e)}
