@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
-import { ticketmasterService } from "@/services/ticketmasterService";
 import { eventCacheService } from "@/services/eventCacheService";
 import type { TicketmasterEvent } from "@/types/tour";
 import { ExternalLink, Calendar, MapPin, Loader2, Database } from "lucide-react";
@@ -36,6 +34,7 @@ export default function OnTourPage() {
     try {
       setLoading(true);
       setError(null);
+      setTestArtist(null);
       
       console.log("Loading test artist with TMID 2783377...");
       
@@ -57,13 +56,20 @@ export default function OnTourPage() {
         return;
       }
 
-      const artist = data as TestArtist;
+      if (!data.tmid) {
+        setError(`Artist ${data.artist_name} found, but TMID is missing.`);
+        // Still set artist to show their details
+        setTestArtist({ ...data, tmid: "" });
+        return;
+      }
+
+      const artist: TestArtist = data;
       console.log("Loaded test artist:", artist);
       setTestArtist(artist);
       
     } catch (err) {
       console.error("Error loading test artist:", err);
-      setError("Failed to load test artist");
+      setError(err instanceof Error ? err.message : "Failed to load test artist");
     } finally {
       setLoading(false);
     }

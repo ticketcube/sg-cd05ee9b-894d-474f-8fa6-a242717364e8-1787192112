@@ -29,42 +29,36 @@ export class TourService {
       // Process each artist and get their cached events
       const results: ArtistWithEvents[] = [];
       
-      for (let i = 0; i < artistsData.length; i++) {
-        const artist = artistsData[i];
-        if (!artist.tmid) continue; // Skip if tmid is null or empty
+      for (const artist of artistsData) {
+        if (artist && artist.UUID && artist.tmid && artist.artist_name) {
+          console.log(`Processing artist ${artistsData.indexOf(artist) + 1}/${artistsData.length}: ${artist.artist_name}`);
 
-        console.log(`Processing artist ${i + 1}/${artistsData.length}: ${artist.artist_name}`);
+          try {
+            // Get cached events for this artist
+            const events: TicketmasterEvent[] = await eventCacheService.getCachedEventsForArtist(artist.UUID);
+            
+            const hasEvents = events.length > 0;
 
-        try {
-          // Get cached events for this artist with timeout
-          const events: TicketmasterEvent[] = await Promise.race([
-            eventCacheService.getCachedEventsForArtist(artist.UUID),
-            new Promise<TicketmasterEvent[]>((_, reject) => 
-              setTimeout(() => reject(new Error('Timeout')), 5000)
-            )
-          ]);
-          
-          const hasEvents = events.length > 0;
-
-          results.push({
-            artist_uuid: artist.UUID,
-            artist_name: artist.artist_name,
-            artist_image: artist.artist_image,
-            tmid: artist.tmid,
-            hasEvents,
-            events: events.slice(0, 3), // Limit to 3 events for display
-          });
-        } catch (error) {
-          console.warn(`Failed to get cached events for ${artist.artist_name}:`, error);
-          // Add artist without events if cache lookup fails
-          results.push({
-            artist_uuid: artist.UUID,
-            artist_name: artist.artist_name,
-            artist_image: artist.artist_image,
-            tmid: artist.tmid,
-            hasEvents: false,
-            events: [],
-          });
+            results.push({
+              artist_uuid: artist.UUID,
+              artist_name: artist.artist_name,
+              artist_image: artist.artist_image,
+              tmid: artist.tmid,
+              hasEvents,
+              events: events.slice(0, 3), // Limit to 3 events for display
+            });
+          } catch (error) {
+            console.warn(`Failed to get cached events for ${artist.artist_name}:`, error);
+            // Add artist without events if cache lookup fails
+            results.push({
+              artist_uuid: artist.UUID,
+              artist_name: artist.artist_name,
+              artist_image: artist.artist_image,
+              tmid: artist.tmid,
+              hasEvents: false,
+              events: [],
+            });
+          }
         }
       }
 

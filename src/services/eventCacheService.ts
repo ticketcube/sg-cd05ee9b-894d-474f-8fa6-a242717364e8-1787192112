@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService } from "./ticketmasterService";
 import type { TicketmasterEvent } from "@/types/tour";
@@ -119,8 +118,13 @@ export class EventCacheService {
         .not("tmid", "is", null)
         .not("tmid", "eq", "");
 
-      if (error || !artistsData) {
+      if (error) {
         console.error("Error fetching artists with TMIDs:", error);
+        return;
+      }
+
+      if (!artistsData) {
+        console.log("No artists with TMIDs found to refresh.");
         return;
       }
 
@@ -128,15 +132,16 @@ export class EventCacheService {
 
       // Refresh events for each artist (with delay to avoid rate limiting)
       for (let i = 0; i < artistsData.length; i++) {
-        const { UUID: artist_uuid, tmid } = artistsData[i];
-        if (!tmid) continue;
-        console.log(`Refreshing events for artist ${i + 1}/${artistsData.length}: ${artist_uuid}`);
-        
-        await this.refreshEventsForArtist(artist_uuid, tmid);
-        
-        // Add delay to avoid hitting Ticketmaster rate limits
-        if (i < artistsData.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
+        const artist = artistsData[i];
+        if (artist && artist.UUID && artist.tmid) {
+          console.log(`Refreshing events for artist ${i + 1}/${artistsData.length}: ${artist.UUID}`);
+          
+          await this.refreshEventsForArtist(artist.UUID, artist.tmid);
+          
+          // Add delay to avoid hitting Ticketmaster rate limits
+          if (i < artistsData.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
+          }
         }
       }
 
