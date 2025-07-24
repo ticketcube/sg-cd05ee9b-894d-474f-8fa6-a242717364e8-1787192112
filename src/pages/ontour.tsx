@@ -37,14 +37,13 @@ export default function OnTourPage() {
       setLoading(true);
       setError(null);
       
-      console.log("Loading Ashe for testing...");
+      console.log("Loading ALMA for testing...");
       
-      // Specifically load Ashe for testing
+      // Specifically load ALMA for testing
       const { data, error: dbError } = await supabase
         .from("artists")
         .select("UUID, artist_name, artist_image, tmid")
-        .eq("artist_name", "Ashe")
-        .not("artist_image", "eq", "null")
+        .eq("artist_name", "ALMA")
         .single();
 
       if (dbError) {
@@ -54,17 +53,17 @@ export default function OnTourPage() {
       }
 
       if (!data) {
-        setError("Ashe not found in database");
+        setError("ALMA not found in database");
         return;
       }
 
       const artist = data as TestArtist;
-      console.log("Loaded Ashe:", artist);
+      console.log("Loaded ALMA:", artist);
       setTestArtist(artist);
       
     } catch (err) {
-      console.error("Error loading Ashe:", err);
-      setError("Failed to load Ashe");
+      console.error("Error loading ALMA:", err);
+      setError("Failed to load ALMA");
     } finally {
       setLoading(false);
     }
@@ -221,9 +220,9 @@ export default function OnTourPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Ticketmaster API Test - Ashe</h1>
+        <h1 className="text-4xl font-bold mb-4">Ticketmaster API Test - ALMA</h1>
         <p className="text-muted-foreground">
-          Testing complete flow: API → Database → Display with Ashe
+          Testing complete flow: API → Database → Display with ALMA (TMID: 740242)
         </p>
       </div>
 
@@ -231,7 +230,7 @@ export default function OnTourPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🎤 Ashe Test
+            🎤 ALMA Test
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           </CardTitle>
         </CardHeader>
@@ -265,7 +264,7 @@ export default function OnTourPage() {
           <div className="flex gap-2">
             <Button onClick={loadTestArtist} disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Load Ashe
+              Load ALMA
             </Button>
             <Button 
               onClick={testTicketmasterAPI} 
