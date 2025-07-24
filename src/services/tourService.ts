@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { ticketmasterService } from "./ticketmasterService";
+import { eventCacheService } from "./eventCacheService";
 import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
 
 // Define local interfaces for Supabase query results to avoid deep type instantiation issues
@@ -57,7 +56,7 @@ export class TourService {
         });
       });
 
-      // Step 3: Combine data and fetch Ticketmaster events
+      // Step 3: Get cached events for each artist
       const results: ArtistWithEvents[] = [];
       
       for (const tmidItem of (tmidData as TmidRecord[])) {
@@ -69,7 +68,8 @@ export class TourService {
           continue;
         }
 
-        const events: TicketmasterEvent[] = await ticketmasterService.getArtistEvents(tmidItem.tmid, 3);
+        // Get cached events instead of making API calls
+        const events: TicketmasterEvent[] = await eventCacheService.getCachedEventsForArtist(tmidItem.artist_uuid);
         const hasEvents = events.length > 0;
 
         results.push({
@@ -78,11 +78,11 @@ export class TourService {
           artist_image: artistDetails.artist_image,
           tmid: tmidItem.tmid,
           hasEvents,
-          events,
+          events: events.slice(0, 3), // Limit to 3 events for display
         });
       }
 
-      console.log(`Successfully processed ${results.length} artists with events.`);
+      console.log(`Successfully processed ${results.length} artists with cached events.`);
 
       // Sort artists with events to the top
       return results.sort((a, b) => {
@@ -95,6 +95,16 @@ export class TourService {
       console.error("An unexpected error occurred in getArtistsWithTmids:", error);
       return [];
     }
+  }
+
+  // Method to refresh event cache for all artists
+  async refreshEventCache(): Promise<void> {
+    return eventCacheService.refreshAllArtistEvents();
+  }
+
+  // Method to get cache statistics
+  async getCacheStats() {
+    return eventCacheService.getEventStats();
   }
 }
 
