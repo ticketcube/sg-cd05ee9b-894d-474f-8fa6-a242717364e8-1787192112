@@ -55,7 +55,21 @@ export default async function handler(
     return res.status(500).json({ message: "API key not configured" });
   }
 
-  
+  try {
+    // If testAttraction is true, test the attractions endpoint first
+    if (testAttraction === "true") {
+      const attractionUrl = `https://app.ticketmaster.com/discovery/v2/attractions/${attractionId}.json?apikey=${apiKey}`;
+      console.log("Testing attraction URL:", attractionUrl);
+      
+      const attractionResponse = await fetch(attractionUrl);
+      const attractionData = await attractionResponse.json();
+      
+      return res.status(200).json({
+        attractionTest: true,
+        attractionData,
+        attractionStatus: attractionResponse.status
+      });
+    }
 
     // Use the correct Ticketmaster API root URL and endpoint
     const url = `https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${attractionId}&apikey=${apiKey}&sort=date,asc`;
