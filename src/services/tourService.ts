@@ -3,79 +3,43 @@ import { supabase } from "@/integrations/supabase/client";
 import { eventCacheService } from "./eventCacheService";
 import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
 
-// Define a specific type for the artist data we are fetching to avoid TS errors.
-interface ArtistInfo {
-  UUID: string;
-  artist_name: string;
-  artist_image: string | null;
-}
-
 export class TourService {
   async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
     try {
-      // Step 1: Get all tmid records that are not null
-      const { data: tmidData, error: tmidError } = await supabase
-        .from("tmid")
-        .select("artist_uuid, tmid")
-        .not("tmid", "is", null);
-
-      if (tmidError) {
-        console.error("Error fetching TMID data:", tmidError);
-        return [];
-      }
-
-      if (!tmidData || tmidData.length === 0) {
-        console.log("No TMID records found");
-        return [];
-      }
-      console.log(`Fetched ${tmidData.length} TMID records.`);
-
-      // Step 2: Get all corresponding artist records
-      const artistUuids = tmidData.map(item => item.artist_uuid);
-      
+      // Query artists table directly for records with artist_tmid
       const { data: artistsData, error: artistsError } = await supabase
         .from("artists")
-        .select("UUID, artist_name, artist_image")
-        .in("UUID", artistUuids)
-        .returns<ArtistInfo[]>(); // Explicitly define the return type
+        .select("UUID, artist_name, artist_image, artist_tmid")
+        .not("artist_tmid", "is", null)
+        .not("artist_tmid", "eq", "");
 
       if (artistsError) {
-        console.error("Error fetching artists:", artistsError);
+        console.error("Error fetching artists with TMIDs:", artistsError);
         return [];
       }
-      console.log(`Fetched ${artistsData?.length || 0} artist records.`);
 
-      // Create a map for efficient artist lookup
-      const artistMap = new Map<string, { artist_name: string; artist_image: string | null }>();
-      
-      artistsData?.forEach((artist) => {
-        artistMap.set(artist.UUID, {
-          artist_name: artist.artist_name,
-          artist_image: artist.artist_image,
-        });
-      });
+      if (!artistsData || artistsData.length === 0) {
+        console.log("No artists with TMIDs found");
+        return [];
+      }
 
-      // Step 3: Get cached events for each artist
+      console.log(`Fetched ${artistsData.length} artists with TMIDs.`);
+
+      // Process each artist and get their cached events
       const results: ArtistWithEvents[] = [];
       
-      for (const tmidItem of tmidData) {
-        if (!tmidItem.tmid) continue; // Skip if tmid is null or empty
+      for (const artist of artistsData) {
+        if (!artist.artist_tmid) continue; // Skip if tmid is null or empty
 
-        const artistDetails = artistMap.get(tmidItem.artist_uuid);
-        if (!artistDetails) {
-          console.warn(`No artist details found for UUID: ${tmidItem.artist_uuid}`);
-          continue;
-        }
-
-        // Get cached events instead of making API calls
-        const events: TicketmasterEvent[] = await eventCacheService.getCachedEventsForArtist(tmidItem.artist_uuid);
+        // Get cached events for this artist
+        const events: TicketmasterEvent[] = await eventCacheService.getCachedEventsForArtist(artist.UUID);
         const hasEvents = events.length > 0;
 
         results.push({
-          artist_uuid: tmidItem.artist_uuid,
-          artist_name: artistDetails.artist_name,
-          artist_image: artistDetails.artist_image,
-          tmid: tmidItem.tmid,
+          artist_uuid: artist.UUID,
+          artist_name: artist.artist_name,
+          artist_image: artist.artist_image,
+          tmid: artist.artist_tmid,
           hasEvents,
           events: events.slice(0, 3), // Limit to 3 events for display
         });
