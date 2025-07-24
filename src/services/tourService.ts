@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { ticketmasterService, ArtistWithEvents } from "./ticketmasterService";
+import { ticketmasterService } from "./ticketmasterService";
+import type { ArtistWithEvents } from "@/types/tour";
 
 export class TourService {
   async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
@@ -26,7 +26,7 @@ export class TourService {
       const artistUuids = tmidData.map(item => item.artist_uuid);
       const { data: artistsData, error: artistsError } = await supabase
         .from("artists")
-        .select(`"UUID", artist_name, artist_image`) // Use quoted "UUID" for case-sensitivity
+        .select(`"UUID", artist_name, artist_image`)
         .in('"UUID"', artistUuids);
 
       if (artistsError) {

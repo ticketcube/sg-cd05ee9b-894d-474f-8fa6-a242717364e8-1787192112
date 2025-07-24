@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, Calendar, MapPin } from "lucide-react";
 import { tourService } from "@/services/tourService";
 import { ticketmasterService } from "@/services/ticketmasterService";
-import type { ArtistWithEvents } from "@/services/ticketmasterService";
+import type { ArtistWithEvents } from "@/types/tour";
 import Image from "next/image";
 
 export default function OnTourPage() {
