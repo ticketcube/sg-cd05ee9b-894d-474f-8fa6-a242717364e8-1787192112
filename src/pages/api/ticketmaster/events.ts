@@ -71,7 +71,7 @@ export default async function handler(
       });
     }
 
-    // Regular events endpoint
+    // Regular events endpoint - Fix the URL format
     const url = `https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${attractionId}&apikey=${apiKey}&size=${size}&sort=date,asc`;
     console.log("Calling Ticketmaster API:", url.replace(apiKey, "***"));
     
@@ -92,11 +92,17 @@ export default async function handler(
     const data: TicketmasterResponse = await response.json();
     console.log("Ticketmaster API response:", JSON.stringify(data, null, 2));
     
+    // Log the exact URL being called for debugging
+    console.log("Full API URL (with key hidden):", url.replace(apiKey, "***"));
+    console.log("Response status:", response.status);
+    console.log("Response data:", data);
+    
     return res.status(200).json({
       events: data._embedded?.events || [],
       totalElements: data.page?.totalElements || 0,
       fullResponse: data,
-      debugUrl: url.replace(apiKey, "***") // Add debug URL to response
+      debugUrl: url.replace(apiKey, "***"),
+      apiCallSuccess: true
     });
   } catch (error) {
     console.error("Error fetching Ticketmaster events:", error);
