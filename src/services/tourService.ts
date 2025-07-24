@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService, ArtistWithEvents } from "./ticketmasterService";
 
@@ -29,8 +28,8 @@ export class TourService {
       // Fetch artist details for these UUIDs
       const { data: artistsData, error: artistsError } = await supabase
         .from("artists")
-        .select("UUID, artist_name, artist_image")
-        .in("UUID", artistUuids);
+        .select('"UUID", artist_name, artist_image')
+        .in('"UUID"', artistUuids);
 
       if (artistsError) {
         console.error("Error fetching artists:", artistsError);
