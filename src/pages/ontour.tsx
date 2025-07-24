@@ -37,13 +37,13 @@ export default function OnTourPage() {
       setLoading(true);
       setError(null);
       
-      console.log("Loading ALMA for testing...");
+      console.log("Loading Baby Rose for testing...");
       
-      // Specifically load ALMA for testing
+      // Specifically load Baby Rose for testing
       const { data, error: dbError } = await supabase
         .from("artists")
         .select("UUID, artist_name, artist_image, tmid")
-        .eq("artist_name", "ALMA")
+        .eq("tmid", "2632954")
         .single();
 
       if (dbError) {
@@ -53,17 +53,17 @@ export default function OnTourPage() {
       }
 
       if (!data) {
-        setError("ALMA not found in database");
+        setError("Baby Rose (TMID: 2632954) not found in database");
         return;
       }
 
       const artist = data as TestArtist;
-      console.log("Loaded ALMA:", artist);
+      console.log("Loaded Baby Rose:", artist);
       setTestArtist(artist);
       
     } catch (err) {
-      console.error("Error loading ALMA:", err);
-      setError("Failed to load ALMA");
+      console.error("Error loading Baby Rose:", err);
+      setError("Failed to load Baby Rose");
     } finally {
       setLoading(false);
     }
@@ -141,8 +141,8 @@ export default function OnTourPage() {
       // If no events found, let's also log the exact URL being called
       if (fetchedEvents.length === 0) {
         console.log("❌ No events found. This could mean:");
-        console.log("1. ALMA has no upcoming events");
-        console.log("2. The TMID (740242) might be incorrect");
+        console.log("1. Baby Rose has no upcoming events");
+        console.log("2. The TMID (2632954) might be incorrect");
         console.log("3. The API key might have issues");
         console.log(`Direct Ticketmaster URL would be: https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${testArtist.tmid}&apikey=YOUR_API_KEY&size=5&sort=date,asc`);
       }
@@ -265,9 +265,9 @@ export default function OnTourPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Ticketmaster API Test - ALMA</h1>
+        <h1 className="text-4xl font-bold mb-4">Ticketmaster API Test - Baby Rose</h1>
         <p className="text-muted-foreground">
-          Testing complete flow: API → Database → Display with ALMA (TMID: 740242)
+          Testing complete flow: API → Database → Display with Baby Rose (TMID: 2632954)
         </p>
       </div>
 
@@ -275,7 +275,7 @@ export default function OnTourPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🎤 ALMA Test
+            🎤 Baby Rose Test
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           </CardTitle>
         </CardHeader>
@@ -309,7 +309,7 @@ export default function OnTourPage() {
           <div className="flex gap-2">
             <Button onClick={loadTestArtist} disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Load ALMA
+              Load Baby Rose
             </Button>
             <Button 
               onClick={testTicketmasterAPI} 
