@@ -1,5 +1,4 @@
-
-    export type Json =
+export type Json =
     | string
     | number
     | boolean
@@ -69,14 +68,13 @@ export type Database = {
                     artist_otwcategory: string | null
                     artist_otwcoverage: number | null
                     artist_otwcreateddate: string | null
-                    artist_otwid: string | null
                     artist_relatedartists: string[] | null
                     artist_tiktok_username: string | null
                     artist_tiktok_videoid: string | null
-                    tmid: string | null
                     artist_totallisteners: number | null
                     artist_totalwatchers: number | null
                     artist_videolink: string | null
+                    attractionId: string | null
                     primary_vibe: string | null
                     secondary_vibe: string | null
                     Top_List: string | null
@@ -92,14 +90,13 @@ export type Database = {
                     artist_otwcategory?: string | null
                     artist_otwcoverage?: number | null
                     artist_otwcreateddate?: string | null
-                    artist_otwid?: string | null
                     artist_relatedartists?: string[] | null
                     artist_tiktok_username?: string | null
                     artist_tiktok_videoid?: string | null
-                    tmid?: string | null
                     artist_totallisteners?: number | null
                     artist_totalwatchers?: number | null
                     artist_videolink?: string | null
+                    attractionId?: string | null
                     primary_vibe?: string | null
                     secondary_vibe?: string | null
                     Top_List?: string | null
@@ -115,14 +112,13 @@ export type Database = {
                     artist_otwcategory?: string | null
                     artist_otwcoverage?: number | null
                     artist_otwcreateddate?: string | null
-                    artist_otwid?: string | null
                     artist_relatedartists?: string[] | null
                     artist_tiktok_username?: string | null
                     artist_tiktok_videoid?: string | null
-                    tmid?: string | null
                     artist_totallisteners?: number | null
                     artist_totalwatchers?: number | null
                     artist_videolink?: string | null
+                    attractionId?: string | null
                     primary_vibe?: string | null
                     secondary_vibe?: string | null
                     Top_List?: string | null
@@ -157,6 +153,7 @@ export type Database = {
             ticketmaster_events: {
                 Row: {
                     artist_uuid: string | null
+                    attractionId: string
                     created_at: string | null
                     event_date: string
                     event_id: string
@@ -165,7 +162,6 @@ export type Database = {
                     event_url: string
                     id: string
                     is_active: boolean | null
-                    tmid: string
                     updated_at: string | null
                     venue_city: string | null
                     venue_country: string | null
@@ -174,6 +170,7 @@ export type Database = {
                 }
                 Insert: {
                     artist_uuid?: string | null
+                    attractionId: string
                     created_at?: string | null
                     event_date: string
                     event_id: string
@@ -182,7 +179,6 @@ export type Database = {
                     event_url: string
                     id?: string
                     is_active?: boolean | null
-                    tmid: string
                     updated_at?: string | null
                     venue_city?: string | null
                     venue_country?: string | null
@@ -191,6 +187,7 @@ export type Database = {
                 }
                 Update: {
                     artist_uuid?: string | null
+                    attractionId?: string
                     created_at?: string | null
                     event_date?: string
                     event_id?: string
@@ -199,7 +196,6 @@ export type Database = {
                     event_url?: string
                     id?: string
                     is_active?: boolean | null
-                    tmid?: string
                     updated_at?: string | null
                     venue_city?: string | null
                     venue_country?: string | null
@@ -399,4 +395,3 @@ export const Constants = {
         Enums: {},
     },
 } as const
-  
