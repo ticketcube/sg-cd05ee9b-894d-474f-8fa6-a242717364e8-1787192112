@@ -1,13 +1,14 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { eventCacheService } from "@/services/eventCacheService";
 import type { TicketmasterEvent } from "@/types/tour";
-import { ExternalLink, Calendar, MapPin, Loader2, Database, RefreshCw } from "lucide-react";
+import { ExternalLink, Calendar, MapPin, Loader2, Database, Search } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Artist = Tables<"artists">;
@@ -19,50 +20,64 @@ interface ApiResponse {
 }
 
 export default function OnTourPage() {
-  const [testArtist, setTestArtist] = useState<Artist | null>(null);
+  const [artistName, setArtistName] = useState("");
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [events, setEvents] = useState<TicketmasterEvent[]>([]);
   const [cachedEvents, setCachedEvents] = useState<TicketmasterEvent[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [testing, setTesting] = useState(false);
   const [caching, setCaching] = useState(false);
   const [loadingCache, setLoadingCache] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
 
-  useEffect(() => {
-    loadTestArtist();
-  }, []);
+  const searchArtist = async () => {
+    if (!artistName.trim()) {
+      setError("Please enter an artist name");
+      return;
+    }
 
-  const loadTestArtist = async () => {
-    setLoading(true);
+    setSearching(true);
     setError(null);
+    setSelectedArtist(null);
+    setEvents([]);
+    setCachedEvents([]);
+    setApiResponse(null);
+
     try {
       const { data, error: dbError } = await supabase
         .from("artists")
         .select("*")
-        .eq("attractionId", "2783377")
+        .ilike("artist_name", `%${artistName.trim()}%`)
+        .not("attractionId", "is", null)
+        .not("attractionId", "eq", "")
+        .limit(1)
         .single();
 
-      if (dbError) throw dbError;
-      if (!data) throw new Error("Artist with attractionId 2783377 not found.");
+      if (dbError) {
+        if (dbError.code === "PGRST116") {
+          throw new Error(`No artist found with name "${artistName}" that has a Ticketmaster attractionId`);
+        }
+        throw dbError;
+      }
       
-      setTestArtist(data);
+      setSelectedArtist(data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load test artist";
-      console.error("Error loading test artist:", errorMessage);
+      const errorMessage = err instanceof Error ? err.message : "Failed to search for artist";
+      console.error("Error searching for artist:", errorMessage);
       setError(errorMessage);
     } finally {
-      setLoading(false);
+      setSearching(false);
     }
   };
 
   const testTicketmasterAPI = async () => {
-    if (!testArtist?.attractionId) return;
+    if (!selectedArtist?.attractionId) return;
     setTesting(true);
     setError(null);
     setApiResponse(null);
     try {
-      const response = await fetch(`/api/ticketmaster/events?attractionId=${testArtist.attractionId}&size=5`);
+      const response = await fetch(`/api/ticketmaster/events?attractionId=${selectedArtist.attractionId}&size=5`);
       const data: ApiResponse = await response.json();
       
       setApiResponse(data);
@@ -80,12 +95,12 @@ export default function OnTourPage() {
   };
 
   const cacheEventsToDatabase = async () => {
-    if (!testArtist?.uuid || !testArtist?.attractionId) return;
+    if (!selectedArtist?.uuid || !selectedArtist?.attractionId) return;
     setCaching(true);
     setError(null);
     try {
-      await eventCacheService.refreshEventsForArtist(testArtist.uuid, testArtist.attractionId);
-      await loadCachedEvents(); // Refresh cached events view
+      await eventCacheService.refreshEventsForArtist(selectedArtist.uuid, selectedArtist.attractionId);
+      await loadCachedEvents();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to cache events";
       console.error("Error caching events:", errorMessage);
@@ -96,11 +111,11 @@ export default function OnTourPage() {
   };
 
   const loadCachedEvents = async () => {
-    if (!testArtist?.uuid) return;
+    if (!selectedArtist?.uuid) return;
     setLoadingCache(true);
     setError(null);
     try {
-      const cached = await eventCacheService.getCachedEventsForArtist(testArtist.uuid);
+      const cached = await eventCacheService.getCachedEventsForArtist(selectedArtist.uuid);
       setCachedEvents(cached);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load cached events";
@@ -121,7 +136,7 @@ export default function OnTourPage() {
     });
 
     return (
-      <div className={`border rounded-lg p-4 ${type === 'cached' ? 'bg-blue-50' : ''}`}>
+      <div className={`border rounded-lg p-4 ${type === 'cached' ? 'bg-blue-50 dark:bg-blue-950' : ''}`}>
         <div className="flex justify-between items-start mb-2">
           <h4 className="font-semibold text-lg">{event.name}</h4>
           <Badge variant={type === 'cached' ? 'secondary' : 'outline'}>
@@ -154,68 +169,77 @@ export default function OnTourPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <header className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Ticketmaster Integration Test</h1>
+        <h1 className="text-4xl font-bold mb-2">Ticketmaster API Test</h1>
         <p className="text-muted-foreground">
-          Testing API connection, database caching, and event display for a single artist.
+          Enter an artist name to look up their attractionId and test the Ticketmaster API.
         </p>
       </header>
 
       {error && (
-        <Card className="mb-6 bg-red-50 border-red-200">
+        <Card className="mb-6 bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800">
           <CardHeader>
-            <CardTitle className="text-red-700">Error</CardTitle>
+            <CardTitle className="text-red-700 dark:text-red-300">Error</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-red-600">{error}</p>
+            <p className="text-red-600 dark:text-red-400">{error}</p>
           </CardContent>
         </Card>
       )}
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              🎤 Test Artist
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            </div>
-            <Button variant="ghost" size="icon" onClick={loadTestArtist} disabled={loading}>
-              <RefreshCw className="w-4 h-4" />
-            </Button>
-          </CardTitle>
+          <CardTitle>🔍 Artist Search</CardTitle>
         </CardHeader>
         <CardContent>
-          {testArtist ? (
-            <div className="flex items-center gap-4 mb-4">
-              {testArtist.artist_image && (
-                <Image
-                  src={testArtist.artist_image}
-                  alt={testArtist.artist_name}
-                  width={64}
-                  height={64}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-              )}
-              <div>
-                <h3 className="text-xl font-semibold">{testArtist.artist_name}</h3>
-                <p className="text-sm text-muted-foreground">AttractionID: {testArtist.attractionId}</p>
-              </div>
-            </div>
-          ) : (
-            <p className="text-muted-foreground">Loading artist details...</p>
-          )}
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={testTicketmasterAPI} disabled={!testArtist || testing}>
-              {testing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "🧪"} Test API
-            </Button>
-            <Button onClick={cacheEventsToDatabase} disabled={!testArtist || caching} variant="secondary">
-              {caching ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Database className="w-4 h-4 mr-2" />}
-              Cache Events
-            </Button>
-            <Button onClick={loadCachedEvents} disabled={!testArtist || loadingCache} variant="secondary">
-              {loadingCache ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Load Cached
+          <div className="flex gap-2 mb-4">
+            <Input
+              type="text"
+              placeholder="Enter artist name (e.g., Dua Lipa)"
+              value={artistName}
+              onChange={(e) => setArtistName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && searchArtist()}
+              className="flex-1"
+            />
+            <Button onClick={searchArtist} disabled={searching}>
+              {searching ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
+              Search
             </Button>
           </div>
+
+          {selectedArtist && (
+            <div className="border rounded-lg p-4 bg-green-50 dark:bg-green-950">
+              <div className="flex items-center gap-4 mb-4">
+                {selectedArtist.artist_image && (
+                  <Image
+                    src={selectedArtist.artist_image}
+                    alt={selectedArtist.artist_name}
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                )}
+                <div>
+                  <h3 className="text-xl font-semibold">{selectedArtist.artist_name}</h3>
+                  <p className="text-sm text-muted-foreground">AttractionID: {selectedArtist.attractionId}</p>
+                  <p className="text-sm text-muted-foreground">Genre: {selectedArtist.artist_genre}</p>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={testTicketmasterAPI} disabled={testing}>
+                  {testing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "🧪"} Test API
+                </Button>
+                <Button onClick={cacheEventsToDatabase} disabled={caching} variant="secondary">
+                  {caching ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Database className="w-4 h-4 mr-2" />}
+                  Cache Events
+                </Button>
+                <Button onClick={loadCachedEvents} disabled={loadingCache} variant="secondary">
+                  {loadingCache ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Load Cached
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -229,6 +253,7 @@ export default function OnTourPage() {
               <p>Testing API...</p>
             ) : events.length > 0 ? (
               <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">Found {apiResponse.totalElements} total events</p>
                 {events.map(event => <EventCard key={event.id} event={event} type="api" />)}
               </div>
             ) : (
@@ -238,23 +263,24 @@ export default function OnTourPage() {
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>💾 Cached Events</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loadingCache ? (
-            <p>Loading cached events...</p>
-          ) : cachedEvents.length > 0 ? (
-            <div className="space-y-4">
-              {cachedEvents.map(event => <EventCard key={event.id} event={event} type="cached" />)}
-            </div>
-          ) : (
-            <p className="text-muted-foreground">No events found in cache. Try caching them first.</p>
-          )}
-        </CardContent>
-      </Card>
+      {selectedArtist && (
+        <Card>
+          <CardHeader>
+            <CardTitle>💾 Cached Events</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loadingCache ? (
+              <p>Loading cached events...</p>
+            ) : cachedEvents.length > 0 ? (
+              <div className="space-y-4">
+                {cachedEvents.map(event => <EventCard key={event.id} event={event} type="cached" />)}
+              </div>
+            ) : (
+              <p className="text-muted-foreground">No events found in cache. Try caching them first.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
-  
