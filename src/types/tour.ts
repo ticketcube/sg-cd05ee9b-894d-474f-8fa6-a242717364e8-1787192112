@@ -37,7 +37,7 @@ export interface ArtistWithEvents {
   artist_uuid: string;
   artist_name: string;
   artist_image: string | null;
-  tmid: string;
+  attractionId: string;
   hasEvents: boolean;
   events: TicketmasterEvent[];
 }
