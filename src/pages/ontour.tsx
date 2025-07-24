@@ -106,6 +106,47 @@ export default function OnTourPage() {
     }
   };
 
+  const testDirectAPI = async () => {
+    if (!testArtist) return;
+
+    try {
+      setTesting(true);
+      setError(null);
+      setApiResponse(null);
+
+      console.log(`Testing DIRECT Ticketmaster API for ${testArtist.artist_name} (TMID: ${testArtist.tmid})`);
+
+      // Test the API endpoint directly with detailed logging
+      const apiUrl = `/api/ticketmaster/events?attractionId=${testArtist.tmid}&size=5`;
+      console.log("API URL:", apiUrl);
+
+      const response = await fetch(apiUrl);
+      console.log("Response status:", response.status);
+      console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+
+      const data = await response.json();
+      console.log("Full API Response:", data);
+      setApiResponse(data);
+
+      if (!response.ok) {
+        setError(`API Error (${response.status}): ${data.message || response.statusText}`);
+        return;
+      }
+
+      const fetchedEvents = data.events || [];
+      setEvents(fetchedEvents);
+      
+      console.log(`✅ API Test Complete: Found ${fetchedEvents.length} events for ${testArtist.artist_name}`);
+      console.log("Total elements from API:", data.totalElements);
+
+    } catch (err) {
+      console.error("❌ API Test Failed:", err);
+      setError(`API Test Failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const cacheEventsToDatabase = async () => {
     if (!testArtist) return;
 
@@ -233,6 +274,14 @@ export default function OnTourPage() {
             >
               {testing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               🧪 Test API
+            </Button>
+            <Button 
+              onClick={testDirectAPI} 
+              disabled={!testArtist || testing}
+              variant="outline"
+            >
+              {testing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              🧪 Test Direct API
             </Button>
             <Button 
               onClick={cacheEventsToDatabase} 
