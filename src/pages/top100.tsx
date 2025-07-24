@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { artistService } from "@/services/artistService";
 import type { Artist, ArtistWithVoteCount } from "@/types/artists";
@@ -121,7 +120,7 @@ export default function Top100Page() {
         return {
           username,
           artist_uuid: artistUUID,
-          artist_otwid: artist?.artist_otwid ? parseInt(String(artist.artist_otwid), 10) : null
+          artist_otwid: artist && 'artist_otwid' in artist && artist.artist_otwid ? parseInt(String(artist.artist_otwid), 10) : null
         };
       });
 

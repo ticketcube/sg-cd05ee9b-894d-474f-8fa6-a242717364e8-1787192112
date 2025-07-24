@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService } from "./ticketmasterService";
 import type { TicketmasterEvent } from "@/types/tour";
@@ -9,7 +10,7 @@ interface CachedEvent {
   id: string;
   event_id: string;
   artist_uuid: string;
-  tmid: string;
+  attractionId: string;
   event_name: string;
   event_url: string;
   event_date: string;
@@ -24,9 +25,9 @@ interface CachedEvent {
 }
 
 export class EventCacheService {
-  async refreshEventsForArtist(artistUuid: string, tmid: string): Promise<void> {
+  async refreshEventsForArtist(artistUuid: string, attractionId: string): Promise<void> {
     try {
-      const events = await ticketmasterService.getArtistEvents(tmid, 20);
+      const events = await ticketmasterService.getArtistEvents(attractionId, 20);
       
       await supabase
         .from("ticketmaster_events")
@@ -39,7 +40,7 @@ export class EventCacheService {
           return {
             event_id: event.id,
             artist_uuid: artistUuid,
-            tmid: tmid,
+            attractionId: attractionId,
             event_name: event.name,
             event_url: event.url,
             event_date: event.dates.start.localDate,
@@ -109,17 +110,17 @@ export class EventCacheService {
     try {
       const { data: artistsData, error } = await supabase
         .from("artists")
-        .select("uuid, tmid")
-        .not("tmid", "is", null)
-        .not("tmid", "eq", "");
+        .select("uuid, attractionId")
+        .not("attractionId", "is", null)
+        .not("attractionId", "eq", "");
 
       if (error) {
-        console.error("Error fetching artists with TMIDs:", error);
+        console.error("Error fetching artists with attractionIds:", error);
         return;
       }
 
       if (!artistsData) {
-        console.log("No artists with TMIDs found to refresh.");
+        console.log("No artists with attractionIds found to refresh.");
         return;
       }
 
@@ -127,9 +128,9 @@ export class EventCacheService {
 
       for (let i = 0; i < artistsData.length; i++) {
         const artist = artistsData[i] as Artist;
-        if (artist && artist.uuid && artist.tmid) {
+        if (artist && artist.uuid && artist.attractionId) {
           console.log(`Refreshing events for artist ${i + 1}/${artistsData.length}: ${artist.uuid}`);
-          await this.refreshEventsForArtist(artist.uuid, artist.tmid);
+          await this.refreshEventsForArtist(artist.uuid, artist.attractionId);
           if (i < artistsData.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 200));
           }
@@ -182,3 +183,4 @@ export class EventCacheService {
 }
 
 export const eventCacheService = new EventCacheService();
+  

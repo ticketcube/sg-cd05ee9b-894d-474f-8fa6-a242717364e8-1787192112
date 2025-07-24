@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,7 @@ export default function OnTourPage() {
   }, []);
 
   const loadTestArtist = async () => {
-    setLoading(true);a
+    setLoading(true);
     setError(null);
     try {
       const { data, error: dbError } = await supabase
@@ -43,7 +44,7 @@ export default function OnTourPage() {
         .single();
 
       if (dbError) throw dbError;
-      if (!data) throw new Error("Artist with attractionID 2783377 not found.");
+      if (!data) throw new Error("Artist with attractionId 2783377 not found.");
       
       setTestArtist(data);
     } catch (err) {
@@ -196,7 +197,7 @@ export default function OnTourPage() {
               )}
               <div>
                 <h3 className="text-xl font-semibold">{testArtist.artist_name}</h3>
-                <p className="text-sm text-muted-foreground">: {testArtist.attractionId}</p>
+                <p className="text-sm text-muted-foreground">AttractionID: {testArtist.attractionId}</p>
               </div>
             </div>
           ) : (
@@ -256,3 +257,4 @@ export default function OnTourPage() {
     </div>
   );
 }
+  

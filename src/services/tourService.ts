@@ -1,34 +1,38 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { eventCacheService } from "./eventCacheService";
 import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
+import { Tables } from "@/integrations/supabase/types";
+
+type Artist = Tables<"artists">;
 
 export class TourService {
-  async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
+  async getArtistsWithAttractionIds(): Promise<ArtistWithEvents[]> {
     try {
-      console.log("TourService: Starting to fetch artists with TMIDs...");
+      console.log("TourService: Starting to fetch artists with attractionIds...");
       
       const { data: artistsData, error: artistsError } = await supabase
         .from("artists")
         .select("*")
-        .not("tmid", "is", null)
-        .not("tmid", "eq", "");
+        .not("attractionId", "is", null)
+        .not("attractionId", "eq", "");
 
       if (artistsError) {
-        console.error("Error fetching artists with TMIDs:", artistsError);
+        console.error("Error fetching artists with attractionIds:", artistsError);
         return [];
       }
 
       if (!artistsData || artistsData.length === 0) {
-        console.log("No artists with TMIDs found");
+        console.log("No artists with attractionIds found");
         return [];
       }
 
-      console.log(`TourService: Fetched ${artistsData.length} artists with TMIDs.`);
+      console.log(`TourService: Fetched ${artistsData.length} artists with attractionIds.`);
 
       const results: ArtistWithEvents[] = [];
       
       for (const artist of artistsData) {
-        if (artist && artist.uuid && artist.tmid && artist.artist_name) {
+        if (artist && artist.uuid && artist.attractionId && artist.artist_name) {
           try {
             const events: TicketmasterEvent[] = await eventCacheService.getCachedEventsForArtist(artist.uuid);
             const hasEvents = events.length > 0;
@@ -37,7 +41,7 @@ export class TourService {
               artist_uuid: artist.uuid,
               artist_name: artist.artist_name,
               artist_image: artist.artist_image,
-              tmid: artist.tmid,
+              attractionId: artist.attractionId,
               hasEvents,
               events: events.slice(0, 3),
             });
@@ -47,7 +51,7 @@ export class TourService {
               artist_uuid: artist.uuid,
               artist_name: artist.artist_name,
               artist_image: artist.artist_image,
-              tmid: artist.tmid,
+              attractionId: artist.attractionId,
               hasEvents: false,
               events: [],
             });
@@ -64,7 +68,7 @@ export class TourService {
       });
 
     } catch (error) {
-      console.error("An unexpected error occurred in getArtistsWithTmids:", error);
+      console.error("An unexpected error occurred in getArtistsWithAttractionIds:", error);
       return [];
     }
   }
@@ -79,3 +83,4 @@ export class TourService {
 }
 
 export const tourService = new TourService();
+  
