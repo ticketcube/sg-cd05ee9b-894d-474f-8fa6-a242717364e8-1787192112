@@ -1,19 +1,22 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+
+import { useState, useEffect, useRef, useCallback } from "react";
 import { artistService } from "@/services/artistService";
-import type { Artist } from "@/types/artists";
-import Top100ArtistPopup from "@/components/Top100ArtistPopup";
+import type { Artist, ArtistWithVoteCount } from "@/types/artists";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
+import { votingService } from "@/services/votingService";
+import Top100ArtistPopup from "@/components/Top100ArtistPopup";
 
 type VotingState = "initial" | "voting" | "submitted";
 
-const ARTISTS_PER_PAGE = 100;
+const ARTISTS_PER_PAGE = 25;
 
 export default function Top100Page() {
-  const [artists, setArtists] = useState<Artist[]>([]);
+  const [artists, setArtists] = useState<ArtistWithVoteCount[]>([]);
   const [isUsernameDialogOpen, setIsUsernameDialogOpen] = useState(false);
   const [isSubmissionDialogOpen, setIsSubmissionDialogOpen] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
@@ -22,28 +25,57 @@ export default function Top100Page() {
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
   const [votingState, setVotingState] = useState<VotingState>("initial");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
-  
+
   const observer = useRef<IntersectionObserver>();
 
-  useEffect(() => {
-    const fetchArtists = async () => {
+  const loadArtists = useCallback(async (pageToLoad: number, refresh = false) => {
+    if (loadingMore) return;
+    
+    if (refresh) {
       setLoading(true);
-      try {
-        const topArtists = await artistService.getTopArtistsByListeners(ARTISTS_PER_PAGE);
-        setArtists(topArtists);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An unknown error occurred");
-        console.error("Failed to fetch top 100 artists:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    } else {
+      setLoadingMore(true);
+    }
 
-    fetchArtists();
-  }, []);
+    try {
+      const { artists: newArtists, count } = await artistService.getTopVotedArtistsWithDetails(pageToLoad, ARTISTS_PER_PAGE);
+      
+      setArtists(prev => refresh ? newArtists : [...prev, ...newArtists]);
+      setTotalCount(count);
+      setHasMore(newArtists.length === ARTISTS_PER_PAGE);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [loadingMore]);
+
+  useEffect(() => {
+    loadArtists(1, true);
+  }, [loadArtists]);
+
+  const lastArtistElementRef = useCallback((node: HTMLDivElement) => {
+    if (loadingMore || !hasMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        setPage(prevPage => {
+          loadArtists(prevPage + 1);
+          return prevPage + 1;
+        });
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loadingMore, hasMore, loadArtists]);
 
   const handleArtistClick = (artist: Artist) => {
     setSelectedArtist(artist);
@@ -57,15 +89,15 @@ export default function Top100Page() {
       return;
     }
 
-    if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.UUID)) {
+    if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.uuid)) {
       alert("You can only select up to 25 artists!");
       return;
     }
 
     setSelectedArtists(prev => 
-      prev.includes(artist.UUID)
-        ? prev.filter(id => id !== artist.UUID)
-        : [...prev, artist.UUID]
+      prev.includes(artist.uuid)
+        ? prev.filter(id => id !== artist.uuid)
+        : [...prev, artist.uuid]
     );
   };
 
@@ -86,7 +118,7 @@ export default function Top100Page() {
 
     try {
       const votes = selectedArtists.map(artistUUID => {
-        const artist = artists.find(a => a.UUID === artistUUID);
+        const artist = artists.find(a => a.uuid === artistUUID);
         return {
           username,
           artist_uuid: artistUUID,
@@ -97,8 +129,7 @@ export default function Top100Page() {
       await votingService.submitVotes(votes);
       setVotingState("submitted");
       setIsSubmissionDialogOpen(true);
-      
-      loadArtists(0, true);
+      loadArtists(1, true);
     } catch (error) {
       console.error("Error submitting votes:", error);
       alert("Error submitting votes. Please try again.");
@@ -139,7 +170,7 @@ export default function Top100Page() {
       case "initial":
         return "VOTE FOR YOUR TOP 25!";
       case "voting":
-        return "SUBMIT YOUR VOTES";
+        return `SUBMIT YOUR VOTES (${selectedArtists.length}/25)`;
       case "submitted":
         return "VOTES SUBMITTED";
       default:
@@ -176,7 +207,7 @@ export default function Top100Page() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Loading Top 100 Artists...</h1>
+          <h1 className="text-2xl font-bold mb-4">Loading Top Artists...</h1>
           <Loader2 className="w-8 h-8 animate-spin mx-auto" />
         </div>
       </div>
@@ -187,7 +218,7 @@ export default function Top100Page() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Error Loading Top 100 Artists</h1>
+          <h1 className="text-2xl font-bold mb-4">Error Loading Artists</h1>
           <p className="text-xl text-red-500">{error}</p>
         </div>
       </div>
@@ -210,7 +241,7 @@ export default function Top100Page() {
               <span className="sm:hidden">Back</span>
             </Button>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 truncate">Top 100 OTW Artists</h1>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 truncate">Top OTW Artists</h1>
               <p className="text-xs sm:text-sm text-gray-400">
                 Showing {artists.length} of {totalCount} artists
               </p>
@@ -224,12 +255,6 @@ export default function Top100Page() {
           >
             {getMainButtonText()}
           </Button>
-          
-          {votingState === "voting" && (
-            <p className="text-center text-xs sm:text-sm text-gray-400 mt-2">
-              Selected: {selectedArtists.length}/25 artists
-            </p>
-          )}
         </div>
       </div>
 
@@ -238,20 +263,21 @@ export default function Top100Page() {
           <div className="grid gap-2">
             {artists.map((artist, index) => {
               const isLast = index === artists.length - 1;
-              const isSelected = selectedArtists.includes(artist.UUID);
+              const isSelected = selectedArtists.includes(artist.uuid);
               
               return (
                 <div
-                  key={artist.UUID}
+                  key={artist.uuid}
                   ref={isLast ? lastArtistElementRef : null}
+                  onClick={() => handleArtistClick(artist)}
                   className={cn(
-                    "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
+                    "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full cursor-pointer",
                     isSelected && "ring-2 ring-green-500 bg-gray-800"
                   )}
                 >
                   <div className="flex items-center gap-2">
                     <div className="text-lg sm:text-xl font-bold text-gray-500 w-5 sm:w-6 flex-shrink-0">
-                      {index + 1}
+                      {artist.rank || index + 1}
                     </div>
                     
                     <div className="flex-1 min-w-0">
@@ -303,11 +329,17 @@ export default function Top100Page() {
         
         {!hasMore && artists.length > 0 && (
           <div className="text-center py-8 text-gray-400">
-            <p>You've reached the end of the Top 100 list!</p>
-            <p className="text-sm mt-2">Total votes counted: {artists.reduce((sum, artist) => sum + artist.vote_count, 0)}</p>
+            <p>You've reached the end of the list!</p>
           </div>
         )}
       </div>
+
+      {selectedArtist && (
+        <Top100ArtistPopup 
+          artist={selectedArtist} 
+          onClose={() => setSelectedArtist(null)} 
+        />
+      )}
 
       <Dialog open={isUsernameDialogOpen} onOpenChange={setIsUsernameDialogOpen}>
         <DialogContent>

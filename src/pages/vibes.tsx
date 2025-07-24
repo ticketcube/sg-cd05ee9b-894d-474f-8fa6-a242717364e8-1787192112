@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+
+import { useState, useMemo } from "react";
 import type { GetStaticProps, NextPage } from "next";
 import { artistService } from "@/services/artistService";
-import type { VibeArtist } from "@/types/artists";
+import type { VibeArtist, Artist } from "@/types/artists";
 import VibeChart from "@/components/VibeChart";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,24 +14,14 @@ import Image from "next/image";
 export const VIBE_ARCHETYPES = ["All", "Dreamer", "Rebel", "Lover", "Rager"];
 
 interface VibesPageProps {
-  artists: VibeArtist[];
+  initialArtists: VibeArtist[];
 }
 
-const VibesPage: NextPage<VibesPageProps> = ({ artists }) => {
+const VibesPage: NextPage<VibesPageProps> = ({ initialArtists }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [vibeFilter, setVibeFilter] = useState("All");
-  const [artists, setArtists] = useState<VibeArtist[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchArtists = async () => {
-      setLoading(true);
-      const allArtists = await artistService.getAllArtists();
-      setArtists(allArtists);
-      setLoading(false);
-    };
-    fetchArtists();
-  }, []);
+  const [artists] = useState<VibeArtist[]>(initialArtists);
+  const [loading] = useState(false);
 
   const filteredArtists = useMemo(() => {
     if (!artists) return [];
@@ -49,7 +40,6 @@ const VibesPage: NextPage<VibesPageProps> = ({ artists }) => {
 
   return (
     <div className="min-h-screen bg-black text-white relative">
-      {/* Background Logo */}
       <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
         <Image
           src="/OTWLogocolor.png"
@@ -60,7 +50,6 @@ const VibesPage: NextPage<VibesPageProps> = ({ artists }) => {
         />
       </div>
 
-      {/* Content */}
       <div className="relative z-10">
         <div className="sticky top-0 bg-black/90 backdrop-blur-sm z-20 p-4 border-b border-gray-800">
           <div className="max-w-6xl mx-auto">
@@ -127,12 +116,24 @@ const VibesPage: NextPage<VibesPageProps> = ({ artists }) => {
   );
 };
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getStaticProps: GetStaticProps<VibesPageProps> = async () => {
   try {
-    const artists = await artistService.getAllArtistsForVibes();
+    const artists: Artist[] = await artistService.getAllArtists();
+    const vibeArtists: VibeArtist[] = artists.map(artist => ({
+      uuid: artist.uuid,
+      artist_name: artist.artist_name,
+      artist_image: artist.artist_image,
+      primary_vibe: artist.primary_vibe,
+      secondary_vibe: artist.secondary_vibe,
+      artist_genre: artist.artist_genre,
+      artist_videolink: artist.artist_videolink,
+      artist_tiktok_videoid: artist.artist_tiktok_videoid,
+      artist_tiktok_username: artist.artist_tiktok_username,
+    }));
+
     return {
       props: {
-        artists: artists || [],
+        initialArtists: vibeArtists || [],
       },
       revalidate: 3600,
     };
@@ -140,7 +141,7 @@ export const getStaticProps: GetStaticProps = async () => {
     console.error("Failed to fetch artists for vibes page:", error);
     return {
       props: {
-        artists: [],
+        initialArtists: [],
       },
     };
   }

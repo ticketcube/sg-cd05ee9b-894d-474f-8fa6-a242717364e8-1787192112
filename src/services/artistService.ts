@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { Artist, ArtistWithVoteCount } from "@/types/artists";
 
@@ -284,20 +283,20 @@ export class ArtistService {
     }
   }
   
-  async getTopVotedArtistsWithDetails(limit: number = 25): Promise<ArtistWithVoteCount[]> {
+  async getTopVotedArtistsWithDetails(page: number = 1, limit: number = 25): Promise<{ artists: ArtistWithVoteCount[], count: number }> {
     try {
-      const { data: votes, error: votesError } = await supabase
-        .rpc('get_artist_vote_counts');
+      const { data: votes, error: votesError, count } = await supabase
+        .rpc('get_artist_vote_counts', {}, { count: 'exact' });
 
       if (votesError) {
         console.error("Error fetching vote counts:", votesError);
-        return [];
+        return { artists: [], count: 0 };
       }
 
-      const topVotes = votes.slice(0, limit);
-      const artistNames = topVotes.map(v => v.artist_name);
+      const paginatedVotes = votes.slice((page - 1) * limit, page * limit);
+      const artistNames = paginatedVotes.map(v => v.artist_name);
 
-      if (artistNames.length === 0) return [];
+      if (artistNames.length === 0) return { artists: [], count: count || 0 };
 
       const { data: artists, error: artistsError } = await supabase
         .from("artists")
@@ -306,26 +305,27 @@ export class ArtistService {
 
       if (artistsError) {
         console.error("Error fetching artist details:", artistsError);
-        return [];
+        return { artists: [], count: count || 0 };
       }
 
       const artistMap = new Map(artists.map(a => [a.artist_name, a]));
 
-      const result = topVotes
-        .map(vote => {
+      const result = paginatedVotes
+        .map((vote, index) => {
           const artistDetails = artistMap.get(vote.artist_name);
           if (!artistDetails) return null;
           return {
             ...artistDetails,
             vote_count: vote.vote_count,
+            rank: (page - 1) * limit + index + 1,
           };
         })
-        .filter((a): a is ArtistWithVoteCount => a !== null);
+        .filter((a): a is ArtistWithVoteCount & { rank: number } => a !== null);
 
-      return result;
+      return { artists: result, count: count || 0 };
     } catch (error) {
       console.error("Error in getTopVotedArtistsWithDetails:", error);
-      return [];
+      return { artists: [], count: 0 };
     }
   }
 }

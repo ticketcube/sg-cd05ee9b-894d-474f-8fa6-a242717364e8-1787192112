@@ -1,3 +1,4 @@
+
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -8,10 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
-
-interface ArtistWithVotes extends Artist {
-  vote_count: number;
-}
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 const GenrePage = () => {
   const router = useRouter();
@@ -25,17 +24,16 @@ const GenrePage = () => {
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
 
   useEffect(() => {
-    if (typeof genre === 'string' && genre) {
+    if (typeof genre === "string" && genre) {
       const fetchArtists = async () => {
         try {
           setIsLoading(true);
           const decodedGenre = decodeURIComponent(genre);
           const fetchedArtists = await artistService.getArtistsByGenre(decodedGenre);
           
-          // Add vote_count property to each artist (set to 0 for now)
           const artistsWithVotes: ArtistWithVotes[] = fetchedArtists.map(artist => ({
             ...artist,
-            vote_count: 0
+            vote_count: 0 // Placeholder for vote count
           }));
           
           setArtists(artistsWithVotes);
@@ -62,12 +60,15 @@ const GenrePage = () => {
   };
 
   const handleVote = (artist: Artist) => {
-    // Toggle vote for this artist
     setSelectedArtists(prev => {
-      if (prev.includes(artist.UUID)) {
-        return prev.filter(id => id !== artist.UUID);
+      if (prev.includes(artist.uuid)) {
+        return prev.filter(id => id !== artist.uuid);
       } else {
-        return [...prev, artist.UUID];
+        if (prev.length >= 25) {
+          alert("You can vote for a maximum of 25 artists.");
+          return prev;
+        }
+        return [...prev, artist.uuid];
       }
     });
   };
@@ -91,7 +92,7 @@ const GenrePage = () => {
       }
     });
 
-  const genreName = typeof genre === 'string' ? decodeURIComponent(genre) : 'Genre';
+  const genreName = typeof genre === "string" ? decodeURIComponent(genre) : "Genre";
 
   return (
     <div className="container mx-auto p-4 bg-black text-white min-h-screen">
@@ -100,22 +101,24 @@ const GenrePage = () => {
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <input
+        <Input
           type="text"
           placeholder="Search artists..."
           value={searchTerm}
           onChange={handleSearchChange}
           className="bg-gray-800 border-gray-600 text-white"
         />
-        <select onValueChange={handleSortChange} defaultValue={sortOrder}>
-          <option className="w-full md:w-[180px] bg-gray-800 border-gray-600 text-white">
-            Sort by
-          </option>
-          <option value="vote_count_desc">Votes (High to Low)</option>
-          <option value="vote_count_asc">Votes (Low to High)</option>
-          <option value="name_asc">Name (A-Z)</option>
-          <option value="name_desc">Name (Z-A)</option>
-        </select>
+        <Select onValueChange={handleSortChange} defaultValue={sortOrder}>
+          <SelectTrigger className="w-full md:w-[180px] bg-gray-800 border-gray-600 text-white">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="vote_count_desc">Votes (High to Low)</SelectItem>
+            <SelectItem value="vote_count_asc">Votes (Low to High)</SelectItem>
+            <SelectItem value="name_asc">Name (A-Z)</SelectItem>
+            <SelectItem value="name_desc">Name (Z-A)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? (
@@ -126,37 +129,42 @@ const GenrePage = () => {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredAndSortedArtists.slice(0, visibleArtists).map((artist) => (
-              <Card key={artist.UUID}>
+              <Card key={artist.uuid} className="bg-gray-900 border-gray-700 text-white">
                 <CardHeader>
-                  <CardTitle>{artist.artist_name}</CardTitle>
+                  <CardTitle className="truncate">{artist.artist_name}</CardTitle>
                   <Badge>{artist.vote_count} votes</Badge>
                 </CardHeader>
-                <CardContent>
-                  <Image
-                    src={artist.artist_image}
-                    alt={artist.artist_name}
-                    width={200}
-                    height={200}
-                  />
-                  <Button onClick={() => handleVote(artist)}>
-                    {selectedArtists.includes(artist.UUID) ? "Unvote" : "Vote"}
-                  </Button>
-                  <Link href={`/artist/${artist.UUID}`}>
-                    <Button>View Artist</Button>
-                  </Link>
-                  <ArtistVideoPlayer videoUrl={artist.artist_video} />
+                <CardContent className="flex flex-col items-center gap-4">
+                  {artist.artist_image && (
+                    <Image
+                      src={artist.artist_image}
+                      alt={artist.artist_name}
+                      width={200}
+                      height={200}
+                      className="rounded-md object-cover aspect-square"
+                    />
+                  )}
+                  <ArtistVideoPlayer artist={artist} size="sm" />
+                  <div className="flex gap-2 w-full">
+                    <Button onClick={() => handleVote(artist)} className="flex-1">
+                      {selectedArtists.includes(artist.uuid) ? "Unvote" : "Vote"}
+                    </Button>
+                    <Link href={`/artist/${artist.uuid}`} passHref>
+                      <Button variant="outline" className="flex-1">View Artist</Button>
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
           {visibleArtists < filteredAndSortedArtists.length && (
             <div className="text-center mt-8">
-              <button 
+              <Button 
                 onClick={loadMoreArtists} 
-                className="bg-transparent border border-white text-white hover:bg-white hover:text-black px-4 py-2 rounded"
+                variant="outline"
               >
                 Load More
-              </button>
+              </Button>
             </div>
           )}
           {filteredAndSortedArtists.length === 0 && (

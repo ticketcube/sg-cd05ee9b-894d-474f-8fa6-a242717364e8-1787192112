@@ -1,8 +1,7 @@
-
-    import { Database } from "@/integrations/supabase/types";
+import { Database } from "@/integrations/supabase/types";
 
     export type Artist = Database["public"]["Tables"]["artists"]["Row"];
-    export type ArtistWithVoteCount = Artist & { vote_count: number };
+    export type ArtistWithVoteCount = Artist & { vote_count: number; rank?: number };
     export type ArtistWithVotes = Artist & { vote_count: number };
 
     export type VibeArtist = Pick<
