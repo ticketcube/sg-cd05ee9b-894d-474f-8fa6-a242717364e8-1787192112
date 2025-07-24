@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -6,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService } from "@/services/ticketmasterService";
+import { eventCacheService } from "@/services/eventCacheService";
 import type { TicketmasterEvent } from "@/types/tour";
-import { ExternalLink, Calendar, MapPin, Loader2 } from "lucide-react";
+import { ExternalLink, Calendar, MapPin, Loader2, Database } from "lucide-react";
 
 interface TestArtist {
   UUID: string;
@@ -19,8 +19,11 @@ interface TestArtist {
 export default function OnTourPage() {
   const [testArtist, setTestArtist] = useState<TestArtist | null>(null);
   const [events, setEvents] = useState<TicketmasterEvent[]>([]);
+  const [cachedEvents, setCachedEvents] = useState<TicketmasterEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [caching, setCaching] = useState(false);
+  const [loadingCache, setLoadingCache] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiResponse, setApiResponse] = useState<any>(null);
 
@@ -99,6 +102,52 @@ export default function OnTourPage() {
       setError("Failed to test Ticketmaster API");
     } finally {
       setTesting(false);
+    }
+  };
+
+  const cacheEventsToDatabase = async () => {
+    if (!testArtist) return;
+
+    try {
+      setCaching(true);
+      setError(null);
+
+      console.log(`Caching events for ${testArtist.artist_name} to database...`);
+
+      // Use the eventCacheService to refresh events for this artist
+      await eventCacheService.refreshEventsForArtist(testArtist.UUID, testArtist.tmid);
+      
+      console.log(`Successfully cached events for ${testArtist.artist_name}`);
+
+    } catch (err) {
+      console.error("Error caching events:", err);
+      setError("Failed to cache events to database");
+    } finally {
+      setCaching(false);
+    }
+  };
+
+  const loadCachedEvents = async () => {
+    if (!testArtist) return;
+
+    try {
+      setLoadingCache(true);
+      setError(null);
+      setCachedEvents([]);
+
+      console.log(`Loading cached events for ${testArtist.artist_name}...`);
+
+      // Get cached events from database
+      const cached = await eventCacheService.getCachedEventsForArtist(testArtist.UUID);
+      setCachedEvents(cached);
+      
+      console.log(`Loaded ${cached.length} cached events for ${testArtist.artist_name}`);
+
+    } catch (err) {
+      console.error("Error loading cached events:", err);
+      setError("Failed to load cached events");
+    } finally {
+      setLoadingCache(false);
     }
   };
 
@@ -183,6 +232,22 @@ export default function OnTourPage() {
             >
               {testing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               🧪 Test API
+            </Button>
+            <Button 
+              onClick={cacheEventsToDatabase} 
+              disabled={!testArtist || caching}
+              variant="secondary"
+            >
+              {caching ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Database className="w-4 h-4 mr-2" />}
+              Cache Events
+            </Button>
+            <Button 
+              onClick={loadCachedEvents} 
+              disabled={!testArtist || loadingCache}
+              variant="secondary"
+            >
+              {loadingCache ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Load Cached
             </Button>
           </div>
         </CardContent>
@@ -271,6 +336,54 @@ export default function OnTourPage() {
         </Card>
       )}
 
+      {/* Cached Events Section */}
+      {cachedEvents.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              💾 Cached Events from Database
+              <Badge variant="secondary">{cachedEvents.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {cachedEvents.map((event, index) => (
+                <div key={event.id} className="border rounded-lg p-4 bg-blue-50">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-semibold text-lg">{event.name}</h4>
+                    <Badge variant="outline">Cached #{index + 1}</Badge>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      {formatEventDate(event)}
+                      {event.dates.start.localTime && (
+                        <span className="ml-1">at {event.dates.start.localTime}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {getEventVenue(event)}
+                    </div>
+                  </div>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.open(event.url, '_blank')}
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Buy Tickets
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Debug Info */}
       <Card className="mt-6">
         <CardHeader>
@@ -281,6 +394,8 @@ export default function OnTourPage() {
             <p><strong>Test Artist Loaded:</strong> {testArtist ? "✅ Yes" : "❌ No"}</p>
             <p><strong>API Tested:</strong> {apiResponse ? "✅ Yes" : "❌ No"}</p>
             <p><strong>Events Found:</strong> {events.length}</p>
+            <p><strong>Events Cached:</strong> {caching ? "⏳ Caching..." : "Ready"}</p>
+            <p><strong>Cached Events Loaded:</strong> {cachedEvents.length}</p>
             <p><strong>Current Error:</strong> {error || "None"}</p>
             <p><strong>Loading State:</strong> {loading ? "Loading..." : "Ready"}</p>
             <p><strong>Testing State:</strong> {testing ? "Testing..." : "Ready"}</p>
