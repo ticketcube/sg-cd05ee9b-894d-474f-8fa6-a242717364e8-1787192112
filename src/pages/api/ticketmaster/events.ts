@@ -58,7 +58,7 @@ export default async function handler(
   try {
     // If testAttraction is true, test the attractions endpoint first
     if (testAttraction === "true") {
-      const attractionUrl = `https://app.ticketmaster.com/discovery/v2/attractions/${attractionId}.json?apikey=${apiKey}`;
+      const attractionUrl = `https://app.ticketmaster.com/discovery/v2/events.json?attractionID=${attractionId}&apikey=${apiKey}`;
       console.log("Testing attraction URL:", attractionUrl);
       
       const attractionResponse = await fetch(attractionUrl);
