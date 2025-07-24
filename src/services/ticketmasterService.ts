@@ -3,7 +3,7 @@ import type { TicketmasterEvent } from "@/types/tour";
 class TicketmasterService {
   async getArtistEvents(tmid: string, size: number = 3): Promise<TicketmasterEvent[]> {
     try {
-      const response = await fetch(`/api/ticketmaster/events?attractionId=${tmid}&size=${size}`);
+      const response = await fetch(`/api/ticketmaster/events?tmid=${tmid}&size=${size}`);
       
       if (!response.ok) {
         console.error(`API error: ${response.status} ${response.statusText}`);
@@ -20,7 +20,7 @@ class TicketmasterService {
 
   async checkArtistHasEvents(tmid: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/ticketmaster/events?attractionId=${tmid}&size=1`);
+      const response = await fetch(`/api/ticketmaster/events?tmid=${tmid}&size=1`);
       
       if (!response.ok) {
         return false;
