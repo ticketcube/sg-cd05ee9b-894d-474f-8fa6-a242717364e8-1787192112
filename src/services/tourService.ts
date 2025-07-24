@@ -5,46 +5,68 @@ import { ticketmasterService, ArtistWithEvents } from "./ticketmasterService";
 export class TourService {
   async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
     try {
-      // Fixed: Use correct column name "UUID" (uppercase) for the artists table
-      const { data, error } = await supabase
+      // First, get all tmid records
+      const { data: tmidData, error: tmidError } = await supabase
         .from("tmid")
-        .select(`
-          artist_uuid,
-          tmid,
-          artists!tmid_artist_uuid_fkey (
-            artist_name,
-            artist_image
-          )
-        `)
+        .select("artist_uuid, tmid")
         .not("tmid", "is", null);
 
-      if (error) {
-        console.error("Error fetching artists with TMIDs:", error);
+      if (tmidError) {
+        console.error("Error fetching TMIDs:", tmidError);
         return [];
       }
 
-      console.log("Fetched data from Supabase:", data?.length, "records");
+      if (!tmidData || tmidData.length === 0) {
+        console.log("No TMID records found");
+        return [];
+      }
+
+      console.log("Fetched TMID data:", tmidData.length, "records");
+
+      // Get all unique artist UUIDs
+      const artistUuids = tmidData.map(item => item.artist_uuid);
+
+      // Fetch artist details for these UUIDs
+      const { data: artistsData, error: artistsError } = await supabase
+        .from("artists")
+        .select("UUID, artist_name, artist_image")
+        .in("UUID", artistUuids);
+
+      if (artistsError) {
+        console.error("Error fetching artists:", artistsError);
+        return [];
+      }
+
+      console.log("Fetched artist data:", artistsData?.length, "records");
+
+      // Create a map for quick artist lookup
+      const artistMap = new Map();
+      artistsData?.forEach(artist => {
+        artistMap.set(artist.UUID, artist);
+      });
 
       const artistsWithEvents: ArtistWithEvents[] = [];
 
-      for (const item of data || []) {
-        if (!item.tmid || !item.artists) {
-          console.log("Skipping item - missing tmid or artist data:", item);
+      for (const tmidItem of tmidData) {
+        const artist = artistMap.get(tmidItem.artist_uuid);
+        
+        if (!artist) {
+          console.log("Artist not found for UUID:", tmidItem.artist_uuid);
           continue;
         }
 
-        console.log(`Fetching events for ${item.artists.artist_name} (TMID: ${item.tmid})`);
+        console.log(`Fetching events for ${artist.artist_name} (TMID: ${tmidItem.tmid})`);
         
-        const events = await ticketmasterService.getArtistEvents(item.tmid, 3);
+        const events = await ticketmasterService.getArtistEvents(tmidItem.tmid, 3);
         const hasEvents = events.length > 0;
 
-        console.log(`${item.artists.artist_name}: ${events.length} events found`);
+        console.log(`${artist.artist_name}: ${events.length} events found`);
 
         artistsWithEvents.push({
-          artist_uuid: item.artist_uuid,
-          artist_name: item.artists.artist_name,
-          artist_image: item.artists.artist_image,
-          tmid: item.tmid,
+          artist_uuid: tmidItem.artist_uuid,
+          artist_name: artist.artist_name,
+          artist_image: artist.artist_image,
+          tmid: tmidItem.tmid,
           hasEvents,
           events
         });
