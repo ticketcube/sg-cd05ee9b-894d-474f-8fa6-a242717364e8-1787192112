@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -39,11 +38,10 @@ export default function VibeArtistPopup({ artist, isOpen, onClose }: VibeArtistP
   const [videoError, setVideoError] = useState(false);
 
   const getVideoContent = () => {
-    let extractedVideoId: string | null = null;
     const sourceUrl = artist.artist_videolink ? artist.artist_videolink.split(",")[0].trim() : null;
 
     if (sourceUrl) {
-      extractedVideoId = extractYouTubeVideoId(sourceUrl);
+      const extractedVideoId = extractYouTubeVideoId(sourceUrl);
       if (extractedVideoId) {
         return {
           type: "youtube",
@@ -52,20 +50,6 @@ export default function VibeArtistPopup({ artist, isOpen, onClose }: VibeArtistP
           thumbnailUrl: `https://img.youtube.com/vi/${extractedVideoId}/maxresdefault.jpg`,
         };
       }
-    }
-    
-    if (!extractedVideoId && artist.artist_tiktok_videoid) {
-      extractedVideoId = artist.artist_tiktok_videoid;
-      const tiktokThumbnail = isValidImageUrl(artist.artist_image) 
-        ? artist.artist_image 
-        : null;
-      
-      return {
-        type: "tiktok",
-        videoId: extractedVideoId,
-        embedUrl: `https://www.tiktok.com/embed/v2/${extractedVideoId}`,
-        thumbnailUrl: tiktokThumbnail,
-      };
     }
 
     return { 
@@ -176,13 +160,6 @@ export default function VibeArtistPopup({ artist, isOpen, onClose }: VibeArtistP
                     </Badge>
                   )}
                 </div>
-
-                {/* TikTok Username */}
-                {artist.artist_tiktok_username && (
-                  <p className="text-gray-300">
-                    <span className="text-gray-400">TikTok:</span> @{artist.artist_tiktok_username}
-                  </p>
-                )}
               </div>
             </div>
           </div>
