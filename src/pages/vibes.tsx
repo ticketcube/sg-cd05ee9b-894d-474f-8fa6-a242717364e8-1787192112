@@ -1,5 +1,4 @@
-
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { GetStaticProps, NextPage } from "next";
 import { artistService } from "@/services/artistService";
 import type { VibeArtist } from "@/types/artists";
@@ -20,6 +19,18 @@ interface VibesPageProps {
 const VibesPage: NextPage<VibesPageProps> = ({ artists }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [vibeFilter, setVibeFilter] = useState("All");
+  const [artists, setArtists] = useState<VibeArtist[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchArtists = async () => {
+      setLoading(true);
+      const allArtists = await artistService.getAllArtists();
+      setArtists(allArtists);
+      setLoading(false);
+    };
+    fetchArtists();
+  }, []);
 
   const filteredArtists = useMemo(() => {
     if (!artists) return [];
@@ -97,11 +108,20 @@ const VibesPage: NextPage<VibesPageProps> = ({ artists }) => {
           </div>
         </div>
 
-        <div className="p-4 md:p-8">
-          <div className="max-w-6xl mx-auto">
+        <main className="container mx-auto px-4 py-8">
+          <h1 className="text-4xl font-bold mb-4 text-center">Artist Vibe Chart</h1>
+          <p className="text-lg text-muted-foreground mb-8 text-center max-w-3xl mx-auto">
+            Explore artists based on their musical vibes. The chart is divided into four quadrants: Dreamer (dark, chill), Rebel (dark, hype), Lover (bright, chill), and Rager (bright, hype).
+          </p>
+          
+          {loading ? (
+            <div className="flex justify-center items-center h-96">
+              <p>Loading Vibe Chart...</p>
+            </div>
+          ) : (
             <VibeChart artists={filteredArtists} />
-          </div>
-        </div>
+          )}
+        </main>
       </div>
     </div>
   );

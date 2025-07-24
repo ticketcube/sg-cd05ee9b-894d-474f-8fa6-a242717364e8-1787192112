@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { artistService } from "@/services/artistService";
-import { VoteRankingChart } from "@/components/VoteRankingChart";
+import type { ArtistWithVoteCount } from "@/types/artists";
+import VoteRankingChart from "@/components/VoteRankingChart";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -10,22 +11,23 @@ interface VoteData {
 }
 
 export default function VotesPage() {
-  const [voteData, setVoteData] = useState<VoteData[]>([]);
+  const [voteData, setVoteData] = useState<ArtistWithVoteCount[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadData = async () => {
+    const fetchVotes = async () => {
+      setLoading(true);
       try {
-        const voteCounts = await artistService.getArtistVoteCounts();
-        setVoteData(voteCounts);
+        const data = await artistService.getTopVotedArtistsWithDetails(25);
+        setVoteData(data);
       } catch (error) {
-        console.error("Error loading vote data:", error);
+        console.error("Error fetching vote data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
+    fetchVotes();
   }, []);
 
   if (loading) {

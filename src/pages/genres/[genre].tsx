@@ -1,17 +1,13 @@
-
-import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import { artistService } from "@/services/artistService";
-import type { Artist } from "@/services/artistService";
-import { ArtistChart } from "@/components/ArtistChart";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import type { Artist, ArtistWithVotes } from "@/types/artists";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 
 interface ArtistWithVotes extends Artist {
   vote_count: number;
@@ -104,24 +100,22 @@ const GenrePage = () => {
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <Input
+        <input
           type="text"
           placeholder="Search artists..."
           value={searchTerm}
           onChange={handleSearchChange}
           className="bg-gray-800 border-gray-600 text-white"
         />
-        <Select onValueChange={handleSortChange} defaultValue={sortOrder}>
-          <SelectTrigger className="w-full md:w-[180px] bg-gray-800 border-gray-600 text-white">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent className="bg-gray-800 text-white">
-            <SelectItem value="vote_count_desc">Votes (High to Low)</SelectItem>
-            <SelectItem value="vote_count_asc">Votes (Low to High)</SelectItem>
-            <SelectItem value="name_asc">Name (A-Z)</SelectItem>
-            <SelectItem value="name_desc">Name (Z-A)</SelectItem>
-          </SelectContent>
-        </Select>
+        <select onValueChange={handleSortChange} defaultValue={sortOrder}>
+          <option className="w-full md:w-[180px] bg-gray-800 border-gray-600 text-white">
+            Sort by
+          </option>
+          <option value="vote_count_desc">Votes (High to Low)</option>
+          <option value="vote_count_asc">Votes (Low to High)</option>
+          <option value="name_asc">Name (A-Z)</option>
+          <option value="name_desc">Name (Z-A)</option>
+        </select>
       </div>
 
       {isLoading ? (
@@ -130,11 +124,31 @@ const GenrePage = () => {
         </div>
       ) : (
         <>
-          <ArtistChart 
-            artists={filteredAndSortedArtists.slice(0, visibleArtists)} 
-            onVote={handleVote}
-            selectedArtists={selectedArtists}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredAndSortedArtists.slice(0, visibleArtists).map((artist) => (
+              <Card key={artist.UUID}>
+                <CardHeader>
+                  <CardTitle>{artist.artist_name}</CardTitle>
+                  <Badge>{artist.vote_count} votes</Badge>
+                </CardHeader>
+                <CardContent>
+                  <Image
+                    src={artist.artist_image}
+                    alt={artist.artist_name}
+                    width={200}
+                    height={200}
+                  />
+                  <Button onClick={() => handleVote(artist)}>
+                    {selectedArtists.includes(artist.UUID) ? "Unvote" : "Vote"}
+                  </Button>
+                  <Link href={`/artist/${artist.UUID}`}>
+                    <Button>View Artist</Button>
+                  </Link>
+                  <ArtistVideoPlayer videoUrl={artist.artist_video} />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
           {visibleArtists < filteredAndSortedArtists.length && (
             <div className="text-center mt-8">
               <button 

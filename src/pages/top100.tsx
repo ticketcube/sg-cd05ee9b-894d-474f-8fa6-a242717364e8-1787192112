@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Artist, artistService } from "@/services/artistService";
-import { votingService } from "@/services/votingService";
-import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
+import { artistService } from "@/services/artistService";
+import type { Artist } from "@/types/artists";
+import Top100ArtistPopup from "@/components/Top100ArtistPopup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,8 +10,10 @@ import { cn } from "@/lib/utils";
 
 type VotingState = "initial" | "voting" | "submitted";
 
+const ARTISTS_PER_PAGE = 100;
+
 export default function Top100Page() {
-  const [artists, setArtists] = useState<(Artist & { vote_count: number })[]>([]);
+  const [artists, setArtists] = useState<Artist[]>([]);
   const [isUsernameDialogOpen, setIsUsernameDialogOpen] = useState(false);
   const [isSubmissionDialogOpen, setIsSubmissionDialogOpen] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
@@ -21,72 +22,32 @@ export default function Top100Page() {
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
   const [votingState, setVotingState] = useState<VotingState>("initial");
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   
   const observer = useRef<IntersectionObserver>();
 
-  const loadArtists = useCallback(async (pageNum: number = 0, reset: boolean = true) => {
-    try {
-      if (reset) {
-        setLoading(true);
-      } else {
-        setLoadingMore(true);
+  useEffect(() => {
+    const fetchArtists = async () => {
+      setLoading(true);
+      try {
+        const topArtists = await artistService.getTopArtistsByListeners(ARTISTS_PER_PAGE);
+        setArtists(topArtists);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
+        console.error("Failed to fetch top 100 artists:", err);
+      } finally {
+        setLoading(false);
       }
-      
-      const data = await artistService.getTop100ArtistsPaginated(pageNum, 20);
-      
-      if (reset) {
-        setArtists(data.artists);
-      } else {
-        setArtists(prev => [...prev, ...data.artists]);
-      }
-      
-      setHasMore(data.hasMore);
-      if (data.totalCount) {
-        setTotalCount(data.totalCount);
-      }
-      setPage(pageNum);
-    } catch (error) {
-      console.error("Error loading Top 100 artists:", error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
+    };
+
+    fetchArtists();
   }, []);
 
-  const loadMoreArtists = useCallback(async () => {
-    if (loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const { artists: newArtists, hasMore: newHasMore } = await artistService.getTop100ArtistsPaginated(nextPage, 20);
-      setArtists(prev => [...prev, ...newArtists]);
-      setPage(nextPage);
-      setHasMore(newHasMore);
-    } catch (error) {
-      console.error("Failed to load more artists:", error);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [loadingMore, hasMore, page]);
-
-  const lastArtistElementRef = useCallback(node => {
-    if (loading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMoreArtists();
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [loading, hasMore, loadMoreArtists]);
-
-  useEffect(() => {
-    loadArtists(0, true);
-  }, [loadArtists]);
+  const handleArtistClick = (artist: Artist) => {
+    setSelectedArtist(artist);
+  };
 
   const handleVote = (artist: Artist, event?: React.MouseEvent) => {
     event?.stopPropagation();
@@ -217,6 +178,17 @@ export default function Top100Page() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Loading Top 100 Artists...</h1>
           <Loader2 className="w-8 h-8 animate-spin mx-auto" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Error Loading Top 100 Artists</h1>
+          <p className="text-xl text-red-500">{error}</p>
         </div>
       </div>
     );

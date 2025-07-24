@@ -1,11 +1,10 @@
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { artistService } from "@/services/artistService";
 import { GenreDoughnutChart } from "@/components/GenreDoughnutChart";
 
 interface GenreData {
-  genre: string;
+  name: string;
   count: number;
 }
 
@@ -16,22 +15,21 @@ export default function GenresPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const genreCounts = await artistService.getGenreCounts();
-        setGenreData(genreCounts);
-        
-        // Calculate total artists
-        const total = genreCounts.reduce((sum, item) => sum + item.count, 0);
-        setTotalArtists(total);
-      } catch (error) {
-        console.error("Error loading genre data:", error);
-      } finally {
-        setLoading(false);
-      }
+    const fetchGenres = async () => {
+      const counts = await artistService.getGenreCounts();
+      const genreData: GenreData[] = Object.entries(counts).map(
+        ([name, count]) => ({
+          name,
+          count: Number(count),
+        })
+      );
+      setGenreData(genreData);
+      
+      // Calculate total artists
+      const total = genreData.reduce((sum, item) => sum + item.count, 0);
+      setTotalArtists(total);
     };
-
-    loadData();
+    fetchGenres();
   }, []);
 
   const handleGenreClick = (genre: string) => {
@@ -62,11 +60,11 @@ export default function GenresPage() {
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {genreData.map((item) => (
                 <div 
-                  key={item.genre}
-                  onClick={() => handleGenreClick(item.genre)}
+                  key={item.name}
+                  onClick={() => handleGenreClick(item.name)}
                   className="flex justify-between items-center p-3 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer transition-colors"
                 >
-                  <span className="font-medium">{item.genre}</span>
+                  <span className="font-medium">{item.name}</span>
                   <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-bold">
                     {item.count}
                   </span>
