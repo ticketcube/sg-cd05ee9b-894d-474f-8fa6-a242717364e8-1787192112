@@ -37,13 +37,13 @@ export default function OnTourPage() {
       setLoading(true);
       setError(null);
       
-      console.log("Loading Dua Lipa for testing...");
+      console.log("Loading test artist with TMID 2783377...");
       
-      // Specifically load Dua Lipa for testing
+      // Load test artist with the new TMID
       const { data, error: dbError } = await supabase
         .from("artists")
         .select("UUID, artist_name, artist_image, tmid")
-        .eq("tmid", "2179476")
+        .eq("tmid", "2783377")
         .single();
 
       if (dbError) {
@@ -53,17 +53,17 @@ export default function OnTourPage() {
       }
 
       if (!data) {
-        setError("Dua Lipa (TMID: 2179476) not found in database");
+        setError("Artist with TMID 2783377 not found in database");
         return;
       }
 
       const artist = data as TestArtist;
-      console.log("Loaded Dua Lipa:", artist);
+      console.log("Loaded test artist:", artist);
       setTestArtist(artist);
       
     } catch (err) {
-      console.error("Error loading Dua Lipa:", err);
-      setError("Failed to load Dua Lipa");
+      console.error("Error loading test artist:", err);
+      setError("Failed to load test artist");
     } finally {
       setLoading(false);
     }
@@ -144,8 +144,8 @@ export default function OnTourPage() {
       // If no events found, let's also log the exact URL being called
       if (fetchedEvents.length === 0) {
         console.log("❌ No events found. This could mean:");
-        console.log("1. Dua Lipa has no upcoming events");
-        console.log("2. The TMID (2179476) might be incorrect");
+        console.log("1. The artist has no upcoming events");
+        console.log("2. The TMID (2783377) might be incorrect");
         console.log("3. The API key might have issues");
         console.log(`Direct Ticketmaster URL would be: https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${testArtist.tmid}&apikey=YOUR_API_KEY&size=5&sort=date,asc`);
       }
@@ -268,9 +268,9 @@ export default function OnTourPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Ticketmaster API Test - Dua Lipa</h1>
+        <h1 className="text-4xl font-bold mb-4">Ticketmaster API Test - TMID 2783377</h1>
         <p className="text-muted-foreground">
-          Testing complete flow: API → Database → Display with Dua Lipa (TMID: 2179476)
+          Testing complete flow: API → Database → Display with TMID 2783377
         </p>
       </div>
 
@@ -278,7 +278,7 @@ export default function OnTourPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🎤 Dua Lipa Test
+            🎤 Test Artist (TMID: 2783377)
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           </CardTitle>
         </CardHeader>
@@ -312,7 +312,7 @@ export default function OnTourPage() {
           <div className="flex gap-2">
             <Button onClick={loadTestArtist} disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Load Dua Lipa
+              Load Test Artist
             </Button>
             <Button 
               onClick={testTicketmasterAPI} 
