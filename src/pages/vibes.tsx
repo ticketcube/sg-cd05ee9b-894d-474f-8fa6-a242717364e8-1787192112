@@ -7,6 +7,9 @@ import VibeChart from "@/components/VibeChart";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import Image from "next/image";
 
 export const VIBE_ARCHETYPES = ["All", "Dreamer", "Rebel", "Lover", "Rager"];
 
@@ -34,39 +37,72 @@ const VibesPage: NextPage<VibesPageProps> = ({ artists }) => {
   }, [artists, searchTerm, vibeFilter]);
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
-      <header className="text-center mb-8">
-        <h1 className="text-4xl font-bold tracking-tight">Artist Vibe Chart</h1>
-        <p className="text-muted-foreground mt-2">Discover new artists based on their energy and mood.</p>
-      </header>
+    <div className="min-h-screen bg-black text-white relative">
+      {/* Background Logo */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
+        <Image
+          src="/OTWLogocolor.png"
+          alt="OTW Logo Background"
+          width={800}
+          height={400}
+          className="opacity-10 max-w-4xl w-full h-auto"
+        />
+      </div>
 
-      <Card className="mb-8">
-        <CardContent className="p-4 md:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              type="text"
-              placeholder="Search for an artist..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
-            />
-            <Select value={vibeFilter} onValueChange={setVibeFilter}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Filter by vibe..." />
-              </SelectTrigger>
-              <SelectContent>
-                {VIBE_ARCHETYPES.map(vibe => (
-                  <SelectItem key={vibe} value={vibe}>
-                    {vibe === "All" ? "All Vibes" : vibe}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {/* Content */}
+      <div className="relative z-10">
+        <div className="sticky top-0 bg-black/90 backdrop-blur-sm z-20 p-4 border-b border-gray-800">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center gap-4 mb-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.location.href = "/"}
+                className="text-white hover:bg-gray-800 flex-shrink-0"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
+              <div className="flex-1">
+                <h1 className="text-2xl md:text-3xl font-bold text-white">OTW 750 Artist Vibe Chart</h1>
+                <p className="text-gray-400 text-sm">Discover artists based on their energy and mood</p>
+              </div>
+            </div>
+
+            <Card className="bg-gray-900/80 border-gray-700">
+              <CardContent className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    type="text"
+                    placeholder="Search for an artist..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                  />
+                  <Select value={vibeFilter} onValueChange={setVibeFilter}>
+                    <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white">
+                      <SelectValue placeholder="Filter by vibe..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-600">
+                      {VIBE_ARCHETYPES.map(vibe => (
+                        <SelectItem key={vibe} value={vibe} className="text-white hover:bg-gray-700">
+                          {vibe === "All" ? "All Vibes" : vibe}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <VibeChart artists={filteredArtists} />
+        <div className="p-4 md:p-8">
+          <div className="max-w-6xl mx-auto">
+            <VibeChart artists={filteredArtists} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -78,7 +114,7 @@ export const getStaticProps: GetStaticProps = async () => {
       props: {
         artists: artists || [],
       },
-      revalidate: 3600, // Re-generate the page every hour
+      revalidate: 3600,
     };
   } catch (error) {
     console.error("Failed to fetch artists for vibes page:", error);
