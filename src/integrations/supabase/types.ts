@@ -150,6 +150,32 @@ export type Database = {
                 }
                 Relationships: []
             }
+            tmid: {
+                Row: {
+                    artist_uuid: string
+                    tmid: string | null
+                    uuid: string
+                }
+                Insert: {
+                    artist_uuid: string
+                    tmid?: string | null
+                    uuid: string
+                }
+                Update: {
+                    artist_uuid?: string
+                    tmid?: string | null
+                    uuid?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "tmid_artist_uuid_fkey"
+                        columns: ["artist_uuid"]
+                        isOneToOne: false
+                        referencedRelation: "artists"
+                        referencedColumns: ["UUID"]
+                    },
+                ]
+            }
             top25_votes: {
                 Row: {
                     artist_otwid: number | null
