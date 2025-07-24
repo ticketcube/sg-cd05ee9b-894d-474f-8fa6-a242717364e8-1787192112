@@ -43,7 +43,7 @@ export default function OnTourPage() {
         .single();
 
       if (dbError) throw dbError;
-      if (!data) throw new Error("Artist with TMID 2783377 not found.");
+      if (!data) throw new Error("Artist with attractionID 2783377 not found.");
       
       setTestArtist(data);
     } catch (err) {
