@@ -3,6 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { eventCacheService } from "./eventCacheService";
 import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
 
+// Define a specific type for the artist data we are fetching to avoid TS errors.
+interface ArtistInfo {
+  UUID: string;
+  artist_name: string;
+  artist_image: string | null;
+}
+
 export class TourService {
   async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
     try {
@@ -25,10 +32,12 @@ export class TourService {
 
       // Step 2: Get all corresponding artist records
       const artistUuids = tmidData.map(item => item.artist_uuid);
+      
       const { data: artistsData, error: artistsError } = await supabase
         .from("artists")
-        .select(`"UUID", artist_name, artist_image`)
-        .in('"UUID"', artistUuids);
+        .select("UUID, artist_name, artist_image")
+        .in("UUID", artistUuids)
+        .returns<ArtistInfo[]>(); // Explicitly define the return type
 
       if (artistsError) {
         console.error("Error fetching artists:", artistsError);
@@ -37,8 +46,9 @@ export class TourService {
       console.log(`Fetched ${artistsData?.length || 0} artist records.`);
 
       // Create a map for efficient artist lookup
-      const artistMap = new Map();
-      artistsData?.forEach((artist: any) => {
+      const artistMap = new Map<string, { artist_name: string; artist_image: string | null }>();
+      
+      artistsData?.forEach((artist) => {
         artistMap.set(artist.UUID, {
           artist_name: artist.artist_name,
           artist_image: artist.artist_image,
