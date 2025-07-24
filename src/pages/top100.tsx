@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Artist, artistService } from "@/services/artistService";
 import { votingService } from "@/services/votingService";
@@ -7,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Top100ArtistPopup } from "@/components/Top100ArtistPopup";
 
 type VotingState = "initial" | "voting" | "submitted";
 
@@ -25,7 +25,6 @@ export default function Top100Page() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-  const [selectedArtistForPopup, setSelectedArtistForPopup] = useState<Artist | null>(null);
   
   const observer = useRef<IntersectionObserver>();
 
@@ -273,9 +272,8 @@ export default function Top100Page() {
                 <div
                   key={artist.UUID}
                   ref={isLast ? lastArtistElementRef : null}
-                  onClick={() => setSelectedArtistForPopup(artist)}
                   className={cn(
-                    "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full cursor-pointer",
+                    "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
                     isSelected && "ring-2 ring-green-500 bg-gray-800"
                   )}
                 >
@@ -295,13 +293,11 @@ export default function Top100Page() {
                     </div>
                     
                     <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <ArtistVideoPlayer 
-                          artist={artist}
-                          size="sm"
-                          className="hover:scale-105 transition-transform duration-200"
-                        />
-                      </div>
+                      <ArtistVideoPlayer 
+                        artist={artist}
+                        size="sm"
+                        className="hover:scale-105 transition-transform duration-200"
+                      />
                       
                       <Button
                         onClick={(e) => handleVote(artist, e)}
@@ -392,17 +388,6 @@ export default function Top100Page() {
           </div>
         </DialogContent>
       </Dialog>
-
-      <Top100ArtistPopup
-        artist={selectedArtistForPopup}
-        isOpen={!!selectedArtistForPopup}
-        onClose={() => setSelectedArtistForPopup(null)}
-        onVote={(artist) => {
-          handleVote(artist);
-          setSelectedArtistForPopup(null);
-        }}
-        selectedArtists={selectedArtists}
-      />
     </div>
   );
 }
