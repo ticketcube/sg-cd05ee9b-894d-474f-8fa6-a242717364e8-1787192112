@@ -95,7 +95,8 @@ export default async function handler(
     return res.status(200).json({
       events: data._embedded?.events || [],
       totalElements: data.page?.totalElements || 0,
-      fullResponse: data
+      fullResponse: data,
+      debugUrl: url.replace(apiKey, "***") // Add debug URL to response
     });
   } catch (error) {
     console.error("Error fetching Ticketmaster events:", error);
