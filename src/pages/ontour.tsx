@@ -138,6 +138,15 @@ export default function OnTourPage() {
       console.log(`✅ API Test Complete: Found ${fetchedEvents.length} events for ${testArtist.artist_name}`);
       console.log("Total elements from API:", data.totalElements);
 
+      // If no events found, let's also log the exact URL being called
+      if (fetchedEvents.length === 0) {
+        console.log("❌ No events found. This could mean:");
+        console.log("1. ALMA has no upcoming events");
+        console.log("2. The TMID (740242) might be incorrect");
+        console.log("3. The API key might have issues");
+        console.log(`Direct Ticketmaster URL would be: https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${testArtist.tmid}&apikey=YOUR_API_KEY&size=5&sort=date,asc`);
+      }
+
     } catch (err) {
       console.error("❌ API Test Failed:", err);
       setError(`API Test Failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
