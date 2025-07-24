@@ -19,13 +19,16 @@ export default function OnTourPage() {
   const [testResults, setTestResults] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("OnTourPage: Component mounted, loading data...");
     loadArtists();
     loadCacheStats();
   }, []);
 
   const loadCacheStats = async () => {
     try {
+      console.log("Loading cache stats...");
       const stats = await tourService.getCacheStats();
+      console.log("Cache stats loaded:", stats);
       setCacheStats(stats);
     } catch (error) {
       console.error("Error loading cache stats:", error);
@@ -34,9 +37,11 @@ export default function OnTourPage() {
 
   const loadArtists = async () => {
     try {
+      console.log("Loading artists...");
       setLoading(true);
       setError(null);
       const artistsData = await tourService.getArtistsWithTmids();
+      console.log(`Loaded ${artistsData.length} artists:`, artistsData.slice(0, 3));
       setArtists(artistsData);
     } catch (err) {
       console.error("Error loading artists:", err);
@@ -137,13 +142,16 @@ Raw Response: ${JSON.stringify(data, null, 2)}`);
     </div>
   );
 
+  console.log("OnTourPage render - Loading:", loading, "Artists count:", artists.length, "Error:", error);
+
   if (loading) {
+    console.log("Rendering loading state...");
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">Artists On Tour</h1>
           <p className="text-muted-foreground">
-            Testing Ticketmaster API integration - checking which artists have upcoming shows
+            Loading artists and checking Ticketmaster integration...
           </p>
         </div>
         
@@ -170,6 +178,7 @@ Raw Response: ${JSON.stringify(data, null, 2)}`);
   }
 
   if (error) {
+    console.log("Rendering error state:", error);
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
@@ -185,13 +194,26 @@ Raw Response: ${JSON.stringify(data, null, 2)}`);
     );
   }
 
+  console.log("Rendering main page with", artists.length, "artists");
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-4">Artists On Tour</h1>
         <p className="text-muted-foreground mb-4">
-          Testing Ticketmaster API integration - checking which artists have upcoming shows
+          Testing Ticketmaster API integration - {artists.length} artists with TMIDs found
         </p>
+        
+        {/* Debug Info */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <h3 className="font-semibold mb-2">🔍 Debug Info:</h3>
+          <div className="text-sm space-y-1">
+            <div>Artists loaded: {artists.length}</div>
+            <div>Loading state: {loading ? "Yes" : "No"}</div>
+            <div>Error state: {error || "None"}</div>
+            <div>Cache stats: {cacheStats ? "Loaded" : "Loading..."}</div>
+          </div>
+        </div>
         
         {/* Cache Stats */}
         {cacheStats && (
