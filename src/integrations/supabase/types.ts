@@ -68,16 +68,15 @@ export type Database = {
                     artist_otwcategory: string | null
                     artist_otwcoverage: number | null
                     artist_otwcreateddate: string | null
-                    artist_otwid: string | null
                     artist_relatedartists: string[] | null
                     artist_tiktok_username: string | null
                     artist_tiktok_videoid: string | null
-                    artist_tmid: string | null
                     artist_totallisteners: number | null
                     artist_totalwatchers: number | null
                     artist_videolink: string | null
                     primary_vibe: string | null
                     secondary_vibe: string | null
+                    tmid: string | null
                     Top_List: string | null
                     UUID: string
                 }
@@ -91,16 +90,15 @@ export type Database = {
                     artist_otwcategory?: string | null
                     artist_otwcoverage?: number | null
                     artist_otwcreateddate?: string | null
-                    artist_otwid?: string | null
                     artist_relatedartists?: string[] | null
                     artist_tiktok_username?: string | null
                     artist_tiktok_videoid?: string | null
-                    artist_tmid?: string | null
                     artist_totallisteners?: number | null
                     artist_totalwatchers?: number | null
                     artist_videolink?: string | null
                     primary_vibe?: string | null
                     secondary_vibe?: string | null
+                    tmid?: string | null
                     Top_List?: string | null
                     UUID?: string
                 }
@@ -114,16 +112,15 @@ export type Database = {
                     artist_otwcategory?: string | null
                     artist_otwcoverage?: number | null
                     artist_otwcreateddate?: string | null
-                    artist_otwid?: string | null
                     artist_relatedartists?: string[] | null
                     artist_tiktok_username?: string | null
                     artist_tiktok_videoid?: string | null
-                    artist_tmid?: string | null
                     artist_totallisteners?: number | null
                     artist_totalwatchers?: number | null
                     artist_videolink?: string | null
                     primary_vibe?: string | null
                     secondary_vibe?: string | null
+                    tmid?: string | null
                     Top_List?: string | null
                     UUID?: string
                 }
@@ -237,7 +234,15 @@ export type Database = {
                     username?: string
                     UUID?: string
                 }
-                Relationships: []
+                Relationships: [
+                    {
+                        foreignKeyName: "top25_votes_artist_uuid_fkey"
+                        columns: ["artist_uuid"]
+                        isOneToOne: false
+                        referencedRelation: "artists"
+                        referencedColumns: ["UUID"]
+                    },
+                ]
             }
         }
         Views: {
