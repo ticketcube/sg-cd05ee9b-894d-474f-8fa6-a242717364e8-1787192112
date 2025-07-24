@@ -37,13 +37,14 @@ export default function OnTourPage() {
       setLoading(true);
       setError(null);
       
-      console.log("Loading Finn Wolfhard for testing...");
+      console.log("Loading Ashe for testing...");
       
-      // Specifically load Finn Wolfhard for testing
+      // Specifically load Ashe for testing
       const { data, error: dbError } = await supabase
         .from("artists")
         .select("UUID, artist_name, artist_image, tmid")
-        .eq("artist_name", "Finn Wolfhard")
+        .eq("artist_name", "Ashe")
+        .not("artist_image", "eq", "null")
         .single();
 
       if (dbError) {
@@ -53,17 +54,17 @@ export default function OnTourPage() {
       }
 
       if (!data) {
-        setError("Finn Wolfhard not found in database");
+        setError("Ashe not found in database");
         return;
       }
 
       const artist = data as TestArtist;
-      console.log("Loaded Finn Wolfhard:", artist);
+      console.log("Loaded Ashe:", artist);
       setTestArtist(artist);
       
     } catch (err) {
-      console.error("Error loading Finn Wolfhard:", err);
-      setError("Failed to load Finn Wolfhard");
+      console.error("Error loading Ashe:", err);
+      setError("Failed to load Ashe");
     } finally {
       setLoading(false);
     }
@@ -179,9 +180,9 @@ export default function OnTourPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">Ticketmaster API Test - Finn Wolfhard</h1>
+        <h1 className="text-4xl font-bold mb-4">Ticketmaster API Test - Ashe</h1>
         <p className="text-muted-foreground">
-          Testing complete flow: API → Database → Display with Finn Wolfhard
+          Testing complete flow: API → Database → Display with Ashe
         </p>
       </div>
 
@@ -189,7 +190,7 @@ export default function OnTourPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🎤 Finn Wolfhard Test
+            🎤 Ashe Test
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           </CardTitle>
         </CardHeader>
@@ -223,7 +224,7 @@ export default function OnTourPage() {
           <div className="flex gap-2">
             <Button onClick={loadTestArtist} disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Load Finn Wolfhard
+              Load Ashe
             </Button>
             <Button 
               onClick={testTicketmasterAPI} 
