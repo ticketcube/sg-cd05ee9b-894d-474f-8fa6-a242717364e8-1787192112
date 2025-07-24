@@ -155,6 +155,42 @@ export default function OnTourPage() {
     }
   };
 
+  const testAttractionAPI = async () => {
+    if (!testArtist) return;
+
+    try {
+      setTesting(true);
+      setError(null);
+      setApiResponse(null);
+
+      console.log(`Testing Attraction API for ${testArtist.artist_name} (TMID: ${testArtist.tmid})`);
+
+      // Test the attraction endpoint to verify the TMID is valid
+      const apiUrl = `/api/ticketmaster/events?attractionId=${testArtist.tmid}&testAttraction=true`;
+      console.log("Attraction API URL:", apiUrl);
+
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      
+      console.log("Attraction API Response:", data);
+      setApiResponse(data);
+
+      if (!response.ok) {
+        setError(`Attraction API Error (${response.status}): ${data.message || response.statusText}`);
+        return;
+      }
+
+      console.log(`✅ Attraction Test Complete for ${testArtist.artist_name}`);
+      console.log("Attraction data:", data.attractionData);
+
+    } catch (err) {
+      console.error("❌ Attraction Test Failed:", err);
+      setError(`Attraction Test Failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const cacheEventsToDatabase = async () => {
     if (!testArtist) return;
 
@@ -290,6 +326,14 @@ export default function OnTourPage() {
             >
               {testing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               🧪 Test Direct API
+            </Button>
+            <Button 
+              onClick={() => testAttractionAPI()} 
+              disabled={!testArtist || testing}
+              variant="outline"
+            >
+              {testing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              🔍 Test Attraction
             </Button>
             <Button 
               onClick={cacheEventsToDatabase} 

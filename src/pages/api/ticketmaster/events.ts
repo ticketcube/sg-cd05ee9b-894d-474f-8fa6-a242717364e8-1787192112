@@ -1,4 +1,3 @@
-
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export interface TicketmasterEvent {
@@ -44,7 +43,7 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { attractionId, size = "3" } = req.query;
+  const { attractionId, size = "3", testAttraction = "false" } = req.query;
 
   if (!attractionId || typeof attractionId !== "string") {
     return res.status(400).json({ message: "attractionId is required" });
@@ -57,29 +56,53 @@ export default async function handler(
   }
 
   try {
+    // If testAttraction is true, test the attractions endpoint first
+    if (testAttraction === "true") {
+      const attractionUrl = `https://app.ticketmaster.com/discovery/v2/attractions/${attractionId}.json?apikey=${apiKey}`;
+      console.log("Testing attraction URL:", attractionUrl);
+      
+      const attractionResponse = await fetch(attractionUrl);
+      const attractionData = await attractionResponse.json();
+      
+      return res.status(200).json({
+        attractionTest: true,
+        attractionData,
+        attractionStatus: attractionResponse.status
+      });
+    }
+
+    // Regular events endpoint
     const url = `https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${attractionId}&apikey=${apiKey}&size=${size}&sort=date,asc`;
+    console.log("Calling Ticketmaster API:", url.replace(apiKey, "***"));
     
     const response = await fetch(url);
     
     if (!response.ok) {
       console.error(`Ticketmaster API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error("Error response body:", errorText);
+      
       return res.status(response.status).json({ 
         message: `Ticketmaster API error: ${response.statusText}`,
-        events: []
+        events: [],
+        errorDetails: errorText
       });
     }
 
     const data: TicketmasterResponse = await response.json();
+    console.log("Ticketmaster API response:", JSON.stringify(data, null, 2));
     
     return res.status(200).json({
       events: data._embedded?.events || [],
-      totalElements: data.page?.totalElements || 0
+      totalElements: data.page?.totalElements || 0,
+      fullResponse: data
     });
   } catch (error) {
     console.error("Error fetching Ticketmaster events:", error);
     return res.status(500).json({ 
       message: "Internal server error",
-      events: []
+      events: [],
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 }
