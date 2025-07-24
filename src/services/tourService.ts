@@ -1,18 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService } from "./ticketmasterService";
-
-interface ArtistData {
-  artist_uuid: string;
-  artist_name: string;
-  artist_image: string | null;
-  tmid: string;
-  hasEvents: boolean;
-  events: any[];
-}
+import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
 
 export class TourService {
-  async getArtistsWithTmids(): Promise<ArtistData[]> {
+  async getArtistsWithTmids(): Promise<ArtistWithEvents[]> {
     try {
       // Step 1: Get all tmid records that are not null
       const { data: tmidData, error: tmidError } = await supabase
@@ -54,7 +46,7 @@ export class TourService {
       });
 
       // Step 3: Combine data and fetch Ticketmaster events
-      const results: ArtistData[] = [];
+      const results: ArtistWithEvents[] = [];
       
       for (const tmidItem of tmidData) {
         const artistDetails = artistMap.get(tmidItem.artist_uuid);
@@ -63,7 +55,7 @@ export class TourService {
           continue;
         }
 
-        const events = await ticketmasterService.getArtistEvents(tmidItem.tmid, 3);
+        const events: TicketmasterEvent[] = await ticketmasterService.getArtistEvents(tmidItem.tmid, 3);
         const hasEvents = events.length > 0;
 
         results.push({

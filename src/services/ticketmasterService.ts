@@ -1,6 +1,5 @@
-import type { TicketmasterEvent, TicketmasterResponse, ArtistWithEvents } from "@/types/tour";
 
-export type { TicketmasterEvent, TicketmasterResponse, ArtistWithEvents };
+import type { TicketmasterEvent } from "@/types/tour";
 
 class TicketmasterService {
   async getArtistEvents(attractionId: string, size: number = 3): Promise<TicketmasterEvent[]> {

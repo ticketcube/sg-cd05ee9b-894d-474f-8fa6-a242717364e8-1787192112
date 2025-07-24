@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,18 +8,10 @@ import { ExternalLink, Calendar, MapPin } from "lucide-react";
 import { tourService } from "@/services/tourService";
 import { ticketmasterService } from "@/services/ticketmasterService";
 import Image from "next/image";
-
-interface ArtistData {
-  artist_uuid: string;
-  artist_name: string;
-  artist_image: string | null;
-  tmid: string;
-  hasEvents: boolean;
-  events: any[];
-}
+import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
 
 export default function OnTourPage() {
-  const [artists, setArtists] = useState<ArtistData[]>([]);
+  const [artists, setArtists] = useState<ArtistWithEvents[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -157,7 +150,7 @@ export default function OnTourPage() {
                 {artist.hasEvents && artist.events.length > 0 ? (
                   <div className="space-y-3">
                     <h4 className="font-semibold text-sm">Upcoming Shows:</h4>
-                    {artist.events.slice(0, 3).map((event) => (
+                    {artist.events.slice(0, 3).map((event: TicketmasterEvent) => (
                       <div
                         key={event.id}
                         className="border rounded-lg p-3 space-y-2"
