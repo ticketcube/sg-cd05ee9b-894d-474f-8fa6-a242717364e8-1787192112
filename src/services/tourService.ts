@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { eventCacheService } from "./eventCacheService";
 import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
@@ -30,13 +29,13 @@ export class TourService {
       const results: ArtistWithEvents[] = [];
       
       for (const artist of artistsData) {
-        if (artist && artist.UUID && artist.tmid && artist.artist_name) {
+        if (artist && artist.uuid && artist.tmid && artist.artist_name) {
           try {
-            const events: TicketmasterEvent[] = await eventCacheService.getCachedEventsForArtist(artist.UUID);
+            const events: TicketmasterEvent[] = await eventCacheService.getCachedEventsForArtist(artist.uuid);
             const hasEvents = events.length > 0;
 
             results.push({
-              artist_uuid: artist.UUID,
+              artist_uuid: artist.uuid,
               artist_name: artist.artist_name,
               artist_image: artist.artist_image,
               tmid: artist.tmid,
@@ -46,7 +45,7 @@ export class TourService {
           } catch (error) {
             console.warn(`Failed to get cached events for ${artist.artist_name}:`, error);
             results.push({
-              artist_uuid: artist.UUID,
+              artist_uuid: artist.uuid,
               artist_name: artist.artist_name,
               artist_image: artist.artist_image,
               tmid: artist.tmid,

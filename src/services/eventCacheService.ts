@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService } from "./ticketmasterService";
 import type { TicketmasterEvent } from "@/types/tour";
@@ -110,7 +109,7 @@ export class EventCacheService {
     try {
       const { data: artistsData, error } = await supabase
         .from("artists")
-        .select("UUID, tmid")
+        .select("uuid, tmid")
         .not("tmid", "is", null)
         .not("tmid", "eq", "");
 
@@ -128,9 +127,9 @@ export class EventCacheService {
 
       for (let i = 0; i < artistsData.length; i++) {
         const artist = artistsData[i] as Artist;
-        if (artist && artist.UUID && artist.tmid) {
-          console.log(`Refreshing events for artist ${i + 1}/${artistsData.length}: ${artist.UUID}`);
-          await this.refreshEventsForArtist(artist.UUID, artist.tmid);
+        if (artist && artist.uuid && artist.tmid) {
+          console.log(`Refreshing events for artist ${i + 1}/${artistsData.length}: ${artist.uuid}`);
+          await this.refreshEventsForArtist(artist.uuid, artist.tmid);
           if (i < artistsData.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 200));
           }

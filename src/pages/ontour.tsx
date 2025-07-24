@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -80,11 +79,11 @@ export default function OnTourPage() {
   };
 
   const cacheEventsToDatabase = async () => {
-    if (!testArtist?.UUID || !testArtist?.tmid) return;
+    if (!testArtist?.uuid || !testArtist?.tmid) return;
     setCaching(true);
     setError(null);
     try {
-      await eventCacheService.refreshEventsForArtist(testArtist.UUID, testArtist.tmid);
+      await eventCacheService.refreshEventsForArtist(testArtist.uuid, testArtist.tmid);
       await loadCachedEvents(); // Refresh cached events view
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to cache events";
@@ -96,11 +95,11 @@ export default function OnTourPage() {
   };
 
   const loadCachedEvents = async () => {
-    if (!testArtist?.UUID) return;
+    if (!testArtist?.uuid) return;
     setLoadingCache(true);
     setError(null);
     try {
-      const cached = await eventCacheService.getCachedEventsForArtist(testArtist.UUID);
+      const cached = await eventCacheService.getCachedEventsForArtist(testArtist.uuid);
       setCachedEvents(cached);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load cached events";
