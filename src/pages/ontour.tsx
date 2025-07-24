@@ -1,12 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ExternalLink, Calendar, MapPin } from "lucide-react";
+import { ExternalLink, Calendar, MapPin, RefreshCw } from "lucide-react";
 import { tourService } from "@/services/tourService";
 import { ticketmasterService } from "@/services/ticketmasterService";
+import { eventCacheService } from "@/services/eventCacheService";
 import Image from "next/image";
 import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
 
@@ -14,10 +14,22 @@ export default function OnTourPage() {
   const [artists, setArtists] = useState<ArtistWithEvents[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [cacheStats, setCacheStats] = useState<{ totalEvents: number; activeArtists: number; lastUpdated: string | null } | null>(null);
 
   useEffect(() => {
     loadArtists();
+    loadCacheStats();
   }, []);
+
+  const loadCacheStats = async () => {
+    try {
+      const stats = await tourService.getCacheStats();
+      setCacheStats(stats);
+    } catch (error) {
+      console.error("Error loading cache stats:", error);
+    }
+  };
 
   const loadArtists = async () => {
     try {
@@ -30,6 +42,38 @@ export default function OnTourPage() {
       setError("Failed to load artists. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const refreshEventCache = async () => {
+    try {
+      setRefreshing(true);
+      await tourService.refreshEventCache();
+      await loadArtists();
+      await loadCacheStats();
+    } catch (error) {
+      console.error("Error refreshing cache:", error);
+      setError("Failed to refresh event cache. Please try again.");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const testSingleArtist = async () => {
+    try {
+      setRefreshing(true);
+      // Test with the first artist that has a tmid
+      const testArtist = artists.find(a => a.tmid);
+      if (testArtist) {
+        console.log(`Testing API with artist: ${testArtist.artist_name} (TMID: ${testArtist.tmid})`);
+        await eventCacheService.refreshEventsForArtist(testArtist.artist_uuid, testArtist.tmid);
+        await loadArtists();
+        await loadCacheStats();
+      }
+    } catch (error) {
+      console.error("Error testing single artist:", error);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -102,7 +146,30 @@ export default function OnTourPage() {
           Testing Ticketmaster API integration - checking which artists have upcoming shows
         </p>
         
-        <div className="flex gap-4 text-sm">
+        {/* Cache Stats */}
+        {cacheStats && (
+          <div className="bg-muted/50 rounded-lg p-4 mb-4">
+            <h3 className="font-semibold mb-2">Cache Status:</h3>
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Total Events:</span>
+                <div className="font-semibold">{cacheStats.totalEvents}</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Artists with Events:</span>
+                <div className="font-semibold">{cacheStats.activeArtists}</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Last Updated:</span>
+                <div className="font-semibold">
+                  {cacheStats.lastUpdated ? new Date(cacheStats.lastUpdated).toLocaleString() : "Never"}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex gap-4 text-sm mb-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500" />
             <span>Tickets Available</span>
@@ -111,6 +178,18 @@ export default function OnTourPage() {
             <div className="w-3 h-3 rounded-full bg-red-500" />
             <span>No Upcoming Shows</span>
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-2 mb-4">
+          <Button onClick={testSingleArtist} disabled={refreshing || artists.length === 0} variant="outline">
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+            Test Single Artist
+          </Button>
+          <Button onClick={refreshEventCache} disabled={refreshing} variant="outline">
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+            Refresh All Events {refreshing && "(This may take a few minutes)"}
+          </Button>
         </div>
       </div>
 
