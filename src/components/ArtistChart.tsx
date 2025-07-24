@@ -207,8 +207,8 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
               <div className="aspect-video w-full">
                 <ArtistVideoPlayer 
                   artist={selectedArtist}
-                  showPlayButton={false}
-                  className="w-full h-full rounded-none"
+                  isEmbed={true}
+                  className="w-full h-full"
                 />
               </div>
             )}

@@ -1,23 +1,22 @@
 
-        <![CDATA[
-import { useState, useMemo } from 'react';
-import type { GetStaticProps, NextPage } from 'next';
-import { artistService } from '@/services/artistService';
-import type { VibeArtist } from '@/types/artists';
-import VibeChart from '@/components/VibeChart';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useMemo } from "react";
+import type { GetStaticProps, NextPage } from "next";
+import { artistService } from "@/services/artistService";
+import type { VibeArtist } from "@/types/artists";
+import VibeChart from "@/components/VibeChart";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 
-export const VIBE_ARCHETYPES = ['All', 'Dreamer', 'Rebel', 'Lover', 'Rager'];
+export const VIBE_ARCHETYPES = ["All", "Dreamer", "Rebel", "Lover", "Rager"];
 
 interface VibesPageProps {
   artists: VibeArtist[];
 }
 
 const VibesPage: NextPage<VibesPageProps> = ({ artists }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [vibeFilter, setVibeFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [vibeFilter, setVibeFilter] = useState("All");
 
   const filteredArtists = useMemo(() => {
     if (!artists) return [];
@@ -26,7 +25,7 @@ const VibesPage: NextPage<VibesPageProps> = ({ artists }) => {
 
       const matchesSearch = artist.artist_name.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesVibe = vibeFilter === 'All' || 
+      const matchesVibe = vibeFilter === "All" || 
                           artist.primary_vibe === vibeFilter || 
                           artist.secondary_vibe === vibeFilter;
       
@@ -58,7 +57,7 @@ const VibesPage: NextPage<VibesPageProps> = ({ artists }) => {
               <SelectContent>
                 {VIBE_ARCHETYPES.map(vibe => (
                   <SelectItem key={vibe} value={vibe}>
-                    {vibe === 'All' ? 'All Vibes' : vibe}
+                    {vibe === "All" ? "All Vibes" : vibe}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -92,5 +91,3 @@ export const getStaticProps: GetStaticProps = async () => {
 };
 
 export default VibesPage;
-]]>
-    

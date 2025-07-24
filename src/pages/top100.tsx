@@ -1,41 +1,34 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Artist, artistService } from '@/services/artistService';
-import { votingService } from '@/services/votingService';
-import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
-type VotingState = 'initial' | 'voting' | 'submitted';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Artist, artistService } from "@/services/artistService";
+import { votingService } from "@/services/votingService";
+import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Top100ArtistPopup } from "@/components/Top100ArtistPopup";
+
+type VotingState = "initial" | "voting" | "submitted";
 
 export default function Top100Page() {
   const [artists, setArtists] = useState<(Artist & { vote_count: number })[]>([]);
   const [isUsernameDialogOpen, setIsUsernameDialogOpen] = useState(false);
   const [isSubmissionDialogOpen, setIsSubmissionDialogOpen] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
-  const [votingState, setVotingState] = useState<VotingState>('initial');
+  const [votingState, setVotingState] = useState<VotingState>("initial");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [selectedArtistForPopup, setSelectedArtistForPopup] = useState<Artist | null>(null);
   
-  const observerRef = useRef<IntersectionObserver>();
-  const lastArtistElementRef = useCallback((node: HTMLDivElement) => {
-    if (loading || loadingMore) return;
-    if (observerRef.current) observerRef.current.disconnect();
-    observerRef.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMoreArtists();
-      }
-    });
-    if (node) observerRef.current.observe(node);
-  }, [loading, loadingMore, hasMore]);
+  const observer = useRef<IntersectionObserver>();
 
   const loadArtists = useCallback(async (pageNum: number = 0, reset: boolean = true) => {
     try {
@@ -54,58 +47,81 @@ export default function Top100Page() {
       }
       
       setHasMore(data.hasMore);
-      setTotalCount(data.totalCount);
+      if (data.totalCount) {
+        setTotalCount(data.totalCount);
+      }
       setPage(pageNum);
     } catch (error) {
-      console.error('Error loading Top 100 artists:', error);
+      console.error("Error loading Top 100 artists:", error);
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   }, []);
 
-  const loadMoreArtists = useCallback(() => {
-    if (!loadingMore && hasMore) {
-      loadArtists(page + 1, false);
+  const loadMoreArtists = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const { artists: newArtists, hasMore: newHasMore } = await artistService.getTop100ArtistsPaginated(nextPage, 20);
+      setArtists(prev => [...prev, ...newArtists]);
+      setPage(nextPage);
+      setHasMore(newHasMore);
+    } catch (error) {
+      console.error("Failed to load more artists:", error);
+    } finally {
+      setLoadingMore(false);
     }
-  }, [page, loadingMore, hasMore, loadArtists]);
+  }, [loadingMore, hasMore, page]);
+
+  const lastArtistElementRef = useCallback(node => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMoreArtists();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore, loadMoreArtists]);
 
   useEffect(() => {
     loadArtists(0, true);
   }, [loadArtists]);
 
-  const handleVote = (artist: Artist, event: React.MouseEvent) => {
-    event.stopPropagation();
+  const handleVote = (artist: Artist, event?: React.MouseEvent) => {
+    event?.stopPropagation();
     
-    if (votingState !== 'voting') {
+    if (votingState !== "voting") {
       setIsUsernameDialogOpen(true);
       return;
     }
 
     if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.UUID)) {
-      alert('You can only select up to 25 artists!');
+      alert("You can only select up to 25 artists!");
       return;
     }
 
-    if (selectedArtists.includes(artist.UUID)) {
-      setSelectedArtists(prev => prev.filter(id => id !== artist.UUID));
-    } else {
-      setSelectedArtists(prev => [...prev, artist.UUID]);
-    }
+    setSelectedArtists(prev => 
+      prev.includes(artist.UUID)
+        ? prev.filter(id => id !== artist.UUID)
+        : [...prev, artist.UUID]
+    );
   };
 
   const handleStartVoting = () => {
     if (!username.trim()) {
-      alert('Please enter a username');
+      alert("Please enter a username");
       return;
     }
-    setVotingState('voting');
+    setVotingState("voting");
     setIsUsernameDialogOpen(false);
   };
 
   const handleSubmitVotes = async () => {
     if (selectedArtists.length === 0) {
-      alert('Please select at least one artist before submitting');
+      alert("Please select at least one artist before submitting");
       return;
     }
 
@@ -120,20 +136,19 @@ export default function Top100Page() {
       });
 
       await votingService.submitVotes(votes);
-      setVotingState('submitted');
+      setVotingState("submitted");
       setIsSubmissionDialogOpen(true);
       
-      // Refresh the artists list to show updated vote counts
       loadArtists(0, true);
     } catch (error) {
-      console.error('Error submitting votes:', error);
-      alert('Error submitting votes. Please try again.');
+      console.error("Error submitting votes:", error);
+      alert("Error submitting votes. Please try again.");
     }
   };
 
   const handleEnterDrawing = async () => {
     if (!email.trim()) {
-      alert('Please enter your email');
+      alert("Please enter your email");
       return;
     }
 
@@ -145,15 +160,15 @@ export default function Top100Page() {
         resetVoting();
       }, 3000);
     } catch (error) {
-      console.error('Error entering drawing:', error);
-      alert('Error entering drawing. Please try again.');
+      console.error("Error entering drawing:", error);
+      alert("Error entering drawing. Please try again.");
     }
   };
 
   const resetVoting = () => {
-    setVotingState('initial');
-    setUsername('');
-    setEmail('');
+    setVotingState("initial");
+    setUsername("");
+    setEmail("");
     setSelectedArtists([]);
     setIsUsernameDialogOpen(false);
     setIsSubmissionDialogOpen(false);
@@ -162,26 +177,26 @@ export default function Top100Page() {
 
   const getMainButtonText = () => {
     switch (votingState) {
-      case 'initial':
-        return 'VOTE FOR YOUR TOP 25!';
-      case 'voting':
-        return 'SUBMIT YOUR VOTES';
-      case 'submitted':
-        return 'VOTES SUBMITTED';
+      case "initial":
+        return "VOTE FOR YOUR TOP 25!";
+      case "voting":
+        return "SUBMIT YOUR VOTES";
+      case "submitted":
+        return "VOTES SUBMITTED";
       default:
-        return 'VOTE FOR YOUR TOP 25!';
+        return "VOTE FOR YOUR TOP 25!";
     }
   };
 
   const handleMainButtonClick = () => {
     switch (votingState) {
-      case 'initial':
+      case "initial":
         setIsUsernameDialogOpen(true);
         break;
-      case 'voting':
+      case "voting":
         handleSubmitVotes();
         break;
-      case 'submitted':
+      case "submitted":
         break;
     }
   };
@@ -217,7 +232,7 @@ export default function Top100Page() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => window.location.href = '/'}
+              onClick={() => window.location.href = "/"}
               className="text-white hover:bg-gray-800 flex-shrink-0"
             >
               <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
@@ -235,12 +250,12 @@ export default function Top100Page() {
           <Button
             className="w-full text-base sm:text-lg md:text-xl py-3 sm:py-4 md:py-6 bg-white text-black hover:bg-gray-100"
             onClick={handleMainButtonClick}
-            disabled={votingState === 'submitted'}
+            disabled={votingState === "submitted"}
           >
             {getMainButtonText()}
           </Button>
           
-          {votingState === 'voting' && (
+          {votingState === "voting" && (
             <p className="text-center text-xs sm:text-sm text-gray-400 mt-2">
               Selected: {selectedArtists.length}/25 artists
             </p>
@@ -259,18 +274,17 @@ export default function Top100Page() {
                 <div
                   key={artist.UUID}
                   ref={isLast ? lastArtistElementRef : null}
+                  onClick={() => setSelectedArtistForPopup(artist)}
                   className={cn(
-                    "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
+                    "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full cursor-pointer",
                     isSelected && "ring-2 ring-green-500 bg-gray-800"
                   )}
                 >
                   <div className="flex items-center gap-2">
-                    {/* Rank Number */}
                     <div className="text-lg sm:text-xl font-bold text-gray-500 w-5 sm:w-6 flex-shrink-0">
                       {index + 1}
                     </div>
                     
-                    {/* Artist Info */}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-sm sm:text-base truncate">{artist.artist_name}</h3>
                       <div className="text-xs text-gray-400">
@@ -281,16 +295,13 @@ export default function Top100Page() {
                       </div>
                     </div>
                     
-                    {/* Right Side: Video Player and Vote Button */}
                     <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                      {/* Video Player */}
                       <ArtistVideoPlayer 
                         artist={artist}
                         size="sm"
                         className="hover:scale-105 transition-transform duration-200"
                       />
                       
-                      {/* Vote Button */}
                       <Button
                         onClick={(e) => handleVote(artist, e)}
                         className={cn(
@@ -303,7 +314,6 @@ export default function Top100Page() {
                         {isSelected ? "✓" : "VOTE"}
                       </Button>
                       
-                      {/* Selection Indicator */}
                       {isSelected && (
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
                       )}
@@ -381,6 +391,17 @@ export default function Top100Page() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Top100ArtistPopup
+        artist={selectedArtistForPopup}
+        isOpen={!!selectedArtistForPopup}
+        onClose={() => setSelectedArtistForPopup(null)}
+        onVote={(artist) => {
+          handleVote(artist);
+          setSelectedArtistForPopup(null);
+        }}
+        selectedArtists={selectedArtists}
+      />
     </div>
   );
 }
