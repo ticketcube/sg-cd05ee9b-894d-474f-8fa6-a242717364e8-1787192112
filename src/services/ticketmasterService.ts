@@ -1,9 +1,9 @@
 import type { TicketmasterEvent } from "@/types/tour";
 
 class TicketmasterService {
-  async getArtistEvents(attractionId: string, size: number = 3): Promise<TicketmasterEvent[]> {
+  async getArtistEvents(attractionId: string): Promise<TicketmasterEvent[]> {
     try {
-      const response = await fetch(`/api/ticketmaster/events?attractionId=${attractionId}&size=${size}`);
+      const response = await fetch(`/api/ticketmaster/events?attractionId=${attractionId}`);
       
       if (!response.ok) {
         console.error(`API error: ${response.status} ${response.statusText}`);
@@ -20,7 +20,7 @@ class TicketmasterService {
 
   async checkArtistHasEvents(attractionId: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/ticketmaster/events?attractionId=${attractionId}&size=1`);
+      const response = await fetch(`/api/ticketmaster/events?attractionId=${attractionId}`);
       
       if (!response.ok) {
         return false;

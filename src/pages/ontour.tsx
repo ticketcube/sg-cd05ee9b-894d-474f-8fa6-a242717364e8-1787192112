@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -77,7 +76,7 @@ export default function OnTourPage() {
     setError(null);
     setApiResponse(null);
     try {
-      const response = await fetch(`/api/ticketmaster/events?attractionId=${selectedArtist.attractionId}&size=5`);
+      const response = await fetch(`/api/ticketmaster/events?attractionId=${selectedArtist.attractionId}`);
       const data: ApiResponse = await response.json();
       
       setApiResponse(data);

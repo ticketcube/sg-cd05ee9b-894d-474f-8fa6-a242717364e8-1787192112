@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ticketmasterService } from "./ticketmasterService";
 import type { TicketmasterEvent } from "@/types/tour";
@@ -27,7 +26,7 @@ interface CachedEvent {
 export class EventCacheService {
   async refreshEventsForArtist(artistUuid: string, attractionId: string): Promise<void> {
     try {
-      const events = await ticketmasterService.getArtistEvents(attractionId, 20);
+      const events = await ticketmasterService.getArtistEvents(attractionId);
       
       await supabase
         .from("ticketmaster_events")

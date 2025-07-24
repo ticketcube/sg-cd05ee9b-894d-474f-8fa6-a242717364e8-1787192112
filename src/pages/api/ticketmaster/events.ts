@@ -43,7 +43,7 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { attractionId, size = "3", testAttraction = "false" } = req.query;
+  const { attractionId, testAttraction = "false" } = req.query;
 
   if (!attractionId || typeof attractionId !== "string") {
     return res.status(400).json({ message: "attractionId is required" });
@@ -71,8 +71,8 @@ export default async function handler(
       });
     }
 
-    // Regular events endpoint - Use attractionId parameter for Ticketmaster API
-    const url = `https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${attractionId}&apikey=${apiKey}&size=${size}&sort=date,asc`;
+    // Use the correct Ticketmaster API root URL and endpoint
+    const url = `https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${attractionId}&apikey=${apiKey}&sort=date,asc`;
     console.log("Calling Ticketmaster API:", url.replace(apiKey, "***"));
     
     const response = await fetch(url);
@@ -91,11 +91,6 @@ export default async function handler(
 
     const data: TicketmasterResponse = await response.json();
     console.log("Ticketmaster API response:", JSON.stringify(data, null, 2));
-    
-    // Log the exact URL being called for debugging
-    console.log("Full API URL (with key hidden):", url.replace(apiKey, "***"));
-    console.log("Response status:", response.status);
-    console.log("Response data:", data);
     
     return res.status(200).json({
       events: data._embedded?.events || [],
