@@ -10,4 +10,7 @@ export type VibeArtist = Pick<
   | 'primary_vibe'
   | 'secondary_vibe'
   | 'artist_genre'
+  | 'artist_videolink'
+  | 'artist_tiktok_videoid'
+  | 'artist_tiktok_username'
 >;
