@@ -126,78 +126,35 @@ export class WeeklyListService {
 
   async getActiveWeeklyList(): Promise<WeeklyListWithArtists | null> {
     try {
-      // First, let's check if there are multiple active lists and fix that
-      const { data: activeLists, error: checkError } = await supabase
+      // Get the first active list (simplified - no more is_active field confusion)
+      const { data: weeklyList, error: listError } = await supabase
         .from("weekly_lists")
         .select("*")
-        .eq("is_active", true)
-        .eq("status", "active");
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
 
-      if (checkError) throw checkError;
-
-      // If we have multiple active lists, deactivate all but the most recent one
-      if (activeLists && activeLists.length > 1) {
-        console.warn(`Found ${activeLists.length} active weekly lists. Fixing...`);
-        
-        // Sort by created_at descending to get the most recent
-        const sortedLists = activeLists.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        
-        const mostRecentList = sortedLists[0];
-        const listsToDeactivate = sortedLists.slice(1);
-        
-        // Deactivate the older lists
-        for (const list of listsToDeactivate) {
-          await supabase
-            .from("weekly_lists")
-            .update({ is_active: false, status: "completed" })
-            .eq("id", list.id);
-        }
-        
-        // Use the most recent list
-        const weeklyList = mostRecentList;
-        
-        const { data: weeklyListArtists, error: artistsError } = await supabase
-          .from("weekly_list_artists")
-          .select(`
-            *,
-            artist:artists(*)
-          `)
-          .eq("week_identifier", weeklyList.week_identifier)
-          .order("position", { ascending: true });
-
-        if (artistsError) throw artistsError;
-
-        return {
-          ...weeklyList,
-          artists: weeklyListArtists || []
-        };
+      if (listError) {
+        if (listError.code === "PGRST116") return null;
+        throw listError;
       }
-      
-      // If we have exactly one active list, use it
-      if (activeLists && activeLists.length === 1) {
-        const weeklyList = activeLists[0];
-        
-        const { data: weeklyListArtists, error: artistsError } = await supabase
-          .from("weekly_list_artists")
-          .select(`
-            *,
-            artist:artists(*)
-          `)
-          .eq("week_identifier", weeklyList.week_identifier)
-          .order("position", { ascending: true });
 
-        if (artistsError) throw artistsError;
+      const { data: weeklyListArtists, error: artistsError } = await supabase
+        .from("weekly_list_artists")
+        .select(`
+          *,
+          artist:artists(*)
+        `)
+        .eq("week_identifier", weeklyList.week_identifier)
+        .order("position", { ascending: true });
 
-        return {
-          ...weeklyList,
-          artists: weeklyListArtists || []
-        };
-      }
-      
-      // No active lists found
-      return null;
+      if (artistsError) throw artistsError;
+
+      return {
+        ...weeklyList,
+        artists: weeklyListArtists || []
+      };
       
     } catch (error) {
       console.error("Error getting active weekly list:", error);
@@ -207,20 +164,17 @@ export class WeeklyListService {
 
   async updateWeeklyListStatus(weekIdentifier: string, status: "draft" | "active" | "completed"): Promise<void> {
     try {
-      // First, set all other lists to inactive if we're activating this one
+      // First, set all other lists to completed if we're activating this one
       if (status === "active") {
         await supabase
           .from("weekly_lists")
-          .update({ is_active: false, status: "completed" })
-          .eq("is_active", true);
+          .update({ status: "completed" })
+          .eq("status", "active");
       }
 
       const { error } = await supabase
         .from("weekly_lists")
-        .update({ 
-          status: status,
-          is_active: status === "active"
-        })
+        .update({ status: status })
         .eq("week_identifier", weekIdentifier);
 
       if (error) throw error;

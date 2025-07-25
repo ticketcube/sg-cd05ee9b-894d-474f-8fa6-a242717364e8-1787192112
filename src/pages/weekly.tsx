@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, User, Mail } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Loader2, User, Mail, ChevronDown } from "lucide-react";
 import { weeklyListService } from "@/services/weeklyListService";
 import { userProfileService } from "@/services/userProfileService";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
@@ -14,6 +15,7 @@ import Image from "next/image";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 
 type Artist = Tables<"artists">;
+type WeeklyList = Tables<"weekly_lists">;
 
 interface ArtistPosition {
   artistUuid: string;
@@ -23,6 +25,8 @@ interface ArtistPosition {
 
 export default function WeeklyPage() {
   const [weeklyList, setWeeklyList] = useState<WeeklyListWithArtists | null>(null);
+  const [allWeeklyLists, setAllWeeklyLists] = useState<WeeklyList[]>([]);
+  const [selectedListId, setSelectedListId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -35,19 +39,52 @@ export default function WeeklyPage() {
   const [draggedArtist, setDraggedArtist] = useState<string | null>(null);
 
   useEffect(() => {
-    loadWeeklyList();
+    loadAllWeeklyLists();
   }, []);
 
-  const loadWeeklyList = async () => {
+  useEffect(() => {
+    if (selectedListId) {
+      loadSpecificWeeklyList(selectedListId);
+    }
+  }, [selectedListId]);
+
+  const loadAllWeeklyLists = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Load the active weekly list
-      const list = await weeklyListService.getActiveWeeklyList();
+      // Load all weekly lists
+      const lists = await weeklyListService.getAllWeeklyLists();
+      setAllWeeklyLists(lists);
+      
+      // Find the active list and set it as default
+      const activeList = lists.find(list => list.status === "active");
+      if (activeList) {
+        setSelectedListId(activeList.week_identifier || "");
+      } else if (lists.length > 0) {
+        // If no active list, select the most recent one
+        setSelectedListId(lists[0].week_identifier || "");
+      } else {
+        setError("No weekly lists found");
+      }
+      
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load weekly lists";
+      console.error("Error loading weekly lists:", errorMessage);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSpecificWeeklyList = async (weekIdentifier: string) => {
+    try {
+      setError(null);
+      
+      const list = await weeklyListService.getWeeklyList(weekIdentifier);
       
       if (!list) {
-        setError("No active weekly list found");
+        setError("Weekly list not found");
         return;
       }
 
@@ -65,8 +102,6 @@ export default function WeeklyPage() {
       const errorMessage = err instanceof Error ? err.message : "Failed to load weekly list";
       console.error("Error loading weekly list:", errorMessage);
       setError(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -173,7 +208,7 @@ export default function WeeklyPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Error Loading Weekly List</h1>
           <p className="text-xl text-red-500">{error}</p>
-          <Button onClick={loadWeeklyList} className="mt-4 bg-blue-600 hover:bg-blue-700">
+          <Button onClick={loadAllWeeklyLists} className="mt-4 bg-blue-600 hover:bg-blue-700">
             Try Again
           </Button>
         </div>
@@ -210,12 +245,62 @@ export default function WeeklyPage() {
             </Button>
             <div className="flex-1 min-w-0">
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 truncate">
-                {weeklyList.title}
+                Weekly Voting Game
               </h1>
               <p className="text-xs sm:text-sm text-gray-400">
-                Drag artists to show your interest level
+                Choose a week and vote on your favorite artists
               </p>
             </div>
+          </div>
+
+          {/* Weekly List Description */}
+          {weeklyList && (
+            <div className="mb-4 p-3 bg-gray-900 rounded-lg border border-gray-700">
+              <h2 className="text-lg font-semibold text-white mb-1">{weeklyList.title}</h2>
+              {weeklyList.description && (
+                <p className="text-sm text-gray-300">{weeklyList.description}</p>
+              )}
+              <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                <span>Week: {weeklyList.week_identifier}</span>
+                <Badge 
+                  variant={weeklyList.status === "active" ? "default" : "secondary"}
+                  className="text-xs"
+                >
+                  {weeklyList.status}
+                </Badge>
+                <span>{weeklyList.artists.length} artists</span>
+              </div>
+            </div>
+          )}
+
+          {/* Weekly List Selector */}
+          <div className="mb-4">
+            <Select value={selectedListId} onValueChange={setSelectedListId}>
+              <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white">
+                <SelectValue placeholder="Select a weekly list..." />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-gray-600">
+                {allWeeklyLists.map((list) => (
+                  <SelectItem 
+                    key={list.week_identifier} 
+                    value={list.week_identifier || ""}
+                    className="text-white hover:bg-gray-700"
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span>{list.title || list.week_identifier}</span>
+                      <div className="flex items-center gap-2 ml-2">
+                        <Badge 
+                          variant={list.status === "active" ? "default" : "secondary"}
+                          className="text-xs"
+                        >
+                          {list.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           {!userId ? (
@@ -229,7 +314,7 @@ export default function WeeklyPage() {
           ) : (
             <Button
               onClick={handleSubmitVotes}
-              disabled={submitting || submitted}
+              disabled={submitting || submitted || !weeklyList}
               className="w-full text-base sm:text-lg py-3 sm:py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
             >
               {submitting ? (
