@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, Play, User, Mail } from "lucide-react";
+import { ArrowLeft, Loader2, User, Mail } from "lucide-react";
 import { weeklyListService } from "@/services/weeklyListService";
 import { userProfileService } from "@/services/userProfileService";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
