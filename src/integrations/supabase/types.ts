@@ -171,13 +171,13 @@ export type Database = {
                 }
                 Insert: {
                     artist_uuid?: string | null
-                    attractionId: string | null
+                    attractionId?: string | null
                     created_at?: string | null
                     event_date: string
                     event_id: string
                     event_name: string
                     event_time?: string | null
-                    event_url: string | null
+                    event_url?: string | null
                     id?: string
                     is_active?: boolean | null
                     search_keyword?: string | null
@@ -246,6 +246,87 @@ export type Database = {
                         referencedColumns: ["uuid"]
                     },
                 ]
+            }
+            user_engagements: {
+                Row: {
+                    created_at: string
+                    id: number
+                }
+                Insert: {
+                    created_at?: string
+                    id?: number
+                }
+                Update: {
+                    created_at?: string
+                    id?: number
+                }
+                Relationships: []
+            }
+            user_profiles: {
+                Row: {
+                    created_at: string
+                    id: number
+                }
+                Insert: {
+                    created_at?: string
+                    id?: number
+                }
+                Update: {
+                    created_at?: string
+                    id?: number
+                }
+                Relationships: []
+            }
+            weekly_list_artists: {
+                Row: {
+                    artist_uuid: string
+                    created_at: string
+                    id: number
+                    week_identifier: string | null
+                }
+                Insert: {
+                    artist_uuid: string
+                    created_at?: string
+                    id?: number
+                    week_identifier?: string | null
+                }
+                Update: {
+                    artist_uuid?: string
+                    created_at?: string
+                    id?: number
+                    week_identifier?: string | null
+                }
+                Relationships: []
+            }
+            weekly_lists: {
+                Row: {
+                    created_at: string
+                    end_date: string | null
+                    id: number
+                    is_active: string | null
+                    start_date: string | null
+                    title: string | null
+                    week_identifier: string | null
+                }
+                Insert: {
+                    created_at?: string
+                    end_date?: string | null
+                    id?: number
+                    is_active?: string | null
+                    start_date?: string | null
+                    title?: string | null
+                    week_identifier?: string | null
+                }
+                Update: {
+                    created_at?: string
+                    end_date?: string | null
+                    id?: number
+                    is_active?: string | null
+                    start_date?: string | null
+                    title?: string | null
+                    week_identifier?: string | null
+                }
+                Relationships: []
             }
         }
         Views: {
