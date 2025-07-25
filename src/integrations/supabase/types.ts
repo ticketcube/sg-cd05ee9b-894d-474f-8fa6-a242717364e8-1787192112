@@ -458,13 +458,23 @@ export type Database = {
             get_artist_vote_counts: {
                 Args: Record<PropertyKey, never>
                 Returns: {
-                    artist_name: string
+                    artist_uuid: string
                     vote_count: number
                 }[]
             }
+            increment_user_points: {
+                Args: {
+                    user_id_to_update: number
+                    points_to_add: number
+                }
+                Returns: undefined
+            }
             insert_ticket_entry: {
-                Args: { p_email: string; p_username: string; p_user_id?: string }
-                Returns: Json
+                Args: {
+                    p_email: string
+                    p_username: string
+                }
+                Returns: undefined
             }
         }
         Enums: {
