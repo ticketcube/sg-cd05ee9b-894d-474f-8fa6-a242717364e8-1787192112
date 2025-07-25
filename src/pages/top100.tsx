@@ -43,7 +43,7 @@ export default function Top100Page() {
     }
 
     try {
-      const { artists: newArtists, count } = await artistService.getTopVotedArtistsWithDetails(pageToLoad, ARTISTS_PER_PAGE);
+      const { artists: newArtists, count } = await artistService.getTop100ArtistsSortedByVotes(pageToLoad, ARTISTS_PER_PAGE);
       
       setArtists(prev => refresh ? newArtists : [...prev, ...newArtists]);
       setTotalCount(count);
@@ -268,9 +268,8 @@ export default function Top100Page() {
                 <div
                   key={artist.uuid}
                   ref={isLast ? lastArtistElementRef : null}
-                  onClick={() => handleArtistClick(artist)}
                   className={cn(
-                    "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full cursor-pointer",
+                    "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
                     isSelected && "ring-2 ring-green-500 bg-gray-800"
                   )}
                 >

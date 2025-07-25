@@ -350,6 +350,74 @@ export class ArtistService {
       return { artists: [], count: 0 };
     }
   }
+
+  async getTop100ArtistsSortedByVotes(page: number = 1, limit: number = 25): Promise<{ artists: ArtistWithVoteCount[], count: number }> {
+    try {
+      // First, get all artists where Top_List = '100'
+      const { data: top100Artists, error: artistsError } = await supabase
+        .from("artists")
+        .select("*")
+        .eq("Top_List", "100");
+
+      if (artistsError) {
+        console.error("Error fetching Top 100 artists:", artistsError);
+        return { artists: [], count: 0 };
+      }
+
+      if (!top100Artists || top100Artists.length === 0) {
+        return { artists: [], count: 0 };
+      }
+
+      // Get all votes to count them
+      const { data: votes, error: votesError } = await supabase
+        .from("top25_votes")
+        .select("artist_uuid");
+
+      if (votesError) {
+        console.error("Error fetching votes:", votesError);
+        return { artists: [], count: 0 };
+      }
+
+      // Count votes per artist
+      const voteCounts = votes.reduce((acc, vote) => {
+        if (vote.artist_uuid) {
+          acc[vote.artist_uuid] = (acc[vote.artist_uuid] || 0) + 1;
+        }
+        return acc;
+      }, {} as { [key: string]: number });
+
+      // Add vote counts to artists and sort: first by vote count (desc), then alphabetically
+      const artistsWithVotes = top100Artists.map(artist => ({
+        ...artist,
+        vote_count: voteCounts[artist.uuid] || 0,
+      }));
+
+      artistsWithVotes.sort((a, b) => {
+        // First sort by vote count (descending)
+        if (b.vote_count !== a.vote_count) {
+          return b.vote_count - a.vote_count;
+        }
+        // Then sort alphabetically by name (ascending)
+        return a.artist_name.localeCompare(b.artist_name);
+      });
+
+      const totalCount = artistsWithVotes.length;
+
+      // Paginate the results
+      const paginatedArtists = artistsWithVotes.slice((page - 1) * limit, page * limit);
+
+      // Add rank to each artist
+      const result = paginatedArtists.map((artist, index) => ({
+        ...artist,
+        rank: (page - 1) * limit + index + 1,
+      }));
+
+      return { artists: result as ArtistWithVoteCount[], count: totalCount };
+    } catch (error) {
+      console.error("Error in getTop100ArtistsSortedByVotes:", error);
+      return { artists: [], count: 0 };
+    }
+  }
 }
 
 export const artistService = new ArtistService();
