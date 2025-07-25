@@ -156,6 +156,9 @@ export default function OnTourPage() {
     };
 
     const venueLocation = getVenueLocation();
+    
+    // Handle nullable event URL
+    const eventUrl = event.url && event.url !== "#" ? event.url : null;
 
     return (
       <div className={`border rounded-lg p-4 ${type === 'cached' ? 'bg-blue-50 dark:bg-blue-950' : ''}`}>
@@ -178,12 +181,19 @@ export default function OnTourPage() {
             </div>
           )}
         </div>
-        <Button variant="outline" size="sm" asChild>
-          <a href={event.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+        {eventUrl ? (
+          <Button variant="outline" size="sm" asChild>
+            <a href={eventUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+              <ExternalLink className="w-4 h-4" />
+              Buy Tickets
+            </a>
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" disabled className="flex items-center gap-2">
             <ExternalLink className="w-4 h-4" />
-            Buy Tickets
-          </a>
-        </Button>
+            No Tickets Available
+          </Button>
+        )}
       </div>
     );
   };

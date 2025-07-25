@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { TicketmasterEvent } from "@/types/tour";
 import type { Tables } from "@/integrations/supabase/types";
@@ -12,7 +11,7 @@ interface CachedEvent {
   attractionId: string | null;
   search_keyword: string | null;
   event_name: string;
-  event_url: string;
+  event_url: string | null; // Updated to handle nullable event_url
   event_date: string;
   event_time: string | null;
   venue_name: string | null;
@@ -59,8 +58,8 @@ export class EventCacheService {
             artist_uuid: artistUuid,
             attractionId: attractionId || null,
             search_keyword: artistName,
-            event_name: event.name,
-            event_url: event.url,
+            event_name: event.name || "Unknown Event",
+            event_url: event.url || null, // Handle nullable event_url
             event_date: event.dates.start.localDate,
             event_time: event.dates.start.localTime || null,
             venue_name: venue?.name || null,
@@ -103,7 +102,7 @@ export class EventCacheService {
       return (data as CachedEvent[]).map(event => ({
         id: event.event_id,
         name: event.event_name,
-        url: event.event_url,
+        url: event.event_url || "#", // Provide fallback URL for nullable event_url
         dates: {
           start: {
             localDate: event.event_date,
