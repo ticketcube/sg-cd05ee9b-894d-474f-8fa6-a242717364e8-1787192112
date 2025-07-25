@@ -1,9 +1,8 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, ExternalLink, X } from "lucide-react";
-import type { ArtistWithEvents } from "@/types/tour";
+import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
 import Image from "next/image";
 
 interface ArtistShowsPopupProps {
@@ -24,7 +23,7 @@ export default function ArtistShowsPopup({ artist, isOpen, onClose }: ArtistShow
     });
   };
 
-  const getCityName = (event: any) => {
+  const getCityName = (event: TicketmasterEvent) => {
     const venue = event._embedded?.venues?.[0];
     const cityName = venue?.city?.name || "Unknown City";
     const stateName = venue?.state?.name;
@@ -87,7 +86,7 @@ export default function ArtistShowsPopup({ artist, isOpen, onClose }: ArtistShow
                   {publicEvents.length} Public Show{publicEvents.length !== 1 ? 's' : ''} On Sale
                 </h4>
                 
-                {publicEvents.map((event, index) => {
+                {publicEvents.map((event) => {
                   const venue = event._embedded?.venues?.[0];
                   const cityName = getCityName(event);
                   
