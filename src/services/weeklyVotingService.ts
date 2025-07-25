@@ -3,7 +3,6 @@ import { userProfileService } from "./userProfileService";
 import type { Tables } from "@/integrations/supabase/types";
 
 type WeeklyVote = Tables<"weekly_votes">;
-type UserProfile = Tables<"user_profiles">;
 
 export interface VideoViewData {
   userId: number;
@@ -219,7 +218,7 @@ export class WeeklyVotingService {
         .select("*")
         .eq("user_id", userId)
         .eq("week_identifier", weekIdentifier)
-        .order("ranking_position", { ascending: true, nullsLast: true });
+        .order("ranking_position", { ascending: true, nullsFirst: false });
 
       if (error) throw error;
       return data || [];

@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Tables, Json } from "@/integrations/supabase/types";
 
 type UserProfile = Tables<"user_profiles">;
 type UserEngagement = Tables<"user_engagements">;
@@ -110,7 +110,7 @@ export class UserProfileService {
     pointsEarned: number,
     weekIdentifier: string,
     artistUuid?: string,
-    metadata?: Record<string, any>
+    metadata?: Json
   ): Promise<UserEngagement> {
     try {
       // Record the engagement
@@ -129,16 +129,16 @@ export class UserProfileService {
 
       if (engagementError) throw engagementError;
 
-      // Update user's total points
-      const { error: updateError } = await supabase
-        .from("user_profiles")
-        .update({
-          total_points: supabase.raw(`total_points + ${pointsEarned}`),
-          last_active: new Date().toISOString()
-        })
-        .eq("id", userId);
+      // Update user's total points and last_active timestamp atomically
+      const { error: rpcError } = await supabase.rpc("increment_user_points", {
+        user_id_to_update: userId,
+        points_to_add: pointsEarned,
+      });
 
-      if (updateError) throw updateError;
+      if (rpcError) {
+        console.error("Error calling increment_user_points RPC:", rpcError);
+        throw rpcError;
+      }
 
       return engagement;
     } catch (error) {
@@ -178,14 +178,16 @@ export class UserProfileService {
           });
         }
 
-        const summary = weeklyMap.get(weekId)!;
-        summary.total_points += engagement.points_earned || 0;
-        summary.engagement_count += 1;
+        const summary = weeklyMap.get(weekId);
+        if (summary) {
+          summary.total_points += engagement.points_earned || 0;
+          summary.engagement_count += 1;
 
-        if (engagement.engagement_type === "video_view") {
-          summary.video_views += 1;
-        } else if (engagement.engagement_type === "vote_submission" || engagement.engagement_type === "ranking_submission") {
-          summary.votes_submitted += 1;
+          if (engagement.engagement_type === "video_view") {
+            summary.video_views += 1;
+          } else if (engagement.engagement_type === "vote_submission" || engagement.engagement_type === "ranking_submission") {
+            summary.votes_submitted += 1;
+          }
         }
       });
 

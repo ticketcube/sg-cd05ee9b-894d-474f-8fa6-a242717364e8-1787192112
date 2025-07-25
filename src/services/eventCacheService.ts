@@ -114,7 +114,7 @@ export class EventCacheService {
       return (data as CachedEvent[]).map(event => ({
         id: event.event_id,
         name: event.event_name,
-        url: event.event_url!, // We know this is valid since we only cache events with URLs
+        url: event.event_url || "",
         dates: {
           start: {
             localDate: event.event_date,
