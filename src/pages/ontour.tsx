@@ -92,14 +92,18 @@ export default function OnTourPage() {
   };
 
   const cacheEventsToDatabase = async () => {
-    if (!selectedArtist?.uuid || !selectedArtist?.attractionId) {
-        setError("This artist does not have a Ticketmaster AttractionID, so caching is disabled.");
+    if (!selectedArtist?.uuid || !selectedArtist?.artist_name) {
+        setError("Artist information is incomplete.");
         return;
     }
     setCaching(true);
     setError(null);
     try {
-      await eventCacheService.refreshEventsForArtist(selectedArtist.uuid, selectedArtist.attractionId);
+      await eventCacheService.refreshEventsForArtist(
+        selectedArtist.uuid, 
+        selectedArtist.artist_name, 
+        selectedArtist.attractionId || undefined
+      );
       await loadCachedEvents();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to cache events";
@@ -247,7 +251,7 @@ export default function OnTourPage() {
                 <Button onClick={testTicketmasterAPI} disabled={testing}>
                   {testing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "🧪"} Test API
                 </Button>
-                <Button onClick={cacheEventsToDatabase} disabled={caching || !selectedArtist.attractionId} variant="secondary">
+                <Button onClick={cacheEventsToDatabase} disabled={caching} variant="secondary">
                   {caching ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Database className="w-4 h-4 mr-2" />}
                   Cache Events
                 </Button>

@@ -1,5 +1,5 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { ticketmasterService } from "./ticketmasterService";
 import type { TicketmasterEvent } from "@/types/tour";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -9,7 +9,8 @@ interface CachedEvent {
   id: string;
   event_id: string;
   artist_uuid: string;
-  attractionId: string;
+  attractionId: string | null;
+  search_keyword: string | null;
   event_name: string;
   event_url: string;
   event_date: string;
@@ -23,11 +24,28 @@ interface CachedEvent {
   updated_at: string;
 }
 
+interface ApiResponse {
+  events?: TicketmasterEvent[];
+  totalElements?: number;
+  message?: string;
+}
+
 export class EventCacheService {
-  async refreshEventsForArtist(artistUuid: string, attractionId: string): Promise<void> {
+  async refreshEventsForArtist(artistUuid: string, artistName: string, attractionId?: string): Promise<void> {
     try {
-      const events = await ticketmasterService.getArtistEvents(attractionId);
+      console.log(`Refreshing events for artist: ${artistName} (UUID: ${artistUuid})`);
       
+      // Use our new keyword-based API endpoint
+      const response = await fetch(`/api/ticketmaster/events?keyword=${encodeURIComponent(artistName)}`);
+      const data: ApiResponse = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || `API Error: ${response.status}`);
+      }
+      
+      const events = data.events || [];
+      
+      // Mark existing events as inactive
       await supabase
         .from("ticketmaster_events")
         .update({ is_active: false, updated_at: new Date().toISOString() })
@@ -39,15 +57,16 @@ export class EventCacheService {
           return {
             event_id: event.id,
             artist_uuid: artistUuid,
-            attractionId: attractionId,
+            attractionId: attractionId || null,
+            search_keyword: artistName,
             event_name: event.name,
             event_url: event.url,
             event_date: event.dates.start.localDate,
             event_time: event.dates.start.localTime || null,
             venue_name: venue?.name || null,
-            venue_city: venue?.city.name || null,
+            venue_city: venue?.city?.name || null,
             venue_state: venue?.state?.name || null,
-            venue_country: venue?.country.name || null,
+            venue_country: venue?.country?.name || null,
             is_active: true,
             updated_at: new Date().toISOString()
           };
@@ -58,9 +77,10 @@ export class EventCacheService {
           .upsert(eventData, { onConflict: "event_id", ignoreDuplicates: false });
       }
 
-      console.log(`Refreshed ${events.length} events for artist ${artistUuid}`);
+      console.log(`Successfully cached ${events.length} events for artist ${artistName}`);
     } catch (error) {
-      console.error(`Error refreshing events for artist ${artistUuid}:`, error);
+      console.error(`Error refreshing events for artist ${artistName}:`, error);
+      throw error;
     }
   }
 
@@ -109,17 +129,17 @@ export class EventCacheService {
     try {
       const { data: artistsData, error } = await supabase
         .from("artists")
-        .select("uuid, attractionId")
-        .not("attractionId", "is", null)
-        .not("attractionId", "eq", "");
+        .select("uuid, artist_name, attractionId")
+        .not("artist_name", "is", null)
+        .not("artist_name", "eq", "");
 
       if (error) {
-        console.error("Error fetching artists with attractionIds:", error);
+        console.error("Error fetching artists:", error);
         return;
       }
 
       if (!artistsData) {
-        console.log("No artists with attractionIds found to refresh.");
+        console.log("No artists found to refresh.");
         return;
       }
 
@@ -127,11 +147,17 @@ export class EventCacheService {
 
       for (let i = 0; i < artistsData.length; i++) {
         const artist = artistsData[i] as Artist;
-        if (artist && artist.uuid && artist.attractionId) {
-          console.log(`Refreshing events for artist ${i + 1}/${artistsData.length}: ${artist.uuid}`);
-          await this.refreshEventsForArtist(artist.uuid, artist.attractionId);
+        if (artist && artist.uuid && artist.artist_name) {
+          console.log(`Refreshing events for artist ${i + 1}/${artistsData.length}: ${artist.artist_name}`);
+          try {
+            await this.refreshEventsForArtist(artist.uuid, artist.artist_name, artist.attractionId || undefined);
+          } catch (error) {
+            console.warn(`Failed to refresh events for ${artist.artist_name}:`, error);
+          }
+          
+          // Add delay to avoid rate limiting
           if (i < artistsData.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 500));
           }
         }
       }
@@ -167,7 +193,7 @@ export class EventCacheService {
         .limit(1)
         .single();
       
-      if(lastUpdateError) throw lastUpdateError;
+      if(lastUpdateError && lastUpdateError.code !== "PGRST116") throw lastUpdateError;
 
       return {
         totalEvents: totalEvents || 0,
@@ -182,4 +208,3 @@ export class EventCacheService {
 }
 
 export const eventCacheService = new EventCacheService();
-  
