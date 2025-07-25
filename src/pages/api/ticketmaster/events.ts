@@ -1,3 +1,4 @@
+
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export interface TicketmasterEvent {
@@ -43,10 +44,10 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { attractionId, testAttraction = "false" } = req.query;
+  const { keyword } = req.query;
 
-  if (!attractionId || typeof attractionId !== "string") {
-    return res.status(400).json({ message: "attractionId is required" });
+  if (!keyword || typeof keyword !== "string") {
+    return res.status(400).json({ message: "keyword parameter is required" });
   }
 
   const apiKey = process.env.TM_API_KEY;
@@ -56,24 +57,14 @@ export default async function handler(
   }
 
   try {
-    // If testAttraction is true, test the attractions endpoint first
-    if (testAttraction === "true") {
-      const attractionUrl = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${apiKey}&keyword={artist_name}`;
-      console.log("Testing attraction URL:", attractionUrl);
-      
-      const attractionResponse = await fetch(attractionUrl);
-      const attractionData = await attractionResponse.json();
-      
-      return res.status(200).json({
-        attractionTest: true,
-        attractionData,
-        attractionStatus: attractionResponse.status
-      });
-    }
-
-    // Use the correct Ticketmaster API root URL and endpoint
-    const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${apiKey}&keyword=${artist_name}`;
-    console.log("Calling Ticketmaster API:", url.replace(apiKey, "***"));
+    // Encode the keyword to handle spaces and special characters
+    const encodedKeyword = encodeURIComponent(keyword.trim());
+    
+    // Construct the Ticketmaster API URL with keyword search
+    const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${apiKey}&keyword=${encodedKeyword}&sort=date,asc&size=50`;
+    
+    console.log("Calling Ticketmaster API with keyword:", keyword);
+    console.log("API URL (masked):", url.replace(apiKey, "***"));
     
     const response = await fetch(url);
     
@@ -85,25 +76,40 @@ export default async function handler(
       return res.status(response.status).json({ 
         message: `Ticketmaster API error: ${response.statusText}`,
         events: [],
-        errorDetails: errorText
+        errorDetails: errorText,
+        keyword: keyword
       });
     }
 
     const data: TicketmasterResponse = await response.json();
-    console.log("Ticketmaster API response:", JSON.stringify(data, null, 2));
+    
+    // Log the response for debugging (but limit the size)
+    console.log("Ticketmaster API response summary:", {
+      totalElements: data.page?.totalElements || 0,
+      eventsFound: data._embedded?.events?.length || 0,
+      keyword: keyword
+    });
+    
+    const events = data._embedded?.events || [];
+    const totalElements = data.page?.totalElements || 0;
     
     return res.status(200).json({
-      events: data._embedded?.events || [],
-      totalElements: data.page?.totalElements || 0,
-      fullResponse: data,
-      debugUrl: url.replace(apiKey, "***"),
-      apiCallSuccess: true
+      events,
+      totalElements,
+      keyword,
+      apiCallSuccess: true,
+      debugInfo: {
+        url: url.replace(apiKey, "***"),
+        eventsReturned: events.length,
+        totalAvailable: totalElements
+      }
     });
   } catch (error) {
     console.error("Error fetching Ticketmaster events:", error);
     return res.status(500).json({ 
       message: "Internal server error",
       events: [],
+      keyword,
       error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
