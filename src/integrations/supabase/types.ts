@@ -153,13 +153,13 @@ export type Database = {
             ticketmaster_events: {
                 Row: {
                     artist_uuid: string | null
-                    attractionId: string
+                    attractionId: string | null
                     created_at: string | null
                     event_date: string
                     event_id: string
                     event_name: string
                     event_time: string | null
-                    event_url: string
+                    event_url: string | null
                     id: string
                     is_active: boolean | null
                     search_keyword: string | null
@@ -171,13 +171,13 @@ export type Database = {
                 }
                 Insert: {
                     artist_uuid?: string | null
-                    attractionId: string
+                    attractionId: string | null
                     created_at?: string | null
                     event_date: string
                     event_id: string
                     event_name: string
                     event_time?: string | null
-                    event_url: string
+                    event_url: string | null
                     id?: string
                     is_active?: boolean | null
                     search_keyword?: string | null
@@ -189,13 +189,13 @@ export type Database = {
                 }
                 Update: {
                     artist_uuid?: string | null
-                    attractionId?: string
+                    attractionId?: string | null
                     created_at?: string | null
                     event_date?: string
                     event_id?: string
                     event_name?: string
                     event_time?: string | null
-                    event_url?: string
+                    event_url?: string | null
                     id?: string
                     is_active?: boolean | null
                     search_keyword?: string | null
