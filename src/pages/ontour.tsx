@@ -76,7 +76,7 @@ export default function OnTourPage() {
     setError(null);
     setApiResponse(null);
     try {
-      const response = await fetch(`/api/ticketmaster/events?attractionId=${selectedArtist.attractionId}`);
+      const response = await fetch(`/api/ticketmaster/events?attractionId=${selectedArtist.artistName}`);
       const data: ApiResponse = await response.json();
       
       setApiResponse(data);
