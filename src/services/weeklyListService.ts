@@ -31,8 +31,7 @@ export class WeeklyListService {
           start_date: data.start_date,
           end_date: data.end_date,
           voting_mode: data.voting_mode || "ranking",
-          status: data.status || "draft",
-          is_active: data.status === "active"
+          status: data.status || "draft"
         }])
         .select()
         .single();
@@ -133,27 +132,25 @@ export class WeeklyListService {
 
   async getActiveWeeklyList(): Promise<WeeklyListWithArtists | null> {
     try {
-      // Simplified approach - get any list that has status 'active' OR is_active true
-      const { data: weeklyLists, error: listError } = await supabase
+      // Get the most recent active weekly list
+      const { data: weeklyList, error: listError } = await supabase
         .from("weekly_lists")
         .select("*")
-        .or("status.eq.active,is_active.eq.true")
+        .eq("status", "active")
         .order("created_at", { ascending: false })
-        .limit(5); // Get multiple to debug
+        .limit(1)
+        .single();
 
       if (listError) {
-        console.error("Error fetching weekly lists:", listError);
+        if (listError.code === "PGRST116") {
+          console.log("No active weekly lists found");
+          return null;
+        }
+        console.error("Error fetching active weekly list:", listError);
         throw listError;
       }
 
-      if (!weeklyLists || weeklyLists.length === 0) {
-        console.log("No active weekly lists found");
-        return null;
-      }
-
-      // Take the first one
-      const weeklyList = weeklyLists[0];
-      console.log("Found weekly list:", weeklyList);
+      console.log("Found active weekly list:", weeklyList);
 
       const { data: weeklyListArtists, error: artistsError } = await supabase
         .from("weekly_list_artists")
