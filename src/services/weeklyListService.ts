@@ -126,33 +126,79 @@ export class WeeklyListService {
 
   async getActiveWeeklyList(): Promise<WeeklyListWithArtists | null> {
     try {
-      const { data: weeklyList, error: listError } = await supabase
+      // First, let's check if there are multiple active lists and fix that
+      const { data: activeLists, error: checkError } = await supabase
         .from("weekly_lists")
         .select("*")
         .eq("is_active", true)
-        .eq("status", "active")
-        .single();
+        .eq("status", "active");
 
-      if (listError) {
-        if (listError.code === "PGRST116") return null;
-        throw listError;
+      if (checkError) throw checkError;
+
+      // If we have multiple active lists, deactivate all but the most recent one
+      if (activeLists && activeLists.length > 1) {
+        console.warn(`Found ${activeLists.length} active weekly lists. Fixing...`);
+        
+        // Sort by created_at descending to get the most recent
+        const sortedLists = activeLists.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        
+        const mostRecentList = sortedLists[0];
+        const listsToDeactivate = sortedLists.slice(1);
+        
+        // Deactivate the older lists
+        for (const list of listsToDeactivate) {
+          await supabase
+            .from("weekly_lists")
+            .update({ is_active: false, status: "completed" })
+            .eq("id", list.id);
+        }
+        
+        // Use the most recent list
+        const weeklyList = mostRecentList;
+        
+        const { data: weeklyListArtists, error: artistsError } = await supabase
+          .from("weekly_list_artists")
+          .select(`
+            *,
+            artist:artists(*)
+          `)
+          .eq("week_identifier", weeklyList.week_identifier)
+          .order("position", { ascending: true });
+
+        if (artistsError) throw artistsError;
+
+        return {
+          ...weeklyList,
+          artists: weeklyListArtists || []
+        };
       }
+      
+      // If we have exactly one active list, use it
+      if (activeLists && activeLists.length === 1) {
+        const weeklyList = activeLists[0];
+        
+        const { data: weeklyListArtists, error: artistsError } = await supabase
+          .from("weekly_list_artists")
+          .select(`
+            *,
+            artist:artists(*)
+          `)
+          .eq("week_identifier", weeklyList.week_identifier)
+          .order("position", { ascending: true });
 
-      const { data: weeklyListArtists, error: artistsError } = await supabase
-        .from("weekly_list_artists")
-        .select(`
-          *,
-          artist:artists(*)
-        `)
-        .eq("week_identifier", weeklyList.week_identifier)
-        .order("position", { ascending: true });
+        if (artistsError) throw artistsError;
 
-      if (artistsError) throw artistsError;
-
-      return {
-        ...weeklyList,
-        artists: weeklyListArtists || []
-      };
+        return {
+          ...weeklyList,
+          artists: weeklyListArtists || []
+        };
+      }
+      
+      // No active lists found
+      return null;
+      
     } catch (error) {
       console.error("Error getting active weekly list:", error);
       throw error;
