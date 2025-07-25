@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -76,6 +77,8 @@ export class WeeklyListService {
 
   async getWeeklyList(weekIdentifier: string): Promise<WeeklyListWithArtists | null> {
     try {
+      console.log("Getting weekly list for identifier:", weekIdentifier);
+      
       const { data: weeklyList, error: listError } = await supabase
         .from("weekly_lists")
         .select("*")
@@ -83,9 +86,12 @@ export class WeeklyListService {
         .single();
 
       if (listError) {
+        console.error("Error fetching weekly list:", listError);
         if (listError.code === "PGRST116") return null;
         throw listError;
       }
+
+      console.log("Found weekly list:", weeklyList);
 
       const { data: weeklyListArtists, error: artistsError } = await supabase
         .from("weekly_list_artists")
@@ -96,7 +102,12 @@ export class WeeklyListService {
         .eq("week_identifier", weekIdentifier)
         .order("position", { ascending: true });
 
-      if (artistsError) throw artistsError;
+      if (artistsError) {
+        console.error("Error fetching weekly list artists:", artistsError);
+        throw artistsError;
+      }
+
+      console.log("Found artists for weekly list:", weeklyListArtists?.length || 0);
 
       return {
         ...weeklyList,
@@ -118,20 +129,23 @@ export class WeeklyListService {
         .order("start_date", { ascending: false });
 
       if (error) {
-        console.error("Error in getAllWeeklyLists:", error);
-        throw error;
+        console.error("Supabase error in getAllWeeklyLists:", error);
+        throw new Error(`Database error: ${error.message}`);
       }
       
-      console.log("Successfully fetched weekly lists:", data?.length || 0);
+      console.log("Successfully fetched weekly lists:", data?.length || 0, data);
       return data || [];
     } catch (error) {
       console.error("Error getting all weekly lists:", error);
-      throw error;
+      // Don't re-throw, return empty array to prevent page crash
+      return [];
     }
   }
 
   async getActiveWeeklyList(): Promise<WeeklyListWithArtists | null> {
     try {
+      console.log("Fetching active weekly list...");
+      
       // Get the most recent active weekly list
       const { data: weeklyList, error: listError } = await supabase
         .from("weekly_lists")
@@ -142,11 +156,11 @@ export class WeeklyListService {
         .single();
 
       if (listError) {
+        console.error("Error fetching active weekly list:", listError);
         if (listError.code === "PGRST116") {
           console.log("No active weekly lists found");
           return null;
         }
-        console.error("Error fetching active weekly list:", listError);
         throw listError;
       }
 
