@@ -53,24 +53,32 @@ export default function WeeklyPage() {
       setLoading(true);
       setError(null);
       
+      console.log("Starting to load all weekly lists...");
+      
       // Load all weekly lists
       const lists = await weeklyListService.getAllWeeklyLists();
+      console.log("Loaded weekly lists:", lists.length, lists);
       setAllWeeklyLists(lists);
       
       // Find the active list and set it as default
       const activeList = lists.find(list => list.status === "active");
+      console.log("Found active list:", activeList);
+      
       if (activeList) {
+        console.log("Setting active list as selected:", activeList.week_identifier);
         setSelectedListId(activeList.week_identifier || "");
       } else if (lists.length > 0) {
         // If no active list, select the most recent one
+        console.log("No active list found, selecting most recent:", lists[0].week_identifier);
         setSelectedListId(lists[0].week_identifier || "");
       } else {
+        console.log("No weekly lists found at all");
         setError("No weekly lists found");
       }
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load weekly lists";
-      console.error("Error loading weekly lists:", errorMessage);
+      console.error("Error in loadAllWeeklyLists:", errorMessage, err);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -81,13 +89,18 @@ export default function WeeklyPage() {
     try {
       setError(null);
       
+      console.log("Loading specific weekly list:", weekIdentifier);
+      
       const list = await weeklyListService.getWeeklyList(weekIdentifier);
+      console.log("Loaded weekly list:", list);
       
       if (!list) {
+        console.log("Weekly list not found for identifier:", weekIdentifier);
         setError("Weekly list not found");
         return;
       }
 
+      console.log("Setting weekly list with", list.artists.length, "artists");
       setWeeklyList(list);
       
       // Initialize artist positions at center
@@ -96,11 +109,12 @@ export default function WeeklyPage() {
         x: 0,
         y: 0
       }));
+      console.log("Initialized artist positions:", initialPositions);
       setArtistPositions(initialPositions);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load weekly list";
-      console.error("Error loading weekly list:", errorMessage);
+      console.error("Error in loadSpecificWeeklyList:", errorMessage, err);
       setError(errorMessage);
     }
   };
