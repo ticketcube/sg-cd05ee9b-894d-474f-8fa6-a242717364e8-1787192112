@@ -51,32 +51,44 @@ export class EventCacheService {
         .eq("artist_uuid", artistUuid);
 
       if (events.length > 0) {
-        const eventData = events.map(event => {
-          const venue = event._embedded?.venues?.[0];
-          return {
-            event_id: event.id,
-            artist_uuid: artistUuid,
-            attractionId: attractionId || null,
-            search_keyword: artistName,
-            event_name: event.name || "Unknown Event",
-            event_url: event.url || null, // Handle nullable event_url
-            event_date: event.dates.start.localDate,
-            event_time: event.dates.start.localTime || null,
-            venue_name: venue?.name || null,
-            venue_city: venue?.city?.name || null,
-            venue_state: venue?.state?.name || null,
-            venue_country: venue?.country?.name || null,
-            is_active: true,
-            updated_at: new Date().toISOString()
-          };
-        });
+        // Filter events to only include those with valid URLs (public shows)
+        const publicEvents = events.filter(event => 
+          event.url && 
+          event.url !== "#" && 
+          event.url.trim() !== "" &&
+          event.url.startsWith("http")
+        );
 
-        await supabase
-          .from("ticketmaster_events")
-          .upsert(eventData, { onConflict: "event_id", ignoreDuplicates: false });
+        if (publicEvents.length > 0) {
+          const eventData = publicEvents.map(event => {
+            const venue = event._embedded?.venues?.[0];
+            return {
+              event_id: event.id,
+              artist_uuid: artistUuid,
+              attractionId: attractionId || null,
+              search_keyword: artistName,
+              event_name: event.name || "Unknown Event",
+              event_url: event.url, // We know this is valid now
+              event_date: event.dates.start.localDate,
+              event_time: event.dates.start.localTime || null,
+              venue_name: venue?.name || null,
+              venue_city: venue?.city?.name || null,
+              venue_state: venue?.state?.name || null,
+              venue_country: venue?.country?.name || null,
+              is_active: true,
+              updated_at: new Date().toISOString()
+            };
+          });
+
+          await supabase
+            .from("ticketmaster_events")
+            .upsert(eventData, { onConflict: "event_id", ignoreDuplicates: false });
+        }
+
+        console.log(`Successfully cached ${publicEvents.length} public events out of ${events.length} total events for artist ${artistName}`);
+      } else {
+        console.log(`No events found for artist ${artistName}`);
       }
-
-      console.log(`Successfully cached ${events.length} events for artist ${artistName}`);
     } catch (error) {
       console.error(`Error refreshing events for artist ${artistName}:`, error);
       throw error;
@@ -102,7 +114,7 @@ export class EventCacheService {
       return (data as CachedEvent[]).map(event => ({
         id: event.event_id,
         name: event.event_name,
-        url: event.event_url || "#", // Provide fallback URL for nullable event_url
+        url: event.event_url!, // We know this is valid since we only cache events with URLs
         dates: {
           start: {
             localDate: event.event_date,
