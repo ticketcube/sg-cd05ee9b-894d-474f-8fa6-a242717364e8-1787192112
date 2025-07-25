@@ -276,7 +276,7 @@ export class EventCacheService {
       const artistEventCounts = new Map<string, { artist_name: string; artist_image: string | null; count: number }>();
       
       data?.forEach(item => {
-        const artist = item.artists as any;
+        const artist = item.artists as { artist_name: string | null; artist_image: string | null; };
         if (artist && artist.artist_name) {
           const existing = artistEventCounts.get(item.artist_uuid);
           if (existing) {

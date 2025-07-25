@@ -1,8 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { eventCacheService } from "./eventCacheService";
 import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
-import type { ArtistWithVoteCount } from "@/types/artists";
 
 export class ArtistEventService {
   // Quick check to see which artists have public events (for BUY TIX buttons)
@@ -58,7 +56,7 @@ export class ArtistEventService {
       // Get vote counts for these artists
       const artistUuids = artistsWithEventCounts.map(a => a.artist_uuid);
       const { data: voteData, error: voteError } = await supabase
-        .from("votes")
+        .from("top25_votes")
         .select("artist_uuid")
         .in("artist_uuid", artistUuids);
 
