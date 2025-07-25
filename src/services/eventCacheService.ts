@@ -223,6 +223,87 @@ export class EventCacheService {
       return { totalEvents: 0, activeArtists: 0, lastUpdated: null };
     }
   }
+
+  async getArtistsWithPublicEvents(): Promise<string[]> {
+    try {
+      const { data, error } = await supabase
+        .from("ticketmaster_events")
+        .select("artist_uuid")
+        .eq("is_active", true)
+        .not("event_url", "is", null)
+        .not("event_url", "eq", "")
+        .not("event_url", "eq", "#")
+        .gte("event_date", new Date().toISOString().split('T')[0]);
+
+      if (error) {
+        console.error("Error fetching artists with public events:", error);
+        return [];
+      }
+
+      // Return unique artist UUIDs that have public events
+      return [...new Set(data?.map(item => item.artist_uuid) || [])];
+    } catch (error) {
+      console.error("Error getting artists with public events:", error);
+      return [];
+    }
+  }
+
+  async getArtistsWithEventsOptimized(): Promise<{ artist_uuid: string; artist_name: string; artist_image: string | null; event_count: number; vote_count?: number; rank?: number }[]> {
+    try {
+      // Get artists with their event counts in a single query
+      const { data, error } = await supabase
+        .from("ticketmaster_events")
+        .select(`
+          artist_uuid,
+          artists!inner(
+            artist_name,
+            artist_image,
+            attractionId
+          )
+        `)
+        .eq("is_active", true)
+        .not("event_url", "is", null)
+        .not("event_url", "eq", "")
+        .not("event_url", "eq", "#")
+        .gte("event_date", new Date().toISOString().split('T')[0]);
+
+      if (error) {
+        console.error("Error fetching optimized artists with events:", error);
+        return [];
+      }
+
+      // Group by artist and count events
+      const artistEventCounts = new Map<string, { artist_name: string; artist_image: string | null; count: number }>();
+      
+      data?.forEach(item => {
+        const artist = item.artists as any;
+        if (artist && artist.artist_name) {
+          const existing = artistEventCounts.get(item.artist_uuid);
+          if (existing) {
+            existing.count++;
+          } else {
+            artistEventCounts.set(item.artist_uuid, {
+              artist_name: artist.artist_name,
+              artist_image: artist.artist_image,
+              count: 1
+            });
+          }
+        }
+      });
+
+      // Convert to array and sort by event count
+      return Array.from(artistEventCounts.entries()).map(([uuid, data]) => ({
+        artist_uuid: uuid,
+        artist_name: data.artist_name,
+        artist_image: data.artist_image,
+        event_count: data.count
+      })).sort((a, b) => b.event_count - a.event_count);
+
+    } catch (error) {
+      console.error("Error getting optimized artists with events:", error);
+      return [];
+    }
+  }
 }
 
 export const eventCacheService = new EventCacheService();
