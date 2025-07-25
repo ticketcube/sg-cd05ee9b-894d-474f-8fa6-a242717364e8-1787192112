@@ -43,8 +43,8 @@ export default function WeeklyPage() {
       setLoading(true);
       setError(null);
       
-      // Load the active weekly list (2025-W30 for now)
-      const list = await weeklyListService.getWeeklyList("2025-W30");
+      // Load the active weekly list
+      const list = await weeklyListService.getActiveWeeklyList();
       
       if (!list) {
         setError("No active weekly list found");
@@ -127,7 +127,7 @@ export default function WeeklyPage() {
     try {
       const voteData = {
         userId,
-        weekIdentifier: "2025-W30",
+        weekIdentifier: weeklyList.week_identifier,
         artistPositions: artistPositions.map(pos => ({
           artistUuid: pos.artistUuid,
           quadrant_x: pos.x,
