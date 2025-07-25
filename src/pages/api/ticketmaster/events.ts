@@ -58,7 +58,7 @@ export default async function handler(
   try {
     // If testAttraction is true, test the attractions endpoint first
     if (testAttraction === "true") {
-      const attractionUrl = `https://app.ticketmaster.com/discovery/v2/events.json?attractionID=${attractionId}&apikey=${apiKey}`;
+      const attractionUrl = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${apiKey}&keyword={artist_name}`;
       console.log("Testing attraction URL:", attractionUrl);
       
       const attractionResponse = await fetch(attractionUrl);
@@ -72,7 +72,7 @@ export default async function handler(
     }
 
     // Use the correct Ticketmaster API root URL and endpoint
-    const url = `https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${attractionId}&apikey=${apiKey}&sort=date,asc`;
+    const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${apiKey}&keyword=${artist_name}`;
     console.log("Calling Ticketmaster API:", url.replace(apiKey, "***"));
     
     const response = await fetch(url);
