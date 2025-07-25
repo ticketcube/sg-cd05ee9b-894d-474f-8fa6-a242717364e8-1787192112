@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -32,7 +31,7 @@ export class WeeklyListService {
           start_date: data.start_date,
           end_date: data.end_date,
           voting_mode: data.voting_mode || "ranking",
-          status: data.status || "draft"
+          status: data.status || "active"
         }])
         .select()
         .single();
@@ -130,15 +129,14 @@ export class WeeklyListService {
 
       if (error) {
         console.error("Supabase error in getAllWeeklyLists:", error);
-        throw new Error(`Database error: ${error.message}`);
+        throw error; // Don't catch and return empty array - let the error bubble up
       }
       
       console.log("Successfully fetched weekly lists:", data?.length || 0, data);
       return data || [];
     } catch (error) {
       console.error("Error getting all weekly lists:", error);
-      // Don't re-throw, return empty array to prevent page crash
-      return [];
+      throw error; // Re-throw the error instead of returning empty array
     }
   }
 
