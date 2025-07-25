@@ -56,7 +56,7 @@ export default function ArtistShowsPopup({ artist, isOpen, onClose }: ArtistShow
         <div className="space-y-4">
           {/* Artist Info */}
           <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            {artist.artist_image && (
+            {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" && (
               <Image
                 src={artist.artist_image}
                 alt={artist.artist_name}

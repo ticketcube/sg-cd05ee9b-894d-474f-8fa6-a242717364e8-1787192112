@@ -195,7 +195,7 @@ export default function TourPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center gap-4">
                         {/* Artist Image */}
-                        {artist.artist_image && (
+                        {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" && (
                           <Image
                             src={artist.artist_image}
                             alt={artist.artist_name}

@@ -241,7 +241,7 @@ export default function OnTourPage() {
           {selectedArtist && (
             <div className="border rounded-lg p-4 bg-green-50 dark:bg-green-950">
               <div className="flex items-center gap-4 mb-4">
-                {selectedArtist.artist_image && (
+                {selectedArtist.artist_image && selectedArtist.artist_image !== "null" && selectedArtist.artist_image.trim() !== "" && (
                   <Image
                     src={selectedArtist.artist_image}
                     alt={selectedArtist.artist_name}
