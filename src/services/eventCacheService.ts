@@ -156,26 +156,33 @@ export class EventCacheService {
 
       console.log(`Starting refresh for ${artistsData.length} artists...`);
 
+      let successCount = 0;
+      let errorCount = 0;
+
       for (let i = 0; i < artistsData.length; i++) {
         const artist = artistsData[i] as Artist;
         if (artist && artist.uuid && artist.artist_name) {
           console.log(`Refreshing events for artist ${i + 1}/${artistsData.length}: ${artist.artist_name}`);
           try {
             await this.refreshEventsForArtist(artist.uuid, artist.artist_name, artist.attractionId || undefined);
+            successCount++;
           } catch (error) {
             console.warn(`Failed to refresh events for ${artist.artist_name}:`, error);
+            errorCount++;
+            // Continue processing other artists even if one fails
           }
           
-          // Add delay to avoid rate limiting
+          // Add delay to avoid rate limiting - reduced from 500ms to 300ms for faster processing
           if (i < artistsData.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 300));
           }
         }
       }
 
-      console.log("Finished refreshing all artist events");
+      console.log(`Finished refreshing all artist events. Success: ${successCount}, Errors: ${errorCount}`);
     } catch (error) {
       console.error("Error refreshing all artist events:", error);
+      throw error;
     }
   }
 

@@ -56,12 +56,23 @@ export default function AdminPage() {
     setRefreshResult(null);
     
     try {
+      // Set a longer timeout for the fetch request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes
+      
       const response = await fetch("/api/admin/refresh-events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       const data = await response.json();
       
@@ -73,7 +84,11 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error("Error refreshing events:", error);
-      setRefreshResult(`❌ Error: ${error instanceof Error ? error.message : "Unknown error occurred"}`);
+      if (error instanceof Error && error.name === 'AbortError') {
+        setRefreshResult(`❌ Error: Request timed out after 5 minutes. The process may still be running in the background.`);
+      } else {
+        setRefreshResult(`❌ Error: ${error instanceof Error ? error.message : "Unknown error occurred"}`);
+      }
     } finally {
       setRefreshing(false);
     }

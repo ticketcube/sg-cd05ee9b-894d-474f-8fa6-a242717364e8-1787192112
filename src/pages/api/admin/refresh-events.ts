@@ -1,6 +1,12 @@
-
 import type { NextApiRequest, NextApiResponse } from "next";
 import { eventCacheService } from "@/services/eventCacheService";
+
+// Increase timeout for this API route
+export const config = {
+  api: {
+    responseTimeout: 300000, // 5 minutes
+  },
+};
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,6 +19,13 @@ export default async function handler(
   try {
     console.log("Starting batch event refresh from admin API...");
     
+    // Set headers for streaming response
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    });
+    
     // This will process all artists and cache their events
     await eventCacheService.refreshAllArtistEvents();
     
@@ -21,7 +34,7 @@ export default async function handler(
     
     console.log("Batch event refresh completed successfully");
     
-    return res.status(200).json({
+    return res.end(JSON.stringify({
       success: true,
       message: "Event cache refresh completed successfully",
       stats: {
@@ -29,13 +42,13 @@ export default async function handler(
         activeArtists: stats.activeArtists,
         lastUpdated: stats.lastUpdated
       }
-    });
+    }));
   } catch (error) {
     console.error("Error in batch event refresh:", error);
-    return res.status(500).json({
+    return res.end(JSON.stringify({
       success: false,
       message: "Failed to refresh event cache",
       error: error instanceof Error ? error.message : "Unknown error"
-    });
+    }));
   }
 }
