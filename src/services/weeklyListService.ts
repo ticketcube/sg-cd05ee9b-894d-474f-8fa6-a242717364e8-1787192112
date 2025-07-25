@@ -1,0 +1,230 @@
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
+
+type WeeklyList = Tables<"weekly_lists">;
+type WeeklyListArtist = Tables<"weekly_list_artists">;
+type Artist = Tables<"artists">;
+
+export interface WeeklyListWithArtists extends WeeklyList {
+  artists: (WeeklyListArtist & { artist: Artist })[];
+}
+
+export interface CreateWeeklyListData {
+  week_identifier: string;
+  title: string;
+  description?: string;
+  start_date: string;
+  end_date: string;
+  voting_mode?: "ranking" | "quadrant";
+  status?: "draft" | "active" | "completed";
+}
+
+export class WeeklyListService {
+  async createWeeklyList(data: CreateWeeklyListData): Promise<WeeklyList> {
+    try {
+      const { data: weeklyList, error } = await supabase
+        .from("weekly_lists")
+        .insert([{
+          week_identifier: data.week_identifier,
+          title: data.title,
+          description: data.description || null,
+          start_date: data.start_date,
+          end_date: data.end_date,
+          voting_mode: data.voting_mode || "ranking",
+          status: data.status || "draft",
+          is_active: data.status === "active"
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return weeklyList;
+    } catch (error) {
+      console.error("Error creating weekly list:", error);
+      throw error;
+    }
+  }
+
+  async addArtistToWeeklyList(weeklyListId: number, artistUuid: string, position: number = 0): Promise<WeeklyListArtist> {
+    try {
+      // Get the week_identifier from the weekly list
+      const { data: weeklyList, error: listError } = await supabase
+        .from("weekly_lists")
+        .select("week_identifier")
+        .eq("id", weeklyListId)
+        .single();
+
+      if (listError) throw listError;
+
+      const { data: weeklyListArtist, error } = await supabase
+        .from("weekly_list_artists")
+        .insert([{
+          weekly_list_id: weeklyListId,
+          artist_uuid: artistUuid,
+          week_identifier: weeklyList.week_identifier,
+          position: position
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return weeklyListArtist;
+    } catch (error) {
+      console.error("Error adding artist to weekly list:", error);
+      throw error;
+    }
+  }
+
+  async getWeeklyList(weekIdentifier: string): Promise<WeeklyListWithArtists | null> {
+    try {
+      const { data: weeklyList, error: listError } = await supabase
+        .from("weekly_lists")
+        .select("*")
+        .eq("week_identifier", weekIdentifier)
+        .single();
+
+      if (listError) {
+        if (listError.code === "PGRST116") return null;
+        throw listError;
+      }
+
+      const { data: weeklyListArtists, error: artistsError } = await supabase
+        .from("weekly_list_artists")
+        .select(`
+          *,
+          artist:artists(*)
+        `)
+        .eq("week_identifier", weekIdentifier)
+        .order("position", { ascending: true });
+
+      if (artistsError) throw artistsError;
+
+      return {
+        ...weeklyList,
+        artists: weeklyListArtists || []
+      };
+    } catch (error) {
+      console.error("Error getting weekly list:", error);
+      throw error;
+    }
+  }
+
+  async getAllWeeklyLists(): Promise<WeeklyList[]> {
+    try {
+      const { data, error } = await supabase
+        .from("weekly_lists")
+        .select("*")
+        .order("start_date", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error getting all weekly lists:", error);
+      throw error;
+    }
+  }
+
+  async getActiveWeeklyList(): Promise<WeeklyListWithArtists | null> {
+    try {
+      const { data: weeklyList, error: listError } = await supabase
+        .from("weekly_lists")
+        .select("*")
+        .eq("is_active", true)
+        .eq("status", "active")
+        .single();
+
+      if (listError) {
+        if (listError.code === "PGRST116") return null;
+        throw listError;
+      }
+
+      const { data: weeklyListArtists, error: artistsError } = await supabase
+        .from("weekly_list_artists")
+        .select(`
+          *,
+          artist:artists(*)
+        `)
+        .eq("week_identifier", weeklyList.week_identifier)
+        .order("position", { ascending: true });
+
+      if (artistsError) throw artistsError;
+
+      return {
+        ...weeklyList,
+        artists: weeklyListArtists || []
+      };
+    } catch (error) {
+      console.error("Error getting active weekly list:", error);
+      throw error;
+    }
+  }
+
+  async updateWeeklyListStatus(weekIdentifier: string, status: "draft" | "active" | "completed"): Promise<void> {
+    try {
+      // First, set all other lists to inactive if we're activating this one
+      if (status === "active") {
+        await supabase
+          .from("weekly_lists")
+          .update({ is_active: false, status: "completed" })
+          .eq("is_active", true);
+      }
+
+      const { error } = await supabase
+        .from("weekly_lists")
+        .update({ 
+          status: status,
+          is_active: status === "active"
+        })
+        .eq("week_identifier", weekIdentifier);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error updating weekly list status:", error);
+      throw error;
+    }
+  }
+
+  async removeArtistFromWeeklyList(weekIdentifier: string, artistUuid: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from("weekly_list_artists")
+        .delete()
+        .eq("week_identifier", weekIdentifier)
+        .eq("artist_uuid", artistUuid);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error removing artist from weekly list:", error);
+      throw error;
+    }
+  }
+
+  async createSampleWeeklyList(): Promise<WeeklyListWithArtists> {
+    try {
+      // Create the weekly list for 2025-W30
+      const weeklyList = await this.createWeeklyList({
+        week_identifier: "2025-W30",
+        title: "Weekly Voting Game - Week 30",
+        description: "Vote on your favorite artists this week!",
+        start_date: new Date().toISOString(),
+        end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+        voting_mode: "ranking",
+        status: "draft"
+      });
+
+      // Add Laufey as the first artist
+      await this.addArtistToWeeklyList(weeklyList.id, "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c", 1);
+
+      // Return the complete weekly list with artists
+      const completeList = await this.getWeeklyList("2025-W30");
+      if (!completeList) throw new Error("Failed to retrieve created weekly list");
+
+      return completeList;
+    } catch (error) {
+      console.error("Error creating sample weekly list:", error);
+      throw error;
+    }
+  }
+}
+
+export const weeklyListService = new WeeklyListService();
