@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -136,6 +135,24 @@ export default function OnTourPage() {
       day: "numeric",
     });
 
+    // Safe venue location string with proper null checks
+    const getVenueLocation = () => {
+      if (!venue) return null;
+      
+      const venueName = venue.name || "Unknown Venue";
+      const cityName = venue.city?.name || "Unknown City";
+      const stateName = venue.state?.name;
+      const countryName = venue.country?.name || "Unknown Country";
+      
+      if (stateName) {
+        return `${venueName}, ${cityName}, ${stateName}`;
+      } else {
+        return `${venueName}, ${cityName}, ${countryName}`;
+      }
+    };
+
+    const venueLocation = getVenueLocation();
+
     return (
       <div className={`border rounded-lg p-4 ${type === 'cached' ? 'bg-blue-50 dark:bg-blue-950' : ''}`}>
         <div className="flex justify-between items-start mb-2">
@@ -150,10 +167,10 @@ export default function OnTourPage() {
             <span>{date}</span>
             {event.dates.start.localTime && <span>at {event.dates.start.localTime}</span>}
           </div>
-          {venue && (
+          {venueLocation && (
             <div className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4" />
-              <span>{`${venue.name}, ${venue.city.name}`}</span>
+              <span>{venueLocation}</span>
             </div>
           )}
         </div>
