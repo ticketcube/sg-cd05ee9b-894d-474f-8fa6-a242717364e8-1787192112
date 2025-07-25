@@ -31,7 +31,7 @@ export class WeeklyListService {
           start_date: data.start_date,
           end_date: data.end_date,
           voting_mode: data.voting_mode || "ranking",
-          status: data.status || "active"
+          status: data.status || "draft"
         }])
         .select()
         .single();
