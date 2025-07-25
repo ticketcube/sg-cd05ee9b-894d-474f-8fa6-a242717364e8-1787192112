@@ -1,12 +1,12 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { eventCacheService } from "./eventCacheService";
 import type { ArtistWithEvents, TicketmasterEvent } from "@/types/tour";
 import { Tables } from "@/integrations/supabase/types";
 
+type TourDate = Tables<"tour_dates">;
 type Artist = Tables<"artists">;
 
-export class TourService {
+export const tourService = {
   async getArtistsWithAttractionIds(): Promise<ArtistWithEvents[]> {
     try {
       console.log("TourService: Starting to fetch artists with attractionIds...");
@@ -71,14 +71,43 @@ export class TourService {
       console.error("An unexpected error occurred in getArtistsWithAttractionIds:", error);
       return [];
     }
-  }
+  },
 
   async refreshEventCache(): Promise<void> {
     return eventCacheService.refreshAllArtistEvents();
-  }
+  },
 
   async getCacheStats() {
     return eventCacheService.getEventStats();
+  },
+
+  async getTourDatesByArtist(artistId: string): Promise<TourDate[]> {
+    try {
+      console.log(`TourService: Starting to fetch tour dates for artist ${artistId}...`);
+      
+      const { data: tourDatesData, error: tourDatesError } = await supabase
+        .from("tour_dates")
+        .select("*")
+        .eq("artist_id", artistId);
+
+      if (tourDatesError) {
+        console.error(`Error fetching tour dates for artist ${artistId}:`, tourDatesError);
+        return [];
+      }
+
+      if (!tourDatesData || tourDatesData.length === 0) {
+        console.log(`No tour dates found for artist ${artistId}`);
+        return [];
+      }
+
+      console.log(`TourService: Fetched ${tourDatesData.length} tour dates for artist ${artistId}.`);
+
+      return tourDatesData;
+
+    } catch (error) {
+      console.error(`An unexpected error occurred in getTourDatesByArtist for artist ${artistId}:`, error);
+      return [];
+    }
   }
 }
 

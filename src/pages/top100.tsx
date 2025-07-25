@@ -27,6 +27,7 @@ export default function Top100Page() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [isPopupOpen, setPopupOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -190,6 +191,16 @@ export default function Top100Page() {
     }
   };
 
+  const handleRowClick = (artist: Artist) => {
+    setSelectedArtist(artist);
+    setPopupOpen(true);
+  };
+
+  const handleClosePopup = () => {
+    setPopupOpen(false);
+    setSelectedArtist(null);
+  };
+
   if (showThankYou) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -272,6 +283,7 @@ export default function Top100Page() {
                     "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
                     isSelected && "ring-2 ring-green-500 bg-gray-800"
                   )}
+                  onClick={() => handleRowClick(artist)}
                 >
                   <div className="flex items-center gap-2">
                     <div className="text-lg sm:text-xl font-bold text-gray-500 w-5 sm:w-6 flex-shrink-0">
@@ -332,11 +344,11 @@ export default function Top100Page() {
         )}
       </div>
 
-      {selectedArtist && (
+      {selectedArtist && isPopupOpen && (
         <Top100ArtistPopup 
           artist={selectedArtist} 
-          isOpen={!!selectedArtist}
-          onClose={() => setSelectedArtist(null)} 
+          isOpen={isPopupOpen}
+          onClose={handleClosePopup} 
           onVote={handleVote}
           selectedArtists={selectedArtists}
         />

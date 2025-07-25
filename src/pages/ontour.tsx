@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -48,14 +49,12 @@ export default function OnTourPage() {
         .from("artists")
         .select("*")
         .ilike("artist_name", `%${artistName.trim()}%`)
-        .not("attractionId", "is", null)
-        .not("attractionId", "eq", "")
         .limit(1)
         .single();
 
       if (dbError) {
         if (dbError.code === "PGRST116") {
-          throw new Error(`No artist found with name "${artistName}" that has a Ticketmaster attractionId`);
+          throw new Error(`No artist found with name "${artistName}" in our database.`);
         }
         throw dbError;
       }
@@ -71,12 +70,12 @@ export default function OnTourPage() {
   };
 
   const testTicketmasterAPI = async () => {
-    if (!selectedArtist?.attractionId) return;
+    if (!selectedArtist?.artist_name) return;
     setTesting(true);
     setError(null);
     setApiResponse(null);
     try {
-      const response = await fetch(`/api/ticketmaster/events?attractionId=${selectedArtist.artistName}`);
+      const response = await fetch(`/api/ticketmaster/events?keyword=${encodeURIComponent(selectedArtist.artist_name)}`);
       const data: ApiResponse = await response.json();
       
       setApiResponse(data);
@@ -94,7 +93,10 @@ export default function OnTourPage() {
   };
 
   const cacheEventsToDatabase = async () => {
-    if (!selectedArtist?.uuid || !selectedArtist?.attractionId) return;
+    if (!selectedArtist?.uuid || !selectedArtist?.attractionId) {
+        setError("This artist does not have a Ticketmaster AttractionID, so caching is disabled.");
+        return;
+    }
     setCaching(true);
     setError(null);
     try {
@@ -168,9 +170,9 @@ export default function OnTourPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <header className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Ticketmaster API Test</h1>
+        <h1 className="text-4xl font-bold mb-2">On Tour Lookup</h1>
         <p className="text-muted-foreground">
-          Enter an artist name to look up their attractionId and test the Ticketmaster API.
+          Enter an artist name to find their upcoming tour dates using the Ticketmaster API.
         </p>
       </header>
 
@@ -219,8 +221,8 @@ export default function OnTourPage() {
                 )}
                 <div>
                   <h3 className="text-xl font-semibold">{selectedArtist.artist_name}</h3>
-                  <p className="text-sm text-muted-foreground">AttractionID: {selectedArtist.attractionId}</p>
                   <p className="text-sm text-muted-foreground">Genre: {selectedArtist.artist_genre}</p>
+                   {selectedArtist.attractionId && <p className="text-xs text-muted-foreground">AttractionID: {selectedArtist.attractionId}</p>}
                 </div>
               </div>
               
@@ -228,7 +230,7 @@ export default function OnTourPage() {
                 <Button onClick={testTicketmasterAPI} disabled={testing}>
                   {testing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "🧪"} Test API
                 </Button>
-                <Button onClick={cacheEventsToDatabase} disabled={caching} variant="secondary">
+                <Button onClick={cacheEventsToDatabase} disabled={caching || !selectedArtist.attractionId} variant="secondary">
                   {caching ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Database className="w-4 h-4 mr-2" />}
                   Cache Events
                 </Button>
