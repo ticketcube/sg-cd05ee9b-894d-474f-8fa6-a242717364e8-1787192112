@@ -285,44 +285,66 @@ export class ArtistService {
   
   async getTopVotedArtistsWithDetails(page: number = 1, limit: number = 25): Promise<{ artists: ArtistWithVoteCount[], count: number }> {
     try {
-      const { data: votes, error: votesError, count } = await supabase
-        .rpc('get_artist_vote_counts', {}, { count: 'exact' });
+      // First, get all votes and count them
+      const { data: votes, error: votesError } = await supabase
+        .from("top25_votes")
+        .select("artist_uuid");
 
       if (votesError) {
-        console.error("Error fetching vote counts:", votesError);
+        console.error("Error fetching votes:", votesError);
         return { artists: [], count: 0 };
       }
 
-      const paginatedVotes = votes.slice((page - 1) * limit, page * limit);
-      const artistNames = paginatedVotes.map(v => v.artist_name);
+      // Count votes per artist
+      const voteCounts = votes.reduce((acc, vote) => {
+        if (vote.artist_uuid) {
+          acc[vote.artist_uuid] = (acc[vote.artist_uuid] || 0) + 1;
+        }
+        return acc;
+      }, {} as { [key: string]: number });
 
-      if (artistNames.length === 0) return { artists: [], count: count || 0 };
+      // Sort artists by vote count
+      const sortedArtistUuids = Object.keys(voteCounts).sort(
+        (a, b) => voteCounts[b] - voteCounts[a]
+      );
 
+      const totalCount = sortedArtistUuids.length;
+
+      // Paginate the results
+      const paginatedArtistUuids = sortedArtistUuids.slice((page - 1) * limit, page * limit);
+
+      if (paginatedArtistUuids.length === 0) {
+        return { artists: [], count: totalCount };
+      }
+
+      // Get artist details for the paginated UUIDs
       const { data: artists, error: artistsError } = await supabase
         .from("artists")
         .select("*")
-        .in("artist_name", artistNames);
+        .in("uuid", paginatedArtistUuids);
 
       if (artistsError) {
         console.error("Error fetching artist details:", artistsError);
-        return { artists: [], count: count || 0 };
+        return { artists: [], count: totalCount };
       }
 
-      const artistMap = new Map(artists.map(a => [a.artist_name, a]));
+      // Create a map for quick lookup
+      const artistMap = new Map(artists.map(a => [a.uuid, a]));
 
-      const result = paginatedVotes
-        .map((vote, index) => {
-          const artistDetails = artistMap.get(vote.artist_name);
+      // Build the result with vote counts and ranks
+      const result = paginatedArtistUuids
+        .map((uuid, index) => {
+          const artistDetails = artistMap.get(uuid);
           if (!artistDetails) return null;
           return {
             ...artistDetails,
-            vote_count: vote.vote_count,
+            vote_count: voteCounts[uuid] || 0,
             rank: (page - 1) * limit + index + 1,
           };
         })
         .filter((a): a is ArtistWithVoteCount & { rank: number } => a !== null);
 
-      return { artists: result, count: count || 0 };
+      return { artists: result, count: totalCount };
     } catch (error) {
       console.error("Error in getTopVotedArtistsWithDetails:", error);
       return { artists: [], count: 0 };
