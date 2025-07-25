@@ -111,12 +111,19 @@ export class WeeklyListService {
 
   async getAllWeeklyLists(): Promise<WeeklyList[]> {
     try {
+      console.log("Fetching all weekly lists...");
+      
       const { data, error } = await supabase
         .from("weekly_lists")
         .select("*")
         .order("start_date", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error in getAllWeeklyLists:", error);
+        throw error;
+      }
+      
+      console.log("Successfully fetched weekly lists:", data?.length || 0);
       return data || [];
     } catch (error) {
       console.error("Error getting all weekly lists:", error);
@@ -126,19 +133,27 @@ export class WeeklyListService {
 
   async getActiveWeeklyList(): Promise<WeeklyListWithArtists | null> {
     try {
-      // Get the first active list (simplified - no more is_active field confusion)
-      const { data: weeklyList, error: listError } = await supabase
+      // Simplified approach - get any list that has status 'active' OR is_active true
+      const { data: weeklyLists, error: listError } = await supabase
         .from("weekly_lists")
         .select("*")
-        .eq("status", "active")
+        .or("status.eq.active,is_active.eq.true")
         .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+        .limit(5); // Get multiple to debug
 
       if (listError) {
-        if (listError.code === "PGRST116") return null;
+        console.error("Error fetching weekly lists:", listError);
         throw listError;
       }
+
+      if (!weeklyLists || weeklyLists.length === 0) {
+        console.log("No active weekly lists found");
+        return null;
+      }
+
+      // Take the first one
+      const weeklyList = weeklyLists[0];
+      console.log("Found weekly list:", weeklyList);
 
       const { data: weeklyListArtists, error: artistsError } = await supabase
         .from("weekly_list_artists")
@@ -149,7 +164,12 @@ export class WeeklyListService {
         .eq("week_identifier", weeklyList.week_identifier)
         .order("position", { ascending: true });
 
-      if (artistsError) throw artistsError;
+      if (artistsError) {
+        console.error("Error fetching weekly list artists:", artistsError);
+        throw artistsError;
+      }
+
+      console.log("Found artists for weekly list:", weeklyListArtists?.length || 0);
 
       return {
         ...weeklyList,
