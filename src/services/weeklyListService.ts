@@ -122,13 +122,25 @@ export class WeeklyListService {
     try {
       console.log("Fetching all weekly lists...");
       
+      // Add more detailed logging
+      console.log("About to call supabase.from('weekly_lists')...");
+      
       const { data, error } = await supabase
         .from("weekly_lists")
         .select("*")
         .order("start_date", { ascending: false });
 
+      console.log("Supabase query completed. Error:", error);
+      console.log("Supabase query completed. Data:", data);
+
       if (error) {
         console.error("Supabase error in getAllWeeklyLists:", error);
+        console.error("Error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error; // Don't catch and return empty array - let the error bubble up
       }
       
@@ -136,6 +148,12 @@ export class WeeklyListService {
       return data || [];
     } catch (error) {
       console.error("Error getting all weekly lists:", error);
+      console.error("Error type:", typeof error);
+      console.error("Error constructor:", error?.constructor?.name);
+      if (error instanceof Error) {
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+      }
       throw error; // Re-throw the error instead of returning empty array
     }
   }
