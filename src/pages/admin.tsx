@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Loader2, Database, RefreshCw, Calendar, Users } from "lucide-react";
+import { Loader2, Database, RefreshCw, Calendar, Users, ListPlus } from "lucide-react";
 import { eventCacheService } from "@/services/eventCacheService";
+import { weeklyListService } from "@/services/weeklyListService";
 
 // Mock admin check - in a real app, this would involve a secure check
 const checkAdminAccess = async (email: string): Promise<boolean> => {
@@ -19,6 +20,8 @@ export default function AdminPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({ totalEvents: 0, activeArtists: 0, lastUpdated: null as string | null });
   const [refreshResult, setRefreshResult] = useState<string | null>(null);
+  const [creatingList, setCreatingList] = useState(false);
+  const [listCreationResult, setListCreationResult] = useState<string | null>(null);
 
   useEffect(() => {
     // In a real app, you might check a token from localStorage here
@@ -90,6 +93,20 @@ export default function AdminPage() {
       }
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const handleCreateSampleList = async () => {
+    setCreatingList(true);
+    setListCreationResult(null);
+    try {
+      const list = await weeklyListService.createSampleWeeklyList();
+      setListCreationResult(`✅ Success! Created sample list "${list.title}" with ID ${list.week_identifier}.`);
+    } catch (error) {
+      console.error("Error creating sample list:", error);
+      setListCreationResult(`❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setCreatingList(false);
     }
   };
 
@@ -226,6 +243,39 @@ export default function AdminPage() {
               <li>Update the tour page with fresh data</li>
             </ul>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Weekly List Management */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Weekly List Management</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Create a sample weekly list for testing purposes. This will create a list for "2025-W30" and add the artist Laufey to it.
+          </p>
+          <Button
+            onClick={handleCreateSampleList}
+            disabled={creatingList}
+            className="flex items-center gap-2"
+          >
+            {creatingList ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <ListPlus className="w-4 h-4" />
+            )}
+            {creatingList ? "Creating List..." : "Create Sample Weekly List"}
+          </Button>
+          {listCreationResult && (
+            <div className={`p-4 rounded-lg ${
+              listCreationResult.startsWith('✅') 
+                ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300' 
+                : 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300'
+            }`}>
+              <p className="text-sm">{listCreationResult}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
