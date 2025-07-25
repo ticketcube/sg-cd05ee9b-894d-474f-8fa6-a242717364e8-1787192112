@@ -76,10 +76,6 @@ export default function Top100Page() {
     if (node) observer.current.observe(node);
   }, [loadingMore, hasMore, loadArtists]);
 
-  const handleArtistClick = (artist: Artist) => {
-    setSelectedArtist(artist);
-  };
-
   const handleVote = (artist: Artist, event?: React.MouseEvent) => {
     event?.stopPropagation();
     
