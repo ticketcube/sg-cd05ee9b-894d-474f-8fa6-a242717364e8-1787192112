@@ -120,41 +120,52 @@ export class WeeklyListService {
 
   async getAllWeeklyLists(): Promise<WeeklyList[]> {
     try {
-      console.log("Fetching all weekly lists...");
+      console.log("=== DEBUGGING getAllWeeklyLists ===");
+      console.log("1. Starting getAllWeeklyLists method");
       
-      // Add more detailed logging
-      console.log("About to call supabase.from('weekly_lists')...");
+      console.log("2. About to call supabase.from('weekly_lists')");
+      const query = supabase.from("weekly_lists");
+      console.log("3. Created query object:", query);
       
-      const { data, error } = await supabase
-        .from("weekly_lists")
-        .select("*")
-        .order("start_date", { ascending: false });
-
-      console.log("Supabase query completed. Error:", error);
-      console.log("Supabase query completed. Data:", data);
+      console.log("4. About to call .select('*')");
+      const selectQuery = query.select("*");
+      console.log("5. Created select query:", selectQuery);
+      
+      console.log("6. About to call .order('start_date', { ascending: false })");
+      const orderedQuery = selectQuery.order("start_date", { ascending: false });
+      console.log("7. Created ordered query:", orderedQuery);
+      
+      console.log("8. About to execute the query with await");
+      const result = await orderedQuery;
+      console.log("9. Query executed. Full result object:", result);
+      
+      const { data, error } = result;
+      console.log("10. Destructured result - data:", data);
+      console.log("11. Destructured result - error:", error);
 
       if (error) {
-        console.error("Supabase error in getAllWeeklyLists:", error);
-        console.error("Error details:", {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
-        throw error; // Don't catch and return empty array - let the error bubble up
+        console.error("12. ERROR DETECTED:");
+        console.error("Error object:", error);
+        console.error("Error message:", error.message);
+        console.error("Error code:", error.code);
+        console.error("Error details:", error.details);
+        console.error("Error hint:", error.hint);
+        throw error;
       }
       
-      console.log("Successfully fetched weekly lists:", data?.length || 0, data);
+      console.log("13. No error, returning data:", data?.length || 0, "items");
+      console.log("14. Actual data:", data);
       return data || [];
     } catch (error) {
-      console.error("Error getting all weekly lists:", error);
+      console.error("=== CATCH BLOCK TRIGGERED ===");
+      console.error("Caught error:", error);
       console.error("Error type:", typeof error);
       console.error("Error constructor:", error?.constructor?.name);
       if (error instanceof Error) {
         console.error("Error message:", error.message);
         console.error("Error stack:", error.stack);
       }
-      throw error; // Re-throw the error instead of returning empty array
+      throw error;
     }
   }
 
