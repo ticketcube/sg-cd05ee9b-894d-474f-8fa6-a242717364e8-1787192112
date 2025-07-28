@@ -13,22 +13,6 @@ export function LogoSection() {
       transition={{ duration: 0.8 }}
       className="flex flex-col items-center justify-center gap-8 px-4"
     >
-      {/* Weekly Discovery Rewards Button - Top */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.1 }}
-        className="w-full max-w-lg"
-      >
-        <Button 
-          onClick={() => router.push("/weekly")}
-          size="lg"
-          className="w-full text-lg font-bold bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl py-4 px-6 h-auto"
-        >
-          WEEKLY DISCOVERY REWARDS
-        </Button>
-      </motion.div>
-
       <motion.div
         whileHover={{ scale: 1.05 }}
         transition={{ type: "spring", stiffness: 300 }}
@@ -51,6 +35,21 @@ export function LogoSection() {
         className="text-center mb-8"
       >
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-8">10 YEARS OF DISCOVERY</h1>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.3 }}
+        className="w-full max-w-lg"
+      >
+        <Button 
+          onClick={() => router.push("/weekly")}
+          size="lg"
+          className="w-full text-lg font-bold bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl py-4 px-6 h-auto"
+        >
+          WEEKLY DISCOVERY REWARDS
+        </Button>
       </motion.div>
 
       <motion.div
