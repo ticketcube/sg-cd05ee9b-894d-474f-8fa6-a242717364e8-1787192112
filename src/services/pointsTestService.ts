@@ -1,8 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type {
-  Tables,
-  Json
+  Tables
 } from "@/integrations/supabase/types";
 
 type UserProfile = Tables<"user_profiles">;
@@ -32,7 +31,7 @@ const pointsTestService = {
       .insert({
         username: testUsername,
         email: testEmail,
-        points: 0,
+        total_points: 0,
       })
       .select()
       .single();
@@ -48,12 +47,12 @@ const pointsTestService = {
   // Test 2: Verify that the user's points are initially zero
   async testInitialPoints(user: UserProfile) {
     console.log(`🧪 Testing initial points for user ${user.id}...`);
-    if (user.points !== 0) {
+    if (user.total_points !== 0) {
       // If points are not 0, try to reset them for a clean test state.
       console.warn(`User points are not 0, attempting to reset...`);
       const { error } = await supabase
         .from("user_profiles")
-        .update({ points: 0 })
+        .update({ total_points: 0 })
         .eq("id", user.id);
       if (error) {
         throw new Error(`Failed to reset user points: ${error.message}`);
@@ -71,12 +70,12 @@ const pointsTestService = {
     // Get points before
     const { data: userBefore, error: beforeError } = await supabase
       .from("user_profiles")
-      .select("points")
+      .select("total_points")
       .eq("id", userId)
       .single();
 
     if (beforeError) throw new Error(`Error getting points before: ${beforeError.message}`);
-    const pointsBefore = userBefore?.points || 0;
+    const pointsBefore = userBefore?.total_points || 0;
     console.log(`📊 Points before: ${pointsBefore}`);
 
     // Call the RPC function to add points
@@ -92,12 +91,12 @@ const pointsTestService = {
     // Get points after
     const { data: userAfter, error: afterError } = await supabase
       .from("user_profiles")
-      .select("points")
+      .select("total_points")
       .eq("id", userId)
       .single();
 
     if (afterError) throw new Error(`Error getting points after: ${afterError.message}`);
-    const pointsAfter = userAfter?.points || 0;
+    const pointsAfter = userAfter?.total_points || 0;
     console.log(`📊 Points after: ${pointsAfter}`);
 
     // Verify points were added
