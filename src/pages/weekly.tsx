@@ -99,7 +99,8 @@ export default function WeeklyPage() {
         setSelectedListId(lists[0].week_identifier || "");
       } else {
         console.log("No weekly lists found at all");
-        setError("No weekly lists found");
+        // Only set error after we've actually tried to load and confirmed no lists exist
+        setError("No weekly lists available at this time");
       }
       
     } catch (err) {
@@ -113,6 +114,7 @@ export default function WeeklyPage() {
 
   const loadSpecificWeeklyList = async (weekIdentifier: string) => {
     try {
+      // Don't set loading to true here as it causes the "No listings found" flash
       setError(null);
       
       console.log("Loading specific weekly list:", weekIdentifier);
@@ -122,7 +124,7 @@ export default function WeeklyPage() {
       
       if (!list) {
         console.log("Weekly list not found for identifier:", weekIdentifier);
-        setError("Weekly list not found");
+        setError("Selected weekly list not found");
         return;
       }
 
@@ -284,7 +286,7 @@ export default function WeeklyPage() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Loading Weekly Voting...</h1>
+          <h1 className="text-2xl font-bold mb-4">Loading Weekly Discovery...</h1>
           <Loader2 className="w-8 h-8 animate-spin mx-auto" />
         </div>
       </div>
@@ -295,8 +297,8 @@ export default function WeeklyPage() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Error Loading Weekly List</h1>
-          <p className="text-xl text-red-500">{error}</p>
+          <h1 className="text-2xl font-bold mb-4">Unable to Load Weekly Lists</h1>
+          <p className="text-xl text-red-500 mb-4">{error}</p>
           <Button onClick={loadAllWeeklyLists} className="mt-4 bg-blue-600 hover:bg-blue-700">
             Try Again
           </Button>
@@ -305,12 +307,28 @@ export default function WeeklyPage() {
     );
   }
 
-  if (!weeklyList) {
+  // Show loading state while we have lists but no specific weekly list selected yet
+  if (!weeklyList && allWeeklyLists.length > 0) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">No Weekly List Available</h1>
+          <h1 className="text-2xl font-bold mb-4">Loading Weekly Content...</h1>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto" />
+        </div>
+      </div>
+    );
+  }
+
+  // Only show "no weekly list available" if we have no lists at all and we're not loading
+  if (!weeklyList && allWeeklyLists.length === 0 && !loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">No Weekly Lists Available</h1>
           <p className="text-gray-400">Check back later for new voting opportunities!</p>
+          <Button onClick={loadAllWeeklyLists} className="mt-4 bg-blue-600 hover:bg-blue-700">
+            Refresh
+          </Button>
         </div>
       </div>
     );
