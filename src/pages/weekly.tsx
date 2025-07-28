@@ -617,9 +617,9 @@ export default function WeeklyPage() {
                 {/* Empty State Message */}
                 {artistPositions.length === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center text-gray-400">
+                    <div className="text-center text-white mb-3">
                       <p className="text-sm">Drag artists from above</p>
-                      <p className="text-xs">into this grid!</p>
+                      <p className="text-sm">into this grid!</p>
                     </div>
                   </div>
                 )}
@@ -768,14 +768,12 @@ export default function WeeklyPage() {
         <DialogContent className="max-w-sm mx-auto">
           <DialogHeader>
             <DialogTitle className="text-center text-blue-600">
-              Watch the videos, Share your feedback & Earn points redeemable for Free Tickets!
+              Watch Videos, Share Interest & Earn Free Tickets!
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-4">
-                Drag artists into grid based on your interest in seeing them live or telling your friends about them
-              </p>
+              
               <div className="text-sm text-gray-500 space-y-2">
                 <div>• Earn 5 points for watching videos (15+ seconds)</div>
                 <div>• Earn 10 points for submitting votes</div>
