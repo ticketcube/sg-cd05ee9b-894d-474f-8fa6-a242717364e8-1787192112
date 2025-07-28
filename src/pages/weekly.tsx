@@ -103,14 +103,8 @@ export default function WeeklyPage() {
       console.log("Setting weekly list with", list.artists.length, "artists");
       setWeeklyList(list);
       
-      // Initialize artist positions at center
-      const initialPositions = list.artists.map(artistData => ({
-        artistUuid: artistData.artist_uuid,
-        x: 0,
-        y: 0
-      }));
-      console.log("Initialized artist positions:", initialPositions);
-      setArtistPositions(initialPositions);
+      // Initialize empty artist positions - artists start outside the grid
+      setArtistPositions([]);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load weekly list";
@@ -137,6 +131,34 @@ export default function WeeklyPage() {
       console.error("Error logging in:", error);
       alert("Error logging in. Please try again.");
     }
+  };
+
+  const handleArtistDrop = (artistUuid: string, clientX: number, clientY: number, containerRect: DOMRect) => {
+    // Convert screen coordinates to quadrant coordinates (-1 to 1)
+    const centerX = containerRect.left + containerRect.width / 2;
+    const centerY = containerRect.top + containerRect.height / 2;
+    
+    const maxDistance = Math.min(containerRect.width, containerRect.height) / 2 - 40;
+    
+    const deltaX = clientX - centerX;
+    const deltaY = centerY - clientY; // Invert Y axis so up is positive
+    
+    const x = Math.max(-1, Math.min(1, deltaX / maxDistance));
+    const y = Math.max(-1, Math.min(1, deltaY / maxDistance));
+    
+    // Add or update artist position
+    setArtistPositions(prev => {
+      const existingIndex = prev.findIndex(pos => pos.artistUuid === artistUuid);
+      if (existingIndex >= 0) {
+        // Update existing position
+        return prev.map(pos => 
+          pos.artistUuid === artistUuid ? { ...pos, x, y } : pos
+        );
+      } else {
+        // Add new position
+        return [...prev, { artistUuid, x, y }];
+      }
+    });
   };
 
   const handleArtistDrag = (artistUuid: string, clientX: number, clientY: number, containerRect: DOMRect) => {
@@ -287,9 +309,6 @@ export default function WeeklyPage() {
               </SelectContent>
             </Select>
           </div>
-
-          {/* Voting Status */}
-         
         </div>
       </div>
 
@@ -323,8 +342,19 @@ export default function WeeklyPage() {
           <div className="grid grid-cols-5 gap-2 mb-2">
             {displayArtists.slice(0, 5).map((artistData) => {
               const artist = artistData.artist as Artist;
+              const isInGrid = artistPositions.some(pos => pos.artistUuid === artist.uuid);
+              
               return (
-                <div key={artist.uuid} className="text-center">
+                <div 
+                  key={artist.uuid} 
+                  className={`text-center cursor-move ${isInGrid ? 'opacity-50' : ''}`}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedArtist(artist.uuid);
+                    e.dataTransfer.setData('text/plain', artist.uuid);
+                  }}
+                  onDragEnd={() => setDraggedArtist(null)}
+                >
                   {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" ? (
                     <Image
                       src={artist.artist_image}
@@ -349,8 +379,19 @@ export default function WeeklyPage() {
             <div className="grid grid-cols-5 gap-2">
               {displayArtists.slice(5, 10).map((artistData) => {
                 const artist = artistData.artist as Artist;
+                const isInGrid = artistPositions.some(pos => pos.artistUuid === artist.uuid);
+                
                 return (
-                  <div key={artist.uuid} className="text-center">
+                  <div 
+                    key={artist.uuid} 
+                    className={`text-center cursor-move ${isInGrid ? 'opacity-50' : ''}`}
+                    draggable
+                    onDragStart={(e) => {
+                      setDraggedArtist(artist.uuid);
+                      e.dataTransfer.setData('text/plain', artist.uuid);
+                    }}
+                    onDragEnd={() => setDraggedArtist(null)}
+                  >
                     {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" ? (
                       <Image
                         src={artist.artist_image}
@@ -383,6 +424,18 @@ export default function WeeklyPage() {
               <div 
                 className="relative w-full h-80 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg border-2 border-gray-600 overflow-hidden"
                 id="quadrant-container"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const artistUuid = e.dataTransfer.getData('text/plain');
+                  if (artistUuid) {
+                    const container = document.getElementById('quadrant-container');
+                    if (container) {
+                      const rect = container.getBoundingClientRect();
+                      handleArtistDrop(artistUuid, e.clientX, e.clientY, rect);
+                    }
+                  }
+                }}
               >
                 {/* Quadrant Lines */}
                 <div className="absolute inset-0">
@@ -404,18 +457,18 @@ export default function WeeklyPage() {
                   Want Tickets
                 </div>
 
-                {/* Artists */}
-                {displayArtists.map((artistData) => {
+                {/* Artists in Grid */}
+                {artistPositions.map((position) => {
+                  const artistData = displayArtists.find(a => (a.artist as Artist).uuid === position.artistUuid);
+                  if (!artistData) return null;
+                  
                   const artist = artistData.artist as Artist;
-                  const position = artistPositions.find(p => p.artistUuid === artist.uuid);
-                  if (!position) return null;
-
                   const containerRect = document.getElementById('quadrant-container')?.getBoundingClientRect();
                   const containerWidth = containerRect?.width || 320;
                   const containerHeight = containerRect?.height || 320;
                   
-                  const x = (position.x + 1) * (containerWidth / 2) - 20; // Center the 40px icon
-                  const y = (-position.y + 1) * (containerHeight / 2) - 20; // Invert Y and center
+                  const x = (position.x + 1) * (containerWidth / 2) - 20;
+                  const y = (-position.y + 1) * (containerHeight / 2) - 20;
 
                   return (
                     <div
@@ -488,6 +541,16 @@ export default function WeeklyPage() {
                     </div>
                   );
                 })}
+
+                {/* Empty State Message */}
+                {artistPositions.length === 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center text-gray-400">
+                      <p className="text-sm">Drag artists from above</p>
+                      <p className="text-xs">into this grid to vote</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
