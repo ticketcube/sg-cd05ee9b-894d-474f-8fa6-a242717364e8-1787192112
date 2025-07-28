@@ -449,7 +449,7 @@ export default function WeeklyPage() {
         </div>
       </div>
 
-
+Tap, Hold and Drag Artists to Grid 
 
       {/* Artist Gallery - Two Rows of 5 */}
       <div className="p-4 bg-gray-800 border-b border-gray-700">
