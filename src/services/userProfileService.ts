@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, Json } from "@/integrations/supabase/types";
 
@@ -26,18 +27,33 @@ export interface UserEngagementHistory {
 export class UserProfileService {
   async createOrUpdateUserProfile(data: CreateUserProfileData): Promise<UserProfile> {
     try {
-      // First, try to find existing user by email or username
-      const { data: existingUser, error: findError } = await supabase
+      console.log("🔍 Looking for existing user with email:", data.email, "or username:", data.username);
+      
+      // First, check for existing user by email OR username (but handle multiple results properly)
+      const { data: existingUsers, error: findError } = await supabase
         .from("user_profiles")
         .select("*")
-        .or(`email.eq.${data.email},username.eq.${data.username}`)
-        .single();
+        .or(`email.eq.${data.email},username.eq.${data.username}`);
 
-      if (findError && findError.code !== "PGRST116") {
+      if (findError) {
+        console.error("❌ Error finding existing users:", findError);
         throw findError;
       }
 
-      if (existingUser) {
+      console.log("📊 Found existing users:", existingUsers?.length || 0);
+
+      if (existingUsers && existingUsers.length > 0) {
+        // If we found existing users, prioritize by email match first, then username
+        let userToUpdate = existingUsers.find(user => user.email === data.email);
+        if (!userToUpdate) {
+          userToUpdate = existingUsers.find(user => user.username === data.username);
+        }
+        if (!userToUpdate) {
+          userToUpdate = existingUsers[0]; // Fallback to first user found
+        }
+
+        console.log("🔄 Updating existing user:", userToUpdate.id);
+
         // Update existing user
         const { data: updatedUser, error: updateError } = await supabase
           .from("user_profiles")
@@ -46,13 +62,20 @@ export class UserProfileService {
             email: data.email,
             last_active: new Date().toISOString()
           })
-          .eq("id", existingUser.id)
+          .eq("id", userToUpdate.id)
           .select()
           .single();
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error("❌ Error updating user:", updateError);
+          throw updateError;
+        }
+
+        console.log("✅ User updated successfully:", updatedUser.id);
         return updatedUser;
       } else {
+        console.log("➕ Creating new user");
+
         // Create new user
         const { data: newUser, error: createError } = await supabase
           .from("user_profiles")
@@ -65,11 +88,16 @@ export class UserProfileService {
           .select()
           .single();
 
-        if (createError) throw createError;
+        if (createError) {
+          console.error("❌ Error creating user:", createError);
+          throw createError;
+        }
+
+        console.log("✅ User created successfully:", newUser.id);
         return newUser;
       }
     } catch (error) {
-      console.error("Error creating/updating user profile:", error);
+      console.error("❌ Error in createOrUpdateUserProfile:", error);
       throw error;
     }
   }
