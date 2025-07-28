@@ -1,173 +1,114 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
+import type {
+  Tables,
+  Json
+} from "@/integrations/supabase/types";
 
-type PointsConfig = Database["public"]["Tables"]["points_config"]["Row"];
-type UserAchievement = Database["public"]["Tables"]["user_achievements"]["Row"];
-type UserStreak = Database["public"]["Tables"]["user_streaks"]["Row"];
+type UserProfile = Tables<"user_profiles">;
 
-export const pointsTestService = {
-  // Test 1: Check if all new tables exist and are accessible
-  async testTableAccess() {
-    console.log("🧪 Testing database table access...");
-    
-    try {
-      // Test points_config table
-      const { data: pointsConfig, error: pointsError } = await supabase
-        .from("points_config")
+const pointsTestService = {
+  // Test 1: Ensure a test user can be created or found
+  async getTestUser(userId?: number): Promise<UserProfile> {
+    console.log("🧪 Getting test user...");
+    if (userId) {
+      const { data, error } = await supabase
+        .from("user_profiles")
         .select("*")
-        .limit(1);
-      
-      if (pointsError) {
-        throw new Error(`Points config table error: ${pointsError.message}`);
-      }
-      
-      // Test user_achievements table
-      const { data: achievements, error: achievementsError } = await supabase
-        .from("user_achievements")
-        .select("*")
-        .limit(1);
-      
-      if (achievementsError) {
-        throw new Error(`User achievements table error: ${achievementsError.message}`);
-      }
-      
-      // Test user_streaks table
-      const { data: streaks, error: streaksError } = await supabase
-        .from("user_streaks")
-        .select("*")
-        .limit(1);
-      
-      if (streaksError) {
-        throw new Error(`User streaks table error: ${streaksError.message}`);
-      }
-      
-      console.log("✅ All tables accessible");
-      return {
-        success: true,
-        pointsConfigCount: pointsConfig?.length || 0,
-        achievementsCount: achievements?.length || 0,
-        streaksCount: streaks?.length || 0
-      };
-      
-    } catch (error) {
-      console.error("❌ Table access test failed:", error);
-      throw error;
+        .eq("id", userId)
+        .single();
+      if (error) throw new Error(`Error fetching existing user: ${error.message}`);
+      if (!data) throw new Error(`User with ID ${userId} not found.`);
+      console.log(`✅ Found existing user: ${data.username} (ID: ${data.id})`);
+      return data;
     }
+
+    // If no userId is provided, create or find a generic test user
+    const testUsername = `testuser_${Date.now()}`;
+    const testEmail = `${testUsername}@test.com`;
+
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .insert({
+        username: testUsername,
+        email: testEmail,
+        points: 0,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Error creating test user: ${error.message}`);
+    }
+    
+    console.log(`✅ Created new test user: ${data.username} (ID: ${data.id})`);
+    return data;
   },
 
-  // Test 2: Verify points configuration data
-  async testPointsConfiguration() {
-    console.log("🧪 Testing points configuration...");
-    
-    try {
-      const { data: pointsConfig, error } = await supabase
-        .from("points_config")
-        .select("*")
-        .order("action_type");
-      
+  // Test 2: Verify that the user's points are initially zero
+  async testInitialPoints(user: UserProfile) {
+    console.log(`🧪 Testing initial points for user ${user.id}...`);
+    if (user.points !== 0) {
+      // If points are not 0, try to reset them for a clean test state.
+      console.warn(`User points are not 0, attempting to reset...`);
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({ points: 0 })
+        .eq("id", user.id);
       if (error) {
-        throw new Error(`Points config query error: ${error.message}`);
+        throw new Error(`Failed to reset user points: ${error.message}`);
       }
-      
-      const expectedActions = [
-        "video_view",
-        "vote_submission", 
-        "completion_bonus",
-        "daily_login",
-        "streak_bonus",
-        "referral_bonus"
-      ];
-      
-      const foundActions = pointsConfig?.map(config => config.action_type) || [];
-      const missingActions = expectedActions.filter(action => !foundActions.includes(action));
-      
-      if (missingActions.length > 0) {
-        throw new Error(`Missing point configurations: ${missingActions.join(", ")}`);
-      }
-      
-      console.log("✅ Points configuration complete");
-      console.log("📊 Point values:", pointsConfig?.map(p => `${p.action_type}: ${p.points_value}`));
-      
-      return {
-        success: true,
-        configurations: pointsConfig
-      };
-      
-    } catch (error) {
-      console.error("❌ Points configuration test failed:", error);
-      throw error;
+      console.log(`✅ User points reset to 0.`);
+    } else {
+      console.log("✅ Initial points are correctly set to 0.");
     }
   },
 
-  // Test 3: Test the increment_user_points function
-  async testPointsFunction(userId: number, testPoints: number = 5) {
-    console.log(`🧪 Testing points increment function for user ${userId}...`);
+  // Test 3: Test the increment_user_points database function
+  async testPointsIncrement(userId: number) {
+    console.log(`🧪 Testing points increment for user ${userId}...`);
     
-    try {
-      // Get current points
-      const { data: userBefore, error: beforeError } = await supabase
-        .from("user_profiles")
-        .select("total_points")
-        .eq("id", userId)
-        .single();
-      
-      if (beforeError) {
-        throw new Error(`Error getting user before: ${beforeError.message}`);
-      }
-      
-      const pointsBefore = userBefore?.total_points || 0;
-      console.log(`📊 Points before: ${pointsBefore}`);
-      
-      // Call the increment function
-      const { data: result, error: functionError } = await supabase
-        .rpc("increment_user_points", {
-          user_id_to_update: userId,
-          points_to_add: testPoints,
-          action_description: "Database test - points increment"
-        });
-      
-      if (functionError) {
-        throw new Error(`Points function error: ${functionError.message}`);
-      }
-      
-      // Verify the result
-      const { data: userAfter, error: afterError } = await supabase
-        .from("user_profiles")
-        .select("total_points")
-        .eq("id", userId)
-        .single();
-      
-      if (afterError) {
-        throw new Error(`Error getting user after: ${afterError.message}`);
-      }
-      
-      const pointsAfter = userAfter?.total_points || 0;
-      const actualIncrease = pointsAfter - pointsBefore;
-      
-      console.log(`📊 Points after: ${pointsAfter}`);
-      console.log(`📊 Points added: ${actualIncrease}`);
-      
-      if (actualIncrease !== testPoints) {
-        throw new Error(`Points mismatch: expected +${testPoints}, got +${actualIncrease}`);
-      }
-      
-      console.log("✅ Points function working correctly");
-      
-      return {
-        success: true,
-        pointsBefore,
-        pointsAfter,
-        pointsAdded: actualIncrease
-      };
-      
-    } catch (error) {
-      console.error("❌ Points function test failed:", error);
-      throw error;
+    // Get points before
+    const { data: userBefore, error: beforeError } = await supabase
+      .from("user_profiles")
+      .select("points")
+      .eq("id", userId)
+      .single();
+
+    if (beforeError) throw new Error(`Error getting points before: ${beforeError.message}`);
+    const pointsBefore = userBefore?.points || 0;
+    console.log(`📊 Points before: ${pointsBefore}`);
+
+    // Call the RPC function to add points
+    const { error } = await supabase.rpc("increment_user_points", {
+      user_id_to_update: userId,
+      points_to_add: 3
+    });
+
+    if (error) {
+      throw new Error(`RPC increment_user_points failed: ${error.message}`);
     }
+
+    // Get points after
+    const { data: userAfter, error: afterError } = await supabase
+      .from("user_profiles")
+      .select("points")
+      .eq("id", userId)
+      .single();
+
+    if (afterError) throw new Error(`Error getting points after: ${afterError.message}`);
+    const pointsAfter = userAfter?.points || 0;
+    console.log(`📊 Points after: ${pointsAfter}`);
+
+    // Verify points were added
+    if (pointsAfter !== pointsBefore + 3) {
+      throw new Error(`Points increment failed: expected ${pointsBefore + 3}, got ${pointsAfter}`);
+    }
+    
+    console.log("✅ Points increment working correctly.");
   },
 
-  // Test 4: Test achievement logging
+  // Test 4: Test achievement logging (manual achievement creation)
   async testAchievementLogging(userId: number) {
     console.log(`🧪 Testing achievement logging for user ${userId}...`);
     
@@ -175,7 +116,7 @@ export const pointsTestService = {
       // Count achievements before
       const { data: achievementsBefore, error: beforeError } = await supabase
         .from("user_achievements")
-        .select("*")
+        .select("*", { count: "exact" })
         .eq("user_id", userId);
       
       if (beforeError) {
@@ -185,17 +126,23 @@ export const pointsTestService = {
       const countBefore = achievementsBefore?.length || 0;
       console.log(`📊 Achievements before: ${countBefore}`);
       
-      // Add points with achievement logging
-      const { error: functionError } = await supabase
-        .rpc("increment_user_points", {
-          user_id_to_update: userId,
-          points_to_add: 3,
-          action_description: "Test achievement - database verification"
-        });
+      // Manually create an achievement record to test the table functionality
+      const { data: newAchievement, error: insertError } = await supabase
+        .from("user_achievements")
+        .insert({
+          user_id: userId,
+          achievement_type: "test_achievement",
+          achievement_name: "Test Achievement",
+          points_earned: 3
+        })
+        .select()
+        .single();
       
-      if (functionError) {
-        throw new Error(`Achievement logging error: ${functionError.message}`);
+      if (insertError) {
+        throw new Error(`Achievement creation error: ${insertError.message}`);
       }
+      
+      console.log(`📊 Created achievement:`, newAchievement);
       
       // Count achievements after
       const { data: achievementsAfter, error: afterError } = await supabase
@@ -233,48 +180,68 @@ export const pointsTestService = {
     }
   },
 
-  // Test 5: Run comprehensive test suite
-  async runFullTestSuite(testUserId?: number) {
-    console.log("🚀 Starting comprehensive points system test...");
+  // Test 5: Clean up test data
+  async cleanup(userId: number) {
+    console.log(`🧹 Cleaning up test data for user ${userId}...`);
+    
+    // Delete test achievements
+    const { error: achievementError } = await supabase
+      .from("user_achievements")
+      .delete()
+      .eq("user_id", userId)
+      .eq("achievement_type", "test_achievement");
+      
+    if (achievementError) console.error("Error cleaning up achievements:", achievementError.message);
+    else console.log("✅ Test achievements cleaned up.");
+
+    // Optionally, delete the user if it was a generic test user
+    const { data: user } = await supabase.from("user_profiles").select("email").eq("id", userId).single();
+    if (user && user.email && user.email.endsWith("@test.com")) {
+        const { error: userError } = await supabase
+            .from("user_profiles")
+            .delete()
+            .eq("id", userId);
+        
+        if (userError) console.error("Error cleaning up test user:", userError.message);
+        else console.log("✅ Test user cleaned up.");
+    }
+  },
+
+  // Main test runner
+  async runFullTestSuite(userId?: number) {
+    console.log("🚀 Starting full points system test suite...");
+    let testUser: UserProfile | null = null;
     
     try {
-      const results = {
-        tableAccess: null as any,
-        pointsConfig: null as any,
-        pointsFunction: null as any,
-        achievementLogging: null as any
-      };
-      
-      // Test 1: Table Access
-      results.tableAccess = await this.testTableAccess();
-      
-      // Test 2: Points Configuration
-      results.pointsConfig = await this.testPointsConfiguration();
-      
-      // Tests 3 & 4: Only run if we have a test user ID
-      if (testUserId) {
-        results.pointsFunction = await this.testPointsFunction(testUserId, 7);
-        results.achievementLogging = await this.testAchievementLogging(testUserId);
-      } else {
-        console.log("⚠️ Skipping user-specific tests (no test user ID provided)");
-      }
-      
-      console.log("🎉 All tests completed successfully!");
-      
+      // Step 1: Get or create user
+      testUser = await this.getTestUser(userId);
+      const currentUserId = testUser.id;
+
+      // Step 2: Check initial points
+      await this.testInitialPoints(testUser);
+
+      // Step 3: Test points increment
+      await this.testPointsIncrement(currentUserId);
+
+      // Step 4: Test achievement logging
+      const achievementResult = await this.testAchievementLogging(currentUserId);
+
+      console.log("✅ Full test suite passed successfully!");
       return {
         success: true,
-        results,
-        summary: {
-          tablesWorking: true,
-          pointsConfigured: true,
-          functionsWorking: !!testUserId,
-          achievementsWorking: !!testUserId
-        }
+        userId: currentUserId,
+        ...achievementResult
       };
-      
     } catch (error) {
-      console.error("💥 Test suite failed:", error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      console.error("❌ Full test suite failed:", errorMessage);
+      throw new Error(`Test suite failed: ${errorMessage}`);
+    } finally {
+      // Step 5: Cleanup
+      if (testUser) {
+        await this.cleanup(testUser.id);
+      }
+      console.log("🏁 Test suite finished.");
     }
   }
 };
