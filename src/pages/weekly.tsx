@@ -781,7 +781,7 @@ export default function WeeklyPage() {
 
       {/* Login Dialog */}
       <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
-        <DialogContent className="max-w-sm mx-auto">
+        <DialogContent className="max-w-sm mx-auto bg-white">
           <DialogHeader>
             <DialogTitle>Login to Vote & Earn Points</DialogTitle>
           </DialogHeader>
@@ -818,7 +818,7 @@ export default function WeeklyPage() {
 
       {/* Success Message Dialog */}
       <Dialog open={successMessage.show} onOpenChange={(open) => setSuccessMessage(prev => ({ ...prev, show: open }))}>
-        <DialogContent className="max-w-sm mx-auto">
+        <DialogContent className="max-w-sm mx-auto bg-white">
           <DialogHeader>
             <DialogTitle className="text-center text-green-600">🎉 Votes Submitted Successfully!</DialogTitle>
           </DialogHeader>
@@ -856,7 +856,7 @@ export default function WeeklyPage() {
 
       {/* Welcome Popup */}
       <Dialog open={showWelcomePopup} onOpenChange={setShowWelcomePopup}>
-        <DialogContent className="max-w-sm mx-auto">
+        <DialogContent className="max-w-sm mx-auto bg-white">
           <DialogHeader>
             <DialogTitle className="text-center text-blue-600">
               Watch Videos, Share Interest & Earn Free Tickets!
