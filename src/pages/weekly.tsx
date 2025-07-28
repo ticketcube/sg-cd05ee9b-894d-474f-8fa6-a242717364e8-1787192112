@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2, User, Mail, Play } from "lucide-react";
 import { weeklyListService } from "@/services/weeklyListService";
 import { userProfileService } from "@/services/userProfileService";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
+import pointsTestService from "@/services/pointsTestService";
 import type { WeeklyListWithArtists } from "@/services/weeklyListService";
 import type { Tables } from "@/integrations/supabase/types";
 import Image from "next/image";
@@ -40,6 +41,8 @@ export default function WeeklyPage() {
 
   useEffect(() => {
     loadAllWeeklyLists();
+    // Test database setup on component mount
+    testDatabaseSetup();
   }, []);
 
   useEffect(() => {
@@ -113,6 +116,16 @@ export default function WeeklyPage() {
     }
   };
 
+  const testDatabaseSetup = async () => {
+    try {
+      console.log("🔧 Testing database setup...");
+      const testResults = await pointsTestService.runFullTestSuite();
+      console.log("✅ Database test results:", testResults);
+    } catch (error) {
+      console.error("❌ Database test failed:", error);
+    }
+  };
+
   const handleLogin = async () => {
     if (!username.trim() || !email.trim()) {
       alert("Please enter both username and email");
@@ -127,6 +140,16 @@ export default function WeeklyPage() {
       
       setUserId(userProfile.id);
       setIsLoginOpen(false);
+      
+      // Test points system with the new user
+      console.log("🧪 Testing points system with user:", userProfile.id);
+      try {
+        const userTestResults = await pointsTestService.runFullTestSuite(userProfile.id);
+        console.log("✅ User-specific tests passed:", userTestResults);
+      } catch (testError) {
+        console.error("❌ User-specific tests failed:", testError);
+      }
+      
     } catch (error) {
       console.error("Error logging in:", error);
       alert("Error logging in. Please try again.");
