@@ -23,16 +23,26 @@ interface ArtistVideoPlayerProps {
 }
 
 const extractYouTubeVideoId = (url: string): string | null => {
+  console.log("🎥 Extracting YouTube ID from URL:", url);
+  
   const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-    /youtube\.com\/v\/([^&\n?#]+)/,
-    /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&
+?#]+)/,
+    /youtube\.com\/v\/([^&
+?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&
+?#]+)/
   ];
   
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match) return match[1];
+    if (match) {
+      console.log("🎥 Successfully extracted YouTube ID:", match[1]);
+      return match[1];
+    }
   }
+  
+  console.log("🎥 Failed to extract YouTube ID from URL:", url);
   return null;
 };
 
@@ -106,12 +116,21 @@ export default function ArtistVideoPlayer({
 
   const handlePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log("🎥 Play button clicked, video content:", videoContent);
+    console.log("🎥 Play button clicked for artist:", artist.artist_name);
+    console.log("🎥 Video content:", videoContent);
+    console.log("🎥 Video type:", videoContent.type);
+    console.log("🎥 Embed URL:", videoContent.embedUrl);
+    
     if (videoContent.type !== "none" && videoContent.embedUrl) {
-      console.log("🎥 Opening video dialog with URL:", videoContent.embedUrl);
+      console.log("🎥 Opening video dialog...");
       setIsVideoOpen(true);
     } else {
       console.log("🎥 Cannot play video - no valid content");
+      console.log("🎥 Video content details:", {
+        type: videoContent.type,
+        embedUrl: videoContent.embedUrl,
+        videoId: videoContent.videoId
+      });
     }
   };
 
@@ -205,14 +224,23 @@ export default function ArtistVideoPlayer({
               <X className="w-6 h-6" />
             </Button>
 
-            {videoContent.embedUrl && (
+            {videoContent.embedUrl ? (
               <iframe
                 src={videoContent.embedUrl}
                 className="w-full h-full"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                onLoad={() => console.log("🎥 Video iframe loaded successfully")}
+                onError={() => console.log("🎥 Video iframe failed to load")}
               />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white">
+                <div className="text-center">
+                  <VideoOff className="w-12 h-12 mx-auto mb-2" />
+                  <p className="text-lg">No video available</p>
+                </div>
+              </div>
             )}
           </div>
         </DialogContent>
