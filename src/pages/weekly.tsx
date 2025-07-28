@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, User, Mail, Play } from "lucide-react";
+import { ArrowLeft, Loader2, User, Mail, Play, X, VideoOff } from "lucide-react";
 import { weeklyListService } from "@/services/weeklyListService";
 import { userProfileService } from "@/services/userProfileService";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
@@ -43,6 +43,23 @@ export default function WeeklyPage() {
     pointsEarned: number;
     votesSubmitted: number;
   }>({ show: false, pointsEarned: 0, votesSubmitted: 0 });
+
+  // Helper function to extract YouTube ID
+  const extractYouTubeId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/,
+      /youtube\.com\/v\/([^&?#]+)/,
+      /youtube\.com\/watch\?.*v=([^&?#]+)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    return null;
+  };
 
   useEffect(() => {
     loadAllWeeklyLists();
@@ -653,19 +670,39 @@ export default function WeeklyPage() {
       </div>
 
       {/* Video Player Dialog */}
-      <Dialog open={!!selectedVideoArtist} onOpenChange={() => setSelectedVideoArtist(null)}>
-        <DialogContent className="max-w-sm mx-auto p-0">
-          <DialogHeader className="p-4 pb-2">
-            <DialogTitle className="text-center">
-              {selectedVideoArtist?.artist_name}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="px-4 pb-4">
-            {selectedVideoArtist && (
-              <ArtistVideoPlayer 
-                artist={selectedVideoArtist}
-                size="lg"
+      <Dialog open={!!selectedVideoArtist} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedVideoArtist(null);
+        }
+      }}>
+        <DialogContent className="max-w-4xl w-full p-0 bg-black border-0">
+          <div className="relative aspect-video">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 z-10 text-white bg-black/50 hover:bg-black/75"
+              onClick={() => setSelectedVideoArtist(null)}
+            >
+              <X className="w-6 h-6" />
+            </Button>
+
+            {selectedVideoArtist && selectedVideoArtist.artist_videolink ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${extractYouTubeId(selectedVideoArtist.artist_videolink)}?autoplay=1&rel=0&modestbranding=1`}
+                className="w-full h-full"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                onLoad={() => console.log("🎥 Video iframe loaded successfully")}
+                onError={() => console.log("🎥 Video iframe failed to load")}
               />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-900 text-white">
+                <div className="text-center">
+                  <VideoOff className="w-12 h-12 mx-auto mb-2" />
+                  <p className="text-lg">No video available</p>
+                </div>
+              </div>
             )}
           </div>
         </DialogContent>
