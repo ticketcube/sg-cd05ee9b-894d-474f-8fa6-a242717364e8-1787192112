@@ -74,7 +74,7 @@ export default function ArtistVideoPlayer({
         return {
           type: "youtube",
           videoId: extractedVideoId,
-          embedUrl: `https://www.youtube.com/embed/${extractedVideoId}?autoplay=1&mute=1`,
+          embedUrl: `https://www.youtube.com/embed/${extractedVideoId}?autoplay=1&rel=0&modestbranding=1`,
           thumbnailUrl: `https://img.youtube.com/vi/${extractedVideoId}/mqdefault.jpg`,
         };
       }
@@ -106,8 +106,12 @@ export default function ArtistVideoPlayer({
 
   const handlePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (videoContent.type !== "none") {
+    console.log("🎥 Play button clicked, video content:", videoContent);
+    if (videoContent.type !== "none" && videoContent.embedUrl) {
+      console.log("🎥 Opening video dialog with URL:", videoContent.embedUrl);
       setIsVideoOpen(true);
+    } else {
+      console.log("🎥 Cannot play video - no valid content");
     }
   };
 
