@@ -26,17 +26,14 @@ const extractYouTubeVideoId = (url: string): string | null => {
   console.log("🎥 Extracting YouTube ID from URL:", url);
   
   const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&
-?#]+)/,
-    /youtube\.com\/v\/([^&
-?#]+)/,
-    /youtube\.com\/watch\?.*v=([^&
-?#]+)/
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/,
+    /youtube\.com\/v\/([^&?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&?#]+)/
   ];
   
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match) {
+    if (match && match[1]) {
       console.log("🎥 Successfully extracted YouTube ID:", match[1]);
       return match[1];
     }
