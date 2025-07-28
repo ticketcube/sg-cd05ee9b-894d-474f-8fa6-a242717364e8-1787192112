@@ -289,15 +289,7 @@ export default function WeeklyPage() {
           </div>
 
           {/* Voting Status */}
-          <div className="text-center mb-4">
-            <div className="text-sm text-gray-400 mb-1">VOTING STATUS:</div>
-            <Badge 
-              variant={weeklyList.status === "active" ? "default" : "secondary"}
-              className="text-sm font-bold px-3 py-1"
-            >
-              {weeklyList.status.toUpperCase()}
-            </Badge>
-          </div>
+         
         </div>
       </div>
 
