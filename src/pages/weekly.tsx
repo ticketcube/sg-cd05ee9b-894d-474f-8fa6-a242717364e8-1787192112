@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+
+    import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Loader2, User, Mail, Play } from "lucide-react";
 import { weeklyListService } from "@/services/weeklyListService";
@@ -190,6 +190,11 @@ export default function WeeklyPage() {
       return;
     }
 
+    if (!weeklyList) {
+      alert("No weekly list selected.");
+      return;
+    }
+
     if (artistPositions.every(pos => pos.x === 0 && pos.y === 0)) {
       alert("Please position at least one artist in the quadrants before submitting");
       return;
@@ -218,14 +223,6 @@ export default function WeeklyPage() {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const getQuadrantLabel = (x: number, y: number) => {
-    if (x > 0.1 && y > 0.1) return "Want Tickets + Will Share";
-    if (x > 0.1 && y < -0.1) return "Want Tickets + Won't Share";
-    if (x < -0.1 && y > 0.1) return "No Tickets + Will Share";
-    if (x < -0.1 && y < -0.1) return "No Tickets + Won't Share";
-    return "Neutral";
   };
 
   if (loading) {
@@ -506,7 +503,7 @@ export default function WeeklyPage() {
                         top: `${y}px`,
                         transform: 'translate(-50%, -50%)'
                       }}
-                      onMouseDown={(e) => {
+                      onMouseDown={() => {
                         setDraggedArtist(artist.uuid);
                         const container = document.getElementById('quadrant-container');
                         if (!container) return;
@@ -525,7 +522,7 @@ export default function WeeklyPage() {
                         document.addEventListener('mousemove', handleMouseMove);
                         document.addEventListener('mouseup', handleMouseUp);
                       }}
-                      onTouchStart={(e) => {
+                      onTouchStart={() => {
                         setDraggedArtist(artist.uuid);
                         const container = document.getElementById('quadrant-container');
                         if (!container) return;
@@ -604,57 +601,6 @@ export default function WeeklyPage() {
         </div>
       </div>
 
-      {/* Artist List with Videos */}
-      <div className="p-4 bg-gray-900">
-        <div className="max-w-md mx-auto">
-          <h3 className="text-xl font-bold text-center mb-4 text-white">THIS WEEK'S ARTISTS</h3>
-          <div className="space-y-3">
-            {displayArtists.map((artistData) => {
-              const artist = artistData.artist as Artist;
-              const position = artistPositions.find(p => p.artistUuid === artist.uuid);
-              
-              return (
-                <Card key={artist.uuid} className="bg-gray-800 border-gray-600">
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-3">
-                      {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" ? (
-                        <Image
-                          src={artist.artist_image}
-                          alt={artist.artist_name}
-                          width={48}
-                          height={48}
-                          className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
-                          <User className="w-6 h-6 text-white" />
-                        </div>
-                      )}
-                      
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold truncate text-white">{artist.artist_name}</h4>
-                        <p className="text-sm text-white">{artist.artist_genre}</p>
-                        {position && (
-                          <Badge variant="outline" className="text-xs mt-1 text-white border-white">
-                            {getQuadrantLabel(position.x, position.y)}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <ArtistVideoPlayer 
-                        artist={artist}
-                        size="sm"
-                        className="flex-shrink-0"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* Video Player Dialog */}
       <Dialog open={!!selectedVideoArtist} onOpenChange={() => setSelectedVideoArtist(null)}>
         <DialogContent className="max-w-sm mx-auto p-0">
@@ -668,7 +614,6 @@ export default function WeeklyPage() {
               <ArtistVideoPlayer 
                 artist={selectedVideoArtist}
                 size="lg"
-                autoplay={true}
               />
             )}
           </div>
@@ -714,3 +659,4 @@ export default function WeeklyPage() {
     </div>
   );
 }
+  
