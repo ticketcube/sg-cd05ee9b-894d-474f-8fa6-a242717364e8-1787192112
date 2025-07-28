@@ -318,7 +318,7 @@ export class UserProfileService {
         .eq("user_id", userId)
         .eq("week_identifier", weekIdentifier)
         .in("engagement_type", ["vote_submission", "ranking_submission"])
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== "PGRST116") throw error;
       
