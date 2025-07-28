@@ -335,7 +335,7 @@ export default function WeeklyPage() {
               Back
             </Button>
             <h1 className="text-xl font-bold text-blue-500 truncate">
-              Weekly Discovery Rewards
+                          DISCOVER, EARN , REDEEM!
             </h1>
           </div>
 
