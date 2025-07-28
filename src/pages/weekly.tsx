@@ -38,6 +38,11 @@ export default function WeeklyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [draggedArtist, setDraggedArtist] = useState<string | null>(null);
   const [selectedVideoArtist, setSelectedVideoArtist] = useState<Artist | null>(null);
+  const [successMessage, setSuccessMessage] = useState<{
+    show: boolean;
+    pointsEarned: number;
+    votesSubmitted: number;
+  }>({ show: false, pointsEarned: 0, votesSubmitted: 0 });
 
   useEffect(() => {
     loadAllWeeklyLists();
@@ -237,7 +242,11 @@ export default function WeeklyPage() {
       const result = await weeklyVotingService.submitQuadrantVotes(voteData);
       
       setSubmitted(true);
-      alert(`Votes submitted! You earned ${result.pointsEarned} points for voting on ${result.votesSubmitted} artists.`);
+      setSuccessMessage({
+        show: true,
+        pointsEarned: result.pointsEarned,
+        votesSubmitted: result.votesSubmitted
+      });
       
     } catch (error) {
       console.error("Error submitting votes:", error);
@@ -669,6 +678,44 @@ export default function WeeklyPage() {
               <Mail className="w-4 h-4 mr-2" />
               Login & Start Voting
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Success Message Dialog */}
+      <Dialog open={successMessage.show} onOpenChange={(open) => setSuccessMessage(prev => ({ ...prev, show: open }))}>
+        <DialogContent className="max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center text-green-600">🎉 Votes Submitted Successfully!</DialogTitle>
+          </DialogHeader>
+          <div className="text-center space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="text-2xl font-bold text-green-600 mb-2">
+                +{successMessage.pointsEarned} Points Earned!
+              </div>
+              <div className="text-sm text-green-700">
+                You voted on {successMessage.votesSubmitted} artists
+              </div>
+            </div>
+            <div className="text-sm text-gray-600">
+              <p>Your votes help us discover the next big artists!</p>
+              <p>Check back next week for more voting opportunities.</p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setSuccessMessage(prev => ({ ...prev, show: false }))}
+                className="flex-1 bg-green-600 hover:bg-green-700"
+              >
+                Continue Exploring
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => window.location.href = "/profile"}
+                className="flex-1"
+              >
+                View Profile
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
