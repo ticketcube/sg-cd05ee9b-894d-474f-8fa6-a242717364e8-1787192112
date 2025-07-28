@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, User, Mail, ChevronDown } from "lucide-react";
+import { ArrowLeft, Loader2, User, Mail } from "lucide-react";
 import { weeklyListService } from "@/services/weeklyListService";
 import { userProfileService } from "@/services/userProfileService";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
@@ -241,51 +242,37 @@ export default function WeeklyPage() {
     );
   }
 
+  // Get first 10 artists for display
+  const displayArtists = weeklyList.artists.slice(0, 10);
+
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="sticky top-0 bg-black z-10 p-3 sm:p-4 border-b border-gray-800">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+      {/* Mobile-Optimized Header */}
+      <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
+        <div className="max-w-md mx-auto">
+          {/* Back Button */}
+          <div className="flex items-center gap-3 mb-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => window.location.href = "/"}
               className="text-white hover:bg-gray-800 flex-shrink-0"
             >
-              <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Back to Chart</span>
-              <span className="sm:hidden">Back</span>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
             </Button>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 truncate">
-                Weekly Voting Game
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-400">
-                Choose a week and vote on your favorite artists
-              </p>
-            </div>
+            <h1 className="text-xl font-bold text-blue-500 truncate">
+              Weekly Voting
+            </h1>
           </div>
 
-          {/* Weekly List Description */}
-          {weeklyList && (
-            <div className="mb-4 p-3 bg-gray-900 rounded-lg border border-gray-700">
-              <h2 className="text-lg font-semibold text-white mb-1">{weeklyList.title}</h2>
-              {weeklyList.description && (
-                <p className="text-sm text-gray-300">{weeklyList.description}</p>
-              )}
-              <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                <span>Week: {weeklyList.week_identifier}</span>
-                <Badge 
-                  variant={weeklyList.status === "active" ? "default" : "secondary"}
-                  className="text-xs"
-                >
-                  {weeklyList.status}
-                </Badge>
-                <span>{weeklyList.artists.length} artists</span>
-              </div>
+          {/* Week Of Title */}
+          <div className="text-center mb-4">
+            <h2 className="text-2xl font-bold text-white mb-2">WEEK OF</h2>
+            <div className="text-lg text-blue-400 font-semibold">
+              {weeklyList.week_identifier}
             </div>
-          )}
+          </div>
 
           {/* Weekly List Selector */}
           <div className="mb-4">
@@ -302,53 +289,29 @@ export default function WeeklyPage() {
                   >
                     <div className="flex items-center justify-between w-full">
                       <span>{list.title || list.week_identifier}</span>
-                      <div className="flex items-center gap-2 ml-2">
-                        <Badge 
-                          variant={list.status === "active" ? "default" : "secondary"}
-                          className="text-xs"
-                        >
-                          {list.status}
-                        </Badge>
-                      </div>
                     </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          
-          {!userId ? (
-            <Button
-              onClick={() => setIsLoginOpen(true)}
-              className="w-full text-base sm:text-lg py-3 sm:py-4 bg-blue-600 hover:bg-blue-700"
+
+          {/* Voting Status */}
+          <div className="text-center mb-4">
+            <div className="text-sm text-gray-400 mb-1">VOTING STATUS:</div>
+            <Badge 
+              variant={weeklyList.status === "active" ? "default" : "secondary"}
+              className="text-sm font-bold px-3 py-1"
             >
-              <User className="w-4 h-4 mr-2" />
-              Login to Vote & Earn Points
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmitVotes}
-              disabled={submitting || submitted || !weeklyList}
-              className="w-full text-base sm:text-lg py-3 sm:py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Submitting Votes...
-                </>
-              ) : submitted ? (
-                "Votes Submitted!"
-              ) : (
-                "Submit Your Votes"
-              )}
-            </Button>
-          )}
+              {weeklyList.status.toUpperCase()}
+            </Badge>
+          </div>
         </div>
       </div>
 
-      {/* Instructions */}
+      {/* How to Vote Instructions */}
       <div className="p-4 bg-gray-900 border-b border-gray-800">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-md mx-auto text-center">
           <h2 className="text-lg font-semibold mb-2">How to Vote</h2>
           <p className="text-sm text-gray-300 mb-3">
             Drag each artist to position them based on your interest:
@@ -370,13 +333,71 @@ export default function WeeklyPage() {
         </div>
       </div>
 
+      {/* Artist Gallery - Two Rows of 5 */}
+      <div className="p-4 bg-gray-800 border-b border-gray-700">
+        <div className="max-w-md mx-auto">
+          <div className="grid grid-cols-5 gap-2 mb-2">
+            {displayArtists.slice(0, 5).map((artistData) => {
+              const artist = artistData.artist as Artist;
+              return (
+                <div key={artist.uuid} className="text-center">
+                  {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" ? (
+                    <Image
+                      src={artist.artist_image}
+                      alt={artist.artist_name}
+                      width={48}
+                      height={48}
+                      className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white shadow-lg flex items-center justify-center mx-auto">
+                      <User className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+                  <div className="text-xs text-white mt-1 truncate">
+                    {artist.artist_name}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {displayArtists.length > 5 && (
+            <div className="grid grid-cols-5 gap-2">
+              {displayArtists.slice(5, 10).map((artistData) => {
+                const artist = artistData.artist as Artist;
+                return (
+                  <div key={artist.uuid} className="text-center">
+                    {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" ? (
+                      <Image
+                        src={artist.artist_image}
+                        alt={artist.artist_name}
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white shadow-lg"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white shadow-lg flex items-center justify-center mx-auto">
+                        <User className="w-6 h-6 text-white" />
+                      </div>
+                    )}
+                    <div className="text-xs text-white mt-1 truncate">
+                      {artist.artist_name}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Quadrant Voting Area */}
       <div className="p-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-md mx-auto">
           <Card className="bg-gray-900 border-gray-700">
             <CardContent className="p-4">
               <div 
-                className="relative w-full h-96 sm:h-[500px] bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg border-2 border-gray-600 overflow-hidden"
+                className="relative w-full h-80 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg border-2 border-gray-600 overflow-hidden"
                 id="quadrant-container"
               >
                 {/* Quadrant Lines */}
@@ -400,14 +421,14 @@ export default function WeeklyPage() {
                 </div>
 
                 {/* Artists */}
-                {weeklyList.artists.map((artistData) => {
+                {displayArtists.map((artistData) => {
                   const artist = artistData.artist as Artist;
                   const position = artistPositions.find(p => p.artistUuid === artist.uuid);
                   if (!position) return null;
 
                   const containerRect = document.getElementById('quadrant-container')?.getBoundingClientRect();
-                  const containerWidth = containerRect?.width || 400;
-                  const containerHeight = containerRect?.height || 400;
+                  const containerWidth = containerRect?.width || 320;
+                  const containerHeight = containerRect?.height || 320;
                   
                   const x = (position.x + 1) * (containerWidth / 2) - 20; // Center the 40px icon
                   const y = (-position.y + 1) * (containerHeight / 2) - 20; // Invert Y and center
@@ -467,17 +488,17 @@ export default function WeeklyPage() {
                           <Image
                             src={artist.artist_image}
                             alt={artist.artist_name}
-                            width={40}
-                            height={40}
-                            className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-lg"
+                            width={32}
+                            height={32}
+                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-lg"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-gray-600 border-2 border-white shadow-lg flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
+                          <div className="w-8 h-8 rounded-full bg-gray-600 border-2 border-white shadow-lg flex items-center justify-center">
+                            <User className="w-4 h-4 text-white" />
                           </div>
                         )}
-                        <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-white bg-black bg-opacity-75 px-1 rounded whitespace-nowrap">
-                          {artist.artist_name}
+                        <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2 text-xs text-white bg-black bg-opacity-75 px-1 rounded whitespace-nowrap">
+                          {artist.artist_name.split(' ')[0]}
                         </div>
                       </div>
                     </div>
@@ -487,15 +508,39 @@ export default function WeeklyPage() {
             </CardContent>
           </Card>
 
-          {/* Artist List with Videos */}
-          <div className="mt-6 space-y-3">
-            <h3 className="text-lg font-semibold">This Week's Artists</h3>
-            {weeklyList.artists.map((artistData) => {
+          {/* Submit Votes Button */}
+          <div className="mt-4">
+            <Button
+              onClick={handleSubmitVotes}
+              disabled={submitting || submitted || !weeklyList}
+              className="w-full text-lg py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 font-bold"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  SUBMITTING VOTES...
+                </>
+              ) : submitted ? (
+                "VOTES SUBMITTED!"
+              ) : (
+                "SUBMIT VOTES"
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Artist List with Videos */}
+      <div className="p-4 bg-gray-900">
+        <div className="max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-center mb-4 text-white">THIS WEEK'S ARTISTS</h3>
+          <div className="space-y-3">
+            {displayArtists.map((artistData) => {
               const artist = artistData.artist as Artist;
               const position = artistPositions.find(p => p.artistUuid === artist.uuid);
               
               return (
-                <Card key={artist.uuid} className="bg-gray-900 border-gray-700">
+                <Card key={artist.uuid} className="bg-gray-800 border-gray-600">
                   <CardContent className="p-3">
                     <div className="flex items-center gap-3">
                       {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" ? (
@@ -513,10 +558,10 @@ export default function WeeklyPage() {
                       )}
                       
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold truncate">{artist.artist_name}</h4>
-                        <p className="text-sm text-gray-400">{artist.artist_genre}</p>
+                        <h4 className="font-semibold truncate text-white">{artist.artist_name}</h4>
+                        <p className="text-sm text-white">{artist.artist_genre}</p>
                         {position && (
-                          <Badge variant="outline" className="text-xs mt-1">
+                          <Badge variant="outline" className="text-xs mt-1 text-white border-white">
                             {getQuadrantLabel(position.x, position.y)}
                           </Badge>
                         )}
@@ -538,7 +583,7 @@ export default function WeeklyPage() {
 
       {/* Login Dialog */}
       <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-sm mx-auto">
           <DialogHeader>
             <DialogTitle>Login to Vote & Earn Points</DialogTitle>
           </DialogHeader>
