@@ -340,8 +340,8 @@ export default function WeeklyPage() {
           </div>
 
                   {/* How to Vote Instructions */}
-                  <div className="p-3 bg-gray-900 border-b border-gray-800">
-                      <div className="max-w-md mx-auto text-center">
+                  <div className="p-3 bg-gray-900 border-b border-black-800">
+                      <div className="max-w-md mx-auto text-left">
 
                           <div className="text-s text-gray-300 mb-2">
                               <div>• Earn 5 points for watching videos (15+ seconds)</div>
