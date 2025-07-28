@@ -617,7 +617,7 @@ export default function WeeklyPage() {
                 {/* Empty State Message */}
                 {artistPositions.length === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center text-white-400">
+                    <div className="text-center text-gray-400">
                       <p className="text-sm">Drag artists from above</p>
                       <p className="text-xs">into this grid!</p>
                     </div>
