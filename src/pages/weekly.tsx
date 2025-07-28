@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -262,20 +261,13 @@ export default function WeeklyPage() {
               Back
             </Button>
             <h1 className="text-xl font-bold text-blue-500 truncate">
-              Weekly Voting
+              Weekly Discovery Rewards
             </h1>
           </div>
 
-          {/* Week Of Title */}
+          {/* Select Week Section */}
           <div className="text-center mb-4">
-            <h2 className="text-2xl font-bold text-white mb-2">WEEK OF</h2>
-            <div className="text-lg text-blue-400 font-semibold">
-              {weeklyList.week_identifier}
-            </div>
-          </div>
-
-          {/* Weekly List Selector */}
-          <div className="mb-4">
+            <h2 className="text-lg font-bold text-white mb-3">SELECT WEEK</h2>
             <Select value={selectedListId} onValueChange={setSelectedListId}>
               <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white">
                 <SelectValue placeholder="Select a weekly list..." />
