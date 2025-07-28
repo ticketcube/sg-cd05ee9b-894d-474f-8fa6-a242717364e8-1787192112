@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type {
   Tables
@@ -23,9 +22,30 @@ const pointsTestService = {
     }
 
     // If no userId is provided, create or find a generic test user
-    const testUsername = `testuser_${Date.now()}`;
+    const timestamp = Date.now();
+    const randomSuffix = Math.floor(Math.random() * 10000);
+    const testUsername = `testuser_${timestamp}_${randomSuffix}`;
     const testEmail = `${testUsername}@test.com`;
 
+    console.log(`🔍 Attempting to create test user: ${testUsername}`);
+
+    // First, check if a test user with this exact username already exists
+    const { data: existingUser, error: findError } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("username", testUsername)
+      .maybeSingle();
+
+    if (findError && findError.code !== "PGRST116") {
+      throw new Error(`Error checking for existing test user: ${findError.message}`);
+    }
+
+    if (existingUser) {
+      console.log(`✅ Found existing test user: ${existingUser.username} (ID: ${existingUser.id})`);
+      return existingUser;
+    }
+
+    // Try to create the new test user
     const { data, error } = await supabase
       .from("user_profiles")
       .insert({
@@ -37,6 +57,28 @@ const pointsTestService = {
       .single();
 
     if (error) {
+      // If we get a duplicate key error, try to find any existing test user
+      if (error.code === "23505") {
+        console.log("🔄 Duplicate key detected, looking for any existing test user...");
+        
+        // Find any test user that we can use
+        const { data: anyTestUser, error: findAnyError } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .like("email", "%@test.com")
+          .limit(1)
+          .single();
+
+        if (findAnyError && findAnyError.code !== "PGRST116") {
+          throw new Error(`Error finding any test user: ${findAnyError.message}`);
+        }
+
+        if (anyTestUser) {
+          console.log(`✅ Using existing test user: ${anyTestUser.username} (ID: ${anyTestUser.id})`);
+          return anyTestUser;
+        }
+      }
+      
       throw new Error(`Error creating test user: ${error.message}`);
     }
     
