@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -58,10 +57,19 @@ export default function ArtistVideoPlayer({
   const videoContent = useMemo(() => {
     let extractedVideoId: string | null = null;
 
+    console.log("🎥 ArtistVideoPlayer - Processing artist:", {
+      name: artist.artist_name,
+      videolink: artist.artist_videolink,
+      tiktok_videoid: artist.artist_tiktok_videoid,
+      tiktok_username: artist.artist_tiktok_username
+    });
+
     const sourceUrl = videoOverrideId || (artist.artist_videolink ? artist.artist_videolink.split(",")[0].trim() : null);
+    console.log("🎥 Source URL:", sourceUrl);
 
     if (sourceUrl) {
       extractedVideoId = extractYouTubeVideoId(sourceUrl);
+      console.log("🎥 Extracted YouTube ID:", extractedVideoId);
       if (extractedVideoId) {
         return {
           type: "youtube",
@@ -74,6 +82,7 @@ export default function ArtistVideoPlayer({
     
     if (!extractedVideoId && artist.artist_tiktok_videoid) {
       extractedVideoId = artist.artist_tiktok_videoid;
+      console.log("🎥 Using TikTok video ID:", extractedVideoId);
       const tiktokThumbnail = isValidImageUrl(artist.artist_image) 
         ? artist.artist_image 
         : null;
@@ -86,6 +95,7 @@ export default function ArtistVideoPlayer({
       };
     }
 
+    console.log("🎥 No video content found for artist:", artist.artist_name);
     return { 
       type: "none", 
       videoId: null, 

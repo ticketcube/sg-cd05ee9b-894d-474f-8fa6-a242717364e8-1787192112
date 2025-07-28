@@ -408,7 +408,16 @@ export default function WeeklyPage() {
                     size="sm"
                     variant="outline"
                     className="mt-1 h-5 px-1 text-xs bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                    onClick={() => setSelectedVideoArtist(artist)}
+                    onClick={() => {
+                      console.log("🎬 Watch button clicked for artist:", {
+                        name: artist.artist_name,
+                        uuid: artist.uuid,
+                        videolink: artist.artist_videolink,
+                        tiktok_videoid: artist.artist_tiktok_videoid,
+                        fullArtist: artist
+                      });
+                      setSelectedVideoArtist(artist);
+                    }}
                   >
                     <Play className="w-2 h-2 mr-1" />
                     Watch
@@ -458,7 +467,16 @@ export default function WeeklyPage() {
                       size="sm"
                       variant="outline"
                       className="mt-1 h-5 px-1 text-xs bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                      onClick={() => setSelectedVideoArtist(artist)}
+                      onClick={() => {
+                        console.log("🎬 Watch button clicked for artist:", {
+                          name: artist.artist_name,
+                          uuid: artist.uuid,
+                          videolink: artist.artist_videolink,
+                          tiktok_videoid: artist.artist_tiktok_videoid,
+                          fullArtist: artist
+                        });
+                        setSelectedVideoArtist(artist);
+                      }}
                     >
                       <Play className="w-2 h-2 mr-1" />
                       Watch
