@@ -38,6 +38,8 @@ export default function WeeklyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [draggedArtist, setDraggedArtist] = useState<string | null>(null);
   const [selectedVideoArtist, setSelectedVideoArtist] = useState<Artist | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [successMessage, setSuccessMessage] = useState<{
     show: boolean;
     pointsEarned: number;
@@ -237,6 +239,69 @@ export default function WeeklyPage() {
     );
   };
 
+  // Mobile touch handlers for initial drag from gallery
+  const handleTouchStart = (e: React.TouchEvent, artistUuid: string) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = e.currentTarget.getBoundingClientRect();
+    
+    setDraggedArtist(artistUuid);
+    setIsDragging(true);
+    setDragOffset({
+      x: touch.clientX - rect.left - rect.width / 2,
+      y: touch.clientY - rect.top - rect.height / 2
+    });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !draggedArtist) return;
+    e.preventDefault();
+    
+    const touch = e.touches[0];
+    const container = document.getElementById('quadrant-container');
+    if (!container) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    
+    // Check if touch is over the container
+    if (
+      touch.clientX >= containerRect.left &&
+      touch.clientX <= containerRect.right &&
+      touch.clientY >= containerRect.top &&
+      touch.clientY <= containerRect.bottom
+    ) {
+      handleArtistDrag(draggedArtist, touch.clientX, touch.clientY, containerRect);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isDragging || !draggedArtist) return;
+    e.preventDefault();
+    
+    const touch = e.changedTouches[0];
+    const container = document.getElementById('quadrant-container');
+    if (!container) {
+      setIsDragging(false);
+      setDraggedArtist(null);
+      return;
+    }
+    
+    const containerRect = container.getBoundingClientRect();
+    
+    // Check if touch ended over the container
+    if (
+      touch.clientX >= containerRect.left &&
+      touch.clientX <= containerRect.right &&
+      touch.clientY >= containerRect.top &&
+      touch.clientY <= containerRect.bottom
+    ) {
+      handleArtistDrop(draggedArtist, touch.clientX, touch.clientY, containerRect);
+    }
+    
+    setIsDragging(false);
+    setDraggedArtist(null);
+  };
+
   const handleSubmitVotes = async () => {
     if (!userId) {
       setIsLoginOpen(true);
@@ -398,13 +463,16 @@ export default function WeeklyPage() {
                 <div key={artist.uuid} className="text-center">
                   {/* Artist Image */}
                   <div 
-                    className={`cursor-move ${isInGrid ? 'opacity-50' : ''}`}
+                    className={`cursor-move select-none ${isInGrid ? 'opacity-50' : ''} ${draggedArtist === artist.uuid ? 'scale-110 z-50' : ''} transition-transform`}
                     draggable
                     onDragStart={(e) => {
                       setDraggedArtist(artist.uuid);
                       e.dataTransfer.setData('text/plain', artist.uuid);
                     }}
                     onDragEnd={() => setDraggedArtist(null)}
+                    onTouchStart={(e) => handleTouchStart(e, artist.uuid)}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                   >
                     {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" ? (
                       <Image
@@ -412,14 +480,14 @@ export default function WeeklyPage() {
                         alt={artist.artist_name}
                         width={48}
                         height={48}
-                        className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white shadow-lg"
+                        className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white shadow-lg pointer-events-none"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white shadow-lg flex items-center justify-center mx-auto">
+                      <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white shadow-lg flex items-center justify-center mx-auto pointer-events-none">
                         <User className="w-6 h-6 text-white" />
                       </div>
                     )}
-                    <div className="text-xs text-white mt-1 truncate">
+                    <div className="text-xs text-white mt-1 truncate pointer-events-none">
                       {artist.artist_name}
                     </div>
                   </div>
@@ -458,13 +526,16 @@ export default function WeeklyPage() {
                   <div key={artist.uuid} className="text-center">
                     {/* Artist Image */}
                     <div 
-                      className={`cursor-move ${isInGrid ? 'opacity-50' : ''}`}
+                      className={`cursor-move select-none ${isInGrid ? 'opacity-50' : ''} ${draggedArtist === artist.uuid ? 'scale-110 z-50' : ''} transition-transform`}
                       draggable
                       onDragStart={(e) => {
                         setDraggedArtist(artist.uuid);
                         e.dataTransfer.setData('text/plain', artist.uuid);
                       }}
                       onDragEnd={() => setDraggedArtist(null)}
+                      onTouchStart={(e) => handleTouchStart(e, artist.uuid)}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleTouchEnd}
                     >
                       {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" ? (
                         <Image
@@ -472,14 +543,14 @@ export default function WeeklyPage() {
                           alt={artist.artist_name}
                           width={48}
                           height={48}
-                          className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white shadow-lg"
+                          className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white shadow-lg pointer-events-none"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white shadow-lg flex items-center justify-center mx-auto">
+                        <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white shadow-lg flex items-center justify-center mx-auto pointer-events-none">
                           <User className="w-6 h-6 text-white" />
                         </div>
                       )}
-                      <div className="text-xs text-white mt-1 truncate">
+                      <div className="text-xs text-white mt-1 truncate pointer-events-none">
                         {artist.artist_name}
                       </div>
                     </div>
@@ -518,7 +589,7 @@ export default function WeeklyPage() {
           <Card className="bg-gray-900 border-gray-700">
             <CardContent className="p-4">
               <div 
-                className="relative w-full h-80 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg border-2 border-gray-600 overflow-hidden"
+                className="relative w-full h-80 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg border-2 border-gray-600 overflow-hidden touch-none"
                 id="quadrant-container"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
@@ -532,6 +603,8 @@ export default function WeeklyPage() {
                     }
                   }
                 }}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               >
                 {/* Axis Labels */}
                 <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
