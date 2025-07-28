@@ -109,6 +109,12 @@ export default function WeeklyPage() {
       }
 
       console.log("Setting weekly list with", list.artists.length, "artists");
+      console.log("🎬 First artist data structure:", list.artists[0]);
+      if (list.artists[0]) {
+        console.log("🎬 First artist object:", list.artists[0].artist);
+        console.log("🎬 First artist videolink:", list.artists[0].artist?.artist_videolink);
+        console.log("🎬 First artist tiktok_videoid:", list.artists[0].artist?.artist_tiktok_videoid);
+      }
       setWeeklyList(list);
       
       // Initialize empty artist positions - artists start outside the grid
