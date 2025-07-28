@@ -365,25 +365,16 @@ export default function WeeklyPage() {
       </div>
 
       {/* How to Vote Instructions */}
-      <div className="p-4 bg-gray-900 border-b border-gray-800">
+      <div className="p-3 bg-gray-900 border-b border-gray-800">
         <div className="max-w-md mx-auto text-center">
-          <h2 className="text-lg font-semibold mb-2">How to Vote</h2>
-          <p className="text-sm text-gray-300 mb-3">
-            Drag each artist to position them based on your interest:
+          <h2 className="text-base font-bold mb-2 text-blue-400">DISCOVER ARTISTS, EARN POINTS, REDEEM FOR TICKETS</h2>
+          <p className="text-xs text-gray-300 mb-2">
+            Drag artists into grid based on your interest in seeing them live or telling your friends about them
           </p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="bg-green-900 p-2 rounded">
-              <strong>Top Right:</strong> Want tickets + Would Hype
-            </div>
-            <div className="bg-blue-900 p-2 rounded">
-              <strong>Top Left:</strong> No tickets + Would Hype
-            </div>
-            <div className="bg-yellow-900 p-2 rounded">
-              <strong>Bottom Right:</strong> Want tickets + Wouldn't Hype
-            </div>
-            <div className="bg-red-900 p-2 rounded">
-              <strong>Bottom Left:</strong> No tickets + Wouldn't Hype
-            </div>
+          <div className="text-xs text-gray-400 space-y-1">
+            <div>• Earn 5 points for watching videos (15+ seconds)</div>
+            <div>• Earn 10 points for submitting votes</div>
+            <div>• Earn 5 bonus points for voting on all 5 artists</div>
           </div>
         </div>
       </div>
