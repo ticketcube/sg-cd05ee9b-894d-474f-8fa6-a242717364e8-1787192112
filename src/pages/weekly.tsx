@@ -43,6 +43,7 @@ export default function WeeklyPage() {
     pointsEarned: number;
     votesSubmitted: number;
   }>({ show: false, pointsEarned: 0, votesSubmitted: 0 });
+  const [showWelcomePopup, setShowWelcomePopup] = useState(true);
 
   // Helper function to extract YouTube ID
   const extractYouTubeId = (url: string): string | null => {
@@ -341,14 +342,17 @@ export default function WeeklyPage() {
 
                   {/* How to Vote Instructions */}
                   <div className="p-3 bg-gray-900 border-b border-gray-800">
-                      <div className="max-w-md mx-auto text-left">
-
-                          <div className="text-xs text-gray-300 mb-2">
-                              <div>• Earn 5 points for watching videos (15+ seconds)</div>
-                              <div>• Earn 10 points for submitting votes</div>
-                              <div>• Earn 5 bonus points for voting on all 5 artists</div>
-                          </div>
+                    <div className="max-w-md mx-auto text-center">
+                      <h2 className="text-base font-bold mb-2 text-blue-400">DISCOVER ARTISTS, EARN POINTS, REDEEM FOR TICKETS</h2>
+                      <p className="text-xs text-gray-300 mb-2">
+                        Drag artists into grid based on your interest in seeing them live or telling your friends about them
+                      </p>
+                      <div className="text-xs text-gray-400 space-y-1">
+                        <div>• Earn 5 points for watching videos (15+ seconds)</div>
+                        <div>• Earn 10 points for submitting votes</div>
+                        <div>• Earn 5 bonus points for voting on all 5 artists</div>
                       </div>
+                    </div>
                   </div>
 
           {/* Select Week Section */}
@@ -769,6 +773,35 @@ export default function WeeklyPage() {
                 View Profile
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Welcome Popup */}
+      <Dialog open={showWelcomePopup} onOpenChange={setShowWelcomePopup}>
+        <DialogContent className="max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center text-blue-600">
+              Watch the videos, Share your feedback & Earn points redeemable for Free Tickets!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-4">
+                Drag artists into grid based on your interest in seeing them live or telling your friends about them
+              </p>
+              <div className="text-sm text-gray-500 space-y-2">
+                <div>• Earn 5 points for watching videos (15+ seconds)</div>
+                <div>• Earn 10 points for submitting votes</div>
+                <div>• Earn 5 bonus points for voting on all 5 artists</div>
+              </div>
+            </div>
+            <Button 
+              onClick={() => setShowWelcomePopup(false)} 
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Get Started!
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
