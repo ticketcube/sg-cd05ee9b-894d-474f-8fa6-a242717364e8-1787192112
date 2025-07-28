@@ -339,6 +339,18 @@ export default function WeeklyPage() {
             </h1>
           </div>
 
+                  {/* How to Vote Instructions */}
+                  <div className="p-3 bg-gray-900 border-b border-gray-800">
+                      <div className="max-w-md mx-auto text-center">
+
+                          <div className="text-s text-gray-300 mb-2">
+                              <div>• Earn 5 points for watching videos (15+ seconds)</div>
+                              <div>• Earn 10 points for submitting votes</div>
+                              <div>• Earn 5 bonus points for voting on all 5 artists</div>
+                          </div>
+                      </div>
+                  </div>
+
           {/* Select Week Section */}
           <div className="text-center mb-4">
             <h2 className="text-lg font-bold text-white mb-3">SELECT WEEK</h2>
@@ -364,18 +376,7 @@ export default function WeeklyPage() {
         </div>
       </div>
 
-      {/* How to Vote Instructions */}
-      <div className="p-3 bg-gray-900 border-b border-gray-800">
-        <div className="max-w-md mx-auto text-center">
-          <h2 className="text-base font-bold mb-2 text-blue-400">DISCOVER, EARN , REDEEM!</h2>
-        
-          <div className="text-s text-gray-300 mb-2">
-            <div>• Earn 5 points for watching videos (15+ seconds)</div>
-            <div>• Earn 10 points for submitting votes</div>
-            <div>• Earn 5 bonus points for voting on all 5 artists</div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Artist Gallery - Two Rows of 5 */}
       <div className="p-4 bg-gray-800 border-b border-gray-700">
