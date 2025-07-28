@@ -1,5 +1,4 @@
-
-    import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -319,16 +318,16 @@ export default function WeeklyPage() {
           </p>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="bg-green-900 p-2 rounded">
-              <strong>Top Right:</strong> Want tickets + Will share
+              <strong>Top Right:</strong> Want tickets + Tell Friends
             </div>
             <div className="bg-blue-900 p-2 rounded">
-              <strong>Top Left:</strong> No tickets + Will share
+              <strong>Top Left:</strong> No tickets + Tell Friends
             </div>
             <div className="bg-yellow-900 p-2 rounded">
-              <strong>Bottom Right:</strong> Want tickets + Won't share
+              <strong>Bottom Right:</strong> Want tickets + Keep Private
             </div>
             <div className="bg-red-900 p-2 rounded">
-              <strong>Bottom Left:</strong> No tickets + Won't share
+              <strong>Bottom Left:</strong> No tickets + Keep Private
             </div>
           </div>
         </div>
@@ -344,17 +343,6 @@ export default function WeeklyPage() {
               
               return (
                 <div key={artist.uuid} className="text-center">
-                  {/* Watch Button */}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mb-1 h-6 px-2 text-xs bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                    onClick={() => setSelectedVideoArtist(artist)}
-                  >
-                    <Play className="w-3 h-3 mr-1" />
-                    WATCH
-                  </Button>
-                  
                   {/* Artist Image */}
                   <div 
                     className={`cursor-move ${isInGrid ? 'opacity-50' : ''}`}
@@ -382,6 +370,17 @@ export default function WeeklyPage() {
                       {artist.artist_name}
                     </div>
                   </div>
+                  
+                  {/* Watch Button - Now below artist name */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-1 h-5 px-1 text-xs bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                    onClick={() => setSelectedVideoArtist(artist)}
+                  >
+                    <Play className="w-2 h-2 mr-1" />
+                    Watch
+                  </Button>
                 </div>
               );
             })}
@@ -394,17 +393,6 @@ export default function WeeklyPage() {
                 
                 return (
                   <div key={artist.uuid} className="text-center">
-                    {/* Watch Button */}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="mb-1 h-6 px-2 text-xs bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                      onClick={() => setSelectedVideoArtist(artist)}
-                    >
-                      <Play className="w-3 h-3 mr-1" />
-                      WATCH
-                    </Button>
-                    
                     {/* Artist Image */}
                     <div 
                       className={`cursor-move ${isInGrid ? 'opacity-50' : ''}`}
@@ -432,6 +420,17 @@ export default function WeeklyPage() {
                         {artist.artist_name}
                       </div>
                     </div>
+                    
+                    {/* Watch Button - Now below artist name */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-1 h-5 px-1 text-xs bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                      onClick={() => setSelectedVideoArtist(artist)}
+                    >
+                      <Play className="w-2 h-2 mr-1" />
+                      Watch
+                    </Button>
                   </div>
                 );
               })}
@@ -461,18 +460,12 @@ export default function WeeklyPage() {
                   }
                 }}
               >
-                {/* Quadrant Lines */}
-                <div className="absolute inset-0">
-                  <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-500"></div>
-                  <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-500"></div>
-                </div>
-
                 {/* Axis Labels */}
                 <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
-                  Will Share
+                  Tell Friends
                 </div>
                 <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
-                  Won't Share
+                  Keep Private
                 </div>
                 <div className="absolute left-2 top-1/2 transform -translate-y-1/2 -rotate-90 text-xs text-gray-400">
                   No Tickets
