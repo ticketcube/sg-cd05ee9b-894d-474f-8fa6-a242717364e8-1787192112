@@ -367,11 +367,9 @@ export default function WeeklyPage() {
       {/* How to Vote Instructions */}
       <div className="p-3 bg-gray-900 border-b border-gray-800">
         <div className="max-w-md mx-auto text-center">
-          <h2 className="text-base font-bold mb-2 text-blue-400">DISCOVER ARTISTS, EARN POINTS, REDEEM FOR TICKETS</h2>
-          <p className="text-xs text-gray-300 mb-2">
-            Drag artists into grid based on your interest in seeing them live or telling your friends about them
-          </p>
-          <div className="text-xs text-gray-400 space-y-1">
+          <h2 className="text-base font-bold mb-2 text-blue-400">DISCOVER, EARN , REDEEM!</h2>
+        
+          <div className="text-s text-gray-300 mb-2">
             <div>• Earn 5 points for watching videos (15+ seconds)</div>
             <div>• Earn 10 points for submitting votes</div>
             <div>• Earn 5 bonus points for voting on all 5 artists</div>
