@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, User, Mail } from "lucide-react";
+import { ArrowLeft, Loader2, User, Mail, Play } from "lucide-react";
 import { weeklyListService } from "@/services/weeklyListService";
 import { userProfileService } from "@/services/userProfileService";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
@@ -37,6 +37,7 @@ export default function WeeklyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [draggedArtist, setDraggedArtist] = useState<string | null>(null);
+  const [selectedVideoArtist, setSelectedVideoArtist] = useState<Artist | null>(null);
 
   useEffect(() => {
     loadAllWeeklyLists();
@@ -345,46 +346,21 @@ export default function WeeklyPage() {
               const isInGrid = artistPositions.some(pos => pos.artistUuid === artist.uuid);
               
               return (
-                <div 
-                  key={artist.uuid} 
-                  className={`text-center cursor-move ${isInGrid ? 'opacity-50' : ''}`}
-                  draggable
-                  onDragStart={(e) => {
-                    setDraggedArtist(artist.uuid);
-                    e.dataTransfer.setData('text/plain', artist.uuid);
-                  }}
-                  onDragEnd={() => setDraggedArtist(null)}
-                >
-                  {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" ? (
-                    <Image
-                      src={artist.artist_image}
-                      alt={artist.artist_name}
-                      width={48}
-                      height={48}
-                      className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white shadow-lg"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white shadow-lg flex items-center justify-center mx-auto">
-                      <User className="w-6 h-6 text-white" />
-                    </div>
-                  )}
-                  <div className="text-xs text-white mt-1 truncate">
-                    {artist.artist_name}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {displayArtists.length > 5 && (
-            <div className="grid grid-cols-5 gap-2">
-              {displayArtists.slice(5, 10).map((artistData) => {
-                const artist = artistData.artist as Artist;
-                const isInGrid = artistPositions.some(pos => pos.artistUuid === artist.uuid);
-                
-                return (
+                <div key={artist.uuid} className="text-center">
+                  {/* Watch Button */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mb-1 h-6 px-2 text-xs bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                    onClick={() => setSelectedVideoArtist(artist)}
+                  >
+                    <Play className="w-3 h-3 mr-1" />
+                    WATCH
+                  </Button>
+                  
+                  {/* Artist Image */}
                   <div 
-                    key={artist.uuid} 
-                    className={`text-center cursor-move ${isInGrid ? 'opacity-50' : ''}`}
+                    className={`cursor-move ${isInGrid ? 'opacity-50' : ''}`}
                     draggable
                     onDragStart={(e) => {
                       setDraggedArtist(artist.uuid);
@@ -407,6 +383,57 @@ export default function WeeklyPage() {
                     )}
                     <div className="text-xs text-white mt-1 truncate">
                       {artist.artist_name}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {displayArtists.length > 5 && (
+            <div className="grid grid-cols-5 gap-2">
+              {displayArtists.slice(5, 10).map((artistData) => {
+                const artist = artistData.artist as Artist;
+                const isInGrid = artistPositions.some(pos => pos.artistUuid === artist.uuid);
+                
+                return (
+                  <div key={artist.uuid} className="text-center">
+                    {/* Watch Button */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mb-1 h-6 px-2 text-xs bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                      onClick={() => setSelectedVideoArtist(artist)}
+                    >
+                      <Play className="w-3 h-3 mr-1" />
+                      WATCH
+                    </Button>
+                    
+                    {/* Artist Image */}
+                    <div 
+                      className={`cursor-move ${isInGrid ? 'opacity-50' : ''}`}
+                      draggable
+                      onDragStart={(e) => {
+                        setDraggedArtist(artist.uuid);
+                        e.dataTransfer.setData('text/plain', artist.uuid);
+                      }}
+                      onDragEnd={() => setDraggedArtist(null)}
+                    >
+                      {artist.artist_image && artist.artist_image !== "null" && artist.artist_image.trim() !== "" ? (
+                        <Image
+                          src={artist.artist_image}
+                          alt={artist.artist_name}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white shadow-lg"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white shadow-lg flex items-center justify-center mx-auto">
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                      )}
+                      <div className="text-xs text-white mt-1 truncate">
+                        {artist.artist_name}
+                      </div>
                     </div>
                   </div>
                 );
@@ -627,6 +654,26 @@ export default function WeeklyPage() {
           </div>
         </div>
       </div>
+
+      {/* Video Player Dialog */}
+      <Dialog open={!!selectedVideoArtist} onOpenChange={() => setSelectedVideoArtist(null)}>
+        <DialogContent className="max-w-sm mx-auto p-0">
+          <DialogHeader className="p-4 pb-2">
+            <DialogTitle className="text-center">
+              {selectedVideoArtist?.artist_name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-4 pb-4">
+            {selectedVideoArtist && (
+              <ArtistVideoPlayer 
+                artist={selectedVideoArtist}
+                size="lg"
+                autoplay={true}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Login Dialog */}
       <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
