@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, Json } from "@/integrations/supabase/types";
 
@@ -29,32 +28,22 @@ export class UserProfileService {
     try {
       console.log("🔍 Looking for existing user with email:", data.email, "or username:", data.username);
       
-      // First, check for existing user by email OR username (but handle multiple results properly)
-      const { data: existingUsers, error: findError } = await supabase
+      // First, try to find existing user by email
+      const { data: existingByEmail, error: emailError } = await supabase
         .from("user_profiles")
         .select("*")
-        .or(`email.eq.${data.email},username.eq.${data.username}`);
+        .eq("email", data.email)
+        .maybeSingle();
 
-      if (findError) {
-        console.error("❌ Error finding existing users:", findError);
-        throw findError;
+      if (emailError && emailError.code !== "PGRST116") {
+        console.error("❌ Error finding user by email:", emailError);
+        throw emailError;
       }
 
-      console.log("📊 Found existing users:", existingUsers?.length || 0);
-
-      if (existingUsers && existingUsers.length > 0) {
-        // If we found existing users, prioritize by email match first, then username
-        let userToUpdate = existingUsers.find(user => user.email === data.email);
-        if (!userToUpdate) {
-          userToUpdate = existingUsers.find(user => user.username === data.username);
-        }
-        if (!userToUpdate) {
-          userToUpdate = existingUsers[0]; // Fallback to first user found
-        }
-
-        console.log("🔄 Updating existing user:", userToUpdate.id);
-
-        // Update existing user
+      if (existingByEmail) {
+        console.log("🔄 Found existing user by email, updating:", existingByEmail.id);
+        
+        // Update existing user found by email
         const { data: updatedUser, error: updateError } = await supabase
           .from("user_profiles")
           .update({
@@ -62,7 +51,7 @@ export class UserProfileService {
             email: data.email,
             last_active: new Date().toISOString()
           })
-          .eq("id", userToUpdate.id)
+          .eq("id", existingByEmail.id)
           .select()
           .single();
 
@@ -73,29 +62,96 @@ export class UserProfileService {
 
         console.log("✅ User updated successfully:", updatedUser.id);
         return updatedUser;
-      } else {
-        console.log("➕ Creating new user");
+      }
 
-        // Create new user
-        const { data: newUser, error: createError } = await supabase
+      // If not found by email, try to find by username
+      const { data: existingByUsername, error: usernameError } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("username", data.username)
+        .maybeSingle();
+
+      if (usernameError && usernameError.code !== "PGRST116") {
+        console.error("❌ Error finding user by username:", usernameError);
+        throw usernameError;
+      }
+
+      if (existingByUsername) {
+        console.log("🔄 Found existing user by username, updating:", existingByUsername.id);
+        
+        // Update existing user found by username
+        const { data: updatedUser, error: updateError } = await supabase
           .from("user_profiles")
-          .insert([{
+          .update({
             username: data.username,
             email: data.email,
-            total_points: 0,
             last_active: new Date().toISOString()
-          }])
+          })
+          .eq("id", existingByUsername.id)
           .select()
           .single();
 
-        if (createError) {
-          console.error("❌ Error creating user:", createError);
-          throw createError;
+        if (updateError) {
+          console.error("❌ Error updating user:", updateError);
+          throw updateError;
         }
 
-        console.log("✅ User created successfully:", newUser.id);
-        return newUser;
+        console.log("✅ User updated successfully:", updatedUser.id);
+        return updatedUser;
       }
+
+      // No existing user found, create new one
+      console.log("➕ Creating new user");
+
+      const { data: newUser, error: createError } = await supabase
+        .from("user_profiles")
+        .insert([{
+          username: data.username,
+          email: data.email,
+          total_points: 0,
+          last_active: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (createError) {
+        // If we get a duplicate key error, it means another request created the user
+        // between our check and insert. Try to find and return the existing user.
+        if (createError.code === "23505") { // PostgreSQL unique constraint violation
+          console.log("🔄 Duplicate key detected, trying to find existing user...");
+          
+          // Try to find by email first
+          const { data: existingUser } = await supabase
+            .from("user_profiles")
+            .select("*")
+            .eq("email", data.email)
+            .single();
+            
+          if (existingUser) {
+            console.log("✅ Found existing user after duplicate key error:", existingUser.id);
+            return existingUser;
+          }
+          
+          // If not found by email, try username
+          const { data: existingUserByUsername } = await supabase
+            .from("user_profiles")
+            .select("*")
+            .eq("username", data.username)
+            .single();
+            
+          if (existingUserByUsername) {
+            console.log("✅ Found existing user by username after duplicate key error:", existingUserByUsername.id);
+            return existingUserByUsername;
+          }
+        }
+        
+        console.error("❌ Error creating user:", createError);
+        throw createError;
+      }
+
+      console.log("✅ User created successfully:", newUser.id);
+      return newUser;
+      
     } catch (error) {
       console.error("❌ Error in createOrUpdateUserProfile:", error);
       throw error;
