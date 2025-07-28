@@ -244,7 +244,7 @@ export default function WeeklyPage() {
     e.preventDefault();
     const touch = e.touches[0];
     const rect = e.currentTarget.getBoundingClientRect();
-      Tap, Hold and Drag Artists to Grid 
+    
     setDraggedArtist(artistUuid);
     setIsDragging(true);
     setDragOffset({
@@ -445,9 +445,10 @@ export default function WeeklyPage() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+                  </div>
+                  <h2 className="text-lg font-bold text-white mb-3">Tap, Hold and Drag Artists to Grid</h2>
               </div>
-              Tap, Hold and Drag Artists to Grid 
+       
       </div>
 
 
