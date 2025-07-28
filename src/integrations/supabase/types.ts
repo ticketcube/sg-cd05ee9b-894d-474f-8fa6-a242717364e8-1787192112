@@ -569,14 +569,7 @@ export type Database = {
                 }[]
             }
             increment_user_points: {
-                Args:
-                | { user_id_to_update: number; points_to_add: number }
-                | { user_id_to_update: number; points_to_add: number }
-                | {
-                    user_id_to_update: number
-                    points_to_add: number
-                    action_description?: string
-                }
+                Args: { user_id_to_update: number; points_to_add: number }
                 Returns: undefined
             }
             insert_ticket_entry: {
