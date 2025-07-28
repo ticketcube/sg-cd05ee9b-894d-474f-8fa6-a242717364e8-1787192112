@@ -318,16 +318,16 @@ export default function WeeklyPage() {
           </p>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="bg-green-900 p-2 rounded">
-              <strong>Top Right:</strong> Want tickets + Tell Friends
+              <strong>Top Right:</strong> Want tickets + Would Hype
             </div>
             <div className="bg-blue-900 p-2 rounded">
-              <strong>Top Left:</strong> No tickets + Tell Friends
+              <strong>Top Left:</strong> No tickets + Would Hype
             </div>
             <div className="bg-yellow-900 p-2 rounded">
-              <strong>Bottom Right:</strong> Want tickets + Keep Private
+              <strong>Bottom Right:</strong> Want tickets + Wouldn't Hype
             </div>
             <div className="bg-red-900 p-2 rounded">
-              <strong>Bottom Left:</strong> No tickets + Keep Private
+              <strong>Bottom Left:</strong> No tickets + Wouldn't Hype
             </div>
           </div>
         </div>
@@ -462,10 +462,10 @@ export default function WeeklyPage() {
               >
                 {/* Axis Labels */}
                 <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
-                  Tell Friends
+                  Would Hype
                 </div>
                 <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
-                  Keep Private
+                  Wouldn't Hype
                 </div>
                 <div className="absolute left-2 top-1/2 transform -translate-y-1/2 -rotate-90 text-xs text-gray-400">
                   No Tickets
