@@ -447,7 +447,7 @@ export default function WeeklyPage() {
             </Select>
           </div>
               </div>
-              <h2 className="text-lg font-bold text-white mb-3">Tap, Hold and Drag Artists to Grid</h2>
+              Tap, Hold and Drag Artists to Grid 
       </div>
 
 
