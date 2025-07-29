@@ -59,14 +59,7 @@ export function LogoSection() {
         className="flex flex-col sm:flex-row gap-4 w-full max-w-lg"
           >
 
-              <Button
-                  onClick={() => router.push("/top100")}
-                  size="lg"
-                  className="flex-1 text-lg font-semibold bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600 transition-all duration-300 shadow-lg hover:shadow-xl py-4 px-6 h-auto"
-              >
-                  GROOVER Artists
-                  
-              </Button>
+             
         <Button 
           onClick={() => router.push("/top100")}
           size="lg"
@@ -83,6 +76,14 @@ export function LogoSection() {
           OTW 750
               </Button>
 
+              <Button
+                  onClick={() => router.push("/top100")}
+                  size="lg"
+                  className="flex-1 text-lg font-semibold bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600 transition-all duration-300 shadow-lg hover:shadow-xl py-4 px-6 h-auto"
+              >
+                  GROOVER ARTISTS
+
+              </Button>
         
       </motion.div>
     </motion.div>
