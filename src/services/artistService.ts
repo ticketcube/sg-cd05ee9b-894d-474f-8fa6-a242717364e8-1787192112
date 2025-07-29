@@ -54,7 +54,7 @@ export class ArtistService {
     try {
       const { data, error } = await supabase
         .from("artists")
-          .eq("Top_List", "Groover")
+        .select("*")
         .eq("artist_genre", genre);
 
       if (error) {
