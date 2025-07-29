@@ -1,3 +1,4 @@
+
 import { useState, useMemo, Key } from "react";
 import { motion } from "framer-motion";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -181,18 +182,15 @@ const QuadrantSection = ({
 export default function VibeChart({ artists, chartSize = 600 }: VibeChartProps) {
   const [selectedArtist, setSelectedArtist] = useState<VibeArtist | null>(null);
 
-  // Safety check to ensure artists is always an array
-  const safeArtists = Array.isArray(artists) ? artists : [];
-
   const positionedArtists = useMemo(() => {
-    const artistsByVibe = safeArtists.reduce((acc, artist) => {
+    const artistsByVibe = artists.reduce((acc, artist) => {
       const vibe = artist.primary_vibe || "Unknown";
       if (!acc[vibe]) acc[vibe] = [];
       acc[vibe].push(artist);
       return acc;
     }, {} as Record<string, VibeArtist[]>);
 
-    return safeArtists.map(artist => {
+    return artists.map(artist => {
       const vibe = artist.primary_vibe || "Unknown";
       const vibeArtists = artistsByVibe[vibe] || [];
       const index = vibeArtists.indexOf(artist);
@@ -202,7 +200,7 @@ export default function VibeChart({ artists, chartSize = 600 }: VibeChartProps) 
         position: getArtistPosition(artist.primary_vibe, chartSize, index, vibeArtists.length),
       };
     });
-  }, [safeArtists, chartSize]);
+  }, [artists, chartSize]);
 
   return (
     <>
@@ -329,22 +327,22 @@ export default function VibeChart({ artists, chartSize = 600 }: VibeChartProps) 
         <div className="grid grid-cols-1 gap-4">
           <QuadrantSection 
             vibe="Dreamer" 
-            artists={safeArtists} 
+            artists={artists} 
             setSelectedArtist={setSelectedArtist} 
           />
           <QuadrantSection 
             vibe="Rager" 
-            artists={safeArtists} 
+            artists={artists} 
             setSelectedArtist={setSelectedArtist} 
           />
           <QuadrantSection 
             vibe="Rebel" 
-            artists={safeArtists} 
+            artists={artists} 
             setSelectedArtist={setSelectedArtist} 
           />
           <QuadrantSection 
             vibe="Lover" 
-            artists={safeArtists} 
+            artists={artists} 
             setSelectedArtist={setSelectedArtist} 
           />
         </div>
