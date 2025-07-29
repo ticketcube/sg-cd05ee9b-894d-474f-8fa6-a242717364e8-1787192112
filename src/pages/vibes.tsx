@@ -10,24 +10,24 @@ interface VibesPageProps {
 }
 
 export default function VibesPage({ artists }: VibesPageProps) {
-    return (
- <div className="flex items-center gap-3 mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.location.href = "/"}
-              className="text-white hover:bg-gray-800 flex-shrink-0"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <h1 className="text-xl font-bold text-blue-500 truncate">
-                          DISCOVER, EARN , REDEEM!
-            </h1>
-          </div>
+  return (
     
     <>
-      <Head>
+          <Head>
+              <div className="flex items-center gap-3 mb-4">
+                  <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => window.location.href = "/"}
+                      className="text-white hover:bg-gray-800 flex-shrink-0"
+                  >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Back
+                  </Button>
+                  <h1 className="text-xl font-bold text-blue-500 truncate">
+                      DISCOVER, EARN , REDEEM!
+                  </h1>
+              </div>
         <title>Top 100 Vibes Chart - OTW</title>
         <meta name="description" content="Explore the vibes of the top artists." />
       </Head>
