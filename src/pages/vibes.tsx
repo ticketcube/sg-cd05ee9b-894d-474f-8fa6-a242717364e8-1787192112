@@ -64,7 +64,7 @@ const VibesPage: NextPage<VibesPageProps> = ({ initialArtists }) => {
                 Back to Home
               </Button>
               <div className="flex-1">
-                <h1 className="text-2xl md:text-3xl font-bold text-white">OTW 750 Artist Vibe Chart</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-white">Top 100 Artist Vibe Chart</h1>
                 <p className="text-gray-400 text-sm">Discover artists based on their energy and mood</p>
               </div>
             </div>
