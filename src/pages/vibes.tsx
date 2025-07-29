@@ -118,7 +118,7 @@ const VibesPage: NextPage<VibesPageProps> = ({ initialArtists }) => {
 
 export const getStaticProps: GetStaticProps<VibesPageProps> = async () => {
   try {
-    const artists: Artist[] = await artistService.getTop100ArtistsSortedbyVotes();
+    const artists: Artist[] = await artistService.getrtists();
     const vibeArtists: VibeArtist[] = artists.map(artist => ({
       uuid: artist.uuid,
       artist_name: artist.artist_name,
