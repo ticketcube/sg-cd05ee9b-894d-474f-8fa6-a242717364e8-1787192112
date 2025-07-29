@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo, Key } from "react";
+import { useState, useMemo, Key } from "react";
 import { motion } from "framer-motion";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,21 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import Image from "next/image";
 import type { VibeArtist } from "@/types/artists";
-import { artistService } from "@/services/artistService";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  XAxis,
-  YAxis,
-} from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
 import VibeArtistPopup from "./VibeArtistPopup";
 
 interface VibeChartProps {
@@ -92,21 +77,13 @@ const getArtistThumbnail = (artist: VibeArtist): string | null => {
   return null;
 };
 
-interface VibeData {
-  vibe: string;
-  count: number;
-  fill: string;
-}
-
 const QuadrantSection = ({ 
   vibe, 
   artists, 
-  chartSize, 
   setSelectedArtist 
 }: { 
   vibe: string; 
   artists: VibeArtist[]; 
-  chartSize: number; 
   setSelectedArtist: (artist: VibeArtist) => void; 
 }) => {
   const vibeArtists = artists.filter(artist => artist.primary_vibe === vibe);
@@ -203,35 +180,7 @@ const QuadrantSection = ({
 };
 
 export default function VibeChart({ artists, chartSize = 600 }: VibeChartProps) {
-  const [chartData, setChartData] = useState<VibeData[]>([]);
-  const [chartConfig, setChartConfig] = useState<ChartConfig>({
-    count: {
-      label: "Count",
-    },
-  });
   const [selectedArtist, setSelectedArtist] = useState<VibeArtist | null>(null);
-
-  useEffect(() => {
-    const getVibeData = async () => {
-      const data = await artistService.getVibeCounts();
-      const formattedData: VibeData[] = Object.entries(data).map(([vibe, count]) => ({
-        vibe,
-        count: Number(count),
-        fill: `var(--color-${vibe})`,
-      }));
-      setChartData(formattedData);
-
-      const vibeConfig = formattedData.reduce((acc, item) => {
-        acc[item.vibe] = {
-          color: item.fill,
-          label: item.vibe,
-        };
-        return acc;
-      }, {} as ChartConfig);
-      setChartConfig(prev => ({...prev, ...vibeConfig}));
-    };
-    getVibeData();
-  }, []);
 
   const positionedArtists = useMemo(() => {
     const artistsByVibe = artists.reduce((acc, artist) => {
@@ -323,7 +272,7 @@ export default function VibeChart({ artists, chartSize = 600 }: VibeChartProps) 
                                   target.style.display = "none";
                                   const parent = target.parentElement;
                                   if (parent) {
-                                    parent.innerHTML = `<span class="text-white text-xs font-bold truncate px-1 flex items-center justify-center h-full">${artist.artist_name.split(" ").map(word => word[0]).join("").slice(0, 2)}</span>`;
+                                    parent.innerHTML = `<span className="text-white text-xs font-bold truncate px-1 flex items-center justify-center h-full">${artist.artist_name.split(" ").map(word => word[0]).join("").slice(0, 2)}</span>`;
                                   }
                                 }}
                               />
@@ -376,66 +325,28 @@ export default function VibeChart({ artists, chartSize = 600 }: VibeChartProps) 
 
         {/* Mobile/Tablet View - Stacked Quadrants */}
         <div className="lg:hidden space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <QuadrantSection 
               vibe="Dreamer" 
               artists={artists} 
-              chartSize={chartSize} 
               setSelectedArtist={setSelectedArtist} 
             />
             <QuadrantSection 
               vibe="Rager" 
               artists={artists} 
-              chartSize={chartSize} 
               setSelectedArtist={setSelectedArtist} 
             />
             <QuadrantSection 
               vibe="Rebel" 
               artists={artists} 
-              chartSize={chartSize} 
               setSelectedArtist={setSelectedArtist} 
             />
             <QuadrantSection 
               vibe="Lover" 
               artists={artists} 
-              chartSize={chartSize} 
               setSelectedArtist={setSelectedArtist} 
             />
           </div>
-        </div>
-
-        {/* Single Bar Chart - No Multiple Axes */}
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold text-white mb-4 text-center">Vibe Distribution</h3>
-          <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-            <BarChart accessibilityLayer data={chartData}>
-              <CartesianGrid vertical={false} />
-              <YAxis
-                dataKey="vibe"
-                type="category"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-                tickFormatter={(value) =>
-                  (chartConfig[value as keyof typeof chartConfig] as { label: string })?.label || value
-                }
-              />
-              <XAxis dataKey="count" type="number" hide />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Bar dataKey="count" layout="vertical" radius={5}>
-                {chartData.map((entry) => (
-                  <Cell
-                    key={`cell-${entry.vibe}`}
-                    fill={entry.fill}
-                    className="cursor-pointer"
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ChartContainer>
         </div>
       </CardContent>
       {selectedArtist && (
