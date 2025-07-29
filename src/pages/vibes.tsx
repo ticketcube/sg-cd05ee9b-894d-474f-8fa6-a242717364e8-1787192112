@@ -13,13 +13,13 @@ export default function VibesPage({ artists }: VibesPageProps) {
   return (
     <>
       <Head>
-        <title>Vibes Chart - OTW</title>
+        <title>Top 100 Vibes Chart - OTW</title>
         <meta name="description" content="Explore the vibes of the top artists." />
       </Head>
       <div className="container mx-auto px-4 py-8">
         <Card className="bg-black border-gray-700 text-white">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center">Vibes Chart</CardTitle>
+            <CardTitle className="text-3xl font-bold text-center">Top 100 Vibes Chart</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-center text-gray-400 mb-6">
