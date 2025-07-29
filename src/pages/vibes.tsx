@@ -1,4 +1,3 @@
-
 import { GetStaticProps } from "next";
 import Head from "next/head";
 import { VibeArtist } from "@/types/artists";
@@ -35,11 +34,11 @@ export default function VibesPage({ artists }: VibesPageProps) {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const artists = await artistService.getTop100ArtistsSortedByVotes();
+  const result = await artistService.getTop100ArtistsSortedByVotes();
 
   return {
     props: {
-      artists: JSON.parse(JSON.stringify(artists)),
+      artists: JSON.parse(JSON.stringify(result.artists)),
     },
     revalidate: 60,
   };
