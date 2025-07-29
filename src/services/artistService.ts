@@ -54,7 +54,8 @@ export class ArtistService {
     try {
       const { data, error } = await supabase
         .from("artists")
-        .select("*")
+          .select("*")
+          .eq("Top_List", "Groover")
         .eq("artist_genre", genre);
 
       if (error) {
@@ -123,7 +124,8 @@ export class ArtistService {
   async getGenreCounts(): Promise<{ [key: string]: number }> {
     try {
       const { data, error } = await supabase
-        .from("artists")
+          .from("artists")
+          .eq("Top_List", "Groover")
         .select("artist_genre");
 
       if (error) {
