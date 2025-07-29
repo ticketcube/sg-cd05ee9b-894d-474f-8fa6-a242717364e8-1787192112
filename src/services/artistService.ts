@@ -149,6 +149,7 @@ export class ArtistService {
     try {
       const { data, error } = await supabase
         .from("artists")
+        .select("*")
         .eq("Top_List", "100")
         .select("primary_vibe, secondary_vibe");
 
