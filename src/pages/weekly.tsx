@@ -159,7 +159,7 @@ export default function WeeklyPage() {
     }
   };
 
-  const handleLogin = async () => {
+  const handleWelcomeLogin = async () => {
     if (!username.trim() || !email.trim()) {
       alert("Please enter both username and email");
       return;
@@ -172,7 +172,7 @@ export default function WeeklyPage() {
       });
       
       setUserId(userProfile.id);
-      setIsLoginOpen(false);
+      setShowWelcomePopup(false);
       
       // Test points system with the new user
       console.log("🧪 Testing points system with user:", userProfile.id);
@@ -304,7 +304,7 @@ export default function WeeklyPage() {
 
   const handleSubmitVotes = async () => {
     if (!userId) {
-      setIsLoginOpen(true);
+      alert("Please log in first to submit your votes.");
       return;
     }
 
@@ -313,7 +313,7 @@ export default function WeeklyPage() {
       return;
     }
 
-    if (artistPositions.every(pos => pos.x === 0 && pos.y === 0)) {
+    if (artistPositions.length === 0) {
       alert("Please position at least one artist in the quadrants before submitting");
       return;
     }
@@ -783,43 +783,6 @@ export default function WeeklyPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Login Dialog */}
-      <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
-        <DialogContent className="max-w-sm mx-auto bg-white">
-          <DialogHeader>
-            <DialogTitle>Login to Vote & Earn Points</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Input
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            <div className="text-sm text-gray-500">
-              <p>• Earn 5 points for watching videos (15+ seconds)</p>
-              <p>• Earn 10 points for submitting votes</p>
-              <p>• Earn 5 bonus points for voting on all 5 artists</p>
-            </div>
-            <Button onClick={handleLogin} className="w-full">
-              <Mail className="w-4 h-4 mr-2" />
-              Login & Start Voting
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* Success Message Dialog */}
       <Dialog open={successMessage.show} onOpenChange={(open) => setSuccessMessage(prev => ({ ...prev, show: open }))}>
         <DialogContent className="max-w-sm mx-auto bg-white">
@@ -858,7 +821,7 @@ export default function WeeklyPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Welcome Popup */}
+      {/* Welcome Popup with Login */}
       <Dialog open={showWelcomePopup} onOpenChange={setShowWelcomePopup}>
         <DialogContent className="max-w-sm mx-auto bg-white">
           <DialogHeader>
@@ -868,18 +831,40 @@ export default function WeeklyPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="text-center">
-              
-              <div className="text-sm text-gray-500 space-y-2">
+              <div className="text-sm text-gray-500 space-y-2 mb-4">
                 <div>• Earn 5 points for watching videos (15+ seconds)</div>
                 <div>• Earn 10 points for submitting votes</div>
                 <div>• Earn 5 bonus points for voting on all 5 artists</div>
               </div>
             </div>
+            
+            {/* Login Form */}
+            <div className="space-y-3">
+              <div>
+                <Input
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+            
             <Button 
-              onClick={() => setShowWelcomePopup(false)} 
+              onClick={handleWelcomeLogin} 
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
-              Get Started!
+              <Mail className="w-4 h-4 mr-2" />
+              Login & Start Voting
             </Button>
           </div>
         </DialogContent>
@@ -887,4 +872,3 @@ export default function WeeklyPage() {
     </div>
   );
 }
-  
