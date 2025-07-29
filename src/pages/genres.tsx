@@ -49,8 +49,8 @@ export default function GenresPage() {
   return (
     <div className="min-h-screen bg-black text-white p-4">
       <div className="container mx-auto max-w-6xl">
-        <h1 className="text-4xl font-bold mb-6 text-center text-blue-500">10 Years of Discovery</h1>
-        <p className="text-center mb-8 text-lg text-gray-300">Total Artists Covered: {totalArtists}</p>
+        <h1 className="text-4xl font-bold mb-6 text-center text-blue-500">Groover Chart</h1>
+        <p className="text-center mb-8 text-lg text-gray-300">Total Artist Introductions: {totalArtists}</p>
         
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="w-full lg:w-2/3">
