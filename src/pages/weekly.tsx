@@ -822,16 +822,12 @@ export default function WeeklyPage() {
       </Dialog>
 
       {/* Welcome Popup with Login */}
-      <Dialog open={showWelcomePopup} /* omit onOpenChange or keep it; see below */>
+      <Dialog open={showWelcomePopup}>
         <DialogContent
-          // Stop overlay click + Esc from closing the dialog
           onPointerDownOutside={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => e.preventDefault()}
-
-          // Hide the built‑in Close (“X”) button
           className="max-w-sm mx-auto bg-white [&>button[aria-label='Close']]:hidden"
         >
-        <DialogContent className="max-w-sm mx-auto bg-white">
           <DialogHeader>
             <DialogTitle className="text-center text-blue-600">
               Watch Videos, Share Interest & Earn Free Tickets!
