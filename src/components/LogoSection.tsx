@@ -61,7 +61,7 @@ export function LogoSection() {
 
              
         <Button 
-          onClick={() => router.push("/top100")}
+          onClick={() => router.push("/vibes")}
           size="lg"
           className="flex-1 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl py-4 px-6 h-auto"
         >
