@@ -1,4 +1,3 @@
-
 import { useState, useMemo, Key } from "react";
 import { motion } from "framer-motion";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -89,7 +88,7 @@ const QuadrantSection = ({
   const vibeArtists = artists.filter(artist => artist.primary_vibe === vibe);
   
   return (
-    <div className="bg-black/20 rounded-lg p-4 min-h-[200px] relative">
+    <div className="bg-black rounded-lg p-4 min-h-[200px] relative">
       <h3 className="text-xl font-bold text-white mb-4 text-center bg-black/80 px-3 py-2 rounded-lg border border-gray-600">
         {vibe}
       </h3>
@@ -206,7 +205,7 @@ export default function VibeChart({ artists, chartSize = 600 }: VibeChartProps) 
     <>
       {/* Desktop View - Quadrant Chart */}
       <div className="hidden lg:block">
-        <div className="relative mx-auto overflow-hidden rounded-lg bg-black/20" style={{ width: chartSize, height: chartSize }}>
+        <div className="relative mx-auto overflow-hidden rounded-lg bg-black" style={{ width: chartSize, height: chartSize }}>
           {/* Axes */}
           <div className="absolute top-1/2 left-0 w-full h-px bg-gray-600 -translate-y-1/2" />
           <div className="absolute left-1/2 top-0 h-full w-px bg-gray-600 -translate-x-1/2" />

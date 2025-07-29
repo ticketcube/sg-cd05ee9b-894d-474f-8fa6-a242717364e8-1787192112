@@ -17,7 +17,7 @@ export default function VibesPage({ artists }: VibesPageProps) {
         <meta name="description" content="Explore the vibes of the top artists." />
       </Head>
       <div className="container mx-auto px-4 py-8">
-        <Card className="bg-gray-900/50 border-gray-700 text-white">
+        <Card className="bg-black border-gray-700 text-white">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-center">Vibes Chart</CardTitle>
           </CardHeader>
