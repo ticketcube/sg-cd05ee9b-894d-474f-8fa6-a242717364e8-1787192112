@@ -822,25 +822,61 @@ export default function WeeklyPage() {
       </Dialog>
 
       {/* Welcome Popup with Login */}
-<Dialog open={showWelcomePopup} /* omit onOpenChange or keep it; see below */>
-  <DialogContent
-    // Stop overlay click + Esc from closing the dialog
-    onPointerDownOutside={(e) => e.preventDefault()}
-    onEscapeKeyDown={(e) => e.preventDefault()}
+      <Dialog open={showWelcomePopup} /* omit onOpenChange or keep it; see below */>
+        <DialogContent
+          // Stop overlay click + Esc from closing the dialog
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
 
-    // Hide the built‑in Close (“X”) button
-    className="max-w-sm mx-auto bg-white [&>button[aria-label='Close']]:hidden"
-  >
-    <DialogHeader>
-      <DialogTitle className="text-center text-blue-600">
-        Watch Videos, Share Interest & Earn Free Tickets!
-      </DialogTitle>
-    </DialogHeader>
-
-    {/* … your content … */}
-
-  </DialogContent>
-</Dialog>
+          // Hide the built‑in Close (“X”) button
+          className="max-w-sm mx-auto bg-white [&>button[aria-label='Close']]:hidden"
+        >
+        <DialogContent className="max-w-sm mx-auto bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-center text-blue-600">
+              Watch Videos, Share Interest & Earn Free Tickets!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="text-sm text-gray-500 space-y-2 mb-4">
+                <div>• Earn 5 points for watching videos (15+ seconds)</div>
+                <div>• Earn 10 points for submitting votes</div>
+                <div>• Earn 5 bonus points for voting on all 5 artists</div>
+              </div>
+            </div>
+            
+            {/* Login Form */}
+            <div className="space-y-3">
+              <div>
+                <Input
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+            
+            <Button 
+              onClick={handleWelcomeLogin} 
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Login & Start Voting
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
