@@ -181,7 +181,6 @@ export class ArtistService {
         .from("artists")
         .select("*")
         .eq("Top_List", "100")
-        .or(`primary_vibe.eq.${vibe},secondary_vibe.eq.${vibe}`);
 
       if (error) {
         console.error(`Error fetching artists for vibe ${vibe}:`, error);
