@@ -34,7 +34,8 @@ export default function VibesPage({ artists }: VibesPageProps) {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const result = await artistService.getTop100ArtistsSortedByVotes();
+  // Get all 100 artists without pagination by setting a high limit
+  const result = await artistService.getTop100ArtistsSortedByVotes(1, 100);
 
   return {
     props: {
