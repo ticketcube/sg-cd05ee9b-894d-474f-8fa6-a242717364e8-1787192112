@@ -125,8 +125,9 @@ export class ArtistService {
     try {
       const { data, error } = await supabase
           .from("artists")
+          .select("artist_genre")
           .eq("Top_List", "Groover")
-        .select("artist_genre");
+       ;
 
       if (error) {
         console.error("Error fetching genre counts:", error);
