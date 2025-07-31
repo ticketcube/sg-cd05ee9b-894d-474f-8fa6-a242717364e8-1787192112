@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { artistService } from "@/services/artistService";
 import type { Artist, ArtistWithVoteCount } from "@/types/artists";
@@ -9,17 +10,21 @@ import { cn } from "@/lib/utils";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { votingService } from "@/services/votingService";
 import { Top100ArtistPopup } from "@/components/Top100ArtistPopup";
+import AuthGuard from "@/components/AuthGuard";
+import { useAuth } from "@/contexts/AuthContext";
 
 type VotingState = "initial" | "voting" | "submitted";
 
 const ARTISTS_PER_PAGE = 25;
+const REQUIRED_PASSCODE = "otw10";
 
 export default function Top100Page() {
+  const { user } = useAuth();
   const [artists, setArtists] = useState<ArtistWithVoteCount[]>([]);
-  const [isUsernameDialogOpen, setIsUsernameDialogOpen] = useState(false);
+  const [isPasscodeDialogOpen, setIsPasscodeDialogOpen] = useState(false);
   const [isSubmissionDialogOpen, setIsSubmissionDialogOpen] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
-  const [username, setUsername] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [email, setEmail] = useState("");
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
   const [votingState, setVotingState] = useState<VotingState>("initial");
@@ -79,8 +84,13 @@ export default function Top100Page() {
   const handleVote = (artist: Artist, event?: React.MouseEvent) => {
     event?.stopPropagation();
     
+    if (!user) {
+      alert("Please log in to vote");
+      return;
+    }
+    
     if (votingState !== "voting") {
-      setIsUsernameDialogOpen(true);
+      setIsPasscodeDialogOpen(true);
       return;
     }
 
@@ -97,15 +107,21 @@ export default function Top100Page() {
   };
 
   const handleStartVoting = () => {
-    if (!username.trim()) {
-      alert("Please enter a username");
+    if (passcode.trim() !== REQUIRED_PASSCODE) {
+      alert("Invalid passcode. Please enter the correct passcode to vote.");
       return;
     }
     setVotingState("voting");
-    setIsUsernameDialogOpen(false);
+    setIsPasscodeDialogOpen(false);
+    setPasscode("");
   };
 
   const handleSubmitVotes = async () => {
+    if (!user) {
+      alert("Please log in to submit votes");
+      return;
+    }
+
     if (selectedArtists.length === 0) {
       alert("Please select at least one artist before submitting");
       return;
@@ -115,7 +131,7 @@ export default function Top100Page() {
       const votes = selectedArtists.map(artistUUID => {
         const artist = artists.find(a => a.uuid === artistUUID);
         return {
-          username,
+          username: user.username,
           artist_uuid: artistUUID,
           artist_otwid: artist && 'artist_otwid' in artist && artist.artist_otwid ? parseInt(String(artist.artist_otwid), 10) : null
         };
@@ -138,8 +154,13 @@ export default function Top100Page() {
       return;
     }
 
+    if (!user) {
+      alert("Please log in to enter drawing");
+      return;
+    }
+
     try {
-      await votingService.enterTicketDrawing(email, username);
+      await votingService.enterTicketDrawing(email, user.username);
       setIsSubmissionDialogOpen(false);
       setShowThankYou(true);
       setTimeout(() => {
@@ -153,10 +174,10 @@ export default function Top100Page() {
 
   const resetVoting = () => {
     setVotingState("initial");
-    setUsername("");
+    setPasscode("");
     setEmail("");
     setSelectedArtists([]);
-    setIsUsernameDialogOpen(false);
+    setIsPasscodeDialogOpen(false);
     setIsSubmissionDialogOpen(false);
     setShowThankYou(false);
   };
@@ -177,7 +198,7 @@ export default function Top100Page() {
   const handleMainButtonClick = () => {
     switch (votingState) {
       case "initial":
-        setIsUsernameDialogOpen(true);
+        setIsPasscodeDialogOpen(true);
         break;
       case "voting":
         handleSubmitVotes();
@@ -232,175 +253,183 @@ export default function Top100Page() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="sticky top-0 bg-black z-10 p-3 sm:p-4 border-b border-gray-800">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.location.href = "/"}
-              className="text-white hover:bg-gray-800 flex-shrink-0"
-            >
-              <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Back to Chart</span>
-              <span className="sm:hidden">Back</span>
-            </Button>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 truncate">Top OTW Artists</h1>
-              <p className="text-xs sm:text-sm text-gray-400">
-                Showing {artists.length} of {totalCount} artists
-              </p>
+    <AuthGuard>
+      <div className="min-h-screen bg-black text-white">
+        <div className="sticky top-0 bg-black z-10 p-3 sm:p-4 border-b border-gray-800">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.location.href = "/discovery-charts"}
+                className="text-white hover:bg-gray-800 flex-shrink-0"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Back to Charts</span>
+                <span className="sm:hidden">Back</span>
+              </Button>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 truncate">Top 100 OTW Artists</h1>
+                <p className="text-xs sm:text-sm text-gray-400">
+                  Showing {artists.length} of {totalCount} artists
+                </p>
+              </div>
             </div>
+            
+            <Button
+              className="w-full text-base sm:text-lg md:text-xl py-3 sm:py-4 md:py-6 bg-white text-black hover:bg-gray-100"
+              onClick={handleMainButtonClick}
+              disabled={votingState === "submitted"}
+            >
+              {getMainButtonText()}
+            </Button>
           </div>
-          
-          <Button
-            className="w-full text-base sm:text-lg md:text-xl py-3 sm:py-4 md:py-6 bg-white text-black hover:bg-gray-100"
-            onClick={handleMainButtonClick}
-            disabled={votingState === "submitted"}
-          >
-            {getMainButtonText()}
-          </Button>
         </div>
-      </div>
 
-      <div className="p-2 sm:p-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="grid gap-2">
-            {artists.map((artist, index) => {
-              const isLast = index === artists.length - 1;
-              const isSelected = selectedArtists.includes(artist.uuid);
-              
-              return (
-                <div
-                  key={artist.uuid}
-                  ref={isLast ? lastArtistElementRef : null}
-                  className={cn(
-                    "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
-                    isSelected && "ring-2 ring-green-500 bg-gray-800"
-                  )}
-                  onClick={() => handleRowClick(artist)}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="text-lg sm:text-xl font-bold text-gray-500 w-5 sm:w-6 flex-shrink-0">
-                      {artist.rank || index + 1}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm sm:text-base truncate">{artist.artist_name}</h3>
-                      <div className="text-xs text-gray-400">
-                        <p>Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}</p>
-                        {artist.vote_count > 0 && (
-                          <p className="text-blue-400">{artist.vote_count} votes</p>
+        <div className="p-2 sm:p-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="grid gap-2">
+              {artists.map((artist, index) => {
+                const isLast = index === artists.length - 1;
+                const isSelected = selectedArtists.includes(artist.uuid);
+                
+                return (
+                  <div
+                    key={artist.uuid}
+                    ref={isLast ? lastArtistElementRef : null}
+                    className={cn(
+                      "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
+                      isSelected && "ring-2 ring-green-500 bg-gray-800"
+                    )}
+                    onClick={() => handleRowClick(artist)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="text-lg sm:text-xl font-bold text-gray-500 w-5 sm:w-6 flex-shrink-0">
+                        {artist.rank || index + 1}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm sm:text-base truncate">{artist.artist_name}</h3>
+                        <div className="text-xs text-gray-400">
+                          <p>Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}</p>
+                          {artist.vote_count > 0 && (
+                            <p className="text-blue-400">{artist.vote_count} votes</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                        <ArtistVideoPlayer 
+                          artist={artist}
+                          size="sm"
+                          className="hover:scale-105 transition-transform duration-200"
+                        />
+                        
+                        <Button
+                          onClick={(e) => handleVote(artist, e)}
+                          className={cn(
+                            "px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm font-semibold transition-all duration-200 hover:scale-105",
+                            isSelected 
+                              ? "bg-green-500 hover:bg-green-600 text-white" 
+                              : "bg-purple-500 hover:bg-purple-600 text-white"
+                          )}
+                        >
+                          {isSelected ? "✓" : "VOTE"}
+                        </Button>
+                        
+                        {isSelected && (
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
                         )}
                       </div>
                     </div>
-                    
-                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                      <ArtistVideoPlayer 
-                        artist={artist}
-                        size="sm"
-                        className="hover:scale-105 transition-transform duration-200"
-                      />
-                      
-                      <Button
-                        onClick={(e) => handleVote(artist, e)}
-                        className={cn(
-                          "px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm font-semibold transition-all duration-200 hover:scale-105",
-                          isSelected 
-                            ? "bg-green-500 hover:bg-green-600 text-white" 
-                            : "bg-purple-500 hover:bg-purple-600 text-white"
-                        )}
-                      >
-                        {isSelected ? "✓" : "VOTE"}
-                      </Button>
-                      
-                      {isSelected && (
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
-                      )}
-                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-        
-        {loadingMore && (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin mr-2" />
-            <span className="text-gray-400">Loading more artists...</span>
-          </div>
-        )}
-        
-        {!hasMore && artists.length > 0 && (
-          <div className="text-center py-8 text-gray-400">
-            <p>You've reached the end of the list!</p>
-          </div>
-        )}
-      </div>
-
-      {selectedArtist && isPopupOpen && (
-        <Top100ArtistPopup 
-          artist={selectedArtist} 
-          isOpen={isPopupOpen}
-          onClose={handleClosePopup} 
-          onVote={handleVote}
-          selectedArtists={selectedArtists}
-        />
-      )}
-
-      <Dialog open={isUsernameDialogOpen} onOpenChange={setIsUsernameDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Enter Your Username</DialogTitle>
-          </DialogHeader>
-          <Input
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <p className="text-sm text-gray-500">
-            Selected: {selectedArtists.length}/25 artists
-          </p>
-          <Button onClick={handleStartVoting}>
-            Start Voting
-          </Button>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isSubmissionDialogOpen} onOpenChange={setIsSubmissionDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Votes Submitted Successfully!</DialogTitle>
-          </DialogHeader>
-          <p className="mb-4">You voted for {selectedArtists.length} artists.</p>
           
-          <div className="space-y-4">
-            <div>
+          {loadingMore && (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin mr-2" />
+              <span className="text-gray-400">Loading more artists...</span>
+            </div>
+          )}
+          
+          {!hasMore && artists.length > 0 && (
+            <div className="text-center py-8 text-gray-400">
+              <p>You've reached the end of the list!</p>
+            </div>
+          )}
+        </div>
+
+        {selectedArtist && isPopupOpen && (
+          <Top100ArtistPopup 
+            artist={selectedArtist} 
+            isOpen={isPopupOpen}
+            onClose={handleClosePopup} 
+            onVote={handleVote}
+            selectedArtists={selectedArtists}
+          />
+        )}
+
+        <Dialog open={isPasscodeDialogOpen} onOpenChange={setIsPasscodeDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Enter Voting Passcode</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Enter the special passcode to unlock voting on the Top 100 artists.
+              </p>
               <Input
-                placeholder="Enter your email for free tickets drawing"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
+                placeholder="Enter passcode"
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                type="password"
               />
-              <Button 
-                className="w-full mt-2 bg-green-500 hover:bg-green-600"
-                onClick={handleEnterDrawing}
-              >
-                ENTER DRAWING FOR FREE TICKETS
+              <p className="text-sm text-gray-500">
+                Selected: {selectedArtists.length}/25 artists
+              </p>
+              <Button onClick={handleStartVoting} className="w-full">
+                Start Voting
               </Button>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isSubmissionDialogOpen} onOpenChange={setIsSubmissionDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Votes Submitted Successfully!</DialogTitle>
+            </DialogHeader>
+            <p className="mb-4">You voted for {selectedArtists.length} artists.</p>
             
-            <Button 
-              className="w-full bg-blue-500 hover:bg-blue-600"
-              onClick={resetVoting}
-            >
-              FINISH VOTING
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+            <div className="space-y-4">
+              <div>
+                <Input
+                  placeholder="Enter your email for free tickets drawing"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                />
+                <Button 
+                  className="w-full mt-2 bg-green-500 hover:bg-green-600"
+                  onClick={handleEnterDrawing}
+                >
+                  ENTER DRAWING FOR FREE TICKETS
+                </Button>
+              </div>
+              
+              <Button 
+                className="w-full bg-blue-500 hover:bg-blue-600"
+                onClick={resetVoting}
+              >
+                FINISH VOTING
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </AuthGuard>
   );
 }

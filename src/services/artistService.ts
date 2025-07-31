@@ -36,18 +36,32 @@ export class ArtistService {
     }
   }
 
-  async getAllArtists(): Promise<Artist[]> {
-    try {
-      const { data, error } = await supabase.from("artists").select("*");
-      if (error) {
-        console.error("Error fetching all artists:", error);
-        throw error;
-      }
-      return data as Artist[];
-    } catch (error) {
-      console.error("Unexpected error in getAllArtists:", error);
-      return [];
+  async getAllArtists(page: number = 1, limit: number = 50): Promise<{ artists: ArtistWithVoteCount[], count: number }> {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, error, count } = await supabase
+      .from('artists')
+      .select(`
+        *,
+        artist_votes!left(count)
+      `, { count: 'exact' })
+      .order('artist_name', { ascending: true })
+      .range(from, to);
+
+    if (error) {
+      throw new Error(`Failed to fetch all artists: ${error.message}`);
     }
+
+    const artistsWithVoteCount: ArtistWithVoteCount[] = (data || []).map(artist => ({
+      ...artist,
+      vote_count: artist.artist_votes?.[0]?.count || 0
+    }));
+
+    return {
+      artists: artistsWithVoteCount,
+      count: count || 0
+    };
   }
 
   async getArtistsByGenre(genre: string): Promise<Artist[]> {
