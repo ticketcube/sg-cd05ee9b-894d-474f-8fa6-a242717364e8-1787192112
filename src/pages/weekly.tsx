@@ -196,6 +196,7 @@ function WeeklyPageContent() {
       setSubmitted(true);
       setSuccessMessage({ show: true, pointsEarned: result.pointsEarned, votesSubmitted: result.votesSubmitted });
     } catch (error) {
+      console.error("Error submitting votes:", error);
       alert("Error submitting votes. Please try again.");
     } finally {
       setSubmitting(false);

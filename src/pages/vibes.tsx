@@ -46,6 +46,6 @@ export default function VibesPage() {
           <VibeChart artists={artists} />
         )}
       </div>
-    </Auth-Guard>
+    </AuthGuard>
   );
 }

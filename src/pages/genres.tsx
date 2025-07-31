@@ -20,6 +20,7 @@ export default function GenresPage() {
         const counts = await artistService.getGenreCounts();
         setGenreCounts(counts);
       } catch (err) {
+        console.error("Failed to load genre data:", err);
         setError("Failed to load genre data. Please try again later.");
       } finally {
         setLoading(false);
