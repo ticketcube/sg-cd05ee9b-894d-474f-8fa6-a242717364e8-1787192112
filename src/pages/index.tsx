@@ -116,7 +116,7 @@ export default function HomePage() {
                 <ul className="space-y-2 text-sm text-white/80 mb-6">
                   <li>• Top 100 artists of the decade</li>
                   <li>• Complete artist database (750+)</li>
-                  <li>• Genre-specific rankings</li>
+                  <li>• Groover Featured Artists</li>
                 </ul>
               </div>
               <Button 
