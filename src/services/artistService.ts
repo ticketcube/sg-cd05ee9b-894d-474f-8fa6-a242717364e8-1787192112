@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Artist, ArtistWithVoteCount } from "@/types/artists";
+import type { ArtistWithLocation } from "@/types/map";
 
 export class ArtistService {
   async getArtists(
@@ -437,6 +438,46 @@ export class ArtistService {
     } catch (error) {
       console.error("Error in getTop100ArtistsSortedByVotes:", error);
       return { artists: [], count: 0 };
+    }
+  }
+
+  async getGrooverArtistsWithLocations(): Promise<ArtistWithLocation[]> {
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .select(`
+          uuid,
+          artist_name,
+          artist_home,
+          artist_image,
+          artist_genre,
+          artist_bio,
+          artist_videolink,
+          artist_audiolink,
+          cityid,
+          city_latlong:cityid (
+            id,
+            name,
+            latitude,
+            longitude,
+            created_at
+          )
+        `)
+        .eq("Top_List", "Groover")
+        .not("cityid", "is", null);
+
+      if (error) {
+        console.error("Error fetching Groover artists with locations:", error);
+        throw error;
+      }
+
+      return data.map(artist => ({
+        ...artist,
+        city: artist.city_latlong
+      })) as ArtistWithLocation[];
+    } catch (error) {
+      console.error("Unexpected error in getGrooverArtistsWithLocations:", error);
+      return [];
     }
   }
 }
