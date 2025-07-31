@@ -52,10 +52,7 @@ export default function Top100Page() {
       
       setArtists(prev => refresh ? newArtists : [...prev, ...newArtists]);
       setTotalCount(count);
-      
-      // Fix hasMore logic: check if we've loaded all available artists
-      const totalLoadedAfterThis = refresh ? newArtists.length : artists.length + newArtists.length;
-      setHasMore(totalLoadedAfterThis < count && newArtists.length === ARTISTS_PER_PAGE);
+      setHasMore(newArtists.length === ARTISTS_PER_PAGE);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
@@ -70,22 +67,20 @@ export default function Top100Page() {
   }, [loadArtists]);
 
   const lastArtistElementRef = useCallback((node: HTMLDivElement) => {
-    if (loadingMore || !hasMore) return;
+    if (loadingMore) return;
     if (observer.current) observer.current.disconnect();
     
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) {
+      if (entries[0].isIntersecting && hasMore) {
         page.current += 1;
         loadArtists(page.current);
       }
     });
     
     if (node) observer.current.observe(node);
-  }, [loadingMore, hasMore, loadArtists]);
+  }, [loadingMore, hasMore]);
 
-  const handleVote = (artist: Artist, event?: React.MouseEvent) => {
-    event?.stopPropagation();
-    
+  const handleVote = async (artistId: string) => {
     if (!user) {
       alert("Please log in to vote");
       return;
@@ -96,16 +91,22 @@ export default function Top100Page() {
       return;
     }
 
-    if (selectedArtists.length >= 25 && !selectedArtists.includes(artist.uuid)) {
+    if (selectedArtists.length >= 25 && !selectedArtists.includes(artistId)) {
       alert("You can only select up to 25 artists!");
       return;
     }
+    
+    const isAlreadySelected = selectedArtists.includes(artistId);
 
+    // Optimistically update UI
     setSelectedArtists(prev => 
-      prev.includes(artist.uuid)
-        ? prev.filter(id => id !== artist.uuid)
-        : [...prev, artist.uuid]
+      isAlreadySelected
+        ? prev.filter(id => id !== artistId)
+        : [...prev, artistId]
     );
+
+    // We don't award points for Top 100 votes, so we just manage the local state for submission.
+    // The actual vote submission happens in `handleSubmitVotes`.
   };
 
   const handleStartVoting = () => {
@@ -130,16 +131,12 @@ export default function Top100Page() {
     }
 
     try {
-      const votes = selectedArtists.map(artistUUID => {
-        const artist = artists.find(a => a.uuid === artistUUID);
-        return {
-          username: user.username,
-          artist_uuid: artistUUID,
-          artist_otwid: artist && 'artist_otwid' in artist && artist.artist_otwid ? parseInt(String(artist.artist_otwid), 10) : null
-        };
-      });
+      const votesToSubmit = selectedArtists.map(artistUUID => ({
+        user_id: user.id,
+        artist_uuid: artistUUID,
+      }));
 
-      await votingService.submitVotes(votes);
+      await votingService.submitVotes(votesToSubmit);
       setVotingState("submitted");
       setIsSubmissionDialogOpen(true);
       page.current = 1;
@@ -288,7 +285,7 @@ export default function Top100Page() {
           </div>
         </div>
 
-        <div className="p-2 sm:p-4">
+        <div className="p-2 sm:p-4 pb-32">
           <div className="max-w-3xl mx-auto">
             <div className="grid gap-2">
               {artists.map((artist, index) => {
@@ -328,7 +325,10 @@ export default function Top100Page() {
                         />
                         
                         <Button
-                          onClick={(e) => handleVote(artist, e)}
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent row click
+                            handleVote(artist.uuid);
+                          }}
                           className={cn(
                             "px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm font-semibold transition-all duration-200 hover:scale-105",
                             isSelected 
@@ -369,7 +369,9 @@ export default function Top100Page() {
             artist={selectedArtist} 
             isOpen={isPopupOpen}
             onClose={handleClosePopup} 
-            onVote={handleVote}
+            onVote={(artist) => {
+              handleVote(artist.uuid);
+            }}
             selectedArtists={selectedArtists}
           />
         )}
