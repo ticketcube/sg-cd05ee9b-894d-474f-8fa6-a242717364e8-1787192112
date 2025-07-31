@@ -372,22 +372,7 @@ export class ArtistService {
 
   async getTop100ArtistsSortedByVotes(page: number = 1, limit: number = 25): Promise<{ artists: ArtistWithVoteCount[], count: number }> {
     try {
-      // First, get all artists where Top_List = '100'
-      const { data: top100Artists, error: artistsError } = await supabase
-        .from("artists")
-        .select("*")
-        .eq("Top_List", "100");
-
-      if (artistsError) {
-        console.error("Error fetching Top 100 artists:", artistsError);
-        return { artists: [], count: 0 };
-      }
-
-      if (!top100Artists || top100Artists.length === 0) {
-        return { artists: [], count: 0 };
-      }
-
-      // Get all votes to count them
+      // First, get all votes to determine the vote counts for sorting
       const { data: votes, error: votesError } = await supabase
         .from("top25_votes")
         .select("artist_uuid");
@@ -396,42 +381,62 @@ export class ArtistService {
         console.error("Error fetching votes:", votesError);
         return { artists: [], count: 0 };
       }
-
-      // Count votes per artist
+      
       const voteCounts = votes.reduce((acc, vote) => {
         if (vote.artist_uuid) {
           acc[vote.artist_uuid] = (acc[vote.artist_uuid] || 0) + 1;
         }
         return acc;
       }, {} as { [key: string]: number });
+      
+      // Now, fetch only the paginated artists who are in the Top 100 list
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
 
-      // Add vote counts to artists and sort: first by vote count (desc), then alphabetically
+      // Get the total count of Top 100 artists separately for accurate pagination info
+      const { count, error: countError } = await supabase
+        .from("artists")
+        .select('*', { count: 'exact', head: true })
+        .eq("Top_List", "100");
+
+      if (countError) {
+        console.error("Error fetching Top 100 artist count:", countError);
+        throw countError;
+      }
+
+      // Fetch the artist data, but since we cannot sort by a derived value (vote_count)
+      // directly in this query, we fetch all and sort in memory.
+      // This is a trade-off. A more advanced solution would be a DB function.
+      const { data: top100Artists, error: artistsError } = await supabase
+        .from("artists")
+        .select("*")
+        .eq("Top_List", "100");
+
+      if (artistsError) {
+        console.error("Error fetching Top 100 artists:", artistsError);
+        throw artistsError;
+      }
+      
       const artistsWithVotes = top100Artists.map(artist => ({
         ...artist,
         vote_count: voteCounts[artist.uuid] || 0,
       }));
 
       artistsWithVotes.sort((a, b) => {
-        // First sort by vote count (descending)
         if (b.vote_count !== a.vote_count) {
           return b.vote_count - a.vote_count;
         }
-        // Then sort alphabetically by name (ascending)
         return a.artist_name.localeCompare(b.artist_name);
       });
+      
+      const paginatedArtists = artistsWithVotes.slice(from, to + 1);
 
-      const totalCount = artistsWithVotes.length;
-
-      // Paginate the results
-      const paginatedArtists = artistsWithVotes.slice((page - 1) * limit, page * limit);
-
-      // Add rank to each artist
       const result = paginatedArtists.map((artist, index) => ({
         ...artist,
-        rank: (page - 1) * limit + index + 1,
+        rank: from + index + 1,
       }));
 
-      return { artists: result as ArtistWithVoteCount[], count: totalCount };
+      return { artists: result as ArtistWithVoteCount[], count: count || 0 };
     } catch (error) {
       console.error("Error in getTop100ArtistsSortedByVotes:", error);
       return { artists: [], count: 0 };
