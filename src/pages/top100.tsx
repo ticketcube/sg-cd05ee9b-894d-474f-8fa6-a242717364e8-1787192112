@@ -48,18 +48,22 @@ export default function Top100Page() {
     }
 
     try {
+      console.log(`Loading page ${pageToLoad} of artists...`);
       const { artists: newArtists, count } = await artistService.getTop100ArtistsSortedByVotes(pageToLoad, ARTISTS_PER_PAGE);
+      console.log(`Loaded ${newArtists.length} artists, total available: ${count}`);
       
       setArtists(prev => refresh ? newArtists : [...prev, ...newArtists]);
       setTotalCount(count);
+      // Fix hasMore logic - stop when we get fewer artists than requested
       setHasMore(newArtists.length === ARTISTS_PER_PAGE);
     } catch (err) {
+      console.error("Error loading artists:", err);
       setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [loadingMore, artists.length]);
+  }, [loadingMore]);
 
   useEffect(() => {
     page.current = 1;
@@ -71,14 +75,18 @@ export default function Top100Page() {
     if (observer.current) observer.current.disconnect();
     
     observer.current = new IntersectionObserver(entries => {
+      console.log("IntersectionObserver entries", entries);
       if (entries[0].isIntersecting && hasMore) {
+        console.log("Last artist in view. Loading more...", { currentPage: page.current, hasMore });
         page.current += 1;
         loadArtists(page.current);
       }
+    }, {
+      rootMargin: '100px' // Trigger loading when element is 100px from viewport
     });
     
     if (node) observer.current.observe(node);
-  }, [loadingMore, hasMore]);
+  }, [loadingMore, hasMore, loadArtists]);
 
   const handleVote = async (artistId: string) => {
     if (!user) {
@@ -285,7 +293,7 @@ export default function Top100Page() {
           </div>
         </div>
 
-        <div className="p-2 sm:p-4 pb-32">
+        <div className="p-2 sm:p-4 pb-32 min-h-screen">
           <div className="max-w-3xl mx-auto">
             <div className="grid gap-2">
               {artists.map((artist, index) => {
@@ -360,8 +368,12 @@ export default function Top100Page() {
           {!hasMore && artists.length > 0 && (
             <div className="text-center py-8 text-gray-400">
               <p>You've reached the end of the list!</p>
+              <p className="text-sm mt-2">Loaded {artists.length} of {totalCount} total artists</p>
             </div>
           )}
+          
+          {/* Add spacer to ensure scrollable content */}
+          <div style={{ height: '200px' }}></div>
         </div>
 
         {selectedArtist && isPopupOpen && (
