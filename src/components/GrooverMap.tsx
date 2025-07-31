@@ -28,19 +28,19 @@ function ArtistPopup({ artists, cityName }: ArtistPopupProps) {
 
   if (selectedArtist) {
     return (
-      <div className="w-80 max-h-96 overflow-y-auto">
-        <div className="flex items-center justify-between mb-3">
+      <div className="w-80 max-h-96 overflow-y-auto bg-white text-black">
+        <div className="flex items-center justify-between mb-3 p-3 border-b">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setSelectedArtist(null)}
-            className="text-blue-600 hover:text-blue-800"
+            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
           >
             ← Back to {cityName}
           </Button>
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-4 p-3">
           <div className="flex items-center space-x-3">
             {selectedArtist.artist_image && (
               <Image
@@ -52,7 +52,7 @@ function ArtistPopup({ artists, cityName }: ArtistPopupProps) {
               />
             )}
             <div>
-              <h3 className="font-bold text-lg">{selectedArtist.artist_name}</h3>
+              <h3 className="font-bold text-lg text-black">{selectedArtist.artist_name}</h3>
               {selectedArtist.artist_genre && (
                 <Badge variant="secondary" className="text-xs">
                   {selectedArtist.artist_genre}
@@ -72,7 +72,7 @@ function ArtistPopup({ artists, cityName }: ArtistPopupProps) {
               <Button
                 size="sm"
                 onClick={() => window.open(selectedArtist.artist_videolink, "_blank")}
-                className="bg-red-600 hover:bg-red-700"
+                className="bg-red-600 hover:bg-red-700 text-white"
               >
                 <Music className="w-4 h-4 mr-1" />
                 Video
@@ -82,7 +82,7 @@ function ArtistPopup({ artists, cityName }: ArtistPopupProps) {
               <Button
                 size="sm"
                 onClick={() => window.open(selectedArtist.artist_audiolink, "_blank")}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Music className="w-4 h-4 mr-1" />
                 Audio
@@ -95,17 +95,17 @@ function ArtistPopup({ artists, cityName }: ArtistPopupProps) {
   }
 
   return (
-    <div className="w-72 max-h-80 overflow-y-auto">
-      <div className="flex items-center mb-3">
+    <div className="w-72 max-h-80 overflow-y-auto bg-white text-black">
+      <div className="flex items-center mb-3 p-3 border-b">
         <MapPin className="w-5 h-5 text-blue-600 mr-2" />
-        <h3 className="font-bold text-lg">{cityName}</h3>
+        <h3 className="font-bold text-lg text-black">{cityName}</h3>
         <Badge variant="outline" className="ml-2">
           <Users className="w-3 h-3 mr-1" />
           {artists.length}
         </Badge>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 p-3">
         {artists.map((artist) => (
           <div
             key={artist.uuid}
@@ -123,13 +123,13 @@ function ArtistPopup({ artists, cityName }: ArtistPopupProps) {
                 />
               )}
               <div>
-                <p className="font-medium text-sm">{artist.artist_name}</p>
+                <p className="font-medium text-sm text-black">{artist.artist_name}</p>
                 {artist.artist_genre && (
                   <p className="text-xs text-gray-500">{artist.artist_genre}</p>
                 )}
               </div>
             </div>
-            <Button variant="ghost" size="sm" className="text-blue-600">
+            <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50">
               View →
             </Button>
           </div>
@@ -188,8 +188,8 @@ export default function GrooverMap() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading Groover artists worldwide...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white">Loading Groover artists worldwide...</p>
         </div>
       </div>
     );
@@ -197,9 +197,9 @@ export default function GrooverMap() {
 
   if (error) {
     return (
-      <Card className="w-full">
+      <Card className="w-full bg-gray-900 border-gray-700">
         <CardContent className="p-6">
-          <div className="text-center text-red-600">
+          <div className="text-center text-red-400">
             <MapPin className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>{error}</p>
           </div>
@@ -210,9 +210,9 @@ export default function GrooverMap() {
 
   if (artists.length === 0) {
     return (
-      <Card className="w-full">
+      <Card className="w-full bg-gray-900 border-gray-700">
         <CardContent className="p-6">
-          <div className="text-center text-gray-600">
+          <div className="text-center text-gray-400">
             <MapPin className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>No Groover artists with location data found.</p>
           </div>
@@ -223,13 +223,13 @@ export default function GrooverMap() {
 
   return (
     <div className="w-full space-y-6">
-      <Card>
+      <Card className="bg-gray-900 border-gray-700">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <MapPin className="w-6 h-6 mr-2 text-blue-600" />
+          <CardTitle className="flex items-center text-white">
+            <MapPin className="w-6 h-6 mr-2 text-blue-400" />
             Groover Artists Worldwide
           </CardTitle>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-400">
             Discover {artists.length} Groover artists from {mapMarkers.length} cities around the globe
           </p>
         </CardHeader>
@@ -261,28 +261,28 @@ export default function GrooverMap() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="bg-gray-900 border-gray-700">
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-white">
             <Users className="w-5 h-5 mr-2" />
             Statistics
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{artists.length}</div>
-              <div className="text-sm text-gray-600">Total Artists</div>
+            <div className="text-center p-4 bg-blue-900/20 rounded-lg border border-blue-800/30">
+              <div className="text-2xl font-bold text-blue-400">{artists.length}</div>
+              <div className="text-sm text-gray-400">Total Artists</div>
             </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{mapMarkers.length}</div>
-              <div className="text-sm text-gray-600">Cities</div>
+            <div className="text-center p-4 bg-green-900/20 rounded-lg border border-green-800/30">
+              <div className="text-2xl font-bold text-green-400">{mapMarkers.length}</div>
+              <div className="text-sm text-gray-400">Cities</div>
             </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">
+            <div className="text-center p-4 bg-purple-900/20 rounded-lg border border-purple-800/30">
+              <div className="text-2xl font-bold text-purple-400">
                 {new Set(artists.map(a => a.artist_genre).filter(Boolean)).size}
               </div>
-              <div className="text-sm text-gray-600">Genres</div>
+              <div className="text-sm text-gray-400">Genres</div>
             </div>
           </div>
         </CardContent>

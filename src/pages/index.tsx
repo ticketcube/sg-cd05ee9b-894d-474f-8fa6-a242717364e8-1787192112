@@ -33,10 +33,10 @@ export default function HomePage() {
         <div className="flex justify-between items-center mb-12">
           <div className="text-left">
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-              OTW CHART
+              OnesToWatch
             </h1>
             <p className="text-lg md:text-xl text-gray-300">
-              Discover, Vote & Earn Rewards
+              We Reward Discovery
             </p>
           </div>
           <div className="flex items-center gap-4">
