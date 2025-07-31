@@ -11,12 +11,7 @@ import {
   Calendar,
   Settings,
   Compass,
-  Map,
   LogOut,
-  Star,
-  Music,
-  Ticket,
-  Trophy,
   UserCheck,
   Shield,
   ChevronDown,
@@ -43,7 +38,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useAuth } from "@/contexts/AuthContext"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
