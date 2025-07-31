@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,7 +89,7 @@ export default function AuthDialog({
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="w-full"
+                className="w-full text-black placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>
@@ -101,7 +100,7 @@ export default function AuthDialog({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="w-full"
+                className="w-full text-black placeholder:text-gray-500"
                 disabled={loading}
               />
             </div>

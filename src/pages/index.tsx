@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, TrendingUp, Music, User, LogOut } from "lucide-react";
@@ -30,7 +29,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-12">
+        <div className="flex justify-between items-start mb-12">
           <div className="text-left">
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
               OnesToWatch
@@ -39,24 +38,25 @@ export default function HomePage() {
               We Reward Discovery
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          {/* Mobile-responsive user section */}
+          <div className="flex flex-col items-end gap-2 md:flex-row md:items-center md:gap-4">
             {!loading && (
               <>
                 {isAuthenticated && user ? (
                   <>
                     <Link href="/profile" passHref>
-                      <Button variant="ghost" className="flex items-center gap-2">
-                        <User className="w-5 h-5" />
-                        {user.username}
+                      <Button variant="ghost" className="flex items-center gap-2 text-sm md:text-base">
+                        <User className="w-4 h-4 md:w-5 md:h-5" />
+                        <span className="truncate max-w-[100px] md:max-w-none">{user.username}</span>
                       </Button>
                     </Link>
-                    <Button variant="outline" onClick={handleLogout} size="sm">
-                      <LogOut className="w-4 h-4 mr-2" />
+                    <Button variant="outline" onClick={handleLogout} size="sm" className="text-xs md:text-sm">
+                      <LogOut className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                       Logout
                     </Button>
                   </>
                 ) : (
-                  <Button onClick={() => setAuthDialogOpen(true)}>
+                  <Button onClick={() => setAuthDialogOpen(true)} size="sm" className="text-sm">
                     Login
                   </Button>
                 )}
