@@ -39,7 +39,8 @@ export default function Top100Page() {
   const observer = useRef<IntersectionObserver>();
 
   const loadArtists = useCallback(async (pageToLoad: number, refresh = false) => {
-    if (loadingMore && !refresh) return;
+    // Immediately set loading state to prevent race conditions
+    if ((loadingMore || loading) && !refresh) return;
     
     if (refresh) {
       setLoading(true);
@@ -52,10 +53,18 @@ export default function Top100Page() {
       const { artists: newArtists, count } = await artistService.getTop100ArtistsSortedByVotes(pageToLoad, ARTISTS_PER_PAGE);
       console.log(`Loaded ${newArtists.length} artists, total available: ${count}`);
       
-      setArtists(prev => refresh ? newArtists : [...prev, ...newArtists]);
+      setArtists(prev => {
+        const prevArtists = refresh ? [] : prev;
+        const updatedArtists = refresh ? newArtists : [...prevArtists, ...newArtists];
+        console.log(`Total artists after update: ${updatedArtists.length}`);
+        
+        // Fix hasMore logic - compare total loaded vs total available
+        setHasMore(updatedArtists.length < count);
+        
+        return updatedArtists;
+      });
       setTotalCount(count);
-      // Fix hasMore logic - stop when we get fewer artists than requested
-      setHasMore(newArtists.length === ARTISTS_PER_PAGE);
+      
     } catch (err) {
       console.error("Error loading artists:", err);
       setError(err instanceof Error ? err.message : "An unknown error occurred");
@@ -63,7 +72,7 @@ export default function Top100Page() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [loadingMore]);
+  }, [loadingMore, loading]);
 
   useEffect(() => {
     page.current = 1;
@@ -76,17 +85,30 @@ export default function Top100Page() {
     
     observer.current = new IntersectionObserver(entries => {
       console.log("IntersectionObserver entries", entries);
-      if (entries[0].isIntersecting && hasMore) {
-        console.log("Last artist in view. Loading more...", { currentPage: page.current, hasMore });
+      if (entries[0].isIntersecting && hasMore && !loadingMore) {
+        console.log("Last artist in view. Loading more...", { 
+          currentPage: page.current, 
+          hasMore, 
+          loadingMore,
+          totalArtists: artists.length,
+          totalCount 
+        });
         page.current += 1;
         loadArtists(page.current);
       }
     }, {
-      rootMargin: '100px' // Trigger loading when element is 100px from viewport
+      rootMargin: '100px'
     });
     
-    if (node) observer.current.observe(node);
-  }, [loadingMore, hasMore, loadArtists]);
+    // Add timeout to ensure node is properly mounted
+    if (node && hasMore) {
+      setTimeout(() => {
+        if (node && observer.current) {
+          observer.current.observe(node);
+        }
+      }, 50);
+    }
+  }, [loadingMore, hasMore, loadArtists, artists.length, totalCount]);
 
   const handleVote = async (artistId: string) => {
     if (!user) {
