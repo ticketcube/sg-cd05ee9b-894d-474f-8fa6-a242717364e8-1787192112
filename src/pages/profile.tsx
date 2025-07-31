@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthGuard from "@/components/AuthGuard";
@@ -31,15 +30,20 @@ const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string
 );
 
 export default function ProfilePage() {
+  const { user } = useAuth();
   const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // For now, we'll use a mock user ID. In a real app, this would come from authentication
-    const mockUserId = 69; // Replace with actual user ID from auth context
-    loadUserProfile(mockUserId);
-  }, []);
+    if (user) {
+      loadUserProfile(user.id);
+    } else {
+      // Handle case where user is not authenticated, though AuthGuard should prevent this.
+      setLoading(false);
+      setError("User not found. Please log in.");
+    }
+  }, [user]);
 
   const loadUserProfile = async (userId: number) => {
     try {

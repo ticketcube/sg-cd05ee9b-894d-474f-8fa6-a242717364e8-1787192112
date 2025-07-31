@@ -1,46 +1,51 @@
-import { GetStaticProps } from "next";
-import Head from "next/head";
-import { VibeArtist } from "@/types/artists";
+import { useState, useEffect } from "react";
 import { artistService } from "@/services/artistService";
+import type { VibeArtist } from "@/types/artists";
 import VibeChart from "@/components/VibeChart";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import AuthGuard from "@/components/AuthGuard";
 
-interface VibesPageProps {
-  artists: VibeArtist[];
-}
+export default function VibesPage() {
+  const [artists, setArtists] = useState<VibeArtist[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default function VibesPage({ artists }: VibesPageProps) {
+  useEffect(() => {
+    const fetchArtists = async () => {
+      try {
+        const fetchedArtists = await artistService.getArtistsByVibe("any");
+        
+        const vibeArtists = fetchedArtists.map(artist => ({
+          ...artist,
+          primary_vibe: artist.primary_vibe || "Unknown",
+          secondary_vibe: artist.secondary_vibe || null,
+        }));
+        
+        setArtists(vibeArtists as VibeArtist[]);
+      } catch (err) {
+        setError("Failed to load artist data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArtists();
+  }, []);
+
   return (
-    <>
-      <Head>
-        <title>Top 100 Vibes Chart - OTW</title>
-        <meta name="description" content="Explore the vibes of the top artists." />
-      </Head>
-      <div className="container mx-auto px-4 py-8">
-        <Card className="bg-black border-gray-700 text-white">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center">Top 100 Vibes Chart</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center text-gray-400 mb-6">
-              Discover where the top 100 artists land on the vibe spectrum.
-            </p>
-            <VibeChart artists={artists} chartSize={800} />
-          </CardContent>
-        </Card>
+    <AuthGuard>
+      <div className="min-h-screen bg-black text-white p-4">
+        <h1 className="text-4xl font-bold text-center mb-8 text-blue-500">Artist Vibe Chart</h1>
+        {loading ? (
+          <div className="flex justify-center items-center h-96">
+            <Loader2 className="w-12 h-12 animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-500">{error}</div>
+        ) : (
+          <VibeChart artists={artists} />
+        )}
       </div>
-    </>
+    </Auth-Guard>
   );
 }
-
-export const getStaticProps: GetStaticProps = async () => {
-  // Get all 100 artists without pagination by setting a high limit
-  const result = await artistService.getTop100ArtistsSortedByVotes(1, 100);
-
-  return {
-    props: {
-      artists: JSON.parse(JSON.stringify(result.artists)),
-    },
-    revalidate: 60,
-  };
-};

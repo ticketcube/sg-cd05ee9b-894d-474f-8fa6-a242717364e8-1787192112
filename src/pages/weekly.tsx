@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +27,7 @@ function WeeklyPageContent() {
   const [allWeeklyLists, setAllWeeklyLists] = useState<WeeklyList[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
   const [artistPositions, setArtistPositions] = useState<ArtistPosition[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -77,10 +76,10 @@ function WeeklyPageContent() {
       } else if (lists.length > 0) {
         setSelectedListId(lists[0].week_identifier || "");
       } else {
-        setError("No weekly lists available at this time");
+        setListError("No weekly lists available at this time");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load weekly lists");
+      setListError(err instanceof Error ? err.message : "Failed to load weekly lists");
     } finally {
       setLoading(false);
     }
@@ -88,16 +87,16 @@ function WeeklyPageContent() {
 
   const loadSpecificWeeklyList = async (weekIdentifier: string) => {
     try {
-      setError(null);
+      setListError(null);
       const list = await weeklyListService.getWeeklyList(weekIdentifier);
       if (!list) {
-        setError("Selected weekly list not found");
+        setListError("Selected weekly list not found");
         return;
       }
       setWeeklyList(list);
       setArtistPositions([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load weekly list");
+      setListError(err instanceof Error ? err.message : "Failed to load weekly list");
     }
   };
 
@@ -209,10 +208,10 @@ function WeeklyPageContent() {
     </div>
   );
 
-  if (error) return (
+  if (listError) return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center text-center">
       <div>
-        <p className="text-red-500 mb-4">{error}</p>
+        <p className="text-red-500 mb-4">{listError}</p>
         <Button onClick={loadAllWeeklyLists}>Try Again</Button>
       </div>
     </div>

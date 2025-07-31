@@ -44,7 +44,7 @@ export class ArtistService {
       .from('artists')
       .select(`
         *,
-        artist_votes!left(count)
+        artist_votes(count)
       `, { count: 'exact' })
       .order('artist_name', { ascending: true })
       .range(from, to);

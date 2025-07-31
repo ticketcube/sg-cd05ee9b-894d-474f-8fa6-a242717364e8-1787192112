@@ -1,81 +1,98 @@
-
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { artistService } from "@/services/artistService";
-import { GenreDoughnutChart } from "@/components/GenreDoughnutChart";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Loader2, Music } from "lucide-react";
+import AuthGuard from "@/components/AuthGuard";
 
-interface GenreData {
-  name: string;
-  count: number;
-}
+type GenreCounts = { [key: string]: number };
 
 export default function GenresPage() {
-  const [genreData, setGenreData] = useState<GenreData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [totalArtists, setTotalArtists] = useState(0);
   const router = useRouter();
+  const [genreCounts, setGenreCounts] = useState<GenreCounts>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchGenres = async () => {
-      setLoading(true);
-      const counts = await artistService.getGenreCounts();
-      const genreData: GenreData[] = Object.entries(counts).map(
-        ([name, count]) => ({
-          name,
-          count: Number(count),
-        })
-      );
-      setGenreData(genreData);
-      
-      const total = genreData.reduce((sum, item) => sum + item.count, 0);
-      setTotalArtists(total);
-      setLoading(false);
+    const fetchGenreCounts = async () => {
+      try {
+        const counts = await artistService.getGenreCounts();
+        setGenreCounts(counts);
+      } catch (err) {
+        setError("Failed to load genre data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchGenres();
+    fetchGenreCounts();
   }, []);
-
-  const handleGenreClick = (genre: string) => {
-    router.push(`/genres/${encodeURIComponent(genre)}`);
-  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-xl">Loading genre data...</div>
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center text-center">
+        <div>
+          <p className="text-red-500 text-xl mb-4">{error}</p>
+          <Button onClick={() => router.push("/")}>Go Home</Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4">
-      <div className="container mx-auto max-w-6xl">
-        <h1 className="text-4xl font-bold mb-6 text-center text-blue-500">Groover Chart</h1>
-        <p className="text-center mb-8 text-lg text-gray-300">Total Artist Introductions: {totalArtists}</p>
-        
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="w-full lg:w-2/3">
-            <GenreDoughnutChart genreData={genreData} onGenreClick={handleGenreClick} />
-          </div>
-          
-          <div className="w-full lg:w-1/3">
-            <h2 className="text-2xl font-bold mb-4 text-center lg:text-left">Genre Breakdown</h2>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {genreData.map((item) => (
-                <div 
-                  key={item.name}
-                  onClick={() => handleGenreClick(item.name)}
-                  className="flex justify-between items-center p-3 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer transition-colors"
-                >
-                  <span className="font-medium">{item.name}</span>
-                  <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-bold">
-                    {item.count}
-                  </span>
-                </div>
-              ))}
+    <AuthGuard>
+      <div className="min-h-screen bg-black text-white">
+        <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push("/discovery-charts")}
+                className="text-white hover:bg-gray-800"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Charts
+              </Button>
+              <h1 className="text-2xl font-bold text-blue-500">
+                Groover Charts by Genre
+              </h1>
             </div>
           </div>
         </div>
+
+        <div className="p-4">
+          <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Object.entries(genreCounts)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([genre, count]) => (
+                <Card
+                  key={genre}
+                  className="bg-gray-900 border-gray-700 hover:bg-gray-800 cursor-pointer transition-colors"
+                  onClick={() => router.push(`/genres/${encodeURIComponent(genre)}`)}
+                >
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white flex items-center gap-2">
+                      <Music className="w-5 h-5 text-purple-400" />
+                      {genre}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-400">{count} artists</p>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }
