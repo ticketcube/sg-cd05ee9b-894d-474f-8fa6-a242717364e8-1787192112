@@ -2,11 +2,11 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export class VotingService {
-  async submitVote(username: string, artistId: string): Promise<void> {
+  async submitVote(userId: number, artistId: string): Promise<void> {
     try {
       const { error } = await supabase.from("top25_votes").insert([
         {
-          username: username,
+          user_id: userId,
           artist_uuid: artistId,
         },
       ]);
@@ -25,7 +25,7 @@ export class VotingService {
   }
 
   async submitVotes(
-    votes: { username: string; artist_uuid: string }[]
+    votes: { user_id: number; artist_uuid: string }[]
   ): Promise<void> {
     const { error } = await supabase.from("top25_votes").insert(votes);
     
@@ -35,11 +35,11 @@ export class VotingService {
     }
   }
 
-  async getUserVotes(username: string) {
+  async getUserVotes(userId: number) {
     const { data, error } = await supabase
       .from("top25_votes")
       .select("*")
-      .eq("username", username);
+      .eq("user_id", userId);
 
     if (error) throw error;
     return data;
