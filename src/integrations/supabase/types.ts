@@ -247,33 +247,30 @@ export type Database = {
             }
             top25_votes: {
                 Row: {
-                    artist_otwid: number | null
-                    artist_uuid: string | null
+                    artist_uuid: string
                     created_at: string | null
-                    username: string
+                    user_id: number
                     uuid: string
                 }
                 Insert: {
-                    artist_otwid?: number | null
-                    artist_uuid?: string | null
+                    artist_uuid: string
                     created_at?: string | null
-                    username: string
+                    user_id: number
                     uuid?: string
                 }
                 Update: {
-                    artist_otwid?: number | null
-                    artist_uuid?: string | null
+                    artist_uuid?: string
                     created_at?: string | null
-                    username?: string
+                    user_id?: number
                     uuid?: string
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "top25_votes_artist_uuid_fkey"
-                        columns: ["artist_uuid"]
+                        foreignKeyName: "top25_votes_user_id_fkey"
+                        columns: ["user_id"]
                         isOneToOne: false
-                        referencedRelation: "artists"
-                        referencedColumns: ["uuid"]
+                        referencedRelation: "user_profiles"
+                        referencedColumns: ["id"]
                     },
                 ]
             }
