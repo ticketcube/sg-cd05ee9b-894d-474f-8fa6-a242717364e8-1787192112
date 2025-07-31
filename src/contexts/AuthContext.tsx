@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { userProfileService } from "@/services/userProfileService";
 
@@ -57,7 +56,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         id: userProfile.id,
         username: userProfile.username,
         email: userProfile.email,
-        points: userProfile.points || 0
+        points: userProfile.total_points || 0
       };
       
       setUser(userData);
