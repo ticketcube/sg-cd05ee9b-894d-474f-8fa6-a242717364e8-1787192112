@@ -30,7 +30,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-between items-start mb-12">
+        <div className="flex justify-between items-start mb-8 md:mb-12">
           <div className="text-left">
             <div className="flex items-center mb-2">
               <Image
@@ -38,10 +38,10 @@ export default function HomePage() {
                 alt="OnesToWatch"
                 width={120}
                 height={40}
-                className="h-10 w-auto"
+                className="h-8 md:h-10 w-auto"
               />
             </div>
-            <p className="text-lg md:text-xl text-gray-300">
+            <p className="text-base md:text-lg lg:text-xl text-gray-300">
               We Reward Discovery
             </p>
           </div>
@@ -77,27 +77,26 @@ export default function HomePage() {
         </div>
 
         {/* Main Navigation Cards */}
-        <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+        <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-4 md:gap-8">
           {/* Weekly Rewards Card */}
           <Card 
             className="bg-gradient-to-br from-green-600 to-blue-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group"
             onClick={() => handleNavigation("/weekly")}
           >
-            <CardContent className="p-8 h-full flex flex-col justify-between">
+            <CardContent className="p-4 md:p-8 h-full flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6 mx-auto group-hover:scale-110 transition-transform">
-                  <Trophy className="w-8 h-8 text-white" />
+                <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/20 rounded-full mb-3 md:mb-6 mx-auto group-hover:scale-110 transition-transform">
+                  <Trophy className="w-6 h-6 md:w-8 md:h-8 text-white" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-2 md:mb-4">
                   Weekly Rewards
                 </h2>
-                <p className="text-center text-white/90 mb-6">
+                <p className="text-center text-white/90 mb-4 md:mb-6 text-sm md:text-base">
                   Vote on weekly artist discoveries and earn points for exclusive rewards
                 </p>
-              
               </div>
               <Button 
-                className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold py-4 text-lg"
+                className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg"
               >
                 Start Earning Rewards
               </Button>
@@ -109,20 +108,20 @@ export default function HomePage() {
             className="bg-gradient-to-br from-purple-600 to-pink-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group"
             onClick={() => handleNavigation("/discovery-charts")}
           >
-            <CardContent className="p-8 h-full flex flex-col justify-between">
+            <CardContent className="p-4 md:p-8 h-full flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6 mx-auto group-hover:scale-110 transition-transform">
-                  <TrendingUp className="w-8 h-8 text-white" />
+                <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/20 rounded-full mb-3 md:mb-6 mx-auto group-hover:scale-110 transition-transform">
+                  <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-white" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-2 md:mb-4">
                   Discovery Charts
                 </h2>
-                <p className="text-center text-white/90 mb-6">
+                <p className="text-center text-white/90 mb-4 md:mb-6 text-sm md:text-base">
                   Explore comprehensive artist rankings and genre-based charts
                 </p>
               </div>
               <Button 
-                className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold py-4 text-lg"
+                className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg"
               >
                 Explore Charts
               </Button>
@@ -131,10 +130,10 @@ export default function HomePage() {
         </div>
 
         {/* Bottom Section */}
-        <div className="text-center mt-16">
+        <div className="text-center mt-8 md:mt-16">
           <div className="flex items-center justify-center mb-4">
-            <Music className="w-6 h-6 text-blue-400 mr-2" />
-            <span className="text-gray-400">Powered by community votes and engagement</span>
+            <Music className="w-5 h-5 md:w-6 md:h-6 text-blue-400 mr-2" />
+            <span className="text-gray-400 text-sm md:text-base">Powered by community votes and engagement</span>
           </div>
         </div>
       </div>
