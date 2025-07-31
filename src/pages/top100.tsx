@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { artistService } from "@/services/artistService";
 import type { Artist, ArtistWithVoteCount } from "@/types/artists";
@@ -53,14 +52,17 @@ export default function Top100Page() {
       
       setArtists(prev => refresh ? newArtists : [...prev, ...newArtists]);
       setTotalCount(count);
-      setHasMore(newArtists.length === ARTISTS_PER_PAGE);
+      
+      // Fix hasMore logic: check if we've loaded all available artists
+      const totalLoadedAfterThis = refresh ? newArtists.length : artists.length + newArtists.length;
+      setHasMore(totalLoadedAfterThis < count && newArtists.length === ARTISTS_PER_PAGE);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [loadingMore]);
+  }, [loadingMore, artists.length]);
 
   useEffect(() => {
     page.current = 1;
