@@ -15,8 +15,8 @@ interface AuthDialogProps {
 export default function AuthDialog({ 
   isOpen, 
   onClose, 
-  title = "Login Required",
-  description = "Please log in to access this content"
+  title = "Register for Rewards",
+  description = "Create your profile to earn discovery rewards!"
 }: AuthDialogProps) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
