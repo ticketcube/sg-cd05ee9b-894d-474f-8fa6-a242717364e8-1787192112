@@ -7,35 +7,22 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Users, Music } from "lucide-react";
 import { artistService } from "@/services/artistService";
 import type { ArtistWithLocation, MapMarkerData } from "@/types/map";
+import Image from "next/image";
 
-const MapContainer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.MapContainer),
-  { ssr: false }
-);
+// Import Leaflet and MarkerCluster CSS
+import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
-const TileLayer = dynamic(
-  () => import("react-leaflet").then((mod) => mod.TileLayer),
-  { ssr: false }
-);
+// Dynamically import react-leaflet components to prevent SSR issues
+const MapContainer = dynamic(() => import("react-leaflet").then(mod => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then(mod => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then(mod => mod.Marker), { ssr: false });
+const Popup = dynamic(() => import("react-leaflet").then(mod => mod.Popup), { ssr: false });
 
-const MarkerClusterGroup = dynamic(
-  () => import("react-leaflet").then(async (mod) => {
-    const L = await import("leaflet");
-    await import("leaflet.markercluster");
-    return mod.MarkerClusterGroup;
-  }),
-  { ssr: false }
-);
+// Dynamically import the marker cluster group component
+const MarkerClusterGroup = dynamic(() => import("@changey/react-leaflet-markercluster"), { ssr: false });
 
-const Marker = dynamic(
-  () => import("react-leaflet").then((mod) => mod.Marker),
-  { ssr: false }
-);
-
-const Popup = dynamic(
-  () => import("react-leaflet").then((mod) => mod.Popup),
-  { ssr: false }
-);
 
 interface ArtistPopupProps {
   artists: ArtistWithLocation[];
@@ -62,9 +49,11 @@ function ArtistPopup({ artists, cityName }: ArtistPopupProps) {
         <div className="space-y-4">
           <div className="flex items-center space-x-3">
             {selectedArtist.artist_image && (
-              <img
+              <Image
                 src={selectedArtist.artist_image}
                 alt={selectedArtist.artist_name}
+                width={64}
+                height={64}
                 className="w-16 h-16 rounded-full object-cover"
               />
             )}
@@ -88,7 +77,7 @@ function ArtistPopup({ artists, cityName }: ArtistPopupProps) {
             {selectedArtist.artist_videolink && (
               <Button
                 size="sm"
-                onClick={() => window.open(selectedArtist.artist_videolink!, "_blank")}
+                onClick={() => window.open(selectedArtist.artist_videolink, "_blank")}
                 className="bg-red-600 hover:bg-red-700"
               >
                 <Music className="w-4 h-4 mr-1" />
@@ -98,7 +87,7 @@ function ArtistPopup({ artists, cityName }: ArtistPopupProps) {
             {selectedArtist.artist_audiolink && (
               <Button
                 size="sm"
-                onClick={() => window.open(selectedArtist.artist_audiolink!, "_blank")}
+                onClick={() => window.open(selectedArtist.artist_audiolink, "_blank")}
                 className="bg-green-600 hover:bg-green-700"
               >
                 <Music className="w-4 h-4 mr-1" />
@@ -131,9 +120,11 @@ function ArtistPopup({ artists, cityName }: ArtistPopupProps) {
           >
             <div className="flex items-center space-x-2">
               {artist.artist_image && (
-                <img
+                <Image
                   src={artist.artist_image}
                   alt={artist.artist_name}
+                  width={32}
+                  height={32}
                   className="w-8 h-8 rounded-full object-cover"
                 />
               )}
@@ -248,7 +239,7 @@ export default function GrooverMap() {
           </p>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="h-96 w-full relative">
+          <div className="h-[600px] w-full relative">
             <MapContainer
               center={[20, 0]}
               zoom={2}

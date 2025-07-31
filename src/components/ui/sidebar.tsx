@@ -2,6 +2,27 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
+import {
+  Home,
+  TrendingUp,
+  Package,
+  Users,
+  LineChart,
+  Calendar,
+  Settings,
+  Compass,
+  Map,
+  LogOut,
+  Star,
+  Music,
+  Ticket,
+  Trophy,
+  UserCheck,
+  Shield,
+  ChevronDown,
+  Bell,
+  MapPin,
+} from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -22,6 +43,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useAuth } from "@/contexts/AuthContext"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -743,6 +765,63 @@ const SidebarMenuSubButton = React.forwardRef<
 })
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton"
 
+const navigationItems = [
+  { href: "/", icon: Home, label: "Home" },
+  { href: "/top100", icon: TrendingUp, label: "Top 100" },
+  { href: "/weekly", icon: Calendar, label: "Weekly" },
+  { href: "/groover", icon: MapPin, label: "Groover Map" },
+  {
+    label: "Discovery",
+    icon: Compass,
+    items: [
+      { href: "/discover", icon: Package, label: "Discover" },
+      { href: "/trending", icon: TrendingUp, label: "Trending" },
+      { href: "/weekly", icon: Calendar, label: "Weekly" },
+      { href: "/groover", icon: MapPin, label: "Groover Map" },
+    ],
+  },
+  {
+    label: "Social",
+    icon: Users,
+    items: [
+      { href: "/profile", icon: UserCheck, label: "Profile" },
+      { href: "/friends", icon: Users, label: "Friends" },
+      { href: "/groups", icon: Users, label: "Groups" },
+    ],
+  },
+  {
+    label: "Analytics",
+    icon: LineChart,
+    items: [
+      { href: "/analytics", icon: LineChart, label: "Analytics" },
+      { href: "/reports", icon: LineChart, label: "Reports" },
+    ],
+  },
+  {
+    label: "Settings",
+    icon: Settings,
+    items: [
+      { href: "/settings", icon: Settings, label: "Settings" },
+      { href: "/privacy", icon: Shield, label: "Privacy" },
+      { href: "/security", icon: Shield, label: "Security" },
+    ],
+  },
+  {
+    label: "More",
+    icon: ChevronDown,
+    items: [
+      { href: "/help", icon: Bell, label: "Help" },
+      { href: "/support", icon: Bell, label: "Support" },
+      { href: "/about", icon: Bell, label: "About" },
+    ],
+  },
+  {
+    label: "Logout",
+    icon: LogOut,
+    href: "/logout",
+  },
+]
+
 export {
   Sidebar,
   SidebarContent,
@@ -768,4 +847,5 @@ export {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
+  navigationItems,
 }
