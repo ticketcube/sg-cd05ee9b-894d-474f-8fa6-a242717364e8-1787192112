@@ -33,7 +33,7 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
   }
 
   if (!requireAuth) {
-    return &lt;>{children}&lt;/>;
+    return <>{children}</>;
   }
 
   if (!isAuthenticated) {
@@ -53,5 +53,5 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
     );
   }
 
-  return &lt;>{children}&lt;/>;
+  return <>{children}</>;
 }
