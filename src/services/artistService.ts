@@ -53,7 +53,7 @@ export class ArtistService {
       throw new Error(`Failed to fetch all artists: ${error.message}`);
     }
 
-    const artistsWithVoteCount: ArtistWithVoteCount[] = (data || []).map(artist => ({
+    const artistsWithVoteCount: ArtistWithVoteCount[] = (data || []).map((artist: any) => ({
       ...artist,
       vote_count: artist.artist_votes?.[0]?.count || 0
     }));

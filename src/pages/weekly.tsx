@@ -67,7 +67,7 @@ function WeeklyPageContent() {
   const loadAllWeeklyLists = async () => {
     try {
       setLoading(true);
-      setError(null);
+      setListError(null);
       const lists = await weeklyListService.getAllWeeklyLists();
       setAllWeeklyLists(lists);
       const activeList = lists.find(list => list.status === "active");

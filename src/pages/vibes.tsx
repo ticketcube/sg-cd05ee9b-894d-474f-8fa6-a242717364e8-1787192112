@@ -22,7 +22,7 @@ export default function VibesPage() {
         }));
         
         setArtists(vibeArtists as VibeArtist[]);
-      } catch (err) {
+      } catch {
         setError("Failed to load artist data.");
       } finally {
         setLoading(false);
