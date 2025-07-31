@@ -360,7 +360,7 @@ export default function Top100Page() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <p className="text-sm text-gray-500">
+                  <p className="text-center text-blue-600">
             Selected: {selectedArtists.length}/25 artists
           </p>
           <Button onClick={handleStartVoting}>
