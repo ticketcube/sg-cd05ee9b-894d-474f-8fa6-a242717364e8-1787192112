@@ -42,10 +42,7 @@ export class ArtistService {
 
     const { data, error, count } = await supabase
       .from('artists')
-      .select(`
-        *,
-        artist_votes(count)
-      `, { count: 'exact' })
+      .select('*', { count: 'exact' })
       .order('artist_name', { ascending: true })
       .range(from, to);
 
@@ -55,7 +52,7 @@ export class ArtistService {
 
     const artistsWithVoteCount: ArtistWithVoteCount[] = (data || []).map((artist) => ({
       ...artist,
-      vote_count: Array.isArray(artist.artist_votes) ? artist.artist_votes[0]?.count || 0 : 0,
+      vote_count: 0, // No vote counts needed for All Artists page
     }));
 
     return {
