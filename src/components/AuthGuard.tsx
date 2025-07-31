@@ -33,7 +33,7 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
   }
 
   if (!requireAuth) {
-    return <>{children}</>;
+    return &lt;>{children}&lt;/>;
   }
 
   if (!isAuthenticated) {
@@ -45,11 +45,13 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
         </div>
         <AuthDialog 
           isOpen={showAuthDialog}
-                title="Register for Rewards",
-  description = "Create your profile to earn discovery rewards!"        />
+          onClose={() => setShowAuthDialog(false)}
+          title="Authentication Required"
+          description="Please log in to access this feature."
+        />
       </div>
     );
   }
 
-  return <>{children}</>;
+  return &lt;>{children}&lt;/>;
 }
