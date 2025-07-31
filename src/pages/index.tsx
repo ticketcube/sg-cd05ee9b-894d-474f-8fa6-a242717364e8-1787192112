@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AuthDialog from "@/components/AuthDialog";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function HomePage() {
   const router = useRouter();
@@ -31,9 +32,15 @@ export default function HomePage() {
         {/* Header */}
         <div className="flex justify-between items-start mb-12">
           <div className="text-left">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-              OnesToWatch
-            </h1>
+            <div className="flex items-center mb-2">
+              <Image
+                src="/otwcolor.png"
+                alt="OnesToWatch"
+                width={120}
+                height={40}
+                className="h-10 w-auto"
+              />
+            </div>
             <p className="text-lg md:text-xl text-gray-300">
               We Reward Discovery
             </p>
