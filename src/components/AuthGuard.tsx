@@ -45,9 +45,8 @@ export default function AuthGuard({ children, requireAuth = true }: AuthGuardPro
         </div>
         <AuthDialog 
           isOpen={showAuthDialog}
-          title="Login Required"
-          description="Please log in to access this content"
-        />
+                title="Register for Rewards",
+  description = "Create your profile to earn discovery rewards!"        />
       </div>
     );
   }
