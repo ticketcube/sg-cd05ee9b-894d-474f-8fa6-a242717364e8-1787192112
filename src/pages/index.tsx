@@ -34,7 +34,8 @@ export default function HomePage() {
           <div className="text-left">
             <div className="flex items-center mb-2">
               <Image
-                src="/otwcolor.png"
+                              src="public/OTWLogocolor.png
+"
                 alt="OnesToWatch"
                 width={120}
                 height={40}
