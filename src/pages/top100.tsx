@@ -140,7 +140,7 @@ export default function Top100Page() {
 
     try {
       const votesToSubmit = selectedArtists.map(artistUUID => ({
-        user_id: user.id,
+        username: user.username,
         artist_uuid: artistUUID,
       }));
 

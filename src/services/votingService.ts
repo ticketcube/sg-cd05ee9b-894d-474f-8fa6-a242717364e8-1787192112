@@ -2,11 +2,11 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export class VotingService {
-  async submitVote(userId: number, artistId: string): Promise<void> {
+  async submitVote(username: string, artistId: string): Promise<void> {
     try {
       const { error } = await supabase.from("top25_votes").insert([
         {
-          user_id: userId,
+          username: username,
           artist_uuid: artistId,
         },
       ]);
@@ -25,7 +25,7 @@ export class VotingService {
   }
 
   async submitVotes(
-    votes: { user_id: number; artist_uuid: string }[]
+    votes: { username: string; artist_uuid: string }[]
   ): Promise<void> {
     const { error } = await supabase.from("top25_votes").insert(votes);
     
@@ -35,11 +35,11 @@ export class VotingService {
     }
   }
 
-  async getUserVotes(userId: number) {
+  async getUserVotes(username: string) {
     const { data, error } = await supabase
       .from("top25_votes")
       .select("*")
-      .eq("user_id", userId);
+      .eq("username", username);
 
     if (error) throw error;
     return data;
@@ -57,7 +57,7 @@ export class VotingService {
     });
 
     if (authError) {
-        if (!authError.message.includes('User already registered')) {
+        if (!authError.message.includes("User already registered")) {
             throw authError;
         }
     }
@@ -65,14 +65,14 @@ export class VotingService {
     const userId = authData?.user?.id;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc('insert_ticket_entry', {
+    const { data, error } = await (supabase as any).rpc("insert_ticket_entry", {
       p_email: email,
       p_username: username,
       p_user_id: userId
     });
 
     if (error) {
-        if (error.message.includes('duplicate key value violates unique constraint')) {
+        if (error.message.includes("duplicate key value violates unique constraint")) {
             return null;
         }
         throw error;
