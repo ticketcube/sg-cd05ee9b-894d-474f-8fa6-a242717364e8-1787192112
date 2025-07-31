@@ -83,11 +83,7 @@ export default function HomePage() {
                 <p className="text-center text-white/90 mb-6">
                   Vote on weekly artist discoveries and earn points for exclusive rewards
                 </p>
-                <ul className="space-y-2 text-sm text-white/80 mb-6">
-                  <li>• Earn 5 points for watching videos</li>
-                  <li>• Earn 10 points for submitting votes</li>
-                  <li>• Bonus points for complete participation</li>
-                </ul>
+              
               </div>
               <Button 
                 className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold py-4 text-lg"
@@ -113,11 +109,6 @@ export default function HomePage() {
                 <p className="text-center text-white/90 mb-6">
                   Explore comprehensive artist rankings and genre-based charts
                 </p>
-                <ul className="space-y-2 text-sm text-white/80 mb-6">
-                  <li>• Top 100 artists of the decade</li>
-                  <li>• Complete artist database (750+)</li>
-                  <li>• Groover Featured Artists</li>
-                </ul>
               </div>
               <Button 
                 className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold py-4 text-lg"
