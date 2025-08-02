@@ -137,36 +137,6 @@ export type Database = {
                     },
                 ]
             }
-            cities: {
-                Row: {
-                    country_code: string
-                    id: number
-                    latitude: number | null
-                    longitude: number | null
-                    name: string
-                    normalized_name: string
-                    state_code: string | null
-                }
-                Insert: {
-                    country_code: string
-                    id?: number
-                    latitude?: number | null
-                    longitude?: number | null
-                    name: string
-                    normalized_name: string
-                    state_code?: string | null
-                }
-                Update: {
-                    country_code?: string
-                    id?: number
-                    latitude?: number | null
-                    longitude?: number | null
-                    name?: string
-                    normalized_name?: string
-                    state_code?: string | null
-                }
-                Relationships: []
-            }
             city_latlong: {
                 Row: {
                     country_code: string | null
