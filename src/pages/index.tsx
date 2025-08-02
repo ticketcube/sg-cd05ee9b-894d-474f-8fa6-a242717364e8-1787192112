@@ -7,11 +7,13 @@ import AuthDialog from "@/components/AuthDialog";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import PromotionPopup from "@/components/PromotionPopup";
 
 export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated, user, logout, loading } = useAuth();
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const handleNavigation = (path: string) => {
     if (!isAuthenticated) {
@@ -24,6 +26,14 @@ export default function HomePage() {
   const handleLogout = () => {
     logout();
     // Optional: redirect to home or show a message
+  };
+
+  const handleRegister = () => {
+    setShowAuthDialog(true);
+  };
+
+  const handleAuthClose = () => {
+    setShowAuthDialog(false);
   };
 
   return (
@@ -138,6 +148,27 @@ export default function HomePage() {
         </div>
       </div>
       <AuthDialog isOpen={isAuthDialogOpen} onClose={() => setAuthDialogOpen(false)} />
+      <AuthProvider>
+        <div className="min-h-screen bg-gray-50">
+          <LogoSection />
+          
+          {/* Main Chart Section */}
+          <div className="px-4 md:px-6 lg:px-8 max-w-[2000px] mx-auto">
+            <ArtistChart />
+          </div>
+
+          {/* Promotional Popup */}
+          <PromotionPopup onRegisterClick={handleRegister} />
+          
+          {/* Auth Dialog */}
+          <AuthDialog 
+            isOpen={showAuthDialog} 
+            onClose={handleAuthClose}
+            title="Get Local Events & Rewards"
+            description="Register to see events in your city and earn rewards!"
+          />
+        </div>
+      </AuthProvider>
     </main>
   );
 }

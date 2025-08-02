@@ -7,6 +7,7 @@ type UserEngagement = Tables<"user_engagements">;
 export interface CreateUserProfileData {
   username: string;
   email: string;
+  city?: string;
 }
 
 export interface UserEngagementSummary {
@@ -49,6 +50,7 @@ export class UserProfileService {
           .update({
             username: data.username,
             email: data.email,
+            city: data.city || null,
             last_active: new Date().toISOString()
           })
           .eq("id", existingByEmail.id)
@@ -85,6 +87,7 @@ export class UserProfileService {
           .update({
             username: data.username,
             email: data.email,
+            city: data.city || null,
             last_active: new Date().toISOString()
           })
           .eq("id", existingByUsername.id)
@@ -108,6 +111,7 @@ export class UserProfileService {
         .insert([{
           username: data.username,
           email: data.email,
+          city: data.city || null,
           total_points: 0,
           last_active: new Date().toISOString()
         }])

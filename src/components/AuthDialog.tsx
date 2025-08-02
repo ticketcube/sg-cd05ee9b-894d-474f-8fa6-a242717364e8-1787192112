@@ -1,9 +1,19 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Mail, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import CityCombobox from "@/components/CityCombobox";
+
+interface City {
+  id: number;
+  name: string;
+  normalized_name: string;
+  country_code?: string;
+  state_code?: string;
+}
 
 interface AuthDialogProps {
   isOpen: boolean;
@@ -20,22 +30,37 @@ export default function AuthDialog({
 }: AuthDialogProps) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  const [customCity, setCustomCity] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
+  const handleCityChange = (city: City | null, customInput?: string) => {
+    setSelectedCity(city);
+    setCustomCity(customInput || "");
+  };
+
   const handleLogin = async () => {
     if (!username.trim() || !email.trim()) {
-      alert("Please enter both username and email");
+      alert("Please enter username and email");
+      return;
+    }
+
+    if (!selectedCity && !customCity.trim()) {
+      alert("Please select or enter your city");
       return;
     }
 
     setLoading(true);
     try {
-      await login(username.trim(), email.trim());
+      const cityName = selectedCity ? selectedCity.normalized_name : customCity.trim();
+      await login(username.trim(), email.trim(), cityName);
       
       // Clear form
       setUsername("");
       setEmail("");
+      setSelectedCity(null);
+      setCustomCity("");
       
       // Close dialog if onClose is provided
       if (onClose) {
@@ -75,6 +100,7 @@ export default function AuthDialog({
           
           <div className="text-center">
             <div className="text-sm text-gray-500 space-y-2 mb-4">
+              <div>• Get personalized local events</div>
               <div>• Earn points for engaging with content</div>
               <div>• Vote on your favorite artists</div>
               <div>• Unlock exclusive features</div>
@@ -104,6 +130,13 @@ export default function AuthDialog({
                 disabled={loading}
               />
             </div>
+            <div>
+              <CityCombobox
+                value={selectedCity}
+                onValueChange={handleCityChange}
+                placeholder="Select your city..."
+              />
+            </div>
           </div>
           
           <Button 
@@ -114,12 +147,12 @@ export default function AuthDialog({
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Logging in...
+                Registering...
               </>
             ) : (
               <>
                 <Mail className="w-4 h-4 mr-2" />
-                Login & Continue
+                Register & Continue
               </>
             )}
           </Button>

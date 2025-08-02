@@ -5,13 +5,14 @@ export interface User {
   id: number;
   username: string;
   email: string;
+  city?: string;
   points?: number;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (username: string, email: string) => Promise<void>;
+  login: (username: string, email: string, city?: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -45,17 +46,19 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (username: string, email: string) => {
+  const login = async (username: string, email: string, city?: string) => {
     try {
       const userProfile = await userProfileService.createOrUpdateUserProfile({
         username: username.trim(),
-        email: email.trim()
+        email: email.trim(),
+        city: city?.trim()
       });
       
       const userData: User = {
         id: userProfile.id,
         username: userProfile.username,
         email: userProfile.email,
+        city: userProfile.city || undefined,
         points: userProfile.total_points || 0
       };
       
