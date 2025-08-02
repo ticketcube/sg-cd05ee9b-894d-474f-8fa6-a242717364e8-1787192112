@@ -84,14 +84,38 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
     if (selectedCity) {
       onValueChange(selectedCity);
       setOpen(false);
+      setSearchQuery(""); // Clear search when city is selected
     }
   };
 
-  const handleCustomInput = () => {
+  const handleCustomInput = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (searchQuery.trim()) {
       const normalizedCustom = searchQuery.trim().replace(/\b\w/g, l => l.toUpperCase());
       onValueChange(null, normalizedCustom);
       setOpen(false);
+      setSearchQuery(""); // Clear search when custom city is added
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Prevent Enter key from bubbling up to parent form
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // If there's a search query and no cities match, allow adding custom city
+      if (searchQuery.trim() && cities.length === 0) {
+        const normalizedCustom = searchQuery.trim().replace(/\b\w/g, l => l.toUpperCase());
+        onValueChange(null, normalizedCustom);
+        setOpen(false);
+        setSearchQuery("");
+      }
     }
   };
 
@@ -107,17 +131,18 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between text-left"
+          type="button"
         >
           <span className="truncate">{displayValue}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
-        <Command shouldFilter={false}>
+        <Command shouldFilter={false} onKeyDown={handleKeyDown}>
           <CommandInput
             placeholder="Search cities..."
             value={searchQuery}
-            onValueChange={setSearchQuery}
+            onValueChange={handleSearchChange}
           />
           <CommandList>
             <CommandEmpty>
@@ -136,6 +161,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
                     onClick={handleCustomInput}
                     disabled={!searchQuery.trim()}
                     className="w-full justify-start text-left"
+                    type="button"
                   >
                     <Check className="mr-2 h-4 w-4 opacity-0" />
                     Add "{searchQuery.trim()}"
@@ -153,7 +179,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
                   <CommandItem
                     key={city.id}
                     value={city.id.toString()}
-                    onSelect={handleSelect}
+                    onSelect={() => handleSelect(city.id.toString())}
                     className="cursor-pointer"
                   >
                     <Check
