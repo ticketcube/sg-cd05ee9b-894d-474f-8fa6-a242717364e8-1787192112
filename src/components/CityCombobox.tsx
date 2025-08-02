@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -34,64 +35,69 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   const [open, setOpen] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const [customInput, setCustomInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    const fetchCities = async (search?: string) => {
-      setLoading(true);
-      try {
-        const url = search ? `/api/cities?search=${encodeURIComponent(search)}` : '/api/cities';
-        const response = await fetch(url);
-        const data = await response.json();
-        setCities(data);
-      } catch (error) {
-        console.error('Error fetching cities:', error);
-      } finally {
-        setLoading(false);
+  // Debounced search function
+  const debounceSearch = useCallback((query: string) => {
+    const timeoutId = setTimeout(() => {
+      if (query.length >= 2) {
+        fetchCities(query);
+      } else if (query.length === 0) {
+        fetchCities();
       }
-    };
+    }, 300);
 
-    fetchCities();
+    return () => clearTimeout(timeoutId);
   }, []);
 
-  const handleSearch = async (search: string) => {
-    setSearchValue(search);
-    setCustomInput(search);
-    
-    if (search.length > 2) {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/cities?search=${encodeURIComponent(search)}`);
-        const data = await response.json();
-        setCities(data);
-      } catch (error) {
-        console.error('Error searching cities:', error);
-      } finally {
-        setLoading(false);
+  const fetchCities = async (search?: string) => {
+    setLoading(true);
+    try {
+      const url = search ? `/api/cities?search=${encodeURIComponent(search)}` : '/api/cities';
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch cities');
       }
+      const data = await response.json();
+      setCities(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+      setCities([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSelect = (selectedCity: City) => {
-    onValueChange(selectedCity);
-    setOpen(false);
-    setSearchValue(selectedCity.normalized_name);
-    setCustomInput("");
+  // Initial load of cities
+  useEffect(() => {
+    fetchCities();
+  }, []);
+
+  // Handle search with debouncing
+  useEffect(() => {
+    const cleanup = debounceSearch(searchQuery);
+    return cleanup;
+  }, [searchQuery, debounceSearch]);
+
+  const handleSelect = (cityId: string) => {
+    const selectedCity = cities.find(city => city.id.toString() === cityId);
+    if (selectedCity) {
+      onValueChange(selectedCity);
+      setOpen(false);
+    }
   };
 
   const handleCustomInput = () => {
-    if (customInput.trim()) {
-      const normalizedCustom = customInput.trim().replace(/\b\w/g, l => l.toUpperCase());
+    if (searchQuery.trim()) {
+      const normalizedCustom = searchQuery.trim().replace(/\b\w/g, l => l.toUpperCase());
       onValueChange(null, normalizedCustom);
       setOpen(false);
-      setSearchValue(normalizedCustom);
     }
   };
 
   const displayValue = value ? 
     `${value.normalized_name}${value.state_code ? `, ${value.state_code}` : ''}${value.country_code ? ` (${value.country_code})` : ''}` :
-    (customInput || searchValue || placeholder);
+    placeholder;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -100,66 +106,78 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between text-left"
         >
-          {displayValue}
+          <span className="truncate">{displayValue}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
+      <PopoverContent className="w-full p-0" align="start">
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search cities..."
-            value={searchValue}
-            onValueChange={handleSearch}
+            value={searchQuery}
+            onValueChange={setSearchQuery}
           />
-          <CommandEmpty>
-            {loading ? (
-              "Loading cities..."
-            ) : (
-              <div className="p-2">
-                <p className="text-sm text-muted-foreground mb-2">
-                  No cities found. You can add your own:
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCustomInput}
-                  disabled={!customInput.trim()}
-                  className="w-full justify-start"
-                >
-                  Add "{customInput}"
-                </Button>
-              </div>
-            )}
-          </CommandEmpty>
-          <CommandGroup>
-            {cities.map((city) => (
-              <CommandItem
-                key={city.id}
-                onSelect={() => handleSelect(city)}
-                className="cursor-pointer"
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value?.id === city.id ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                <div>
-                  <div className="font-medium">{city.normalized_name}</div>
-                  {(city.state_code || city.country_code) && (
-                    <div className="text-sm text-muted-foreground">
-                      {city.state_code && city.country_code ? 
-                        `${city.state_code}, ${city.country_code}` :
-                        city.state_code || city.country_code
-                      }
-                    </div>
-                  )}
+          <CommandList>
+            <CommandEmpty>
+              {loading ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  Loading cities...
                 </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+              ) : searchQuery.length >= 2 ? (
+                <div className="p-4">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    No cities found matching "{searchQuery}". You can add your own:
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCustomInput}
+                    disabled={!searchQuery.trim()}
+                    className="w-full justify-start text-left"
+                  >
+                    <Check className="mr-2 h-4 w-4 opacity-0" />
+                    Add "{searchQuery.trim()}"
+                  </Button>
+                </div>
+              ) : (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  Type at least 2 characters to search for cities
+                </div>
+              )}
+            </CommandEmpty>
+            {cities.length > 0 && (
+              <CommandGroup>
+                {cities.map((city) => (
+                  <CommandItem
+                    key={city.id}
+                    value={city.id.toString()}
+                    onSelect={handleSelect}
+                    className="cursor-pointer"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value?.id === city.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{city.normalized_name}</div>
+                      {(city.state_code || city.country_code) && (
+                        <div className="text-sm text-muted-foreground truncate">
+                          {city.state_code && city.country_code ? 
+                            `${city.state_code}, ${city.country_code}` :
+                            city.state_code || city.country_code
+                          }
+                        </div>
+                      )}
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

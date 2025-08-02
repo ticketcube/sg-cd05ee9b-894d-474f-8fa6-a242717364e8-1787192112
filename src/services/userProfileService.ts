@@ -50,7 +50,7 @@ export class UserProfileService {
           .update({
             username: data.username,
             email: data.email,
-            city: data.city || null,
+            raw_city_input: data.city || null,
             last_active: new Date().toISOString()
           })
           .eq("id", existingByEmail.id)
@@ -87,7 +87,7 @@ export class UserProfileService {
           .update({
             username: data.username,
             email: data.email,
-            city: data.city || null,
+            raw_city_input: data.city || null,
             last_active: new Date().toISOString()
           })
           .eq("id", existingByUsername.id)
@@ -111,7 +111,7 @@ export class UserProfileService {
         .insert([{
           username: data.username,
           email: data.email,
-          city: data.city || null,
+          raw_city_input: data.city || null,
           total_points: 0,
           last_active: new Date().toISOString()
         }])

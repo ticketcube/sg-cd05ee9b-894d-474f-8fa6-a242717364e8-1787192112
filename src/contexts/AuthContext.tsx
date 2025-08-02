@@ -58,7 +58,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         id: userProfile.id,
         username: userProfile.username,
         email: userProfile.email,
-        city: userProfile.city || undefined,
+        city: userProfile.raw_city_input || undefined,
         points: userProfile.total_points || 0
       };
       
