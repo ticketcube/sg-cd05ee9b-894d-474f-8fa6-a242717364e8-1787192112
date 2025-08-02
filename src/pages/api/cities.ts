@@ -1,14 +1,5 @@
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '@/integrations/supabase/client';
-
-interface City {
-  id: number;
-  name: string;
-  normalized_name: string;
-  country_code?: string;
-  state_code?: string;
-}
 
 export default async function handler(
   req: NextApiRequest,
