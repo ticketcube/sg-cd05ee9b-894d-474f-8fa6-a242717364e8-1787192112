@@ -169,25 +169,34 @@ export type Database = {
             }
             city_latlong: {
                 Row: {
+                    country_code: string | null
                     created_at: string
                     id: number
                     latitude: number | null
                     longitude: number | null
                     name: string | null
+                    normalized_name: string | null
+                    state_code: string | null
                 }
                 Insert: {
+                    country_code?: string | null
                     created_at?: string
                     id?: number
                     latitude?: number | null
                     longitude?: number | null
                     name?: string | null
+                    normalized_name?: string | null
+                    state_code?: string | null
                 }
                 Update: {
+                    country_code?: string | null
                     created_at?: string
                     id?: number
                     latitude?: number | null
                     longitude?: number | null
                     name?: string | null
+                    normalized_name?: string | null
+                    state_code?: string | null
                 }
                 Relationships: []
             }
@@ -454,7 +463,7 @@ export type Database = {
                         foreignKeyName: "user_profiles_city_id_fkey"
                         columns: ["city_id"]
                         isOneToOne: false
-                        referencedRelation: "cities"
+                        referencedRelation: "city_latlong"
                         referencedColumns: ["id"]
                     },
                 ]
@@ -533,7 +542,7 @@ export type Database = {
                         foreignKeyName: "venues_city_id_fkey"
                         columns: ["city_id"]
                         isOneToOne: false
-                        referencedRelation: "cities"
+                        referencedRelation: "city_latlong"
                         referencedColumns: ["id"]
                     },
                 ]
