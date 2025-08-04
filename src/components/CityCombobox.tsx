@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+
+import { useState, useEffect } from "react";
 import { Check, ChevronsUpDown, MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,6 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
@@ -36,19 +36,6 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
-
-  // Debounced search function
-  const debounceSearch = useCallback((query: string) => {
-    const timeoutId = setTimeout(() => {
-      if (query.length >= 2) {
-        fetchCities(query);
-      } else if (query.length === 0) {
-        fetchCities(); // fallback to default
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, []);
 
   const fetchCities = async (search?: string) => {
     console.log("Fetching cities for query:", search);
@@ -171,6 +158,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   }, [searchQuery]);
 
   const handleSelectCity = (city: City) => {
+    console.log("City selected:", city);
     onValueChange(city);
     setOpen(false);
     setSearchQuery("");
@@ -209,25 +197,37 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="flex-1 justify-between text-left"
+              className="flex-1 justify-between text-left min-h-[44px]"
               type="button"
             >
               <span className="truncate">{displayValue}</span>
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-full p-0 z-50" align="start" style={{ pointerEvents: 'auto' }}>
-            <Command shouldFilter={false}>
-              <CommandInput
-                placeholder="Search cities..."
-                onInput={(e) => {
-                  const inputVal = (e.target as HTMLInputElement).value;
-                  console.log("Search typed:", inputVal);
-                  setSearchQuery(inputVal); // ✅ updates searchQuery, triggers useEffect
-                }}
-                onKeyDown={handleInputKeyDown}
-              />
-              <CommandList>
+          <PopoverContent 
+            className="w-[var(--radix-popover-trigger-width)] p-0 z-[9999]" 
+            align="start"
+            side="bottom"
+            sideOffset={4}
+          >
+            <Command shouldFilter={false} className="w-full">
+              <div className="flex items-center border-b px-3">
+                <input
+                  placeholder="Search cities..."
+                  className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    console.log("Search typed:", e.target.value);
+                    setSearchQuery(e.target.value);
+                  }}
+                  onKeyDown={handleInputKeyDown}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
+                />
+              </div>
+              <CommandList className="max-h-[200px] overflow-y-auto">
                 <CommandEmpty>
                   {loading ? (
                     <div className="p-4 text-center text-sm text-muted-foreground">
@@ -238,17 +238,15 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
                       <p className="text-sm text-muted-foreground mb-3">
                         No cities found matching "{searchQuery}". You can add your own:
                       </p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
                         onClick={handleCustomInput}
                         disabled={!searchQuery.trim()}
-                        className="w-full justify-start text-left"
+                        className="w-full justify-start text-left p-2 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed flex items-center min-h-[44px] touch-manipulation"
                         type="button"
                       >
                         <Check className="mr-2 h-4 w-4 opacity-0" />
                         Add "{searchQuery.trim()}"
-                      </Button>
+                      </button>
                     </div>
                   ) : (
                     <div className="p-4 text-center text-sm text-muted-foreground">
@@ -262,9 +260,20 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
                       <CommandItem
                         key={city.id}
                         value={city.normalized_name}
-                        onSelect={() => handleSelectCity(city)}
-                        className="cursor-pointer hover:bg-accent"
-                        style={{ pointerEvents: 'auto' }}
+                        className="cursor-pointer min-h-[44px] touch-manipulation"
+                        onSelect={() => {
+                          console.log("CommandItem onSelect triggered for:", city);
+                          handleSelectCity(city);
+                        }}
+                        onClick={() => {
+                          console.log("CommandItem onClick triggered for:", city);
+                          handleSelectCity(city);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          console.log("CommandItem onTouchEnd triggered for:", city);
+                          handleSelectCity(city);
+                        }}
                       >
                         <Check
                           className={cn(
@@ -299,6 +308,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
           disabled={geoLoading}
           type="button"
           title="Use current location"
+          className="min-h-[44px] min-w-[44px]"
         >
           {geoLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
