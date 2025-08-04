@@ -204,10 +204,11 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
             </Button>
           </PopoverTrigger>
           <PopoverContent 
-            className="w-[var(--radix-popover-trigger-width)] p-0 z-[9999]" 
+            className="w-[var(--radix-popover-trigger-width)] p-0 z-[99999]" 
             align="start"
             side="bottom"
             sideOffset={4}
+            onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <Command shouldFilter={false} className="w-full">
               <div className="flex items-center border-b px-3">

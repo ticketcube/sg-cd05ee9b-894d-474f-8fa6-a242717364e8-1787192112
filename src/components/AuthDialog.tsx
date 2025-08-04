@@ -81,8 +81,6 @@ export default function AuthDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
         className="max-w-sm mx-auto bg-white [&>button[aria-label='Close']]:hidden"
       >
         <DialogHeader>
