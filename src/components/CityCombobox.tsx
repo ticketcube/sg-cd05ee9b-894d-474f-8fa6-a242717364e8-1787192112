@@ -213,7 +213,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
               <CommandInput
                 placeholder="Search cities..."
                 value={searchQuery}
-                onValueChange={setSearchQuery}
+                onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
                 onKeyDown={handleInputKeyDown}
               />
               <CommandList>
