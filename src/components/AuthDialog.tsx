@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Mail, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import CityCombobox from "@/components/CityCombobox";
+import SimpleCityInput from "@/components/SimpleCityInput";
 
 interface City {
   id: number;
@@ -128,10 +128,10 @@ export default function AuthDialog({
               />
             </div>
             <div>
-              <CityCombobox
+              <SimpleCityInput
                 value={selectedCity}
                 onValueChange={handleCityChange}
-                placeholder="Select your city..."
+                placeholder="Enter your city..."
               />
             </div>
           </div>
