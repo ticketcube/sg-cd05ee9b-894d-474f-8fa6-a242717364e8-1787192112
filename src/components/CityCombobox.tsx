@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Check, ChevronsUpDown, MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -6,6 +7,7 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
@@ -33,7 +35,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   const [open, setOpen] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchValue, setSearchValue] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
 
   const fetchCities = async (search?: string) => {
@@ -143,49 +145,40 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
     fetchCities();
   }, []);
 
-  // Handle search with debouncing
+  // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (searchQuery.length >= 2) {
-        fetchCities(searchQuery);
-      } else if (searchQuery.length === 0) {
-        fetchCities(); // fallback to default
+      if (searchValue.length >= 2) {
+        fetchCities(searchValue);
+      } else if (searchValue.length === 0) {
+        fetchCities();
       }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
-  const handleSelectCity = (city: City) => {
-    console.log("City selected:", city);
-    onValueChange(city);
-    setOpen(false);
-    setSearchQuery("");
-  };
-
-  const handleCustomInput = () => {
-    if (searchQuery.trim()) {
-      const normalizedCustom = searchQuery.trim().replace(/\b\w/g, l => l.toUpperCase());
-      onValueChange(null, normalizedCustom);
-      setOpen(false);
-      setSearchQuery("");
-    }
-  };
-
-  const handleInputKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      if (searchQuery.trim() && cities.length === 0) {
-        handleCustomInput();
-      }
-    }
-  };
+  }, [searchValue]);
 
   const displayValue = value ? 
     `${value.normalized_name}${value.state_code ? `, ${value.state_code}` : ''}${value.country_code ? ` (${value.country_code})` : ''}` :
     placeholder;
+
+  const handleSelectCity = (cityName: string) => {
+    console.log("Selecting city with name:", cityName);
+    const selectedCity = cities.find(city => city.normalized_name === cityName);
+    if (selectedCity) {
+      console.log("Found city:", selectedCity);
+      onValueChange(selectedCity);
+      setOpen(false);
+    }
+  };
+
+  const handleCustomCity = () => {
+    if (searchValue.trim()) {
+      const normalizedCustom = searchValue.trim().replace(/\b\w/g, l => l.toUpperCase());
+      onValueChange(null, normalizedCustom);
+      setOpen(false);
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -203,54 +196,37 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent 
-            className="w-[var(--radix-popover-trigger-width)] p-0 z-[99999]" 
-            align="start"
-            side="bottom"
-            sideOffset={4}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-          >
-            <Command shouldFilter={false} className="w-full">
-              <div className="flex items-center border-b px-3">
-                <input
-                  placeholder="Search cities..."
-                  className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    console.log("Search typed:", e.target.value);
-                    setSearchQuery(e.target.value);
-                  }}
-                  onKeyDown={handleInputKeyDown}
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck="false"
-                />
-              </div>
-              <CommandList className="max-h-[200px] overflow-y-auto">
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 z-[99999]" align="start">
+            <Command className="w-full">
+              <CommandInput 
+                placeholder="Search cities..."
+                value={searchValue}
+                onValueChange={setSearchValue}
+              />
+              <CommandList className="max-h-[200px]">
                 <CommandEmpty>
                   {loading ? (
                     <div className="p-4 text-center text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
                       Loading cities...
                     </div>
-                  ) : searchQuery.length >= 2 ? (
-                    <div className="p-4">
+                  ) : searchValue.length >= 2 ? (
+                    <div className="p-4 text-center">
                       <p className="text-sm text-muted-foreground mb-3">
-                        No cities found matching "{searchQuery}". You can add your own:
+                        No cities found matching "{searchValue}"
                       </p>
-                      <button
-                        onClick={handleCustomInput}
-                        disabled={!searchQuery.trim()}
-                        className="w-full justify-start text-left p-2 rounded hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed flex items-center min-h-[44px] touch-manipulation"
+                      <Button
+                        variant="ghost"
+                        onClick={handleCustomCity}
+                        className="w-full"
                         type="button"
                       >
-                        <Check className="mr-2 h-4 w-4 opacity-0" />
-                        Add "{searchQuery.trim()}"
-                      </button>
+                        Add "{searchValue}"
+                      </Button>
                     </div>
                   ) : (
                     <div className="p-4 text-center text-sm text-muted-foreground">
-                      Type at least 2 characters to search for cities
+                      Type to search for cities
                     </div>
                   )}
                 </CommandEmpty>
@@ -260,8 +236,8 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
                       <CommandItem
                         key={city.id}
                         value={city.normalized_name}
-                        className="cursor-pointer min-h-[44px] touch-manipulation"
-                        onSelect={() => handleSelectCity(city)}
+                        onSelect={handleSelectCity}
+                        className="cursor-pointer"
                       >
                         <Check
                           className={cn(
@@ -269,10 +245,10 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
                             value?.id === city.id ? "opacity-100" : "opacity-0"
                           )}
                         />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium truncate">{city.normalized_name}</div>
+                        <div className="flex-1">
+                          <div className="font-medium">{city.normalized_name}</div>
                           {(city.state_code || city.country_code) && (
-                            <div className="text-sm text-muted-foreground truncate">
+                            <div className="text-sm text-muted-foreground">
                               {city.state_code && city.country_code ? 
                                 `${city.state_code}, ${city.country_code}` :
                                 city.state_code || city.country_code
