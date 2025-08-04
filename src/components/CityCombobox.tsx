@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Check, ChevronsUpDown, MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -261,19 +260,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
                         key={city.id}
                         value={city.normalized_name}
                         className="cursor-pointer min-h-[44px] touch-manipulation"
-                        onSelect={() => {
-                          console.log("CommandItem onSelect triggered for:", city);
-                          handleSelectCity(city);
-                        }}
-                        onClick={() => {
-                          console.log("CommandItem onClick triggered for:", city);
-                          handleSelectCity(city);
-                        }}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          console.log("CommandItem onTouchEnd triggered for:", city);
-                          handleSelectCity(city);
-                        }}
+                        onSelect={() => handleSelectCity(city)}
                       >
                         <Check
                           className={cn(
