@@ -43,7 +43,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
       if (query.length >= 2) {
         fetchCities(query);
       } else if (query.length === 0) {
-        fetchCities();
+        fetchCities(); // fallback to default
       }
     }, 300);
 
@@ -51,6 +51,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   }, []);
 
   const fetchCities = async (search?: string) => {
+    console.log("Fetching cities for query:", search);
     setLoading(true);
     try {
       const url = search ? `/api/cities?search=${encodeURIComponent(search)}` : '/api/cities';
@@ -158,9 +159,16 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
 
   // Handle search with debouncing
   useEffect(() => {
-    const cleanup = debounceSearch(searchQuery);
-    return cleanup;
-  }, [searchQuery, debounceSearch]);
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.length >= 2) {
+        fetchCities(searchQuery);
+      } else if (searchQuery.length === 0) {
+        fetchCities(); // fallback to default
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const handleSelectCity = (city: City) => {
     onValueChange(city);
@@ -212,11 +220,12 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
             <Command shouldFilter={false}>
               <CommandInput
                 placeholder="Search cities..."
-                onKeyDown={handleInputKeyDown}
                 onInput={(e) => {
-                  const val = (e.target as HTMLInputElement).value;
-                  setSearchQuery(val);
+                  const inputVal = (e.target as HTMLInputElement).value;
+                  console.log("Search typed:", inputVal);
+                  setSearchQuery(inputVal); // ✅ updates searchQuery, triggers useEffect
                 }}
+                onKeyDown={handleInputKeyDown}
               />
               <CommandList>
                 <CommandEmpty>
