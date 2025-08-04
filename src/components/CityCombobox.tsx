@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Check, ChevronsUpDown, MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -209,12 +208,12 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start">
+          <PopoverContent className="w-full p-0 z-50" align="start" style={{ pointerEvents: 'auto' }}>
             <Command shouldFilter={false}>
               <CommandInput
                 placeholder="Search cities..."
                 value={searchQuery}
-                onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
+                onValueChange={setSearchQuery}
                 onKeyDown={handleInputKeyDown}
               />
               <CommandList>
@@ -251,9 +250,10 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
                     {cities.map((city) => (
                       <CommandItem
                         key={city.id}
-                        value={`${city.id}-${city.normalized_name}`}
+                        value={city.normalized_name}
                         onSelect={() => handleSelectCity(city)}
-                        className="cursor-pointer"
+                        className="cursor-pointer hover:bg-accent"
+                        style={{ pointerEvents: 'auto' }}
                       >
                         <Check
                           className={cn(
