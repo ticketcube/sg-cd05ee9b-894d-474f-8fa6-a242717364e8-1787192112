@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ArrowLeft, Loader2, User, Play, X } from "lucide-react";
+import { ArrowLeft, Loader2, User, Play } from "lucide-react";
 import { weeklyListService } from "@/services/weeklyListService";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
 import type { WeeklyListWithArtists } from "@/services/weeklyListService";
@@ -324,23 +325,15 @@ function WeeklyPageContent() {
           </div>
         </div>
       </div>
-
-      <Dialog open={!!selectedVideoArtist} onOpenChange={(open) => !open && setSelectedVideoArtist(null)}>
-        <DialogContent className="max-w-4xl w-full p-0 bg-black border-0">
-          <div className="relative aspect-video">
-            <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-10" onClick={() => setSelectedVideoArtist(null)}><X className="w-6 h-6" /></Button>
-            {selectedVideoArtist && (
-              <ArtistVideoPlayer artist={selectedVideoArtist} isEmbed={true} />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
       
       {selectedArtist && (
         <UnifiedArtistPopup
             artist={selectedArtist}
             isOpen={isPopupOpen}
-            onClose={() => setIsPopupOpen(false)}
+            onClose={() => {
+              setIsPopupOpen(false);
+              setSelectedArtist(null);
+            }}
             showBio={true}
             showGenre={true}
         />
