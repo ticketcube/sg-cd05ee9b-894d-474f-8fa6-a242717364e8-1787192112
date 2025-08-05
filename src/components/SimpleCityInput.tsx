@@ -27,6 +27,8 @@ export default function SimpleCityInput({ value, onValueChange, placeholder = "E
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef < HTMLDivElement > (null);
   const [clickingDropdown, setClickingDropdown] = useState(false);
+  const [hasSelectedCity, setHasSelectedCity] = useState(false);
+
 
 
   const fetchCities = async (search: string) => {
@@ -53,7 +55,7 @@ export default function SimpleCityInput({ value, onValueChange, placeholder = "E
   // Debounced search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (inputValue.trim()) {
+      if (inputValue.trim() && !hasSelectedCity) {
         fetchCities(inputValue.trim());
       } else {
         setCities([]);
@@ -62,7 +64,7 @@ export default function SimpleCityInput({ value, onValueChange, placeholder = "E
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [inputValue]);
+  }, [inputValue, hasSelectedCity]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -80,6 +82,9 @@ export default function SimpleCityInput({ value, onValueChange, placeholder = "E
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
+    setHasSelectedCity(false); // Reset flag when user types
+
+    
     
     // If user clears the input, clear the selection
     if (!newValue.trim()) {
@@ -89,6 +94,7 @@ export default function SimpleCityInput({ value, onValueChange, placeholder = "E
 
   const handleCitySelect = (city: City) => {
     setInputValue(city.normalized_name);
+    setHasSelectedCity(true); // Mark city as selected
     setShowDropdown(false);
     onValueChange(city);
   };
@@ -172,6 +178,7 @@ export default function SimpleCityInput({ value, onValueChange, placeholder = "E
   useEffect(() => {
     if (value) {
       setInputValue(value.normalized_name);
+      setHasSelectedCity(true);
     }
   }, [value]);
 
