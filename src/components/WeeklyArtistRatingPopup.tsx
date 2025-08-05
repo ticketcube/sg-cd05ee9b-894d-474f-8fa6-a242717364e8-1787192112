@@ -79,16 +79,16 @@ export function WeeklyArtistRatingPopup({
   }, [artist]);
 
   const handleVideoPlay = () => {
-    if (!isVideoPlaying) {
-      setIsVideoPlaying(true);
-      setShowRatings(true);
-    }
+    setIsVideoPlaying(true);
+    setShowRatings(true);
   };
 
   const handleVideoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    handleVideoPlay();
+    if (!isVideoPlaying) {
+      handleVideoPlay();
+    }
   };
 
   const handleFinishRating = () => {
@@ -100,6 +100,20 @@ export function WeeklyArtistRatingPopup({
       onClose();
     }
   };
+
+  // Auto-start timer when popup opens - this ensures timer works regardless of iframe click issues
+  useEffect(() => {
+    if (artist && showRatings) {
+      // Start timer automatically after a short delay to simulate "video loading"
+      const timeout = setTimeout(() => {
+        if (!isVideoPlaying) {
+          handleVideoPlay();
+        }
+      }, 1000);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [artist, showRatings, isVideoPlaying]);
 
   if (!artist) {
     return null;
@@ -154,23 +168,26 @@ export function WeeklyArtistRatingPopup({
               showNavigationControls={false}
             />
             
-            {/* Transparent click overlay to capture all clicks */}
-            <div 
-              className="absolute inset-0 cursor-pointer bg-transparent z-10" 
-              onClick={handleVideoClick}
-              onMouseDown={handleVideoClick}
-              style={{ 
-                zIndex: 10,
-                pointerEvents: isVideoPlaying ? 'none' : 'auto' // Disable after first click
-              }}
-            />
+            {/* Click-through overlay that covers the entire video area */}
+            {!isVideoPlaying && (
+              <div 
+                className="absolute inset-0 cursor-pointer bg-black bg-opacity-20 z-30 flex items-center justify-center" 
+                onClick={handleVideoClick}
+              >
+                <div className="bg-white bg-opacity-90 rounded-full p-4 hover:bg-opacity-100 transition-all">
+                  <svg className="w-8 h-8 text-black fill-black" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </div>
+            )}
             
             {hasMultipleVideos && (
               <>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 z-20"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 z-40"
                   onClick={handlePrevVideo}
                   disabled={currentVideoIndex === 0}
                 >
@@ -179,30 +196,35 @@ export function WeeklyArtistRatingPopup({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 z-20"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 z-40"
                   onClick={handleNextVideo}
                   disabled={currentVideoIndex === videoLinks.length - 1}
                 >
                   <ChevronRight />
                 </Button>
                 
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 px-2 py-1 rounded text-xs z-20">
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 px-2 py-1 rounded text-xs z-40">
                   {currentVideoIndex + 1} of {videoLinks.length}
                 </div>
               </>
             )}
 
             {/* Watch Timer */}
-            <div className="absolute top-2 left-2 bg-black/75 p-2 rounded-lg z-20">
+            <div className="absolute top-2 left-2 bg-black/75 p-2 rounded-lg z-40">
               <div className="flex items-center gap-2 text-xs">
                 <Clock className="w-3 h-3" />
-                <span>{isVideoPlaying ? `${watchTimer}s` : 'Click video to start timer'}</span>
+                <span>
+                  {isVideoPlaying ? 
+                    `${watchTimer}s${watchTimer < 15 ? '/15s' : ''}` : 
+                    'Timer will start automatically'
+                  }
+                </span>
                 {watchTimer >= 15 && pointsAwarded && (
-                  <Badge className="bg-green-600">+10 Points</Badge>
+                  <Badge className="bg-green-600 ml-2">+10 Points</Badge>
                 )}
               </div>
               {isVideoPlaying && watchTimer < 15 && (
-                <Progress value={(watchTimer / 15) * 100} className="w-20 h-1 mt-1" />
+                <Progress value={(watchTimer / 15) * 100} className="w-24 h-2 mt-1" />
               )}
             </div>
           </div>
