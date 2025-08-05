@@ -248,21 +248,21 @@ export function WeeklyArtistRatingPopup({
                         <span className="text-sm font-medium">Concert Interest</span>
                       </div>
                       <div className="px-3">
-                        <div className="relative">
-                          <Slider
-                            value={ticketInterest}
-                            onValueChange={setTicketInterest}
-                            max={100}
-                            step={1}
-                            className="w-full slider-gradient"
-                          />
+                        <div className="relative mb-2">
                           <div 
-                            className="absolute inset-0 h-3 rounded-full pointer-events-none"
+                            className="absolute inset-0 h-2 rounded-full pointer-events-none z-0"
                             style={{
                               background: `linear-gradient(to right, #3b82f6 0%, #ef4444 100%)`,
                               top: '50%',
                               transform: 'translateY(-50%)'
                             }}
+                          />
+                          <Slider
+                            value={ticketInterest} 
+                            onValueChange={setTicketInterest}
+                            max={100}
+                            step={1}
+                            className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-6 [&_[data-radix-slider-thumb]]:h-6 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-2 [&_[data-radix-slider-thumb]]:border-gray-600 [&_[data-radix-slider-thumb]]:shadow-lg [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform"
                           />
                         </div>
                         <div className="flex justify-between text-xs text-gray-400 mt-1">
@@ -280,21 +280,21 @@ export function WeeklyArtistRatingPopup({
                         <span className="text-sm font-medium">Sharing Interest</span>
                       </div>
                       <div className="px-3">
-                        <div className="relative">
-                          <Slider
-                            value={shareInterest}
-                            onValueChange={setShareInterest}
-                            max={100}
-                            step={1}
-                            className="w-full slider-gradient"
-                          />
+                        <div className="relative mb-2">
                           <div 
-                            className="absolute inset-0 h-3 rounded-full pointer-events-none"
+                            className="absolute inset-0 h-2 rounded-full pointer-events-none z-0"
                             style={{
                               background: `linear-gradient(to right, #3b82f6 0%, #ef4444 100%)`,
                               top: '50%',
                               transform: 'translateY(-50%)'
                             }}
+                          />
+                          <Slider
+                            value={shareInterest}
+                            onValueChange={setShareInterest}
+                            max={100}
+                            step={1}
+                            className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-6 [&_[data-radix-slider-thumb]]:h-6 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-2 [&_[data-radix-slider-thumb]]:border-gray-600 [&_[data-radix-slider-thumb]]:shadow-lg [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform"
                           />
                         </div>
                         <div className="flex justify-between text-xs text-gray-400 mt-1">
