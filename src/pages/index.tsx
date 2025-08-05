@@ -91,7 +91,7 @@ export default function HomePage() {
           {/* Weekly Rewards Card */}
           <Card 
             className="bg-gradient-to-br from-green-600 to-blue-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group"
-            onClick={() => handleNavigation("/weekly")}
+            onClick={() => handleNavigation("/weekly-ratings")}
           >
             <CardContent className="p-4 md:p-8 h-full flex flex-col justify-between">
               <div>
