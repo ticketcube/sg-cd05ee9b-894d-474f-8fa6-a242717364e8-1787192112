@@ -1,105 +1,160 @@
-import { useEffect, useState } from "react";
-import { Command, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
-import cities from "@/data/cities.json"; // ensure this is an array of city strings
-import { normalizeCity } from "@/lib/utils"; // ensure this utility exists and works properly
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Mail, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import SimpleCityInput from "@/components/SimpleCityInput";
 
-interface CitySelectorProps {
-  selectedCity: string;
-  setSelectedCity: (city: string) => void;
+interface City {
+  id: number;
+  name: string;
+  normalized_name: string;
+  country_code?: string;
+  state_code?: string;
 }
 
-export const CitySelector = ({ selectedCity, setSelectedCity }: CitySelectorProps) => {
-  const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredCities, setFilteredCities] = useState < string[] > (cities);
+interface AuthDialogProps {
+  isOpen: boolean;
+  onClose?: () => void;
+  title?: string;
+  description?: string;
+}
+
+export default function AuthDialog({ 
+  isOpen, 
+  onClose, 
+  title = "Register for Rewards",
+  description = "Create your profile to earn discovery rewards!"
+}: AuthDialogProps) {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [customCity, setCustomCity] = useState("");
-  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
-  useEffect(() => {
-    const filtered = cities.filter((city) =>
-      city.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredCities([...filtered, "Other"]);
-  }, [searchQuery]);
+  const handleCityChange = (city: City | null, customInput?: string) => {
+    setSelectedCity(city);
+    setCustomCity(customInput || "");
+  };
 
-  const handleCitySelect = (city: string) => {
-    if (city === "Other") {
-      setShowCustomInput(true);
-    } else {
-      setSelectedCity(city);
-      setShowCustomInput(false);
-      setOpen(false);
+  const handleLogin = async () => {
+    if (!username.trim() || !email.trim()) {
+      alert("Please enter username and email");
+      return;
+    }
+
+    if (!selectedCity && !customCity.trim()) {
+      alert("Please select or enter your city");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const cityName = selectedCity ? selectedCity.normalized_name : customCity.trim();
+      await login(username.trim(), email.trim(), cityName);
+      
+      // Clear form
+      setUsername("");
+      setEmail("");
+      setSelectedCity(null);
+      setCustomCity("");
+      
+      // Close dialog if onClose is provided
+      if (onClose) {
+        onClose();
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCustomCitySubmit = () => {
-    const normalized = normalizeCity(customCity);
-    setSelectedCity(normalized);
-    setShowCustomInput(false);
-    setOpen(false);
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleLogin();
+    }
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[250px] justify-between"
-        >
-          {selectedCity || "Select a city..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-
-      <PopoverContent className="w-[250px] p-0 z-50" align="start" style={{ pointerEvents: 'auto' }}>
-        {!showCustomInput ? (
-          <Command shouldFilter={false}>
-            <CommandInput
-              placeholder="Search cities..."
-              value={searchQuery}
-              onInput={(e) => setSearchQuery((e.target as HTMLInputElement).value)}
-            />
-            <CommandList>
-              {filteredCities.map((city) => (
-                <CommandItem
-                  key={city}
-                  value={city}
-                  onSelect={() => handleCitySelect(city)}
-                >
-                  <Check
-                    className={
-                      "mr-2 h-4 w-4" + (selectedCity === city ? " opacity-100" : " opacity-0")
-                    }
-                  />
-                  {city}
-                </CommandItem>
-              ))}
-            </CommandList>
-          </Command>
-        ) : (
-          <div className="p-4 space-y-2">
-            <input
-              type="text"
-              placeholder="Enter your city"
-              className="w-full border px-2 py-1 rounded"
-              value={customCity}
-              onChange={(e) => setCustomCity(e.target.value)}
-            />
-            <Button
-              className="w-full"
-              onClick={handleCustomCitySubmit}
-              disabled={!customCity.trim()}
-            >
-              Submit
-            </Button>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent
+        className="max-w-sm mx-auto bg-white [&>button[aria-label='Close']]:hidden"
+      >
+        <DialogHeader>
+          <DialogTitle className="text-center text-blue-600">
+            {title}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          {description && (
+            <div className="text-center">
+              <p className="text-sm text-gray-600">{description}</p>
+            </div>
+          )}
+          
+          <div className="text-center">
+            <div className="text-sm text-gray-500 space-y-2 mb-4">
+              <div>• Get personalized local events</div>
+              <div>• Earn points for engaging with content</div>
+              <div>• Vote on your favorite artists</div>
+              <div>• Unlock exclusive features</div>
+            </div>
           </div>
-        )}
-      </PopoverContent>
-    </Popover>
+          
+          {/* Login Form */}
+          <div className="space-y-3">
+            <div>
+              <Input
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="w-full text-black placeholder:text-gray-500"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="w-full text-black placeholder:text-gray-500"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <SimpleCityInput
+                value={selectedCity}
+                onValueChange={handleCityChange}
+                placeholder="Enter your city..."
+              />
+            </div>
+          </div>
+          
+          <Button 
+            onClick={handleLogin} 
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Registering...
+              </>
+            ) : (
+              <>
+                <Mail className="w-4 h-4 mr-2" />
+                Register & Continue
+              </>
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
-};
+}
