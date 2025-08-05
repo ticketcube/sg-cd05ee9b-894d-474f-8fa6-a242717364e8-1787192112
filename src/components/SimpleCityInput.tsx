@@ -25,7 +25,9 @@ export default function SimpleCityInput({ value, onValueChange, placeholder = "E
   const [showDropdown, setShowDropdown] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef < HTMLDivElement > (null);
+  const [clickingDropdown, setClickingDropdown] = useState(false);
+
 
   const fetchCities = async (search: string) => {
     if (search.length < 2) {
@@ -94,6 +96,8 @@ export default function SimpleCityInput({ value, onValueChange, placeholder = "E
   const handleInputBlur = () => {
     // Small delay to allow for city selection clicks
     setTimeout(() => {
+      if (clickingDropdown) return; // Skip blur logic if clicking dropdown
+
       if (inputValue.trim() && !value) {
         // User typed something but didn't select from dropdown - treat as custom city
         const normalizedCustom = inputValue.trim().replace(/\b\w/g, l => l.toUpperCase());
@@ -219,6 +223,8 @@ export default function SimpleCityInput({ value, onValueChange, placeholder = "E
         <div
           ref={dropdownRef}
           className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto"
+          onMouseDown={() => setClickingDropdown(true)} // Add this line
+          onMouseUp={() => setTimeout(() => setClickingDropdown(false), 0)} // And this line
         >
           {cities.map((city) => (
             <div
