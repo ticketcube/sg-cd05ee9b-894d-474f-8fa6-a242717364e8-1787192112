@@ -146,6 +146,11 @@ export default function ArtistVideoPlayer({
       return;
     }
     
+    // Don't open dialog if in embed mode
+    if (isEmbed) {
+      return;
+    }
+    
     console.log("🎥 Play button clicked for artist:", artist.artist_name);
     console.log("🎥 Video content:", videoContent);
     console.log("🎥 Video type:", videoContent.type);
@@ -216,7 +221,7 @@ export default function ArtistVideoPlayer({
     </div>
   );
 
-  // If embed mode, return just the video
+  // If embed mode, return just the video - NO DIALOG
   if (isEmbed) {
     return videoEmbed;
   }
@@ -261,64 +266,67 @@ export default function ArtistVideoPlayer({
         )}
       </div>
 
-      <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
-        <DialogContent className="max-w-4xl w-full p-0 bg-black border-0">
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 z-10 text-white bg-black/50 hover:bg-black/75"
-              onClick={() => setIsVideoOpen(false)}
-            >
-              <X className="w-6 h-6" />
-            </Button>
+      {/* Only render dialog if NOT in embed mode */}
+      {!isEmbed && (
+        <Dialog open={isVideoOpen} onOpenChange={setIsVideoOpen}>
+          <DialogContent className="max-w-4xl w-full p-0 bg-black border-0">
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 z-10 text-white bg-black/50 hover:bg-black/75"
+                onClick={() => setIsVideoOpen(false)}
+              >
+                <X className="w-6 h-6" />
+              </Button>
 
-            <div className="space-y-4 p-4">
-              <h3 className="text-lg font-semibold text-white">{artist.artist_name}</h3>
-              
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentIndex}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {videoEmbed}
-                </motion.div>
-              </AnimatePresence>
+              <div className="space-y-4 p-4">
+                <h3 className="text-lg font-semibold text-white">{artist.artist_name}</h3>
+                
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {videoEmbed}
+                  </motion.div>
+                </AnimatePresence>
 
-              {hasMultipleVideos && showNavigationControls && (
-                <div className="flex justify-between items-center mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={handlePrevious}
-                    disabled={currentIndex === 0}
-                    className="text-white border-white hover:bg-white hover:text-black"
-                  >
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    Previous
-                  </Button>
-                  
-                  <span className="text-white text-sm">
-                    {currentIndex + 1} of {processedVideoLinks.length}
-                  </span>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={handleNext}
-                    disabled={currentIndex === processedVideoLinks.length - 1}
-                    className="text-white border-white hover:bg-white hover:text-black"
-                  >
-                    Next
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              )}
+                {hasMultipleVideos && showNavigationControls && (
+                  <div className="flex justify-between items-center mt-4">
+                    <Button
+                      variant="outline"
+                      onClick={handlePrevious}
+                      disabled={currentIndex === 0}
+                      className="text-white border-white hover:bg-white hover:text-black"
+                    >
+                      <ChevronLeft className="mr-2 h-4 w-4" />
+                      Previous
+                    </Button>
+                    
+                    <span className="text-white text-sm">
+                      {currentIndex + 1} of {processedVideoLinks.length}
+                    </span>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={handleNext}
+                      disabled={currentIndex === processedVideoLinks.length - 1}
+                      className="text-white border-white hover:bg-white hover:text-black"
+                    >
+                      Next
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
