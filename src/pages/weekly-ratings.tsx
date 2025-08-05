@@ -1,0 +1,350 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ArrowLeft, Loader2, User, Play } from "lucide-react";
+import { weeklyListService } from "@/services/weeklyListService";
+import { weeklyVotingService } from "@/services/weeklyVotingService";
+import type { WeeklyListWithArtists } from "@/services/weeklyListService";
+import type { Tables } from "@/integrations/supabase/types";
+import Image from "next/image";
+import AuthGuard from "@/components/AuthGuard";
+import { useAuth } from "@/contexts/AuthContext";
+import { WeeklyArtistRatingPopup } from "@/components/WeeklyArtistRatingPopup";
+
+type Artist = Tables<"artists">;
+type WeeklyList = Tables<"weekly_lists">;
+
+interface ArtistRating {
+  artistUuid: string;
+  ticketInterest: number; // -1 to 1 (maps to quadrant_x)
+  shareInterest: number; // -1 to 1 (maps to quadrant_y)
+  isRated: boolean;
+}
+
+function WeeklyRatingsPageContent() {
+  const { user } = useAuth();
+  const [weeklyList, setWeeklyList] = useState<WeeklyListWithArtists | null>(null);
+  const [allWeeklyLists, setAllWeeklyLists] = useState<WeeklyList[]>([]);
+  const [selectedListId, setSelectedListId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
+  const [artistRatings, setArtistRatings] = useState<ArtistRating[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<{
+    show: boolean;
+    pointsEarned: number;
+    ratingsSubmitted: number;
+  }>({ show: false, pointsEarned: 0, ratingsSubmitted: 0 });
+
+  useEffect(() => {
+    loadAllWeeklyLists();
+  }, []);
+
+  useEffect(() => {
+    if (selectedListId) {
+      loadSpecificWeeklyList(selectedListId);
+    }
+  }, [selectedListId]);
+
+  const loadAllWeeklyLists = async () => {
+    try {
+      setLoading(true);
+      setListError(null);
+      const lists = await weeklyListService.getAllWeeklyLists();
+      setAllWeeklyLists(lists);
+      const activeList = lists.find(list => list.status === "active");
+      if (activeList) {
+        setSelectedListId(activeList.week_identifier || "");
+      } else if (lists.length > 0) {
+        setSelectedListId(lists[0].week_identifier || "");
+      } else {
+        setListError("No weekly lists available at this time");
+      }
+    } catch (err) {
+      setListError(err instanceof Error ? err.message : "Failed to load weekly lists");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSpecificWeeklyList = async (weekIdentifier: string) => {
+    try {
+      setListError(null);
+      const list = await weeklyListService.getWeeklyList(weekIdentifier);
+      if (!list) {
+        setListError("Selected weekly list not found");
+        return;
+      }
+      setWeeklyList(list);
+      setArtistRatings([]);
+      setSubmitted(false);
+    } catch (err) {
+      setListError(err instanceof Error ? err.message : "Failed to load weekly list");
+    }
+  };
+
+  const handleRatingComplete = (artistUuid: string, ticketInterest: number, shareInterest: number) => {
+    setArtistRatings(prev => {
+      const existingIndex = prev.findIndex(rating => rating.artistUuid === artistUuid);
+      const newRating = { artistUuid, ticketInterest, shareInterest, isRated: true };
+      
+      if (existingIndex >= 0) {
+        return prev.map((rating, index) => index === existingIndex ? newRating : rating);
+      } else {
+        return [...prev, newRating];
+      }
+    });
+  };
+
+  const handleWatchArtist = (artist: Artist) => {
+    setSelectedArtist(artist);
+    setIsPopupOpen(true);
+  };
+
+  const handleSubmitRatings = async () => {
+    if (!user) {
+      alert("Please log in first to submit your ratings.");
+      return;
+    }
+    if (!weeklyList) {
+      alert("No weekly list selected.");
+      return;
+    }
+    if (artistRatings.length === 0) {
+      alert("Please rate at least one artist before submitting");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const voteData = {
+        userId: user.id,
+        weekIdentifier: weeklyList.week_identifier,
+        artistPositions: artistRatings.map(rating => ({
+          artistUuid: rating.artistUuid,
+          quadrant_x: rating.ticketInterest, // Maps directly to existing DB field
+          quadrant_y: rating.shareInterest   // Maps directly to existing DB field
+        }))
+      };
+      const result = await weeklyVotingService.submitQuadrantVotes(voteData);
+      setSubmitted(true);
+      setSuccessMessage({ 
+        show: true, 
+        pointsEarned: result.pointsEarned, 
+        ratingsSubmitted: result.votesSubmitted 
+      });
+    } catch (error) {
+      console.error("Error submitting ratings:", error);
+      alert("Error submitting ratings. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Calculate grid position based on rating values
+  const getGridPosition = (ticketInterest: number, shareInterest: number) => {
+    // Convert -1 to 1 values to percentage positions
+    const x = (ticketInterest + 1) * 50; // 0-100%
+    const y = (-shareInterest + 1) * 50; // 0-100% (inverted Y for visual display)
+    return { x, y };
+  };
+
+  if (loading) return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin" />
+    </div>
+  );
+
+  if (listError) return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center text-center">
+      <div>
+        <p className="text-red-500 mb-4">{listError}</p>
+        <Button onClick={loadAllWeeklyLists}>Try Again</Button>
+      </div>
+    </div>
+  );
+
+  if (!weeklyList) return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <p>No weekly list available.</p>
+    </div>
+  );
+
+  const displayArtists = weeklyList.artists.slice(0, 10);
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
+        <div className="max-w-md mx-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <Button variant="ghost" size="sm" onClick={() => window.location.href = "/"} className="text-white hover:bg-gray-800">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+            </Button>
+            <h1 className="text-xl font-bold text-blue-500 truncate">DISCOVER & RATE ARTISTS</h1>
+          </div>
+          <div className="text-center mb-4">
+            <h2 className="text-lg font-bold text-white mb-3">SELECT WEEK</h2>
+            <Select value={selectedListId} onValueChange={setSelectedListId}>
+              <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white">
+                <SelectValue placeholder="Select a weekly list..." />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800 border-gray-600">
+                {allWeeklyLists.map((list) => (
+                  <SelectItem key={list.week_identifier} value={list.week_identifier || ""} className="text-white hover:bg-gray-700">
+                    {list.title || list.week_identifier}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="text-center mb-4">
+            <h2 className="text-lg font-bold text-white mb-3">Watch & Rate Each Artist</h2>
+            <p className="text-sm text-gray-400">Click "Watch" to rate artists with sliders</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 bg-gray-800 border-b border-gray-700">
+        <div className="max-w-md mx-auto">
+          {[0, 5].map(start => (
+            <div key={start} className="grid grid-cols-5 gap-2 mb-2">
+              {displayArtists.slice(start, start + 5).map((artistData) => {
+                const artist = artistData.artist as Artist;
+                const isRated = artistRatings.some(rating => rating.artistUuid === artist.uuid && rating.isRated);
+                return (
+                  <div key={artist.uuid} className="text-center">
+                    <div className={`select-none transition-opacity ${isRated ? 'opacity-50' : ''}`}>
+                      {artist.artist_image ? (
+                        <Image 
+                          src={artist.artist_image} 
+                          alt={artist.artist_name} 
+                          width={48} 
+                          height={48} 
+                          className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white" 
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center mx-auto">
+                          <User className="w-6 h-6" />
+                        </div>
+                      )}
+                      <div className="text-xs text-white mt-1 truncate">{artist.artist_name}</div>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className={`mt-1 h-5 px-1 text-xs ${isRated ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}`}
+                      onClick={() => handleWatchArtist(artist)}
+                    >
+                      <Play className="w-2 h-2 mr-1" />
+                      {isRated ? 'Rated' : 'Watch'}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="p-4">
+        <div className="max-w-md mx-auto">
+          <Card className="bg-gray-900 border-gray-700">
+            <CardContent className="p-4">
+              <div className="relative w-full h-80 bg-gray-800 rounded-lg border-2 border-gray-600">
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 text-xs text-gray-400">Would Tell Friends</div>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-gray-400">Not For Them</div>
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-gray-400">Not For Me</div>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 rotate-90 text-xs text-gray-400">I'd Buy Tickets</div>
+                
+                {artistRatings.filter(rating => rating.isRated).map((rating) => {
+                  const artist = (displayArtists.find(a => (a.artist as Artist).uuid === rating.artistUuid)?.artist as Artist);
+                  if (!artist) return null;
+                  const { x, y } = getGridPosition(rating.ticketInterest, rating.shareInterest);
+                  
+                  return (
+                    <div 
+                      key={rating.artistUuid} 
+                      className="absolute cursor-pointer select-none" 
+                      style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
+                      onClick={() => handleWatchArtist(artist)}
+                    >
+                      {artist.artist_image ? (
+                        <Image 
+                          src={artist.artist_image} 
+                          alt={artist.artist_name} 
+                          width={32} 
+                          height={32} 
+                          className="w-8 h-8 rounded-full object-cover border-2 border-green-400" 
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gray-600 border-2 border-green-400 flex items-center justify-center">
+                          <User className="w-4 h-4" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <div className="mt-4">
+            <Button 
+              onClick={handleSubmitRatings} 
+              disabled={submitting || submitted || artistRatings.length === 0} 
+              className="w-full text-lg py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="animate-spin mr-2" />
+                  Submitting...
+                </>
+              ) : submitted ? (
+                "RATINGS SUBMITTED!"
+              ) : (
+                `SUBMIT RATINGS (${artistRatings.filter(r => r.isRated).length})`
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+      
+      {selectedArtist && (
+        <WeeklyArtistRatingPopup
+          artist={selectedArtist}
+          isOpen={isPopupOpen}
+          onClose={() => {
+            setIsPopupOpen(false);
+            setSelectedArtist(null);
+          }}
+          onRatingComplete={handleRatingComplete}
+        />
+      )}
+
+      <Dialog open={successMessage.show} onOpenChange={(open) => setSuccessMessage(p => ({ ...p, show: open }))}>
+        <DialogContent>
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-green-500 mb-4">🎉 Ratings Submitted!</h2>
+            <p>You earned <span className="font-bold">{successMessage.pointsEarned}</span> points for rating <span className="font-bold">{successMessage.ratingsSubmitted}</span> artists.</p>
+            <Button onClick={() => setSuccessMessage({ show: false, pointsEarned: 0, ratingsSubmitted: 0 })} className="mt-4">
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+export default function WeeklyRatingsPage() {
+  return (
+    <AuthGuard>
+      <WeeklyRatingsPageContent />
+    </AuthGuard>
+  );
+}
