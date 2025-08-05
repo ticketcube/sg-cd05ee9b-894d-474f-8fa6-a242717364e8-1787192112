@@ -159,15 +159,6 @@ export function UnifiedArtistPopup({
             )}
           </div>
         </div>
-        
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute top-4 right-4 z-50 text-white bg-black/50 hover:bg-black/75"
-          onClick={onClose}
-        >
-          <X />
-        </Button>
       </DialogContent>
     </Dialog>
   );
