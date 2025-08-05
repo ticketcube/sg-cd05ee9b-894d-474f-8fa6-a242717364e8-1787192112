@@ -27,12 +27,10 @@ export function UnifiedArtistPopup({
   showVibes = false
 }: UnifiedArtistPopupProps) {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     if (artist) {
       setCurrentVideoIndex(0);
-      setVideoError(false);
     }
   }, [artist]);
 
@@ -45,7 +43,6 @@ export function UnifiedArtistPopup({
 
   const handleVideoIndexChange = (newIndex: number) => {
     setCurrentVideoIndex(newIndex);
-    setVideoError(false);
   };
 
   const handleNextVideo = () => {
@@ -60,9 +57,8 @@ export function UnifiedArtistPopup({
     }
   };
 
-  // Type guard to check if artist has vibe properties
-  const isVibeArtist = (artist: any): artist is VibeArtist => {
-    return 'primary_vibe' in artist || 'secondary_vibe' in artist;
+  const isVibeArtist = (art: Artist | VibeArtist): art is VibeArtist => {
+    return "primary_vibe" in art || "secondary_vibe" in art;
   };
 
   return (
@@ -84,14 +80,12 @@ export function UnifiedArtistPopup({
                   videoLinks={videoLinks}
                   currentIndex={currentVideoIndex}
                   onChangeIndex={handleVideoIndexChange}
-                  onPlayerError={() => setVideoError(true)}
                   isEmbed={true}
                   showNavigationControls={false}
                 />
               </motion.div>
             </AnimatePresence>
             
-            {/* Navigation Controls for Multiple Videos */}
             {hasMultipleVideos && (
               <>
                 <Button
@@ -113,7 +107,6 @@ export function UnifiedArtistPopup({
                   <ChevronRight />
                 </Button>
                 
-                {/* Video Counter */}
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 px-2 py-1 rounded text-xs">
                   {currentVideoIndex + 1} of {videoLinks.length}
                 </div>
@@ -121,7 +114,6 @@ export function UnifiedArtistPopup({
             )}
           </div>
           
-          {/* Content Section */}
           <div className="p-6 flex flex-col">
             <DialogHeader>
               <DialogTitle className="text-3xl font-bold">{artist.artist_name}</DialogTitle>
@@ -132,7 +124,6 @@ export function UnifiedArtistPopup({
               )}
             </DialogHeader>
             
-            {/* Vibe Badges (for VibeArtist) */}
             {showVibes && isVibeArtist(artist) && (
               <div className="flex flex-wrap gap-2 mt-4">
                 {artist.primary_vibe && (
@@ -148,10 +139,9 @@ export function UnifiedArtistPopup({
               </div>
             )}
             
-            {/* Bio Section */}
             {showBio && (
               <div className="mt-4 flex-grow overflow-y-auto">
-                {artist.artist_bio ? (
+                {"artist_bio" in artist && artist.artist_bio ? (
                   <p className="text-sm text-gray-300">{artist.artist_bio}</p>
                 ) : (
                   <p className="text-sm text-gray-500 italic">No bio available</p>
@@ -159,7 +149,6 @@ export function UnifiedArtistPopup({
               </div>
             )}
             
-            {/* Action Buttons */}
             {actionButtons && (
               <div className="mt-6">
                 {actionButtons}
@@ -168,7 +157,6 @@ export function UnifiedArtistPopup({
           </div>
         </div>
         
-        {/* Close Button */}
         <Button
           variant="ghost"
           size="icon"
