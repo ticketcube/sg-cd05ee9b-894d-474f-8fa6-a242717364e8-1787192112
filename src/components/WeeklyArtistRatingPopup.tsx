@@ -81,10 +81,13 @@ export function WeeklyArtistRatingPopup({
   const handleVideoPlay = () => {
     if (!isVideoPlaying) {
       setIsVideoPlaying(true);
+      setShowRatings(true);
     }
   };
 
-  const handleVideoClick = () => {
+  const handleVideoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     handleVideoPlay();
   };
 
@@ -142,22 +145,24 @@ export function WeeklyArtistRatingPopup({
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Video Section */}
           <div className="relative aspect-video bg-gray-900">
-            <div className="w-full h-full" onClick={handleVideoClick}>
-              <ArtistVideoPlayer
-                artist={artist}
-                videoLinks={videoLinks}
-                currentIndex={currentVideoIndex}
-                onChangeIndex={handleVideoIndexChange}
-                isEmbed={true}
-                showNavigationControls={false}
-              />
-            </div>
+            <ArtistVideoPlayer
+              artist={artist}
+              videoLinks={videoLinks}
+              currentIndex={currentVideoIndex}
+              onChangeIndex={handleVideoIndexChange}
+              isEmbed={true}
+              showNavigationControls={false}
+            />
             
-            {/* Click overlay to detect clicks on the video */}
+            {/* Transparent click overlay to capture all clicks */}
             <div 
-              className="absolute inset-0 cursor-pointer" 
+              className="absolute inset-0 cursor-pointer bg-transparent z-10" 
               onClick={handleVideoClick}
-              style={{ zIndex: 1 }}
+              onMouseDown={handleVideoClick}
+              style={{ 
+                zIndex: 10,
+                pointerEvents: isVideoPlaying ? 'none' : 'auto' // Disable after first click
+              }}
             />
             
             {hasMultipleVideos && (
@@ -165,35 +170,33 @@ export function WeeklyArtistRatingPopup({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 z-20"
                   onClick={handlePrevVideo}
                   disabled={currentVideoIndex === 0}
-                  style={{ zIndex: 3 }}
                 >
                   <ChevronLeft />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 z-20"
                   onClick={handleNextVideo}
                   disabled={currentVideoIndex === videoLinks.length - 1}
-                  style={{ zIndex: 3 }}
                 >
                   <ChevronRight />
                 </Button>
                 
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 px-2 py-1 rounded text-xs" style={{ zIndex: 2 }}>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 px-2 py-1 rounded text-xs z-20">
                   {currentVideoIndex + 1} of {videoLinks.length}
                 </div>
               </>
             )}
 
             {/* Watch Timer */}
-            <div className="absolute top-2 left-2 bg-black/75 p-2 rounded-lg" style={{ zIndex: 2 }}>
+            <div className="absolute top-2 left-2 bg-black/75 p-2 rounded-lg z-20">
               <div className="flex items-center gap-2 text-xs">
                 <Clock className="w-3 h-3" />
-                <span>{isVideoPlaying ? `${watchTimer}s` : 'Click to start'}</span>
+                <span>{isVideoPlaying ? `${watchTimer}s` : 'Click video to start timer'}</span>
                 {watchTimer >= 15 && pointsAwarded && (
                   <Badge className="bg-green-600">+10 Points</Badge>
                 )}
@@ -221,7 +224,12 @@ export function WeeklyArtistRatingPopup({
                 >
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-center">Rate This Artist</h3>
-                    <p className="text-sm text-gray-400 text-center">Click the video above to start the timer</p>
+                    <p className="text-sm text-gray-400 text-center">
+                      {isVideoPlaying ? 
+                        `Timer: ${watchTimer}/15 seconds` : 
+                        'Click the video above to start the 15-second timer'
+                      }
+                    </p>
                     
                     {/* Ticket Interest Slider */}
                     <div className="space-y-3">
