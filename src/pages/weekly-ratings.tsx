@@ -204,7 +204,6 @@ function WeeklyRatingsPageContent() {
           </div>
           <div className="text-center mb-4">
             <h2 className="text-lg font-bold text-white mb-3">Watch & Rate Each Artist</h2>
-            <p className="text-sm text-gray-400">Click "Watch" to rate artists with sliders</p>
           </div>
         </div>
       </div>
