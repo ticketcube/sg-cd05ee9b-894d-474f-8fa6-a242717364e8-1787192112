@@ -63,7 +63,10 @@ export function UnifiedArtistPopup({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full p-0 bg-black text-white border-gray-800">
+      <DialogContent 
+        className="max-w-4xl w-full p-0 bg-black text-white border-gray-800"
+        hideCloseButton={true}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Video Section */}
           <div className="relative aspect-video bg-gray-900">
@@ -160,7 +163,7 @@ export function UnifiedArtistPopup({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/75"
+          className="absolute top-4 right-4 z-50 text-white bg-black/50 hover:bg-black/75"
           onClick={onClose}
         >
           <X />
