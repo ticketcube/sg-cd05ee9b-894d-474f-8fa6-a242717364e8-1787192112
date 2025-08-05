@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +12,6 @@ import Image from "next/image";
 import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { UnifiedArtistPopup } from "@/components/UnifiedArtistPopup";
-import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 
 type Artist = Tables<"artists">;
 type WeeklyList = Tables<"weekly_lists">;
