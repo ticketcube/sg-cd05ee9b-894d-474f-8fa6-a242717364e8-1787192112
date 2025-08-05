@@ -8,7 +8,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { votingService } from "@/services/votingService";
-import { Top100ArtistPopup } from "@/components/Top100ArtistPopup";
+import { UnifiedArtistPopup } from "@/components/UnifiedArtistPopup";
 import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -395,14 +395,25 @@ export default function Top100Page() {
         </div>
 
         {selectedArtist && isPopupOpen && (
-          <Top100ArtistPopup 
+          <UnifiedArtistPopup 
             artist={selectedArtist} 
             isOpen={isPopupOpen}
-            onClose={handleClosePopup} 
-            onVote={(artist) => {
-              handleVote(artist.uuid);
-            }}
-            selectedArtists={selectedArtists}
+            onClose={handleClosePopup}
+            showGenre={true}
+            showBio={true}
+            showVibes={false}
+            actionButtons={
+              <Button
+                onClick={() => handleVote(selectedArtist.uuid)}
+                className={`w-full text-lg py-3 ${
+                  selectedArtists.includes(selectedArtist.uuid)
+                    ? "bg-green-500 hover:bg-green-600"
+                    : "bg-purple-500 hover:bg-purple-600"
+                }`}
+              >
+                {selectedArtists.includes(selectedArtist.uuid) ? "✓ Voted" : "Vote for this Artist"}
+              </Button>
+            }
           />
         )}
 
