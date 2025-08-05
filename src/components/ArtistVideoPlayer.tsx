@@ -25,6 +25,7 @@ interface ArtistVideoPlayerProps {
   onChangeIndex?: (newIndex: number) => void;
   isEmbed?: boolean;
   showNavigationControls?: boolean;
+  onClick?: (e: React.MouseEvent) => void; // New prop to override default click behavior
 }
 
 const extractYouTubeVideoId = (url: string): string | null => {
@@ -66,6 +67,7 @@ export default function ArtistVideoPlayer({
   onChangeIndex,
   isEmbed = false,
   showNavigationControls = false,
+  onClick, // New prop
 }: ArtistVideoPlayerProps) {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [videoError, setVideoError] = useState(false);
@@ -137,6 +139,13 @@ export default function ArtistVideoPlayer({
 
   const handlePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // If custom onClick is provided, use that instead of default behavior
+    if (onClick) {
+      onClick(e);
+      return;
+    }
+    
     console.log("🎥 Play button clicked for artist:", artist.artist_name);
     console.log("🎥 Video content:", videoContent);
     console.log("🎥 Video type:", videoContent.type);
@@ -216,7 +225,7 @@ export default function ArtistVideoPlayer({
     <>
       <div 
         className={`relative ${sizeClasses[size]} rounded-lg overflow-hidden cursor-pointer group ${className}`}
-        onClick={handlePlay}
+        onClick={onClick || handlePlay} // Use new prop if provided, otherwise use default
       >
         <div className="w-full h-full bg-cover bg-center bg-gray-800 relative">
           {isValidImageUrl(fallbackImage) ? (

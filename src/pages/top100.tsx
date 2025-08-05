@@ -348,6 +348,10 @@ export default function Top100Page() {
                           artist={artist}
                           size="sm"
                           className="hover:scale-105 transition-transform duration-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRowClick(artist);
+                          }}
                         />
                         
                         <Button
