@@ -256,15 +256,17 @@ function WeeklyRatingsPageContent() {
           <Card className="bg-gray-900 border-gray-700">
             <CardContent className="p-4">
               <div className="relative w-full h-80 bg-gray-800 rounded-lg border-2 border-gray-600">
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 text-xs text-gray-400">Would Tell Friends</div>
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-gray-400">Not For Them</div>
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-gray-400">Not For Me</div>
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 rotate-90 text-xs text-gray-400">I'd Buy Tickets</div>
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 text-xs text-gray-400">Would Tell Friends</div>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-gray-400">Not For Them</div>
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 -rotate-90 text-xs text-gray-400">Not For Me</div>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-xs text-gray-400">I'd Buy Tickets</div>
                 
                 {artistRatings.filter(rating => rating.isRated).map((rating) => {
                   const artist = (displayArtists.find(a => (a.artist as Artist).uuid === rating.artistUuid)?.artist as Artist);
                   if (!artist) return null;
-                  const { x, y } = getGridPosition(rating.ticketInterest, rating.shareInterest);
+                  // Adjust positioning to keep artists within the axis labels
+                  const x = Math.max(10, Math.min(90, (rating.ticketInterest + 1) * 40 + 10)); // 10-90% range
+                  const y = Math.max(10, Math.min(90, (-rating.shareInterest + 1) * 40 + 10)); // 10-90% range
                   
                   return (
                     <div 

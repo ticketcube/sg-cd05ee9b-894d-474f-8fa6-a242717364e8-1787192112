@@ -208,25 +208,6 @@ export function WeeklyArtistRatingPopup({
                 </div>
               </>
             )}
-
-            {/* Watch Timer */}
-            <div className="absolute top-2 left-2 bg-black/75 p-2 rounded-lg z-40">
-              <div className="flex items-center gap-2 text-xs">
-                <Clock className="w-3 h-3" />
-                <span>
-                  {isVideoPlaying ? 
-                    `${watchTimer}s${watchTimer < 15 ? '/15s' : ''}` : 
-                    'Timer will start automatically'
-                  }
-                </span>
-                {watchTimer >= 15 && pointsAwarded && (
-                  <Badge className="bg-green-600 ml-2">+10 Points</Badge>
-                )}
-              </div>
-              {isVideoPlaying && watchTimer < 15 && (
-                <Progress value={(watchTimer / 15) * 100} className="w-24 h-2 mt-1" />
-              )}
-            </div>
           </div>
           
           <div className="p-6 flex flex-col">
@@ -246,12 +227,19 @@ export function WeeklyArtistRatingPopup({
                 >
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-center">Rate This Artist</h3>
-                    <p className="text-sm text-gray-400 text-center">
-                      {isVideoPlaying ? 
-                        `Timer: ${watchTimer}/15 seconds` : 
-                        'Click the video above to start the 15-second timer'
-                      }
-                    </p>
+                    <div className="text-sm text-center">
+                      {watchTimer >= 15 ? (
+                        <Badge className="bg-green-600 text-white">+10 Points Earned!</Badge>
+                      ) : isVideoPlaying ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <Clock className="w-3 h-3" />
+                          <span>Timer: {watchTimer}/15 seconds</span>
+                          <Progress value={(watchTimer / 15) * 100} className="w-16 h-2" />
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">Timer will start automatically</span>
+                      )}
+                    </div>
                     
                     {/* Ticket Interest Slider */}
                     <div className="space-y-3">
@@ -260,13 +248,23 @@ export function WeeklyArtistRatingPopup({
                         <span className="text-sm font-medium">Concert Interest</span>
                       </div>
                       <div className="px-3">
-                        <Slider
-                          value={ticketInterest}
-                          onValueChange={setTicketInterest}
-                          max={100}
-                          step={1}
-                          className="w-full"
-                        />
+                        <div className="relative">
+                          <Slider
+                            value={ticketInterest}
+                            onValueChange={setTicketInterest}
+                            max={100}
+                            step={1}
+                            className="w-full slider-gradient"
+                          />
+                          <div 
+                            className="absolute inset-0 h-3 rounded-full pointer-events-none"
+                            style={{
+                              background: `linear-gradient(to right, #3b82f6 0%, #ef4444 100%)`,
+                              top: '50%',
+                              transform: 'translateY(-50%)'
+                            }}
+                          />
+                        </div>
                         <div className="flex justify-between text-xs text-gray-400 mt-1">
                           <span>Not For Me</span>
                           <span className="font-medium text-white">{getTicketLabel(ticketInterest[0])}</span>
@@ -282,16 +280,25 @@ export function WeeklyArtistRatingPopup({
                         <span className="text-sm font-medium">Sharing Interest</span>
                       </div>
                       <div className="px-3">
-                        <Slider
-                          value={shareInterest}
-                          onValueChange={setShareInterest}
-                          max={100}
-                          step={1}
-                          className="w-full"
-                        />
+                        <div className="relative">
+                          <Slider
+                            value={shareInterest}
+                            onValueChange={setShareInterest}
+                            max={100}
+                            step={1}
+                            className="w-full slider-gradient"
+                          />
+                          <div 
+                            className="absolute inset-0 h-3 rounded-full pointer-events-none"
+                            style={{
+                              background: `linear-gradient(to right, #3b82f6 0%, #ef4444 100%)`,
+                              top: '50%',
+                              transform: 'translateY(-50%)'
+                            }}
+                          />
+                        </div>
                         <div className="flex justify-between text-xs text-gray-400 mt-1">
                           <span>Not For Them</span>
-                          <span className="font-medium text-white">{getShareLabel(shareInterest[0])}</span>
                           <span>I'd Tell Friends</span>
                         </div>
                       </div>
