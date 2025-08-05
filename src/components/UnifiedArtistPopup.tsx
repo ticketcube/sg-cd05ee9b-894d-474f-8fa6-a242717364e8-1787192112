@@ -65,7 +65,6 @@ export function UnifiedArtistPopup({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         className="max-w-4xl w-full p-0 bg-black text-white border-gray-800"
-        hideCloseButton={true}
       >
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Video Section */}
