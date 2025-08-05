@@ -1,5 +1,4 @@
-
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +46,25 @@ export function WeeklyArtistPopup({
   const [shareInterest, setShareInterest] = useState([0]); // Slider value array
   const [hasRated, setHasRated] = useState(false);
 
+  const awardWatchPoints = async () => {
+    if (!user || pointsAwarded || !artist) return;
+    
+    try {
+      await userProfileService.recordEngagement(
+        user.id, 
+        "video_view", 
+        10, 
+        "weekly-discovery", // You might want to pass the actual week identifier here
+        artist.uuid
+      );
+      setPointsAwarded(true);
+      setShowPointsAnimation(true);
+      setTimeout(() => setShowPointsAnimation(false), 3000);
+    } catch (error) {
+      console.error("Error awarding watch points:", error);
+    }
+  };
+
   useEffect(() => {
     if (artist) {
       setCurrentVideoIndex(0);
@@ -78,27 +96,10 @@ export function WeeklyArtistPopup({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isWatching, pointsAwarded]);
-
-  const awardWatchPoints = async () => {
-    if (!user || pointsAwarded) return;
-    
-    try {
-      await userProfileService.addPoints(user.id, 10, "video_watch");
-      setPointsAwarded(true);
-      setShowPointsAnimation(true);
-      setTimeout(() => setShowPointsAnimation(false), 3000);
-    } catch (error) {
-      console.error("Error awarding watch points:", error);
-    }
-  };
+  }, [isWatching, pointsAwarded, awardWatchPoints]);
 
   const handleVideoPlay = () => {
     setIsWatching(true);
-  };
-
-  const handleVideoPause = () => {
-    setIsWatching(false);
   };
 
   const handleFinishRating = () => {
