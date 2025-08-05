@@ -1,9 +1,7 @@
-
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Play, VideoOff, ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Play, VideoOff } from "lucide-react";
+import { motion } from "framer-motion";
 import type { Artist } from "@/types/artists";
 
 interface ArtistForPlayer {
