@@ -10,7 +10,8 @@ import type { Tables } from "@/integrations/supabase/types";
 import Image from "next/image";
 import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { UnifiedArtistPopup } from "@/components/UnifiedArtistPopup";
+import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 
 type Artist = Tables<"artists">;
 type WeeklyList = Tables<"weekly_lists">;
@@ -32,27 +33,14 @@ function WeeklyPageContent() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [draggedArtist, setDraggedArtist] = useState<string | null>(null);
-  const [selectedVideoArtist, setSelectedVideoArtist] = useState<Artist | null>(null);
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [successMessage, setSuccessMessage] = useState<{
     show: boolean;
     pointsEarned: number;
     votesSubmitted: number;
   }>({ show: false, pointsEarned: 0, votesSubmitted: 0 });
-
-  const extractYouTubeId = (url: string): string | null => {
-    if (!url) return null;
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/,
-      /youtube\.com\/v\/([^&?#]+)/,
-      /youtube\.com\/watch\?.*v=([^&?#]+)/
-    ];
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match && match[1]) return match[1];
-    }
-    return null;
-  };
 
   useEffect(() => {
     loadAllWeeklyLists();
@@ -279,7 +267,7 @@ function WeeklyPageContent() {
                       )}
                       <div className="text-xs text-white mt-1 truncate">{artist.artist_name}</div>
                     </div>
-                    <Button size="sm" variant="outline" className="mt-1 h-5 px-1 text-xs bg-blue-600 text-white" onClick={() => setSelectedVideoArtist(artist)}>
+                    <Button size="sm" variant="outline" className="mt-1 h-5 px-1 text-xs bg-blue-600 text-white" onClick={() => { setSelectedArtist(artist); setIsPopupOpen(true); }}>
                       <Play className="w-2 h-2 mr-1" />Watch
                     </Button>
                   </div>
@@ -341,16 +329,22 @@ function WeeklyPageContent() {
           <div className="relative aspect-video">
             <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-10" onClick={() => setSelectedVideoArtist(null)}><X className="w-6 h-6" /></Button>
             {selectedVideoArtist && (
-              extractYouTubeId(selectedVideoArtist.artist_videolink || "") ? (
-                <iframe src={`https://www.youtube.com/embed/${extractYouTubeId(selectedVideoArtist.artist_videolink || "")}?autoplay=1`} className="w-full h-full" allow="autoplay; fullscreen" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-900"><VideoOff className="w-12 h-12" /> <p className="ml-2">Video not available</p></div>
-              )
+              <ArtistVideoPlayer artist={selectedVideoArtist} isEmbed={true} />
             )}
           </div>
         </DialogContent>
       </Dialog>
       
+      {selectedArtist && (
+        <UnifiedArtistPopup
+            artist={selectedArtist}
+            isOpen={isPopupOpen}
+            onClose={() => setIsPopupOpen(false)}
+            showBio={true}
+            showGenre={true}
+        />
+      )}
+
       <Dialog open={successMessage.show} onOpenChange={(open) => setSuccessMessage(p => ({ ...p, show: open }))}>
         <DialogContent>
           <div className="text-center">
