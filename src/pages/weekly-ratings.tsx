@@ -182,10 +182,8 @@ function WeeklyRatingsPageContent() {
       <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
         <div className="max-w-md mx-auto">
           <div className="flex items-center gap-3 mb-4">
-            <Button variant="ghost" size="sm" onClick={() => window.location.href = "/"} className="text-white hover:bg-gray-800">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
-            </Button>
-            <h1 className="text-xl font-bold text-blue-500 truncate">DISCOVER & RATE ARTISTS</h1>
+           
+            <h1 className="text-xl font-bold text-blue-500 truncate">WE REWARDS DISCOVERY </h1>
           </div>
           <div className="text-center mb-4">
             <h2 className="text-lg font-bold text-white mb-3">SELECT WEEK</h2>
