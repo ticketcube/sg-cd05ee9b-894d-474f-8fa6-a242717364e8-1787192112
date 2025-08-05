@@ -74,13 +74,14 @@ export function WeeklyArtistRatingPopup({
       setPointsAwarded(false);
       setTicketInterest([50]);
       setShareInterest([50]);
-      setShowRatings(false);
+      setShowRatings(true); // Show sliders immediately when popup opens
     }
   }, [artist]);
 
   const handleVideoPlay = () => {
-    setIsVideoPlaying(true);
-    setShowRatings(true);
+    if (!isVideoPlaying) {
+      setIsVideoPlaying(true);
+    }
   };
 
   const handleVideoClick = () => {
@@ -141,7 +142,7 @@ export function WeeklyArtistRatingPopup({
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Video Section */}
           <div className="relative aspect-video bg-gray-900">
-            <div className="w-full h-full cursor-pointer" onClick={handleVideoClick}>
+            <div className="w-full h-full" onClick={handleVideoClick}>
               <ArtistVideoPlayer
                 artist={artist}
                 videoLinks={videoLinks}
@@ -152,6 +153,13 @@ export function WeeklyArtistRatingPopup({
               />
             </div>
             
+            {/* Click overlay to detect clicks on the video */}
+            <div 
+              className="absolute inset-0 cursor-pointer" 
+              onClick={handleVideoClick}
+              style={{ zIndex: 1 }}
+            />
+            
             {hasMultipleVideos && (
               <>
                 <Button
@@ -160,6 +168,7 @@ export function WeeklyArtistRatingPopup({
                   className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75"
                   onClick={handlePrevVideo}
                   disabled={currentVideoIndex === 0}
+                  style={{ zIndex: 3 }}
                 >
                   <ChevronLeft />
                 </Button>
@@ -169,31 +178,30 @@ export function WeeklyArtistRatingPopup({
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75"
                   onClick={handleNextVideo}
                   disabled={currentVideoIndex === videoLinks.length - 1}
+                  style={{ zIndex: 3 }}
                 >
                   <ChevronRight />
                 </Button>
                 
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 px-2 py-1 rounded text-xs">
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 px-2 py-1 rounded text-xs" style={{ zIndex: 2 }}>
                   {currentVideoIndex + 1} of {videoLinks.length}
                 </div>
               </>
             )}
 
             {/* Watch Timer */}
-            {isVideoPlaying && (
-              <div className="absolute top-2 left-2 bg-black/75 p-2 rounded-lg">
-                <div className="flex items-center gap-2 text-xs">
-                  <Clock className="w-3 h-3" />
-                  <span>{watchTimer}s</span>
-                  {watchTimer >= 15 && pointsAwarded && (
-                    <Badge className="bg-green-600">+10 Points</Badge>
-                  )}
-                </div>
-                {watchTimer < 15 && (
-                  <Progress value={(watchTimer / 15) * 100} className="w-20 h-1 mt-1" />
+            <div className="absolute top-2 left-2 bg-black/75 p-2 rounded-lg" style={{ zIndex: 2 }}>
+              <div className="flex items-center gap-2 text-xs">
+                <Clock className="w-3 h-3" />
+                <span>{isVideoPlaying ? `${watchTimer}s` : 'Click to start'}</span>
+                {watchTimer >= 15 && pointsAwarded && (
+                  <Badge className="bg-green-600">+10 Points</Badge>
                 )}
               </div>
-            )}
+              {isVideoPlaying && watchTimer < 15 && (
+                <Progress value={(watchTimer / 15) * 100} className="w-20 h-1 mt-1" />
+              )}
+            </div>
           </div>
           
           <div className="p-6 flex flex-col">
@@ -213,6 +221,7 @@ export function WeeklyArtistRatingPopup({
                 >
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-center">Rate This Artist</h3>
+                    <p className="text-sm text-gray-400 text-center">Click the video above to start the timer</p>
                     
                     {/* Ticket Interest Slider */}
                     <div className="space-y-3">
