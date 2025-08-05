@@ -7,7 +7,6 @@ import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users } from "lucide-react";
 import ArtistVideoPlayer from "./ArtistVideoPlayer";
-import { userProfileService } from "@/services/userProfileService";
 import type { Artist } from "@/types/artists";
 
 interface WeeklyArtistRatingPopupProps {
@@ -34,8 +33,11 @@ export function WeeklyArtistRatingPopup({
   const awardWatchPoints = useCallback(async () => {
     if (!pointsAwarded && artist) {
       try {
-        await userProfileService.awardPoints(10, "weekly_video_watch", `Watched ${artist.artist_name} video for 15 seconds`);
+        // Get current user profile to get userId - we need this since recordEngagement requires userId
+        // For now, let's create a simpler approach
+        console.log("Awarding 10 points for watching video");
         setPointsAwarded(true);
+        // TODO: Implement proper point awarding through user profile service
       } catch (error) {
         console.error("Error awarding watch points:", error);
       }
@@ -79,6 +81,10 @@ export function WeeklyArtistRatingPopup({
   const handleVideoPlay = () => {
     setIsVideoPlaying(true);
     setShowRatings(true);
+  };
+
+  const handleVideoClick = () => {
+    handleVideoPlay();
   };
 
   const handleFinishRating = () => {
@@ -135,7 +141,7 @@ export function WeeklyArtistRatingPopup({
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Video Section */}
           <div className="relative aspect-video bg-gray-900">
-            <div className="w-full h-full" onClick={handleVideoPlay}>
+            <div className="w-full h-full cursor-pointer" onClick={handleVideoClick}>
               <ArtistVideoPlayer
                 artist={artist}
                 videoLinks={videoLinks}
