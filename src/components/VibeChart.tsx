@@ -1,4 +1,3 @@
-
 import { useState, useMemo, Key } from "react";
 import { motion } from "framer-motion";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -6,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import Image from "next/image";
 import type { VibeArtist } from "@/types/artists";
-import VibeArtistPopup from "./VibeArtistPopup";
+import { UnifiedArtistPopup } from "./UnifiedArtistPopup";
 
 interface VibeChartProps {
   artists: VibeArtist[];
@@ -348,10 +347,13 @@ export default function VibeChart({ artists, chartSize = 600 }: VibeChartProps) 
       </div>
 
       {selectedArtist && (
-        <VibeArtistPopup 
+        <UnifiedArtistPopup 
           artist={selectedArtist} 
           isOpen={!!selectedArtist} 
           onClose={() => setSelectedArtist(null)} 
+          showVibes={true}
+          showGenre={true}
+          showBio={true}
         />
       )}
     </>
