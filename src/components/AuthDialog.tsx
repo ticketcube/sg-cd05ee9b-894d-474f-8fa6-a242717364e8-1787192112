@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Mail, Loader2, CheckCircle } from "lucide-react";
+import { User, Loader2, Mail, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import SimpleCityInput from "@/components/SimpleCityInput";
 
 interface City {
@@ -25,24 +26,26 @@ interface AuthDialogProps {
 export default function AuthDialog({ 
   isOpen, 
   onClose, 
-  title = "Register for Rewards",
-  description = "Create your profile to earn discovery rewards!"
+  title = "Sign In or Create Account",
+  description = "Create your profile to unlock TicketCube features!"
 }: AuthDialogProps) {
+  const [isSignUp, setIsSignUp] = useState(true);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [customCity, setCustomCity] = useState("");
   const [loading, setLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const { login } = useAuth();
 
   const handleCityChange = (city: City | null, customInput?: string) => {
     setSelectedCity(city);
     setCustomCity(customInput || "");
   };
 
-  const handleSendMagicLink = async () => {
-    if (!username.trim() || !email.trim()) {
-      alert("Please enter username and email");
+  const handleSignUp = async () => {
+    if (!username.trim() || !email.trim() || !password.trim()) {
+      alert("Please fill in all required fields");
       return;
     }
 
@@ -51,52 +54,96 @@ export default function AuthDialog({
       return;
     }
 
+    if (password.length < 6) {
+      alert("Password must be at least 6 characters");
+      return;
+    }
+
     setLoading(true);
     try {
       const cityName = selectedCity ? selectedCity.normalized_name : customCity.trim();
       
-      // Store user data in localStorage temporarily so we can complete profile after auth
-      const tempUserData = {
-        username: username.trim(),
+      // Create account with Supabase
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
-        city: cityName
-      };
-      localStorage.setItem("temp_auth_data", JSON.stringify(tempUserData));
-      
-      // Send magic link
-      const { error: signInError } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: {
-          shouldCreateUser: true,
-        }
+        password: password.trim()
       });
 
-      if (signInError) {
-        console.error("Supabase sign-in error:", signInError);
-        throw new Error("Failed to send magic link. Please try again.");
+      if (signUpError) {
+        console.error("Supabase sign-up error:", signUpError);
+        throw new Error(signUpError.message || "Failed to create account. Please try again.");
       }
 
-      setEmailSent(true);
+      if (authData.user) {
+        // Create user profile
+        await login(username.trim(), email.trim(), cityName);
+        
+        if (onClose) {
+          onClose();
+        }
+      }
       
     } catch (error) {
-      console.error("Authentication error:", error);
-      alert(error instanceof Error ? error.message : "Failed to send magic link. Please try again.");
+      console.error("Sign-up error:", error);
+      alert(error instanceof Error ? error.message : "Failed to create account. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSignIn = async () => {
+    if (!email.trim() || !password.trim()) {
+      alert("Please enter email and password");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Sign in with Supabase
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim()
+      });
+
+      if (signInError) {
+        console.error("Supabase sign-in error:", signInError);
+        throw new Error(signInError.message || "Failed to sign in. Please check your credentials.");
+      }
+
+      if (authData.user) {
+        // The AuthContext will handle loading the user profile
+        if (onClose) {
+          onClose();
+        }
+      }
+      
+    } catch (error) {
+      console.error("Sign-in error:", error);
+      alert(error instanceof Error ? error.message : "Failed to sign in. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (isSignUp) {
+      handleSignUp();
+    } else {
+      handleSignIn();
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !emailSent) {
-      handleSendMagicLink();
+    if (e.key === "Enter") {
+      handleSubmit();
     }
   };
 
   const handleClose = () => {
     // Reset states when closing
-    setEmailSent(false);
     setUsername("");
     setEmail("");
+    setPassword("");
     setSelectedCity(null);
     setCustomCity("");
     if (onClose) {
@@ -111,29 +158,31 @@ export default function AuthDialog({
       >
         <DialogHeader>
           <DialogTitle className="text-center text-blue-600">
-            {emailSent ? "Check Your Email" : title}
+            {isSignUp ? "Create Account" : "Sign In"}
           </DialogTitle>
         </DialogHeader>
         
-        {!emailSent ? (
-          <div className="space-y-4">
-            {description && (
-              <div className="text-center">
-                <p className="text-sm text-gray-600">{description}</p>
-              </div>
-            )}
-            
+        <div className="space-y-4">
+          {description && (
+            <div className="text-center">
+              <p className="text-sm text-gray-600">{description}</p>
+            </div>
+          )}
+          
+          {isSignUp && (
             <div className="text-center">
               <div className="text-sm text-gray-500 space-y-2 mb-4">
-                <div>• Get personalized local events</div>
-                <div>• Earn points for engaging with content</div>
-                <div>• Vote on your favorite artists</div>
-                <div>• Unlock exclusive features</div>
+                <div>• Create custom TicketCubes</div>
+                <div>• Secure and mint your cubes</div>
+                <div>• Share cubes with friends</div>
+                <div>• Access exclusive features</div>
               </div>
             </div>
-            
-            {/* Login Form */}
-            <div className="space-y-3">
+          )}
+          
+          {/* Authentication Form */}
+          <div className="space-y-3">
+            {isSignUp && (
               <div>
                 <Input
                   placeholder="Username"
@@ -144,17 +193,33 @@ export default function AuthDialog({
                   disabled={loading}
                 />
               </div>
-              <div>
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="w-full text-black placeholder:text-gray-500"
-                  disabled={loading}
-                />
-              </div>
+            )}
+            
+            <div>
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="w-full text-black placeholder:text-gray-500"
+                disabled={loading}
+              />
+            </div>
+            
+            <div>
+              <Input
+                type="password"
+                placeholder="Password (min 6 characters)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="w-full text-black placeholder:text-gray-500"
+                disabled={loading}
+              />
+            </div>
+            
+            {isSignUp && (
               <div>
                 <SimpleCityInput
                   value={selectedCity}
@@ -162,59 +227,57 @@ export default function AuthDialog({
                   placeholder="Enter your city..."
                 />
               </div>
-            </div>
-            
-            <Button 
-              onClick={handleSendMagicLink} 
+            )}
+          </div>
+          
+          <Button 
+            onClick={handleSubmit} 
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {isSignUp ? "Creating Account..." : "Signing In..."}
+              </>
+            ) : (
+              <>
+                {isSignUp ? (
+                  <>
+                    <User className="w-4 h-4 mr-2" />
+                    Create Account
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4 mr-2" />
+                    Sign In
+                  </>
+                )}
+              </>
+            )}
+          </Button>
+          
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm text-blue-600 hover:text-blue-700 underline"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending Magic Link...
-                </>
-              ) : (
-                <>
-                  <Mail className="w-4 h-4 mr-2" />
-                  Send Magic Link
-                </>
-              )}
-            </Button>
-            
-            <div className="text-xs text-center text-gray-500">
-              We'll send you a magic link to complete sign-in
-            </div>
+              {isSignUp 
+                ? "Already have an account? Sign In" 
+                : "Need an account? Create Account"
+              }
+            </button>
           </div>
-        ) : (
-          <div className="space-y-4 text-center">
-            <div className="mb-6">
-              <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Magic Link Sent!</h3>
-              <p className="text-sm text-gray-600">
-                We've sent a magic link to <strong>{email}</strong>
-              </p>
-            </div>
-            
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm text-blue-800">
-                Click the link in your email to complete sign-in. Your profile will be automatically created with your information.
-              </p>
-            </div>
-            
-            <Button 
-              onClick={handleClose}
-              variant="outline"
-              className="w-full"
-            >
-              Close
-            </Button>
-            
-            <div className="text-xs text-gray-500">
-              Didn't receive the email? Check your spam folder or try again.
-            </div>
+          
+          <div className="text-xs text-center text-gray-500">
+            {isSignUp 
+              ? "Your account will be created instantly - no email confirmation needed!"
+              : "Sign in with your email and password"
+            }
           </div>
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   );
