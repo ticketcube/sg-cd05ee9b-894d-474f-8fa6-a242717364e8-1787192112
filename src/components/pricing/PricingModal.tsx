@@ -88,7 +88,7 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
           description: "Your TicketCube has been secured with the Free plan.",
         });
         onClose();
-        router.push('/ticketcube'); // Redirect back to TicketCube page to show secured state
+        router.push('/my-cubes'); // Changed from '/ticketcube' to '/my-cubes'
       } catch (error) {
         toast({
           variant: "destructive",

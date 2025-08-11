@@ -11,15 +11,15 @@ import Head from 'next/head';
 export default function PaymentSuccessPage() {
   const router = useRouter();
   const { session_id } = router.query;
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (session_id) {
-      // You could optionally verify the session with your backend here
-      // for an extra layer of confirmation, but the webhook is the source of truth.
-      setLoading(false);
-    }
-  }, [session_id]);
+    // Redirect to cubes page after 3 seconds
+    const timer = setTimeout(() => {
+      router.push('/my-cubes'); // Changed from '/profile' to '/my-cubes'
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [router]);
 
   return (
     <>
@@ -36,26 +36,17 @@ export default function PaymentSuccessPage() {
                     <CardTitle className="mt-4 text-2xl font-bold">Payment Successful!</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {loading ? (
-                        <div className="flex items-center justify-center space-x-2">
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                            <span>Verifying payment...</span>
-                        </div>
-                    ) : (
-                        <>
-                            <p className="text-muted-foreground">
-                                Thank you for your purchase! Your TicketCube has been upgraded. You'll be able to see the new features on your profile page.
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                                A confirmation has been sent to your email. Your secure cube is waiting for you!
-                            </p>
-                            <Link href="/profile" passHref>
-                                <Button className="w-full">
-                                    Go to My Profile
-                                </Button>
-                            </Link>
-                        </>
-                    )}
+                    <p className="text-muted-foreground">
+                        Thank you for your purchase! Your TicketCube has been upgraded. You'll be able to see the new features on your profile page.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                        A confirmation has been sent to your email. Your secure cube is waiting for you!
+                    </p>
+                    <Link href="/my-cubes" passHref>
+                        <Button className="w-full">
+                            Go to My Cubes
+                        </Button>
+                    </Link>
                 </CardContent>
             </Card>
         </main>
