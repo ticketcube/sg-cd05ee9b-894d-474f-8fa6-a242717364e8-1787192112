@@ -22,19 +22,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    console.log('Checking cube ownership:', { cubeId, userId });
+    
     const { data: cubeData, error: cubeError } = await supabase
       .from('ticketcubes')
       .select('id, user_id')
       .eq('id', cubeId)
-      .eq('user_id', userId)
+      .eq('user_id', userId) // This should match the auth_id we're sending
       .single();
 
-    if (cubeError || !cubeData) {
-        console.error('Cube not found or user mismatch:', cubeError);
-        return res.status(404).json({ error: 'Cube not found or you do not have permission to access it.' });
+    if (cubeError) {
+      console.error('Database error when checking cube ownership:', cubeError);
+      return res.status(500).json({ error: 'Database error: ' + cubeError.message });
     }
 
+    if (!cubeData) {
+      console.error('Cube not found or user mismatch:', { cubeId, userId });
+      return res.status(404).json({ error: 'Cube not found or you do not have permission to access it.' });
+    }
+
+    console.log('Cube ownership verified:', cubeData);
+
     const domain = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    
+    console.log('Creating Stripe session with:', {
+      priceId,
+      domain,
+      successUrl: `${domain}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${domain}/payment/cancel`
+    });
 
     // Create a Checkout Session
     const session = await stripe.checkout.sessions.create({
