@@ -21,7 +21,7 @@ const PRO_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID;
 const COLLECTOR_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_COLLECTOR_PRICE_ID;
 
 async function updateCubeTier(cubeId: string, userId: string, priceId: string, paymentIntentId: string) {
-    let updates: any = {
+    const updates: any = {
         is_secured: true,
         stripe_payment_intent_id: paymentIntentId,
         updated_at: new Date().toISOString(),

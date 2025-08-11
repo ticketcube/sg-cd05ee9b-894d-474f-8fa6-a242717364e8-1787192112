@@ -8,10 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CubeViewer } from "@/components/3d/CubeViewer"
 import { Navbar } from "@/components/layout/Navbar"
 import { useCube, CubeFace } from "@/contexts/CubeContext"
-import { Upload, Image as ImageIcon, Type, Trash2, Eye, Save, Lock } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
+import { Upload, Image as ImageIcon, Type, Trash2, Eye, Save, Lock, LogIn } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import Head from "next/head"
 import { PricingModal } from "@/components/pricing/PricingModal";
+import { AuthDialog } from "@/components/AuthDialog"
 
 interface FaceFormData {
   title: string
@@ -23,6 +25,7 @@ interface FaceFormData {
 
 export default function TicketCubePage() {
   const { cubeData, setCubeData, updateCubeFace, setPreviewMode, isPreviewMode, resetCube, saveCube, isLoading } = useCube()
+  const { isAuthenticated, loading: authLoading } = useAuth()
   
   const [cubeTitle, setCubeTitle] = useState("My Custom TicketCube")
   const [cubeDescription, setCubeDescription] = useState("")
@@ -38,6 +41,7 @@ export default function TicketCubePage() {
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [selectedCubeId, setSelectedCubeId] = useState<string | null>(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const updateFace = (faceNumber: number, updates: Partial<FaceFormData>) => {
     setFaces(prev => ({
@@ -196,6 +200,103 @@ export default function TicketCubePage() {
     ).length
   }
 
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <>
+        <Head>
+          <title>Create Your TicketCube™ - Interactive 3D Collectible</title>
+          <meta name="description" content="Create your own custom TicketCube™ with images and text. A unique 3D digital collectible." />
+        </Head>
+        <Navbar />
+        <main className="container mx-auto min-h-screen pt-20 md:pt-24 px-4 md:px-6 lg:px-8 max-w-[2000px]">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900 mx-auto mb-4"></div>
+              <p>Loading...</p>
+            </div>
+          </div>
+        </main>
+      </>
+    )
+  }
+
+  // Show authentication required message if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <>
+        <Head>
+          <title>Create Your TicketCube™ - Interactive 3D Collectible</title>
+          <meta name="description" content="Create your own custom TicketCube™ with images and text. A unique 3D digital collectible." />
+        </Head>
+
+        <Navbar />
+        
+        <AuthDialog 
+          isOpen={showAuthDialog} 
+          onClose={() => setShowAuthDialog(false)} 
+        />
+
+        <main className="container mx-auto min-h-screen pt-20 md:pt-24 px-4 md:px-6 lg:px-8 max-w-[2000px]">
+          <section className="text-center mb-8 animate-fade-up">
+            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl bg-gradient-to-br from-neutral-900 to-neutral-600 bg-clip-text text-transparent dark:from-white dark:to-neutral-300">
+              Create Your TicketCube™
+            </h1>
+            <p className="text-xl text-muted-foreground mt-4 max-w-[800px] mx-auto">
+              Design a unique 3D digital collectible with your own images and text. Customize up to 5 faces with your memories, artwork, or messages.
+            </p>
+          </section>
+
+          <div className="max-w-2xl mx-auto">
+            <Card className="bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 border-neutral-200/60">
+              <CardContent className="pt-16 pb-16 text-center">
+                <div className="mb-6">
+                  <LogIn className="w-16 h-16 mx-auto text-neutral-400 mb-4" />
+                  <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
+                  <p className="text-muted-foreground mb-6">
+                    Please sign in to create and customize your TicketCube™. Your cubes will be securely saved to your account.
+                  </p>
+                </div>
+                
+                <Button
+                  onClick={() => setShowAuthDialog(true)}
+                  className="bg-gradient-to-r from-neutral-800 to-neutral-900 hover:from-neutral-900 hover:to-black"
+                  size="lg"
+                >
+                  <LogIn className="w-5 h-5 mr-2" />
+                  Sign In to Continue
+                </Button>
+                
+                <div className="mt-8 pt-8 border-t border-neutral-200 dark:border-neutral-700">
+                  <h3 className="font-semibold mb-3">What you can do with TicketCube™:</h3>
+                  <div className="grid gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      <span>Customize up to 5 faces with images or text</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      <span>Interactive 3D preview with rotation and zoom</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      <span>Secure your cube with blockchain minting options</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      <span>Share and gift cubes to friends</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </>
+    )
+  }
+
+  // Main authenticated content
   return (
     <>
       <Head>
