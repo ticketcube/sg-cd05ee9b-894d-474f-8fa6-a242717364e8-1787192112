@@ -12,6 +12,9 @@ export interface TicketCube {
   event_date?: string;
   cube_type: "standard" | "spectix";
   is_secured: boolean;
+  tier?: string;
+  updates_remaining?: number;
+  gifts_remaining?: number;
   created_at: string;
   updated_at: string;
 }

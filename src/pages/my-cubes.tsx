@@ -4,7 +4,7 @@ import AuthGuard from "@/components/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Cube, Calendar, Eye, Lock, Unlock, Gift, RefreshCw, Coins } from "lucide-react";
+import { ArrowLeft, Box, Calendar, Eye, Lock, Unlock, Gift, RefreshCw, Coins } from "lucide-react";
 import { ticketCubeService } from "@/services/ticketCubeService";
 import type { TicketCube } from "@/services/ticketCubeService";
 import { Canvas } from "@react-three/fiber";
@@ -56,12 +56,12 @@ const CubePreview = ({ cube }: { cube: TicketCube }) => {
     setCubeData({
       type: 'standard',
       faces: [
-        { image: { preview: null }, title: cube.title || 'Face 1' },
-        { image: { preview: null }, title: cube.description || 'Face 2' },
-        { image: { preview: null }, title: cube.event_name || 'Face 3' },
-        { image: { preview: null }, title: cube.venue || 'Face 4' },
-        { image: { preview: null }, title: cube.event_date || 'Face 5' },
-        { image: { preview: null }, title: 'TicketCube™' }
+        { id: '1', number: 1, contentType: 'text', image: { preview: null }, title: cube.title || 'Face 1' },
+        { id: '2', number: 2, contentType: 'text', image: { preview: null }, title: cube.description || 'Face 2' },
+        { id: '3', number: 3, contentType: 'text', image: { preview: null }, title: cube.event_name || 'Face 3' },
+        { id: '4', number: 4, contentType: 'text', image: { preview: null }, title: cube.venue || 'Face 4' },
+        { id: '5', number: 5, contentType: 'text', image: { preview: null }, title: cube.event_date || 'Face 5' },
+        { id: '6', number: 6, contentType: 'text', image: { preview: null }, title: 'TicketCube™' }
       ]
     });
   }, [cube, setCubeData]);
@@ -145,7 +145,7 @@ export default function MyCubesPage() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <Cube className="w-12 h-12 mx-auto mb-4 animate-spin text-blue-500" />
+          <Box className="w-12 h-12 mx-auto mb-4 animate-spin text-blue-500" />
           <h1 className="text-2xl font-bold mb-4">Loading Your TicketCubes...</h1>
         </div>
       </div>
@@ -192,7 +192,7 @@ export default function MyCubesPage() {
         <div className="p-4 max-w-4xl mx-auto">
           {cubes.length === 0 ? (
             <div className="text-center py-16">
-              <Cube className="w-20 h-20 mx-auto mb-6 text-gray-600" />
+              <Box className="w-20 h-20 mx-auto mb-6 text-gray-600" />
               <h2 className="text-2xl font-bold mb-4">No TicketCubes Yet</h2>
               <p className="text-gray-400 mb-6">
                 Create your first TicketCube to preserve your concert memories!
@@ -369,7 +369,7 @@ export default function MyCubesPage() {
                   onClick={() => window.location.href = "/ticketcube"}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
-                  <Cube className="w-4 h-4 mr-2" />
+                  <Box className="w-4 h-4 mr-2" />
                   Create New TicketCube
                 </Button>
               </div>
