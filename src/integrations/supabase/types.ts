@@ -127,15 +127,7 @@ export type Database = {
                     Top_List?: string | null
                     uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "artists_cityid_fkey"
-                        columns: ["cityid"]
-                        isOneToOne: false
-                        referencedRelation: "city_latlong"
-                        referencedColumns: ["id"]
-                    },
-                ]
+                Relationships: []
             }
             city_latlong: {
                 Row: {
@@ -169,6 +161,47 @@ export type Database = {
                     state_code?: string | null
                 }
                 Relationships: []
+            }
+            cube_faces: {
+                Row: {
+                    content_text: string | null
+                    content_type: string
+                    created_at: string | null
+                    face_number: number
+                    face_title: string | null
+                    id: string
+                    image_url: string | null
+                    ticketcube_id: string | null
+                }
+                Insert: {
+                    content_text?: string | null
+                    content_type: string
+                    created_at?: string | null
+                    face_number: number
+                    face_title?: string | null
+                    id?: string
+                    image_url?: string | null
+                    ticketcube_id?: string | null
+                }
+                Update: {
+                    content_text?: string | null
+                    content_type?: string
+                    created_at?: string | null
+                    face_number?: number
+                    face_title?: string | null
+                    id?: string
+                    image_url?: string | null
+                    ticketcube_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "cube_faces_ticketcube_id_fkey"
+                        columns: ["ticketcube_id"]
+                        isOneToOne: false
+                        referencedRelation: "ticketcubes"
+                        referencedColumns: ["id"]
+                    },
+                ]
             }
             points_config: {
                 Row: {
@@ -221,6 +254,48 @@ export type Database = {
                     id?: string
                     user_id?: string | null
                     username?: string | null
+                }
+                Relationships: []
+            }
+            ticketcubes: {
+                Row: {
+                    created_at: string | null
+                    cube_type: string | null
+                    description: string | null
+                    event_date: string | null
+                    event_name: string | null
+                    id: string
+                    is_secured: boolean | null
+                    title: string
+                    updated_at: string | null
+                    user_id: string | null
+                    venue: string | null
+                }
+                Insert: {
+                    created_at?: string | null
+                    cube_type?: string | null
+                    description?: string | null
+                    event_date?: string | null
+                    event_name?: string | null
+                    id?: string
+                    is_secured?: boolean | null
+                    title: string
+                    updated_at?: string | null
+                    user_id?: string | null
+                    venue?: string | null
+                }
+                Update: {
+                    created_at?: string | null
+                    cube_type?: string | null
+                    description?: string | null
+                    event_date?: string | null
+                    event_name?: string | null
+                    id?: string
+                    is_secured?: boolean | null
+                    title?: string
+                    updated_at?: string | null
+                    user_id?: string | null
+                    venue?: string | null
                 }
                 Relationships: []
             }
@@ -507,15 +582,7 @@ export type Database = {
                     name?: string
                     tm_raw_json?: Json | null
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "venues_city_id_fkey"
-                        columns: ["city_id"]
-                        isOneToOne: false
-                        referencedRelation: "city_latlong"
-                        referencedColumns: ["id"]
-                    },
-                ]
+                Relationships: []
             }
             weekly_list_artists: {
                 Row: {
