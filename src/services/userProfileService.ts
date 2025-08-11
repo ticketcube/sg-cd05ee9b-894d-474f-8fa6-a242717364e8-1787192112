@@ -112,7 +112,7 @@ export class UserProfileService {
         }
 
         console.log("✅ User updated successfully:", updatedUser.id);
-        return updatedUser as UserProfile;
+        return updatedUser;
       }
 
       // If not found by auth_id, try to find existing user by email
@@ -150,7 +150,7 @@ export class UserProfileService {
         }
 
         console.log("✅ User updated successfully:", updatedUser.id);
-        return updatedUser as UserProfile;
+        return updatedUser;
       }
 
       // No existing user found, create new one
@@ -176,15 +176,15 @@ export class UserProfileService {
           console.log("🔄 Duplicate key detected, trying to find existing user...");
           
           // Try to find by auth_id first
-          const { data: existingUser } = await supabase
+          const { data: existingUser, error: findError } = await supabase
             .from("user_profiles")
             .select("*")
             .eq("auth_id", authUser.id)
             .single();
             
-          if (existingUser) {
+          if (!findError && existingUser) {
             console.log("✅ Found existing user after duplicate key error:", existingUser.id);
-            return existingUser as UserProfile;
+            return existingUser;
           }
         }
         
@@ -193,7 +193,7 @@ export class UserProfileService {
       }
 
       console.log("✅ User created successfully:", newUser.id);
-      return newUser as UserProfile;
+      return newUser;
       
     } catch (error) {
       console.error("❌ Error in createOrUpdateUserProfile:", error);
