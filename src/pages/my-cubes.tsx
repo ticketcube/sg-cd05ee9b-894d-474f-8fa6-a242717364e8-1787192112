@@ -98,8 +98,8 @@ export default function MyCubesPage() {
       setLoading(true);
       setError(null);
       
-      const userCubes = await ticketCubeService.getUserTicketCubes(user.auth_id);
-      setCubes(userCubes);
+      const result = await ticketCubeService.getUserTicketCubes(user.auth_id);
+      setCubes(result.cubes); // Extract cubes array from the result object
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load cubes";
