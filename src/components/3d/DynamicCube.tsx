@@ -1,13 +1,12 @@
 
 import { useEffect, useRef, memo } from "react"
-import { BoxGeometry, Mesh, TextureLoader, MeshStandardMaterial, DoubleSide, Vector2, CanvasTexture } from "three"
+import { Mesh, TextureLoader, MeshStandardMaterial, DoubleSide, Vector2, CanvasTexture } from "three"
 import { useThree } from "@react-three/fiber"
 import { useCube } from "@/contexts/CubeContext"
 
 export const DynamicCube = memo(function DynamicCube() {
   const { cubeData } = useCube()
   const meshRef = useRef<Mesh | null>(null)
-  const { scene } = useThree()
   const materialsRef = useRef<MeshStandardMaterial[]>([])
   const texturesRef = useRef<any[]>([])
 
@@ -196,15 +195,12 @@ export const DynamicCube = memo(function DynamicCube() {
       rotation={[0, 0, 0]}
     >
       <boxGeometry args={[1, 1, 1]} />
-      {Array(6).fill(null).map((_, index) => (
-        <meshStandardMaterial 
-          key={index} 
-          color={0x808080}
-          roughness={0.5}
-          metalness={0.1}
-          side={DoubleSide}
-        />
-      ))}
+      <meshStandardMaterial 
+        color={0x808080}
+        roughness={0.5}
+        metalness={0.1}
+        side={DoubleSide}
+      />
     </mesh>
   )
 })
