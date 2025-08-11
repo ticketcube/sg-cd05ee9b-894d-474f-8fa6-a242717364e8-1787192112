@@ -121,6 +121,20 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
         }),
       });
 
+      console.log('Raw response:', { 
+        status: response.status, 
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      // Check if response is actually JSON before trying to parse
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const textResponse = await response.text();
+        console.error('Non-JSON response received:', textResponse);
+        throw new Error(`Server returned ${response.status}: ${response.statusText}. Expected JSON but got ${contentType}`);
+      }
+
       const data = await response.json();
       console.log('Stripe API response:', { status: response.status, data });
 
