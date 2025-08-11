@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CubeViewer } from "@/components/3d/CubeViewer"
-import { Navbar } from "@/components/layout/Navbar"
 import { useCube, CubeFace } from "@/contexts/CubeContext"
 import { useAuth } from "@/contexts/AuthContext"
 import { Upload, Image as ImageIcon, Type, Trash2, Eye, Save, Lock, LogIn } from "lucide-react"
@@ -208,8 +207,7 @@ export default function TicketCubePage() {
           <title>Create Your TicketCube™ - Interactive 3D Collectible</title>
           <meta name="description" content="Create your own custom TicketCube™ with images and text. A unique 3D digital collectible." />
         </Head>
-        <Navbar />
-        <main className="container mx-auto min-h-screen pt-20 md:pt-24 px-4 md:px-6 lg:px-8 max-w-[2000px]">
+        <main className="container mx-auto min-h-screen pt-8 px-4 md:px-6 lg:px-8 max-w-[2000px]">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900 mx-auto mb-4"></div>
@@ -229,15 +227,13 @@ export default function TicketCubePage() {
           <title>Create Your TicketCube™ - Interactive 3D Collectible</title>
           <meta name="description" content="Create your own custom TicketCube™ with images and text. A unique 3D digital collectible." />
         </Head>
-
-        <Navbar />
         
         <AuthDialog 
           isOpen={showAuthDialog} 
           onClose={() => setShowAuthDialog(false)} 
         />
 
-        <main className="container mx-auto min-h-screen pt-20 md:pt-24 px-4 md:px-6 lg:px-8 max-w-[2000px]">
+        <main className="container mx-auto min-h-screen pt-8 px-4 md:px-6 lg:px-8 max-w-[2000px]">
           <section className="text-center mb-8 animate-fade-up">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl bg-gradient-to-br from-neutral-900 to-neutral-600 bg-clip-text text-transparent dark:from-white dark:to-neutral-300">
               Create Your TicketCube™
@@ -303,8 +299,6 @@ export default function TicketCubePage() {
         <title>Create Your TicketCube™ - Interactive 3D Collectible</title>
         <meta name="description" content="Create your own custom TicketCube™ with images and text. A unique 3D digital collectible." />
       </Head>
-
-      <Navbar />
       
       <PricingModal
         isOpen={isPricingModalOpen}
@@ -312,7 +306,7 @@ export default function TicketCubePage() {
         cubeId={selectedCubeId}
       />
 
-      <main className="container mx-auto min-h-screen pt-20 md:pt-24 px-4 md:px-6 lg:px-8 max-w-[2000px]">
+      <main className="container mx-auto min-h-screen pt-8 px-4 md:px-6 lg:px-8 max-w-[2000px]">
         <section className="text-center mb-8 animate-fade-up">
           <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl bg-gradient-to-br from-neutral-900 to-neutral-600 bg-clip-text text-transparent dark:from-white dark:to-neutral-300">
             Create Your TicketCube™
