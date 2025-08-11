@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, memo } from "react"
 import { BoxGeometry, Mesh, TextureLoader, MeshStandardMaterial, DoubleSide, Vector2, CanvasTexture } from "three"
 import { useThree } from "@react-three/fiber"
@@ -25,8 +26,7 @@ export const DynamicCube = memo(function DynamicCube() {
         if (!face) {
           // Default face with branding for face 6 or empty faces
           if (index === 5) {
-            return createTextMaterial("Powered by
-OTWChart", "#f0f0f0", "#333333")
+            return createTextMaterial("Powered by\nOTWChart", "#f0f0f0", "#333333")
           } else {
             return new MeshStandardMaterial({ 
               color: 0x808080,
@@ -143,8 +143,7 @@ OTWChart", "#f0f0f0", "#333333")
       ctx.textBaseline = 'middle'
       
       // Handle multi-line text
-      const lines = text.split('
-')
+      const lines = text.split('\n')
       const lineHeight = 40
       const totalHeight = lines.length * lineHeight
       const startY = (512 - totalHeight) / 2 + lineHeight / 2
@@ -156,7 +155,7 @@ OTWChart", "#f0f0f0", "#333333")
         let currentLine = ''
         let y = startY + (index * lineHeight)
         
-        for (let word of words) {
+        for (const word of words) {
           const testLine = currentLine + word + ' '
           const metrics = ctx.measureText(testLine)
           
