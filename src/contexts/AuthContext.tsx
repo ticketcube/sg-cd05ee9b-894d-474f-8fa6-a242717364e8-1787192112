@@ -96,20 +96,50 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // If no valid cached data, we need the user to complete their profile
-      // For now, we'll set a minimal user object
+      // Try to fetch user profile from database
+      try {
+        const userProfile = await userProfileService.getUserProfileByAuthId(authUser.id);
+        if (userProfile) {
+          const userData: User = {
+            id: userProfile.id,
+            auth_id: authUser.id,
+            username: userProfile.username,
+            email: userProfile.email,
+            city: userProfile.raw_city_input || undefined,
+            points: userProfile.total_points || 0
+          };
+          setUser(userData);
+          localStorage.setItem("otwchart_user", JSON.stringify(userData));
+          return;
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+
+      // If no profile exists, create a minimal user object to allow authentication
       const minimalUser: User = {
         id: 0, // Will be set when they complete profile
         auth_id: authUser.id,
-        username: authUser.email?.split('@')[0] || '',
+        username: authUser.email?.split('@')[0] || `user_${authUser.id.substring(0, 8)}`,
         email: authUser.email || '',
         city: undefined,
         points: 0
       };
       
       setUser(minimalUser);
+      localStorage.setItem("otwchart_user", JSON.stringify(minimalUser));
     } catch (error) {
       console.error("Error loading user profile:", error);
+      // Still set a minimal user to allow authentication to work
+      const fallbackUser: User = {
+        id: 0,
+        auth_id: authUser.id,
+        username: authUser.email?.split('@')[0] || `user_${authUser.id.substring(0, 8)}`,
+        email: authUser.email || '',
+        city: undefined,
+        points: 0
+      };
+      setUser(fallbackUser);
     }
   };
 
@@ -161,7 +191,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     user,
     supabaseUser,
-    isAuthenticated: !!supabaseUser && !!user,
+    isAuthenticated: !!supabaseUser, // Simplify to rely on Supabase auth primarily
     login,
     logout,
     loading
