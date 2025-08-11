@@ -264,10 +264,14 @@ export type Database = {
                     description: string | null
                     event_date: string | null
                     event_name: string | null
+                    gifts_remaining: number | null
                     id: string
                     is_secured: boolean | null
+                    stripe_payment_intent_id: string | null
+                    tier: string | null
                     title: string
                     updated_at: string | null
+                    updates_remaining: number | null
                     user_id: string | null
                     venue: string | null
                 }
@@ -277,10 +281,14 @@ export type Database = {
                     description?: string | null
                     event_date?: string | null
                     event_name?: string | null
+                    gifts_remaining?: number | null
                     id?: string
                     is_secured?: boolean | null
+                    stripe_payment_intent_id?: string | null
+                    tier?: string | null
                     title: string
                     updated_at?: string | null
+                    updates_remaining?: number | null
                     user_id?: string | null
                     venue?: string | null
                 }
@@ -290,10 +298,14 @@ export type Database = {
                     description?: string | null
                     event_date?: string | null
                     event_name?: string | null
+                    gifts_remaining?: number | null
                     id?: string
                     is_secured?: boolean | null
+                    stripe_payment_intent_id?: string | null
+                    tier?: string | null
                     title?: string
                     updated_at?: string | null
+                    updates_remaining?: number | null
                     user_id?: string | null
                     venue?: string | null
                 }
