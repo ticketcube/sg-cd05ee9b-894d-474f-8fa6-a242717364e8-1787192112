@@ -82,7 +82,7 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
     // Free Tier Logic
     if (!tier.priceId) {
       try {
-        await ticketCubeService.secureTicketCube(cubeId, user.id.toString());
+        await ticketCubeService.secureTicketCube(cubeId, user.auth_id);
         toast({
           title: "Cube Secured!",
           description: "Your TicketCube has been secured with the Free plan.",
@@ -111,7 +111,7 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
         body: JSON.stringify({
           priceId: tier.priceId,
           cubeId: cubeId,
-          userId: user.id.toString(),
+          userId: user.auth_id, // Use auth_id instead of numeric id
         }),
       });
 
