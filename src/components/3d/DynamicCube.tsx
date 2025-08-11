@@ -187,12 +187,6 @@ export const DynamicCube = memo(function DynamicCube() {
       rotation={[0, 0, 0]}
     >
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial 
-        color={0x808080}
-        roughness={0.5}
-        metalness={0.1}
-        side={DoubleSide}
-      />
     </mesh>
   )
 })
