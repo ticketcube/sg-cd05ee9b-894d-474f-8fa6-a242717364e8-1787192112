@@ -1,8 +1,29 @@
-import { supabase } from "@/integrations/supabase/client";
-import type { Tables, Json } from "@/integrations/supabase/types";
 
-type UserProfile = Tables<"user_profiles">;
-type UserEngagement = Tables<"user_engagements">;
+import { supabase } from "@/integrations/supabase/client";
+
+export interface UserProfile {
+  id: number;
+  auth_id: string;
+  username: string;
+  email: string;
+  raw_city_input?: string | null;
+  total_points?: number | null;
+  last_active?: string | null;
+  city_id?: number | null;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface UserEngagement {
+  id: number;
+  user_id: number;
+  engagement_type: "video_view" | "vote_submission" | "ranking_submission";
+  points_earned?: number | null;
+  week_identifier?: string | null;
+  artist_uuid?: string | null;
+  metadata?: any | null;
+  created_at: string;
+}
 
 export interface CreateUserProfileData {
   username: string;
@@ -39,7 +60,7 @@ export class UserProfileService {
         throw error;
       }
 
-      return data;
+      return data as UserProfile;
     } catch (error) {
       console.error("Error in getUserProfileByAuthId:", error);
       throw error;
@@ -91,7 +112,7 @@ export class UserProfileService {
         }
 
         console.log("✅ User updated successfully:", updatedUser.id);
-        return updatedUser;
+        return updatedUser as UserProfile;
       }
 
       // If not found by auth_id, try to find existing user by email
@@ -129,7 +150,7 @@ export class UserProfileService {
         }
 
         console.log("✅ User updated successfully:", updatedUser.id);
-        return updatedUser;
+        return updatedUser as UserProfile;
       }
 
       // No existing user found, create new one
@@ -163,7 +184,7 @@ export class UserProfileService {
             
           if (existingUser) {
             console.log("✅ Found existing user after duplicate key error:", existingUser.id);
-            return existingUser;
+            return existingUser as UserProfile;
           }
         }
         
@@ -172,7 +193,7 @@ export class UserProfileService {
       }
 
       console.log("✅ User created successfully:", newUser.id);
-      return newUser;
+      return newUser as UserProfile;
       
     } catch (error) {
       console.error("❌ Error in createOrUpdateUserProfile:", error);
@@ -203,7 +224,7 @@ export class UserProfileService {
         throw error;
       }
 
-      return data;
+      return data as UserProfile;
     } catch (error) {
       console.error("Error getting user profile:", error);
       throw error;
@@ -216,7 +237,7 @@ export class UserProfileService {
     pointsEarned: number,
     weekIdentifier: string,
     artistUuid?: string,
-    metadata?: Json
+    metadata?: any
   ): Promise<UserEngagement> {
     try {
       // Record the engagement
@@ -246,7 +267,7 @@ export class UserProfileService {
         throw rpcError;
       }
 
-      return engagement;
+      return engagement as UserEngagement;
     } catch (error) {
       console.error("Error recording engagement:", error);
       throw error;
