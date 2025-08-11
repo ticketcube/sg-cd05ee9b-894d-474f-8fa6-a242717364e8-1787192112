@@ -299,7 +299,7 @@ export default function TicketCubePage() {
                       </div>
 
                       <input
-                        ref={(el) => fileInputRefs.current[faceNum] = el}
+                        ref={(el) => { fileInputRefs.current[faceNum] = el }}
                         type="file"
                         accept="image/*"
                         onChange={(e) => handleImageUpload(faceNum, e)}

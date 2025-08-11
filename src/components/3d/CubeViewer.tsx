@@ -89,12 +89,18 @@ export function CubeViewer({ isStatic = false }: CubeViewerProps) {
         <CardTitle className="flex items-center gap-2 text-lg">
           <Box className="h-5 w-5" />
           {!isStatic && isPreviewMode && cubeData ? (
-            <div className="flex flex-col">
-              <span>{cubeData.eventName}</span>
-              <span className="text-sm text-muted-foreground">
-                {cubeData.venue}
-              </span>
-            </div>
+            cubeData.type === "spectix" ? (
+              <div className="flex flex-col">
+                <span>{cubeData.eventName}</span>
+                <span className="text-sm text-muted-foreground">
+                  {cubeData.venue}
+                </span>
+              </div>
+            ) : cubeData.type === "standard" ? (
+              <div className="flex flex-col">
+                <span>{cubeData.title}</span>
+              </div>
+            ) : "Interactive TicketCube™ Preview"
           ) : (
             "Interactive TicketCube™ Preview"
           )}
