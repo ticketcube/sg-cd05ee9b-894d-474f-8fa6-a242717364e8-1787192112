@@ -88,7 +88,7 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
           description: "Your TicketCube has been secured with the Free plan.",
         });
         onClose();
-        router.push('/profile'); // Redirect to a relevant page
+        router.push('/ticketcube'); // Redirect back to TicketCube page to show secured state
       } catch (error) {
         toast({
           variant: "destructive",
@@ -103,6 +103,12 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
 
     // Paid Tier Logic
     try {
+      console.log('Attempting to create Stripe session:', {
+        priceId: tier.priceId,
+        cubeId: cubeId,
+        userId: user.auth_id
+      });
+
       const response = await fetch('/api/stripe/checkout-session', {
         method: 'POST',
         headers: {
@@ -116,15 +122,19 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
       });
 
       const data = await response.json();
+      console.log('Stripe API response:', { status: response.status, data });
 
       if (!response.ok) {
+        console.error('Stripe checkout session failed:', data);
         throw new Error(data.error || 'Something went wrong');
       }
       
+      console.log('Redirecting to Stripe checkout:', data.url);
       // Redirect to Stripe Checkout
       window.location.href = data.url;
 
     } catch (error) {
+      console.error('Payment error:', error);
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       toast({
         variant: "destructive",
