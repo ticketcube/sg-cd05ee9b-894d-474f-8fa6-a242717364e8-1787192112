@@ -44,13 +44,25 @@ export interface CreateTicketCubeData {
 }
 
 export class TicketCubeService {
-  async createTicketCube(userId: string, cubeData: CreateTicketCubeData): Promise<TicketCube> {
+  async createTicketCube(authUserId: string, cubeData: CreateTicketCubeData): Promise<TicketCube> {
     try {
+      // Verify we have a current authenticated session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session?.user) {
+        throw new Error("Authentication required. Please sign in to create a TicketCube.");
+      }
+
+      // Ensure the passed authUserId matches the current session
+      if (session.user.id !== authUserId) {
+        throw new Error("Authentication mismatch. Please refresh and try again.");
+      }
+
       // Insert the main ticketcube record
       const { data: cubeRecord, error: cubeError } = await supabase
         .from("ticketcubes")
         .insert({
-          user_id: userId,
+          user_id: session.user.id, // Use the authenticated user's UUID
           title: cubeData.title,
           description: cubeData.description,
           event_name: cubeData.event_name,
