@@ -55,6 +55,8 @@ const CubePreview = ({ cube }: { cube: TicketCube }) => {
     // Set cube data for 3D preview
     setCubeData({
       type: 'standard',
+      title: cube.title, // Add the required title property
+      description: cube.description,
       faces: [
         { id: '1', number: 1, contentType: 'text', image: { preview: null }, title: cube.title || 'Face 1' },
         { id: '2', number: 2, contentType: 'text', image: { preview: null }, title: cube.description || 'Face 2' },
