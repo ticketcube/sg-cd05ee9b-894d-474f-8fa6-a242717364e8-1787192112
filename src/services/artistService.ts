@@ -446,15 +446,19 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
         .select("*, city:city_latlong(*)")
-        .eq("Top_List", "Top 100")
+        .eq("Top_List", "Groover")
         .order("artist_otwcoverage", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching top 100 artists:", error);
-      throw error;
-    }
+      if (error) {
+        console.error("Error fetching Groover artists with locations:", error);
+        throw error;
+      }
 
-    return data as unknown as ArtistWithLocation[];
+      return data as unknown as ArtistWithLocation[];
+    } catch (error) {
+      console.error("Unexpected error in getGrooverArtistsWithLocations:", error);
+      return [];
+    }
   }
 }
 
