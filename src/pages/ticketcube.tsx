@@ -11,6 +11,7 @@ import { useCube, CubeFace } from "@/contexts/CubeContext"
 import { Upload, Image as ImageIcon, Type, Trash2, Eye, Save, Lock } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import Head from "next/head"
+import { PricingModal } from "@/components/pricing/PricingModal";
 
 interface FaceFormData {
   title: string
@@ -35,6 +36,8 @@ export default function TicketCubePage() {
   
   const [activeTab, setActiveTab] = useState("1")
   const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [selectedCubeId, setSelectedCubeId] = useState<string | null>(null);
 
   const updateFace = (faceNumber: number, updates: Partial<FaceFormData>) => {
     setFaces(prev => ({
@@ -135,24 +138,31 @@ export default function TicketCubePage() {
   }
 
   const handleSecureCube = async () => {
-    if (!cubeData) return
+    if (!cubeData) {
+      toast({
+        variant: "destructive",
+        title: "No Cube Data",
+        description: "Please create a cube before securing it."
+      });
+      return;
+    }
     
     try {
-      const cubeId = await saveCube()
+      const cubeId = await saveCube();
       if (cubeId) {
         toast({
           title: "Cube Saved!",
-          description: "Your TicketCube has been saved. Redirecting to payment..."
-        })
-        // TODO: Redirect to payment page in Phase 2
-        console.log("Redirecting to payment for cube:", cubeId)
+          description: "Now, choose a plan to secure your cube."
+        });
+        setSelectedCubeId(cubeId);
+        setIsPricingModalOpen(true);
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Save Failed",
         description: "Failed to save your cube. Please try again."
-      })
+      });
     }
   }
 
@@ -194,6 +204,12 @@ export default function TicketCubePage() {
       </Head>
 
       <Navbar />
+      
+      <PricingModal
+        isOpen={isPricingModalOpen}
+        onClose={() => setIsPricingModalOpen(false)}
+        cubeId={selectedCubeId}
+      />
 
       <main className="container mx-auto min-h-screen pt-20 md:pt-24 px-4 md:px-6 lg:px-8 max-w-[2000px]">
         <section className="text-center mb-8 animate-fade-up">
