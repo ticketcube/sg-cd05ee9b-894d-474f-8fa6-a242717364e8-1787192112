@@ -56,7 +56,7 @@ export function CubeProvider({ children }: CubeProviderProps) {
   const [cubeData, setCubeDataState] = useState<CubeData | null>(null)
   const [isPreviewMode, setIsPreviewMode] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { user } = useAuth()
+  const { user, supabaseUser } = useAuth()
 
   const setCubeData = useCallback(async (data: CubeData) => {
     setCubeDataState(data)
@@ -87,7 +87,7 @@ export function CubeProvider({ children }: CubeProviderProps) {
   }, [])
 
   const saveCube = useCallback(async (): Promise<string | null> => {
-    if (!cubeData || !user) {
+    if (!cubeData || !supabaseUser) {
       throw new Error("User must be logged in to save cubes")
     }
     
@@ -99,9 +99,9 @@ export function CubeProvider({ children }: CubeProviderProps) {
         // Upload images for faces that have them
         const facesWithUploadedImages = await Promise.all(
           cubeData.faces.map(async (face) => {
-            if (face.image.file && user) {
+            if (face.image.file && supabaseUser) {
               try {
-                const imageUrl = await ticketCubeService.uploadImage(face.image.file, user.auth_id)
+                const imageUrl = await ticketCubeService.uploadImage(face.image.file, supabaseUser.id)
                 return {
                   face_number: face.number,
                   content_type: face.contentType,
@@ -187,7 +187,7 @@ export function CubeProvider({ children }: CubeProviderProps) {
       }
 
       const savedCube = await ticketCubeService.createTicketCube(
-        user.auth_id, 
+        supabaseUser.id, // Use the Supabase user ID directly
         cubeDataToSave
       )
 
@@ -198,16 +198,16 @@ export function CubeProvider({ children }: CubeProviderProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [cubeData, user])
+  }, [cubeData, supabaseUser])
 
   const loadCube = useCallback(async (cubeId: string) => {
-    if (!user) {
+    if (!supabaseUser) {
       throw new Error("User must be logged in to load cubes")
     }
 
     setIsLoading(true)
     try {
-      const cubeResult = await ticketCubeService.getTicketCube(cubeId, user.auth_id)
+      const cubeResult = await ticketCubeService.getTicketCube(cubeId, supabaseUser.id)
       
       if (!cubeResult) {
         throw new Error("Cube not found or access denied")
@@ -253,7 +253,7 @@ export function CubeProvider({ children }: CubeProviderProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [user])
+  }, [supabaseUser])
 
   const value: CubeContextType = {
     cubeData,
