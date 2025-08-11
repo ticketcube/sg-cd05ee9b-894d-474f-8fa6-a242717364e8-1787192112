@@ -1,11 +1,11 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
-import Stripe from 'stripe';
+import Stripe from "stripe";
 import { supabase } from '@/integrations/supabase/client';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
+  // apiVersion: "2024-06-20", // Use library default
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;

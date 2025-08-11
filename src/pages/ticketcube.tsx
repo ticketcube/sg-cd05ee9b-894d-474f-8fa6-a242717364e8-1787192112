@@ -13,7 +13,7 @@ import { Upload, Image as ImageIcon, Type, Trash2, Eye, Save, Lock, LogIn } from
 import { toast } from "@/hooks/use-toast"
 import Head from "next/head"
 import { PricingModal } from "@/components/pricing/PricingModal";
-import { AuthDialog } from "@/components/AuthDialog"
+import AuthDialog from "@/components/AuthDialog"
 
 interface FaceFormData {
   title: string
