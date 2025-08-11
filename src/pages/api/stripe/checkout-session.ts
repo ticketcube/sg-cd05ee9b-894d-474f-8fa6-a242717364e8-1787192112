@@ -2,12 +2,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from "stripe";
 import { supabase } from '@/integrations/supabase/client';
-import { getSupabase } from '@supabase/auth-helpers-nextjs';
 
 
 // Initialize Stripe with the secret key from environment variables
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  // apiVersion: "2024-06-20", // Use library default
+  // Use library default version
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
