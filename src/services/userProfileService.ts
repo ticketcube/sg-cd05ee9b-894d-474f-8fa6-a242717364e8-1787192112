@@ -48,9 +48,53 @@ export class UserProfileService {
 
   async createOrUpdateUserProfile(data: CreateUserProfileData): Promise<UserProfile> {
     try {
+      // Get the current authenticated user
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !authUser) {
+        throw new Error("Authentication required to create or update profile");
+      }
+
       console.log("🔍 Looking for existing user with email:", data.email, "or username:", data.username);
       
-      // First, try to find existing user by email
+      // First, try to find existing user by auth_id
+      const { data: existingByAuthId, error: authIdError } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("auth_id", authUser.id)
+        .maybeSingle();
+
+      if (authIdError && authIdError.code !== "PGRST116") {
+        console.error("❌ Error finding user by auth_id:", authIdError);
+        throw authIdError;
+      }
+
+      if (existingByAuthId) {
+        console.log("🔄 Found existing user by auth_id, updating:", existingByAuthId.id);
+        
+        // Update existing user found by auth_id
+        const { data: updatedUser, error: updateError } = await supabase
+          .from("user_profiles")
+          .update({
+            username: data.username,
+            email: data.email,
+            raw_city_input: data.city || null,
+            last_active: new Date().toISOString()
+          })
+          .eq("id", existingByAuthId.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error("❌ Error updating user:", updateError);
+          throw updateError;
+        }
+
+        console.log("✅ User updated successfully:", updatedUser.id);
+        return updatedUser;
+      }
+
+      // If not found by auth_id, try to find existing user by email
       const { data: existingByEmail, error: emailError } = await supabase
         .from("user_profiles")
         .select("*")
@@ -63,12 +107,13 @@ export class UserProfileService {
       }
 
       if (existingByEmail) {
-        console.log("🔄 Found existing user by email, updating:", existingByEmail.id);
+        console.log("🔄 Found existing user by email, updating auth_id:", existingByEmail.id);
         
-        // Update existing user found by email
+        // Update existing user found by email and link to current auth user
         const { data: updatedUser, error: updateError } = await supabase
           .from("user_profiles")
           .update({
+            auth_id: authUser.id, // Link to current auth user
             username: data.username,
             email: data.email,
             raw_city_input: data.city || null,
@@ -87,49 +132,13 @@ export class UserProfileService {
         return updatedUser;
       }
 
-      // If not found by email, try to find by username
-      const { data: existingByUsername, error: usernameError } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("username", data.username)
-        .maybeSingle();
-
-      if (usernameError && usernameError.code !== "PGRST116") {
-        console.error("❌ Error finding user by username:", usernameError);
-        throw usernameError;
-      }
-
-      if (existingByUsername) {
-        console.log("🔄 Found existing user by username, updating:", existingByUsername.id);
-        
-        // Update existing user found by username
-        const { data: updatedUser, error: updateError } = await supabase
-          .from("user_profiles")
-          .update({
-            username: data.username,
-            email: data.email,
-            raw_city_input: data.city || null,
-            last_active: new Date().toISOString()
-          })
-          .eq("id", existingByUsername.id)
-          .select()
-          .single();
-
-        if (updateError) {
-          console.error("❌ Error updating user:", updateError);
-          throw updateError;
-        }
-
-        console.log("✅ User updated successfully:", updatedUser.id);
-        return updatedUser;
-      }
-
       // No existing user found, create new one
       console.log("➕ Creating new user");
 
       const { data: newUser, error: createError } = await supabase
         .from("user_profiles")
         .insert([{
+          auth_id: authUser.id, // Link to current auth user
           username: data.username,
           email: data.email,
           raw_city_input: data.city || null,
@@ -145,28 +154,16 @@ export class UserProfileService {
         if (createError.code === "23505") { // PostgreSQL unique constraint violation
           console.log("🔄 Duplicate key detected, trying to find existing user...");
           
-          // Try to find by email first
+          // Try to find by auth_id first
           const { data: existingUser } = await supabase
             .from("user_profiles")
             .select("*")
-            .eq("email", data.email)
+            .eq("auth_id", authUser.id)
             .single();
             
           if (existingUser) {
             console.log("✅ Found existing user after duplicate key error:", existingUser.id);
             return existingUser;
-          }
-          
-          // If not found by email, try username
-          const { data: existingUserByUsername } = await supabase
-            .from("user_profiles")
-            .select("*")
-            .eq("username", data.username)
-            .single();
-            
-          if (existingUserByUsername) {
-            console.log("✅ Found existing user by username after duplicate key error:", existingUserByUsername.id);
-            return existingUserByUsername;
           }
         }
         
