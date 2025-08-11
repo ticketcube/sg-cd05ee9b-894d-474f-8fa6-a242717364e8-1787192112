@@ -137,5 +137,3 @@ export function CubeViewer({ isStatic = false }: CubeViewerProps) {
     </Card>
   )
 }
-
-useGLTF.preload("/ticketcubetmv001-m7b15jl4.glb")
