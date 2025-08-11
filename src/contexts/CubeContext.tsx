@@ -101,7 +101,7 @@ export function CubeProvider({ children }: CubeProviderProps) {
           cubeData.faces.map(async (face) => {
             if (face.image.file && user) {
               try {
-                const imageUrl = await ticketCubeService.uploadImage(face.image.file, user.id.toString())
+                const imageUrl = await ticketCubeService.uploadImage(face.image.file, user.auth_id)
                 return {
                   face_number: face.number,
                   content_type: face.contentType,
@@ -187,7 +187,7 @@ export function CubeProvider({ children }: CubeProviderProps) {
       }
 
       const savedCube = await ticketCubeService.createTicketCube(
-        user.id.toString(), 
+        user.auth_id, 
         cubeDataToSave
       )
 
@@ -207,7 +207,7 @@ export function CubeProvider({ children }: CubeProviderProps) {
 
     setIsLoading(true)
     try {
-      const cubeResult = await ticketCubeService.getTicketCube(cubeId, user.id.toString())
+      const cubeResult = await ticketCubeService.getTicketCube(cubeId, user.auth_id)
       
       if (!cubeResult) {
         throw new Error("Cube not found or access denied")

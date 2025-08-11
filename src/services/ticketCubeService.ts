@@ -288,6 +288,7 @@ export class TicketCubeService {
   async uploadImage(file: File, userId: string): Promise<string> {
     try {
       const fileExt = file.name.split('.').pop();
+      // Use the user's auth UUID for the folder path to ensure uniqueness
       const fileName = `${userId}/${Date.now()}.${fileExt}`;
       
       const { data, error } = await supabase.storage
