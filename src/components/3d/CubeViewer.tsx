@@ -1,4 +1,4 @@
-import { useGLTF } from "@react-three/drei"
+
 import { Canvas } from "@react-three/fiber"
 import { Suspense, useState, useEffect, memo } from "react"
 import { OrbitControls, Stage } from "@react-three/drei"
@@ -22,9 +22,10 @@ const DefaultModel = memo(function DefaultModel() {
 
 const LoadingPlaceholder = memo(function LoadingPlaceholder() {
   return (
-    <div className="absolute inset-0 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>
+    <mesh position={[0, 0, 0]} scale={0.2}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#cccccc" />
+    </mesh>
   )
 })
 
