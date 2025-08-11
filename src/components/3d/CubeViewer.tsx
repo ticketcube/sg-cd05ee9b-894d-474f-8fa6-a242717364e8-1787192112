@@ -8,8 +8,16 @@ import { useCube } from "@/contexts/CubeContext"
 import { DynamicCube } from "./DynamicCube"
 
 const DefaultModel = memo(function DefaultModel() {
-  const { scene } = useGLTF("/ticketcubetmv001-m7b15jl4.glb")
-  return <primitive object={scene} position={[0, 0, 0]} scale={0.14} rotation={[0.5, -0.5, 0]} />
+  return (
+    <mesh position={[0, 0, 0]} scale={0.35} rotation={[0.5, -0.5, 0]}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial 
+        color="#808080" 
+        roughness={0.5} 
+        metalness={0.1}
+      />
+    </mesh>
+  )
 })
 
 const LoadingPlaceholder = memo(function LoadingPlaceholder() {
