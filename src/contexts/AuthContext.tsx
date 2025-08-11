@@ -180,40 +180,38 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, email: string, city?: string) => {
     try {
-      // Wait for supabaseUser to be available if it's not already set
-      let attempts = 0;
-      const maxAttempts = 10;
+      let currentSupabaseUser = supabaseUser;
       
-      while (!supabaseUser && attempts < maxAttempts) {
-        console.log(`Waiting for Supabase user to be set, attempt ${attempts + 1}...`);
-        await new Promise(resolve => setTimeout(resolve, 200));
-        attempts++;
-      }
-      
-      // Check if we have a Supabase session
-      if (!supabaseUser) {
-        // Try to get the current session directly
+      // If we don't have supabaseUser in state, try to get current session
+      if (!currentSupabaseUser) {
+        console.log("No supabaseUser in state, fetching current session...");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (sessionError || !session?.user) {
-          throw new Error("No authenticated Supabase session found. Please sign in with Supabase first.");
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          throw new Error("Failed to get authentication session. Please try signing in again.");
         }
         
-        // Set the supabaseUser directly if we got it from the session
-        setSupabaseUser(session.user);
+        if (session?.user) {
+          currentSupabaseUser = session.user;
+          setSupabaseUser(session.user); // Update state for consistency
+          console.log("Found authenticated user in session:", session.user.id);
+        } else {
+          throw new Error("No authenticated session found. Please sign in first.");
+        }
       }
 
+      console.log("Creating/updating user profile for authenticated user:", currentSupabaseUser.id);
+      
       const userProfile = await userProfileService.createOrUpdateUserProfile({
         username: username.trim(),
         email: email.trim(),
         city: city?.trim()
       });
       
-      const currentSupabaseUser = supabaseUser || (await supabase.auth.getSession()).data.session?.user;
-      
       const userData: User = {
         id: userProfile.id,
-        auth_id: currentSupabaseUser?.id || "",
+        auth_id: currentSupabaseUser.id,
         username: userProfile.username,
         email: userProfile.email,
         city: userProfile.raw_city_input || undefined,
@@ -222,9 +220,10 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       
       setUser(userData);
       localStorage.setItem("otwchart_user", JSON.stringify(userData));
+      console.log("✅ User profile created/updated successfully:", userData.id);
     } catch (error) {
       console.error("Login error:", error);
-      throw new Error("Failed to login. Please try again.");
+      throw error; // Re-throw the original error for better debugging
     }
   };
 

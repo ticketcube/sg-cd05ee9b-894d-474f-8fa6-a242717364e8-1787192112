@@ -75,21 +75,36 @@ export default function AuthDialog({
       }
 
       if (authData.user && authData.session) {
-        // Wait a brief moment for the auth state to be set in AuthContext
-        await new Promise(resolve => setTimeout(resolve, 500));
+        console.log("✅ Account created successfully with session");
         
-        // Create user profile - the login function will now have access to supabaseUser
-        await login(username.trim(), email.trim(), cityName);
+        // Wait a moment to ensure auth state is consistent
+        await new Promise(resolve => setTimeout(resolve, 300));
         
-        if (onClose) {
-          onClose();
+        try {
+          // Create user profile - login function will get session directly if needed
+          await login(username.trim(), email.trim(), cityName);
+          console.log("✅ Profile created successfully");
+          
+          if (onClose) {
+            onClose();
+          }
+        } catch (profileError) {
+          console.error("Profile creation error:", profileError);
+          // Still close dialog since account was created
+          alert("Account created but there was an issue setting up your profile. Please try signing in.");
+          if (onClose) {
+            onClose();
+          }
         }
       } else if (authData.user && !authData.session) {
         // Handle case where email confirmation might be required
+        console.log("Account created but no session - email confirmation may be required");
         alert("Account created! Please check your email to confirm your account.");
         if (onClose) {
           onClose();
         }
+      } else {
+        throw new Error("Account creation failed. Please try again.");
       }
       
     } catch (error) {
