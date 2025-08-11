@@ -74,10 +74,19 @@ export default function AuthDialog({
         throw new Error(signUpError.message || "Failed to create account. Please try again.");
       }
 
-      if (authData.user) {
-        // Create user profile
+      if (authData.user && authData.session) {
+        // Wait a brief moment for the auth state to be set in AuthContext
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Create user profile - the login function will now have access to supabaseUser
         await login(username.trim(), email.trim(), cityName);
         
+        if (onClose) {
+          onClose();
+        }
+      } else if (authData.user && !authData.session) {
+        // Handle case where email confirmation might be required
+        alert("Account created! Please check your email to confirm your account.");
         if (onClose) {
           onClose();
         }

@@ -180,9 +180,27 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, email: string, city?: string) => {
     try {
-      // Check if we already have a Supabase session
+      // Wait for supabaseUser to be available if it's not already set
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      while (!supabaseUser && attempts < maxAttempts) {
+        console.log(`Waiting for Supabase user to be set, attempt ${attempts + 1}...`);
+        await new Promise(resolve => setTimeout(resolve, 200));
+        attempts++;
+      }
+      
+      // Check if we have a Supabase session
       if (!supabaseUser) {
-        throw new Error("No authenticated Supabase session found. Please sign in with Supabase first.");
+        // Try to get the current session directly
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session?.user) {
+          throw new Error("No authenticated Supabase session found. Please sign in with Supabase first.");
+        }
+        
+        // Set the supabaseUser directly if we got it from the session
+        setSupabaseUser(session.user);
       }
 
       const userProfile = await userProfileService.createOrUpdateUserProfile({
@@ -191,9 +209,11 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         city: city?.trim()
       });
       
+      const currentSupabaseUser = supabaseUser || (await supabase.auth.getSession()).data.session?.user;
+      
       const userData: User = {
         id: userProfile.id,
-        auth_id: supabaseUser.id,
+        auth_id: currentSupabaseUser?.id || "",
         username: userProfile.username,
         email: userProfile.email,
         city: userProfile.raw_city_input || undefined,
