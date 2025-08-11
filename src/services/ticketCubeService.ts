@@ -329,18 +329,29 @@ export class TicketCubeService {
 
   async deleteImage(imageUrl: string): Promise<boolean> {
     try {
-      // Extract the file path from the URL
+      // Extract the file path from the Supabase storage URL
+      // Supabase storage URLs look like: https://[project-ref].supabase.co/storage/v1/object/public/[bucket]/[file-path]
       const url = new URL(imageUrl);
-      const path = url.pathname.split('/').pop();
+      const pathParts = url.pathname.split('/');
       
-      if (!path) {
+      // Find the bucket name and get everything after it as the file path
+      const bucketIndex = pathParts.findIndex(part => part === 'ticketcube-images');
+      if (bucketIndex === -1 || bucketIndex === pathParts.length - 1) {
+        console.error("Could not extract file path from URL:", imageUrl);
+        return false;
+      }
+      
+      // Get the file path (everything after the bucket name)
+      const filePath = pathParts.slice(bucketIndex + 1).join('/');
+      
+      if (!filePath) {
         console.error("Could not extract file path from URL:", imageUrl);
         return false;
       }
 
       const { error } = await supabase.storage
         .from('ticketcube-images')
-        .remove([path]);
+        .remove([filePath]);
 
       if (error) {
         console.error("Error deleting image:", error);
