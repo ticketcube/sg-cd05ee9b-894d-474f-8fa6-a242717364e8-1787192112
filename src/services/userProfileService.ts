@@ -25,6 +25,27 @@ export interface UserEngagementHistory {
 }
 
 export class UserProfileService {
+  async getUserProfileByAuthId(authId: string): Promise<UserProfile | null> {
+    try {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("auth_id", authId)
+        .maybeSingle();
+
+      if (error) {
+        if (error.code === "PGRST116") return null; // No rows found
+        console.error("Error getting user profile by auth ID:", error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error in getUserProfileByAuthId:", error);
+      throw error;
+    }
+  }
+
   async createOrUpdateUserProfile(data: CreateUserProfileData): Promise<UserProfile> {
     try {
       console.log("🔍 Looking for existing user with email:", data.email, "or username:", data.username);
