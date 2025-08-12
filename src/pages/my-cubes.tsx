@@ -370,7 +370,7 @@ export default function MyCubesPage() {
                                                   </div>
 
                                                   {/* Right Side - Huge Cube */}
-                                                    <div className="md:w-2/3 h-full">
+                                                <div className="flex-shrink-0 ml-4">
                                                     <CubePreview cube={cube} fullHeight={true} />
                                                   </div>
                                               </div>
