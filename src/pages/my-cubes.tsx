@@ -408,7 +408,7 @@ export default function MyCubesPage() {
                                           </CardContent>
                                       </Card>
                                   ))}
-                              
+                              </div>
 
               {/* Create New Button */}
               <div className="mt-8 text-center">
