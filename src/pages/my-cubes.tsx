@@ -312,7 +312,8 @@ export default function MyCubesPage() {
                       <div className="text-sm text-gray-400">Collector Cubes</div>
                     </CardContent>
                   </Card>
-                  </div>          
+                 </div>   
+            </div>        
 
               
             </>
