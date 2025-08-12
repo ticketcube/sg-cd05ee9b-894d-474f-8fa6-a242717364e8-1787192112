@@ -329,12 +329,7 @@ export default function MyCubesPage() {
                       <Card key={cube.id} className="bg-gray-900 border-gray-700">
                          <CardHeader className="pb-3">
                               <div
-                                  className="
-                                     flex flex-col md:flex-row gap-6
-                                     h-[66vw]           /* mobile: height = 2/3 of screen width */
-                                     md:h-[400px]       /* desktop: fixed height */
-                                     overflow-hidden
-                                     "
+                                  className="flex items-start justify-between"
                                     >
 
                                      {/* Left Side - Event Details */}
