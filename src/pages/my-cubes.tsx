@@ -140,7 +140,7 @@ const CubePreview = ({ cube }: { cube: TicketCube }) => {
   }
 
   return (
-      <div className="w-full h-full aspect-square">
+      <div className="w-full h-full">
       <Canvas camera={{ position: [0, 0, 2], fov: 45 }}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
