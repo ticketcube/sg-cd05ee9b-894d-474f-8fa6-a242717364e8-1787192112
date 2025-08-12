@@ -377,60 +377,7 @@ export default function MyCubesPage() {
                                               </div>
                                              </CardHeader>
 
-                          <CardContent className="pt-0">
-                              {/* Cube Info */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                  <div>
-                                      <div className="text-sm text-gray-400 mb-1">Event</div>
-                                      <div className="text-white font-medium">
-                                          {cube.event_name || 'No event specified'}
-                                      </div>
-                                  </div>
-                                  <div>
-                                      <div className="text-sm text-gray-400 mb-1">Venue</div>
-                                      <div className="text-white font-medium">
-                                          {cube.venue || 'No venue specified'}
-                                      </div>
-                                  </div>
-                                  <div>
-                                      <div className="text-sm text-gray-400 mb-1">Date</div>
-                                      <div className="text-white font-medium flex items-center gap-2">
-                                          <Calendar className="w-4 h-4" />
-                                          {formatDate(cube.event_date)}
-                                      </div>
-                                  </div>
-                                  <div>
-                                      <div className="text-sm text-gray-400 mb-1">Created</div>
-                                      <div className="text-white font-medium">
-                                          {formatDate(cube.created_at)}
-                                      </div>
-                                  </div>
-                              </div>
-
-                                              {/* Description */}
-                                              {cube.description && (
-                                                  <div className="mb-4">
-                                                      <div className="text-sm text-gray-400 mb-1">Description</div>
-                                                      <div className="text-gray-300 text-sm">{cube.description}</div>
-                                                  </div>
-                                              )}
-
-                                              {/* Actions */}
-                                              <div className="flex gap-2 flex-wrap">
-                                                 
-                                                  {!cube.is_secured && (
-                                                      <Button size="sm" variant="outline"
-                                                          onClick={() => (window.location.href = `/ticketcube?edit=${cube.id}`)}>
-                                                          Edit
-                                                      </Button>
-                                                  )}
-                                                  {cube.gifts_remaining && cube.gifts_remaining > 0 && (
-                                                      <Button size="sm" variant="outline" disabled>
-                                                          <Gift className="w-4 h-4 mr-1" /> Gift Copy
-                                                      </Button>
-                                                  )}
-                                              </div>
-                                          </CardContent>
+                        
                                       </Card>
                                   ))}
                               </div>
