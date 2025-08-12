@@ -377,10 +377,7 @@ export default function MyCubesPage() {
 
                                               {/* Actions */}
                                               <div className="flex gap-2 flex-wrap">
-                                                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700"
-                                                      onClick={() => (window.location.href = `/ticketcube?edit=${cube.id}`)}>
-                                                      <Eye className="w-4 h-4 mr-1" /> View
-                                                  </Button>
+                                                 
                                                   {!cube.is_secured && (
                                                       <Button size="sm" variant="outline"
                                                           onClick={() => (window.location.href = `/ticketcube?edit=${cube.id}`)}>
