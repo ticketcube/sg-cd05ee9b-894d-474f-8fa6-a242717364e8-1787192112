@@ -165,14 +165,22 @@ export default function MyCubesPage() {
   }, [user]);
 
   const loadUserCubes = async () => {
-    if (!user) return;
+    if (!user?.auth_id) {
+      console.error("No authenticated user found");
+      setError("Please sign in to view your cubes");
+      return;
+    }
     
     try {
       setLoading(true);
       setError(null);
       
+      console.log("Loading cubes for user:", user.auth_id);
+      
       const result = await ticketCubeService.getUserTicketCubes(user.auth_id);
       setCubes(result.cubes); // Extract cubes array from the result object
+      
+      console.log("Successfully loaded", result.cubes.length, "cubes");
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load cubes";
