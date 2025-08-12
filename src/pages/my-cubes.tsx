@@ -396,20 +396,19 @@ export default function MyCubesPage() {
                                                           <Gift className="w-4 h-4 mr-1" /> Gift Copy
                                                       </Button>
                                                   )}
-                                              
-                          </CardContent>
-                          {/* Create New Button */}
-                          <div className="mt-8 text-center">
-                              <Button
-                                  onClick={() => window.location.href = "/ticketcube"}
-                                  className="bg-blue-600 hover:bg-blue-700"
-                              >
-                                  <Box className="w-4 h-4 mr-2" />
-                                  Create New TicketCube
-                              </Button>
-                          </div>
+                                              </div>
+                                          </CardContent>
                       </Card>
-                                      </div>
+                                      {/* Create New Button */ }
+                      < div className = "mt-8 text-center" >
+                      <Button
+                          onClick={() => window.location.href = "/ticketcube"}
+                          className="bg-blue-600 hover:bg-blue-700"
+                      >
+                          <Box className="w-4 h-4 mr-2" />
+                          Create New TicketCube
+                      </Button>
+                </div>
                                   ))}
                               
 
