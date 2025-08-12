@@ -330,7 +330,7 @@ export default function MyCubesPage() {
                                     >
 
                                      {/* Left Side - Event Details */}
-                                     <div className="md:w-1/3 w-full flex flex-col justify-center p-4">
+                                     <div className="md:w-1/3 flex flex-col justify-center p-4">
                                          <CardTitle className="text-lg font-bold text-white">
                                              {cube.title}
                                         </CardTitle>
@@ -367,7 +367,7 @@ export default function MyCubesPage() {
                                                   </div>
 
                                                   {/* Right Side - Huge Cube */}
-                                                    <div className="md:w-2/3 w-full h-full">
+                                                    <div className="md:w-2/3 h-full">
                                                     <CubePreview cube={cube} fullHeight={true} />
                                                   </div>
                                               </div>
