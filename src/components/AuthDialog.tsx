@@ -26,8 +26,8 @@ interface AuthDialogProps {
 export default function AuthDialog({ 
   isOpen, 
   onClose, 
-  title = "Sign In or Create Account",
-  description = "Create your profile to unlock TicketCube features!"
+  title = "Sign In or Register",
+  description = "Create your profile to earn discovery rewards!"
 }: AuthDialogProps) {
   const [isSignUp, setIsSignUp] = useState(true);
   const [username, setUsername] = useState("");
@@ -196,10 +196,10 @@ export default function AuthDialog({
           {isSignUp && (
             <div className="text-center">
               <div className="text-sm text-gray-500 space-y-2 mb-4">
-                <div>• Create custom TicketCubes</div>
-                <div>• Secure and mint your cubes</div>
-                <div>• Share cubes with friends</div>
-                <div>• Access exclusive features</div>
+                <div>• Earn points for watching videos</div>
+                <div>• Vote on your favorite artists</div>
+                <div>• Unlock exclusive features</div>
+                <div>• Exchange points for Tickets & Access</div>
               </div>
             </div>
           )}
