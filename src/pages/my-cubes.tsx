@@ -366,8 +366,10 @@ export default function MyCubesPage() {
                                 </div>
 
                                 {/* Right Side - Big Cube */}
-                                <div className="flex-shrink-0 w-full md:w-1/2">
+                                <div className="flex-shrink-0 w-full md:w-2/3">
+                                    <div className="relative aspect-square w-full">
                                     <CubePreview cube={cube} className="w-full h-auto" />
+                                </div>
                                 </div>
                             </div>
                         </CardHeader>
