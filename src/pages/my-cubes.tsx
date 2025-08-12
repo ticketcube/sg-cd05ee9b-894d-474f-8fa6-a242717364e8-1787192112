@@ -326,11 +326,11 @@ export default function MyCubesPage() {
                                             h-[66vw]           /* mobile: height = 2/3 of screen width */
                                             md:h-[400px]       /* desktop: fixed height */
                                              overflow-hidden
-                                             "
+                                         "
                                     >
 
                                         {/* Left Side - Details */}
-                                        <div className="md:w-1/3 w-full flex flex-col justify-center p-4"">
+                                        <div className="md:w-1/3 w-full flex flex-col justify-center p-4">
                                             <CardTitle className="text-lg font-bold text-white mb-2">
                                                 {cube.title}
                                             </CardTitle>
