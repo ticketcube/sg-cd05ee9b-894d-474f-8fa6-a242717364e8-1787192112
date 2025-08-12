@@ -328,12 +328,10 @@ export default function MyCubesPage() {
                   {cubes.map((cube) => (
                       <Card key={cube.id} className="bg-gray-900 border-gray-700">
                          <CardHeader className="pb-3">
-                              <div
-                                  className="flex flex-col md:flex-row md:items-start md:justify-between gap-6"
-                                    >
+                              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
 
                                      {/* Left Side - Event Details */}
-                                     <div className="md:w-1/3 flex flex-col justify-center p-4">
+                                  <div className="flex-1">
                                          <CardTitle className="text-lg font-bold text-white">
                                              {cube.title}
                                         </CardTitle>
@@ -351,10 +349,12 @@ export default function MyCubesPage() {
                                                               </Badge>
                                                           )}
                                                       </div>
-
-                                                      <div>
-                                                          <div className="text-sm text-gray-400">Event</div>
-                                                          <div className="text-white font-medium">{cube.event_name || "No event specified"}</div>
+                                                       {/* Event, Venue, Date stacked */}
+                                                        <div className="space-y-3">
+                                                          <div>
+                                                             <div className="text-sm text-gray-400">Event</div>
+                                                        <div className="text-white font-medium">{cube.event_name || "No event specified"}
+                                                        </div>
                                                       </div>
                                                       <div>
                                                           <div className="text-sm text-gray-400">Venue</div>
@@ -368,13 +368,13 @@ export default function MyCubesPage() {
                                                           </div>
                                                       </div>
                                                   </div>
-
+                                                 </div>
                                                   {/* Right Side - Huge Cube */}
-                                                <div className="flex-shrink-0 ml-4">
-                                                    <CubePreview cube={cube} fullHeight={true} />
-                                                  </div>
+                                                  <div className="flex-shrink-0 w-full md:w-1/2">
+                                             <CubePreview cube={cube} className="w-full     h-auto" />
+                                            </div>
                                               </div>
-                                            </CardHeader>
+                                             </CardHeader>
 
                           <CardContent className="pt-0">
                               {/* Cube Info */}
