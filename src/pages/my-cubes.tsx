@@ -360,7 +360,7 @@ export default function MyCubesPage() {
                                                     </div>
 
                                                     {/* Right Side - Huge Cube */}
-                                                    <div className="md:w-2/3 w-full min-h-[400px]">
+                                                    <div className="md:w-2/3 w-full">
                                                         <CubePreview cube={cube} />
                                                     </div>
                                                 </div>
