@@ -140,7 +140,7 @@ const CubePreview = ({ cube }: { cube: TicketCube }) => {
   }
 
   return (
-      <div className={`${fullHeight ? "w-full h-full" : "w-full aspect-square"}`}>
+      <div className="w-full h-full">
       <Canvas camera={{ position: [0, 0, 2], fov: 45 }}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
@@ -319,17 +319,18 @@ export default function MyCubesPage() {
                      <div className="space-y-6">
                         {cubes.map((cube) => (
                           <Card key={cube.id} className="bg-gray-900 border-gray-700">
-                                 <CardHeader className="pb-3">
+                                <CardHeader className="pb-3">
                                     <div
                                         className="
-                                         flex flex-col md:flex-row gap-6
-                                         h-[300px]               /* fixed height desktop */
-                                         max-h-[66vw] md:max-h-[300px] /* mobile cap at 2/3 screen width */
-                                         "
+                                            flex flex-col md:flex-row gap-6
+                                            h-[66vw]           /* mobile: height = 2/3 of screen width */
+                                            md:h-[400px]       /* desktop: fixed height */
+                                             overflow-hidden
+                                             "
                                     >
 
                                         {/* Left Side - Details */}
-                                        <div className="flex-1 md:w-1/3 overflow-hidden">
+                                        <div className="md:w-1/3 w-full flex flex-col justify-center p-4"">
                                             <CardTitle className="text-lg font-bold text-white mb-2">
                                                 {cube.title}
                                             </CardTitle>
