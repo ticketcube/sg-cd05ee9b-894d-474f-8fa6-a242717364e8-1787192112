@@ -140,7 +140,7 @@ const CubePreview = ({ cube }: { cube: TicketCube }) => {
   }
 
   return (
-      <div className="w-full mx-auto max-h-[400px] md:max-h-[500px] aspect-square">
+      <div className={`${fullHeight ? "w-full h-full" : "w-full aspect-square"}`}>
       <Canvas camera={{ position: [0, 0, 2], fov: 45 }}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
@@ -315,56 +315,62 @@ export default function MyCubesPage() {
                 </div>
               </div>
 
-                              {/* Cubes Grid - Mobile Friendly */}
-                              <div className="space-y-6">
-                                  {cubes.map((cube) => (
-                                      <Card key={cube.id} className="bg-gray-900 border-gray-700">
-                                          <CardHeader className="pb-3">
-                                              <div className="flex flex-col md:flex-row gap-6">
+                 {/* Cubes Grid - Mobile Friendly */}
+                     <div className="space-y-6">
+                        {cubes.map((cube) => (
+                          <Card key={cube.id} className="bg-gray-900 border-gray-700">
+                                 <CardHeader className="pb-3">
+                                    <div
+                                        className="
+                                         flex flex-col md:flex-row gap-6
+                                         h-[300px]               /* fixed height desktop */
+                                         max-h-[66vw] md:max-h-[300px] /* mobile cap at 2/3 screen width */
+                                         "
+                                    >
 
-                                                  {/* Left Side - Event Details */}
-                                                  <div className="flex-1 md:w-1/3 space-y-4">
-                                                      <CardTitle className="text-lg font-bold text-white">
-                                                          {cube.title}
-                                                      </CardTitle>
-                                                      <div className="flex items-center gap-2">
-                                                          <TierBadge tier={cube.tier || "free"} />
-                                                          {cube.is_secured ? (
-                                                              <Badge className="bg-green-600 text-white">
-                                                                  <Lock className="w-3 h-3 mr-1" />
-                                                                  Secured
-                                                              </Badge>
-                                                          ) : (
-                                                              <Badge variant="secondary">
-                                                                  <Unlock className="w-3 h-3 mr-1" />
-                                                                  Draft
-                                                              </Badge>
-                                                          )}
-                                                      </div>
+                                        {/* Left Side - Details */}
+                                        <div className="flex-1 md:w-1/3 overflow-hidden">
+                                            <CardTitle className="text-lg font-bold text-white mb-2">
+                                                {cube.title}
+                                            </CardTitle>
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <TierBadge tier={cube.tier || "free"} />
+                                                {cube.is_secured ? (
+                                                    <Badge className="bg-green-600 text-white">
+                                                        <Lock className="w-3 h-3 mr-1" /> Secured
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge variant="secondary">
+                                                        <Unlock className="w-3 h-3 mr-1" /> Draft
+                                                    </Badge>
+                                                )}
+                                            </div>
 
-                                                      <div>
-                                                          <div className="text-sm text-gray-400">Event</div>
-                                                          <div className="text-white font-medium">{cube.event_name || "No event specified"}</div>
-                                                      </div>
-                                                      <div>
-                                                          <div className="text-sm text-gray-400">Venue</div>
-                                                          <div className="text-white font-medium">{cube.venue || "No venue specified"}</div>
-                                                      </div>
-                                                      <div>
-                                                          <div className="text-sm text-gray-400">Date</div>
-                                                          <div className="text-white font-medium flex items-center gap-2">
-                                                              <Calendar className="w-4 h-4" />
-                                                              {formatDate(cube.event_date)}
-                                                          </div>
-                                                      </div>
-                                                  </div>
+                                            <div className="space-y-2 text-sm">
+                                                <div>
+                                                    <div className="text-gray-400">Event</div>
+                                                    <div className="text-white font-medium">{cube.event_name || "No event specified"}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-gray-400">Venue</div>
+                                                    <div className="text-white font-medium">{cube.venue || "No venue specified"}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-gray-400">Date</div>
+                                                    <div className="text-white font-medium flex items-center gap-2">
+                                                        <Calendar className="w-4 h-4" />
+                                                        {formatDate(cube.event_date)}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                                  {/* Right Side - Huge Cube */}
-                                                  <div className="md:w-2/3 w-full">
-                                                      <CubePreview cube={cube} />
-                                                  </div>
-                                              </div>
-                                          </CardHeader>
+                                        {/* Right Side - Cube fills fixed height */}
+                                        <div className="md:w-2/3 w-full h-full">
+                                            <CubePreview cube={cube} fullHeight />
+                                        </div>
+                                    </div>
+                                </CardHeader>
 
                                           <CardContent>
                                               {/* Description */}
