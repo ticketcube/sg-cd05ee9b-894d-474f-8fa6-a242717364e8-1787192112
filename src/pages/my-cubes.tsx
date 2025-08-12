@@ -396,7 +396,7 @@ export default function MyCubesPage() {
                                                           <Gift className="w-4 h-4 mr-1" /> Gift Copy
                                                       </Button>
                                                   )}
-                                              </div>
+                                              
                           </CardContent>
                           {/* Create New Button */}
                           <div className="mt-8 text-center">
@@ -408,7 +408,8 @@ export default function MyCubesPage() {
                                   Create New TicketCube
                               </Button>
                           </div>
-                                      </Card>
+                      </Card>
+                                      </div>
                                   ))}
                               
 
