@@ -37,18 +37,7 @@ export default function GrooverPage() {
         </div>
           </div>
 
-          {/* Groover Chart */}
-          <Card className="bg-gradient-to-br from-green-500 to-teal-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group">
-              <CardContent className="p-6 h-full flex flex-col justify-between">
-                  
-                  <Button
-                      onClick={() => handleNavigation("/genres")}
-                      className="w-full bg-white text-teal-600 hover:bg-gray-100 font-bold py-3"
-                  >
-                      Browse Genres
-                  </Button>
-              </CardContent>
-          </Card>
+         
     </>
   );
 }
