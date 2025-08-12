@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function GrooverPage() {
   const router = useRouter();
