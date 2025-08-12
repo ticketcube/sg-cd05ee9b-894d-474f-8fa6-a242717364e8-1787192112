@@ -140,7 +140,7 @@ const CubePreview = ({ cube }: { cube: TicketCube }) => {
   }
 
   return (
-      <div className="w-full h-full aspect-square">
+      <div className="w-full mx-auto max-h-[400px] md:max-h-[500px] aspect-square">
       <Canvas camera={{ position: [0, 0, 2], fov: 45 }}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
@@ -360,7 +360,7 @@ export default function MyCubesPage() {
                                                   </div>
 
                                                   {/* Right Side - Huge Cube */}
-                                                  <div className="md:w-2/3 w-full min-h-[400px]">
+                                                  <div className="md:w-2/3 w-full">
                                                       <CubePreview cube={cube} />
                                                   </div>
                                               </div>
