@@ -50,54 +50,38 @@ const TierBadge = ({ tier }: { tier: string }) => {
 
 const CubePreview = ({ cube }: { cube: TicketCube }) => {
     const { setCubeData } = useCube();
-    const [cubeFaces, setCubeFaces] = useState < any[] > ([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const loadCubeFaces = async () => {
             try {
                 setIsLoading(true);
-                // Load the actual cube faces from the database
                 const cubeResult = await ticketCubeService.getTicketCube(cube.id);
-
                 if (cubeResult) {
-                    const { faces } = cubeResult;
-
-                    // Convert database faces to cube context format
-                    const cubeFaceData = faces.map(face => ({
+                    const cubeFaceData = cubeResult.faces.map(face => ({
                         id: face.id,
                         number: face.face_number,
                         title: face.face_title || `Face ${face.face_number}`,
                         contentType: face.content_type,
                         text: face.content_text,
-                        image: {
-                            url: face.image_url,
-                            preview: face.image_url // Use stored image URL as preview
-                        }
+                        image: { url: face.image_url, preview: face.image_url }
                     }));
 
-                    // Fill missing faces with default data up to 6 faces
+                    // Fill missing faces
                     const allFaces = [];
                     for (let i = 1; i <= 6; i++) {
-                        const existingFace = cubeFaceData.find(f => f.number === i);
-                        if (existingFace) {
-                            allFaces.push(existingFace);
-                        } else {
-                            // Default face data if not found
-                            allFaces.push({
+                        allFaces.push(
+                            cubeFaceData.find(f => f.number === i) || {
                                 id: `default-${i}`,
                                 number: i,
                                 contentType: 'text' as const,
                                 text: i === 6 ? 'TicketCube™' : `Face ${i}`,
                                 image: { preview: null },
                                 title: i === 6 ? 'TicketCube™' : `Face ${i}`
-                            });
-                        }
+                            }
+                        );
                     }
 
-                    setCubeFaces(allFaces);
-
-                    // Set cube data for 3D preview with actual stored data
                     setCubeData({
                         type: 'standard',
                         title: cube.title,
@@ -105,24 +89,8 @@ const CubePreview = ({ cube }: { cube: TicketCube }) => {
                         faces: allFaces
                     });
                 }
-            } catch (error) {
-                console.error('Error loading cube faces:', error);
-                // Fallback to basic preview data
-                const fallbackFaces = [
-                    { id: '1', number: 1, contentType: 'text' as const, image: { preview: null }, title: cube.title || 'Face 1', text: cube.title },
-                    { id: '2', number: 2, contentType: 'text' as const, image: { preview: null }, title: cube.description || 'Face 2', text: cube.description },
-                    { id: '3', number: 3, contentType: 'text' as const, image: { preview: null }, title: cube.event_name || 'Face 3', text: cube.event_name },
-                    { id: '4', number: 4, contentType: 'text' as const, image: { preview: null }, title: cube.venue || 'Face 4', text: cube.venue },
-                    { id: '5', number: 5, contentType: 'text' as const, image: { preview: null }, title: cube.event_date || 'Face 5', text: cube.event_date },
-                    { id: '6', number: 6, contentType: 'text' as const, image: { preview: null }, title: 'TicketCube™', text: 'TicketCube™' }
-                ];
-
-                setCubeData({
-                    type: 'standard',
-                    title: cube.title,
-                    description: cube.description,
-                    faces: fallbackFaces
-                });
+            } catch (err) {
+                console.error('Error loading cube:', err);
             } finally {
                 setIsLoading(false);
             }
@@ -133,14 +101,14 @@ const CubePreview = ({ cube }: { cube: TicketCube }) => {
 
     if (isLoading) {
         return (
-            <div className="w-full h-full mx-auto">
+            <div className="w-full h-full flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
         );
     }
 
     return (
-        <div className="w-full h-full mx-auto">
+        <div className="w-full h-full aspect-square">
             <Canvas camera={{ position: [0, 0, 2], fov: 45 }}>
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} />
@@ -151,6 +119,7 @@ const CubePreview = ({ cube }: { cube: TicketCube }) => {
         </div>
     );
 };
+
 
 export default function MyCubesPage() {
     const { user } = useAuth();
