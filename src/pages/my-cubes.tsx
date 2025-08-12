@@ -320,7 +320,7 @@ export default function MyCubesPage() {
                 {cubes.map((cube) => (
                   <Card key={cube.id} className="bg-gray-900 border-gray-700">
                     <CardHeader className="pb-3">
-                            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
                                 {/* Left Side - Details */}
                                 <div className="flex-1">
                                     <CardTitle className="text-lg font-bold text-white mb-2">
