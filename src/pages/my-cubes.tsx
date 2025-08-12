@@ -313,11 +313,12 @@ export default function MyCubesPage() {
                     </CardContent>
                   </Card>
                  </div>   
+                 
             </div>        
 
               
             </>
-          )}
+  ))}
          </div>
     
     </AuthGuard>
