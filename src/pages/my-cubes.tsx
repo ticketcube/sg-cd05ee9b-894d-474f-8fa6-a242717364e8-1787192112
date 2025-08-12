@@ -329,7 +329,7 @@ export default function MyCubesPage() {
                       <Card key={cube.id} className="bg-gray-900 border-gray-700">
                          <CardHeader className="pb-3">
                               <div
-                                  className="flex items-start justify-between"
+                                  className="flex flex-col md:flex-row md:items-start md:justify-between gap-6
                                     >
 
                                      {/* Left Side - Event Details */}
