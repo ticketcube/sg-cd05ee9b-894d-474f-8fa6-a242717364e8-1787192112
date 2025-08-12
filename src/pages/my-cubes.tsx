@@ -1,11 +1,4 @@
-which closes the map too early and mismatches the bracket structure.This will throw a syntax error.  
-3. ** `useCube` context usage ** — no visible errors there, but it’s worth noting you’re always calling `setCubeData` inside the loop without checking dependencies carefully.This is okay but will rerun on every `cube` change.  
-4. ** Possible undefined`faces` ** — if `cubeResult` has no`faces`, `faces.map(...)` will throw.You should guard it.  
-5. ** Inconsistent badge colors and variants ** — `getBadgeVariant` is defined but never used; instead, `getTierColor` is applied directly in `className`.This is fine, but you can remove `getBadgeVariant` if not needed.
 
-    Here’s a fixed and cleaned - up version that should compile:
-
-```tsx
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthGuard from "@/components/AuthGuard";
