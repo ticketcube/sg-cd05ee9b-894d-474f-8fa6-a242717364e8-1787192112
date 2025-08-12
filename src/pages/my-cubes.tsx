@@ -368,7 +368,7 @@ export default function MyCubesPage() {
                                 {/* Right Side - Big Cube */}
                                 <div className="flex-shrink-0 w-full md:w-2/3">
                                     <div className="relative aspect-square w-full">
-                                        <CubePreview cube={cube} className="w-full h-auto" style={{ width: '100%', height: '100%' }} />
+                                        <CubePreview cube={cube} size={400} />
                                 </div>
                                 </div>
                             </div>
