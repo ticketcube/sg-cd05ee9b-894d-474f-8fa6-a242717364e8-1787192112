@@ -374,9 +374,38 @@ export default function MyCubesPage() {
                                                     <CubePreview cube={cube} fullHeight={true} />
                                                   </div>
                                               </div>
-                                          </CardHeader>
+                                            </CardHeader>
 
-                                          <CardContent>
+                          <CardContent className="pt-0">
+                              {/* Cube Info */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                  <div>
+                                      <div className="text-sm text-gray-400 mb-1">Event</div>
+                                      <div className="text-white font-medium">
+                                          {cube.event_name || 'No event specified'}
+                                      </div>
+                                  </div>
+                                  <div>
+                                      <div className="text-sm text-gray-400 mb-1">Venue</div>
+                                      <div className="text-white font-medium">
+                                          {cube.venue || 'No venue specified'}
+                                      </div>
+                                  </div>
+                                  <div>
+                                      <div className="text-sm text-gray-400 mb-1">Date</div>
+                                      <div className="text-white font-medium flex items-center gap-2">
+                                          <Calendar className="w-4 h-4" />
+                                          {formatDate(cube.event_date)}
+                                      </div>
+                                  </div>
+                                  <div>
+                                      <div className="text-sm text-gray-400 mb-1">Created</div>
+                                      <div className="text-white font-medium">
+                                          {formatDate(cube.created_at)}
+                                      </div>
+                                  </div>
+                              </div>
+
                                               {/* Description */}
                                               {cube.description && (
                                                   <div className="mb-4">
