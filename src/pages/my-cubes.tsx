@@ -315,21 +315,28 @@ export default function MyCubesPage() {
                 </div>
               </div>
 
-                              {/* Cubes Grid - Mobile Friendly */}
-                              <div className="space-y-6">
-                                  {cubes.map((cube) => (
-                                      <Card key={cube.id} className="bg-gray-900 border-gray-700">
-                                          <CardHeader className="pb-3">
-                                              <div className="flex flex-col md:flex-row gap-6">
+                 {/* Cubes Grid - Mobile Friendly */}
+                 <div className="space-y-6">
+                  {cubes.map((cube) => (
+                      <Card key={cube.id} className="bg-gray-900 border-gray-700">
+                         <CardHeader className="pb-3">
+                              <div
+                                  className="
+                                     flex flex-col md:flex-row gap-6
+                                     h-[66vw]           /* mobile: height = 2/3 of screen width */
+                                     md:h-[400px]       /* desktop: fixed height */
+                                     overflow-hidden
+                                     "
+                                    >
 
-                                                  {/* Left Side - Event Details */}
-                                                  <div className="flex-1 md:w-1/3 space-y-4">
-                                                      <CardTitle className="text-lg font-bold text-white">
-                                                          {cube.title}
-                                                      </CardTitle>
-                                                      <div className="flex items-center gap-2">
-                                                          <TierBadge tier={cube.tier || "free"} />
-                                                          {cube.is_secured ? (
+                                     {/* Left Side - Event Details */}
+                                     <div className="md:w-1/3 w-full flex flex-col justify-center p-4">
+                                         <CardTitle className="text-lg font-bold text-white">
+                                             {cube.title}
+                                        </CardTitle>
+                                      <div className="flex items-center gap-2 mb-4">
+                                                     <TierBadge tier={cube.tier || "free"} />
+                                                     {cube.is_secured ? (
                                                               <Badge className="bg-green-600 text-white">
                                                                   <Lock className="w-3 h-3 mr-1" />
                                                                   Secured
@@ -360,8 +367,8 @@ export default function MyCubesPage() {
                                                   </div>
 
                                                   {/* Right Side - Huge Cube */}
-                                                  <div className="md:w-2/3 w-full min-h-[400px]">
-                                                      <CubePreview cube={cube} />
+                                                    <div className="md:w-2/3 w-full h-full">
+                                                    <CubePreview cube={cube} fullHeight={true} />
                                                   </div>
                                               </div>
                                           </CardHeader>
