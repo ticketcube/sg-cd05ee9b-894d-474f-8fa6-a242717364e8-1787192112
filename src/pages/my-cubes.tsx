@@ -412,9 +412,10 @@ export default function MyCubesPage() {
                   Create New TicketCube
                 </Button>
               </div>
-                              </>
-                      </div>
+             </>
+                     
           )}
+            </div>
         </div>
       </div>
     </AuthGuard >
