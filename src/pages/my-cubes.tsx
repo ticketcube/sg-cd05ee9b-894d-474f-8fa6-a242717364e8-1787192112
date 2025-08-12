@@ -400,7 +400,7 @@ export default function MyCubesPage() {
                                           </CardContent>
                                       </Card>
                                   ))}
-                              
+                              </div>
 
               {/* Create New Button */}
               <div className="mt-8 text-center">
@@ -411,8 +411,7 @@ export default function MyCubesPage() {
                   <Box className="w-4 h-4 mr-2" />
                   Create New TicketCube
                 </Button>
-                                  </div>
-                              </div>
+              </div>
             </>
           )}
         </div>
