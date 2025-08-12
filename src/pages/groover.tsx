@@ -28,8 +28,8 @@ export default function GrooverPage() {
               Back
             </Button>
             
-            <Link href="/" className="text-white hover:text-gray-300 transition-colors">
-              <div className="text-lg font-semibold">OTW Chart</div>
+            <Link href="/ticketcube" className="text-white hover:text-gray-300 transition-colors">
+              <div className="text-lg font-semibold">TC</div>
             </Link>
           </div>
           
