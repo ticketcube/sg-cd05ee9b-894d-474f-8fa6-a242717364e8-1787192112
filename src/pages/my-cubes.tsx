@@ -412,8 +412,9 @@ export default function MyCubesPage() {
           )}
         </div>
       </div>
-        </div>
- </AuthGuard >
-);
+        
+   </div >
+    </AuthGuard >
+  );
 }
 }
