@@ -312,7 +312,7 @@ export default function MyCubesPage() {
                       <div className="text-sm text-gray-400">Collector Cubes</div>
                     </CardContent>
                   </Card>
-                                  
+                  </div>          
 
               {/* Create New Button */}
               <div className="mt-8 text-center">
