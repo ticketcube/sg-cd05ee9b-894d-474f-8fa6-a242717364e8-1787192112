@@ -27,7 +27,7 @@ export default function AuthDialog({
   isOpen, 
   onClose, 
   title = "Sign In or Register",
-  description = "Create your profile to earn discovery rewards!"
+  description = "Earn discovery rewards!"
 }: AuthDialogProps) {
   const [isSignUp, setIsSignUp] = useState(true);
   const [username, setUsername] = useState("");
