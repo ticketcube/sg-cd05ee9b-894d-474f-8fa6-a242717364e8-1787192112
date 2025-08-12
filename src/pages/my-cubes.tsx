@@ -133,14 +133,14 @@ const CubePreview = ({ cube }: { cube: TicketCube }) => {
 
   if (isLoading) {
     return (
-      <div className="h-32 w-32 mx-auto flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="h-32 w-32 mx-auto">
+      <div className="w-full h-full aspect-square">
       <Canvas camera={{ position: [0, 0, 2], fov: 45 }}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
