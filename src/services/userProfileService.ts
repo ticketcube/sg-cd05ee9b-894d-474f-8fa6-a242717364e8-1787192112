@@ -21,7 +21,7 @@ export interface UserEngagement {
   points_earned?: number | null;
   week_identifier?: string | null;
   artist_uuid?: string | null;
-  metadata?: any | null;
+  metadata?: Record<string, any> | null;
   created_at: string;
 }
 
@@ -48,22 +48,57 @@ export interface UserEngagementHistory {
 export class UserProfileService {
   async getUserProfileByAuthId(authId: string): Promise<UserProfile | null> {
     try {
+      // Use .select().eq().limit(1).single() to handle potential multiple records
       const { data, error } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("auth_id", authId)
-        .maybeSingle();
+        .limit(1);
 
       if (error) {
-        if (error.code === "PGRST116") return null; // No rows found
         console.error("Error getting user profile by auth ID:", error);
         throw error;
       }
 
-      return data as UserProfile;
+      // Return the first record if exists, null otherwise
+      return data && data.length > 0 ? (data[0] as UserProfile) : null;
     } catch (error) {
       console.error("Error in getUserProfileByAuthId:", error);
       throw error;
+    }
+  }
+
+  private async generateUniqueUsername(baseUsername: string, attempts = 0): Promise<string> {
+    const maxAttempts = 10;
+    if (attempts >= maxAttempts) {
+      // Fallback to timestamp-based username
+      return `user_${Date.now()}`;
+    }
+
+    const testUsername = attempts === 0 ? baseUsername : `${baseUsername}${attempts + 1}`;
+    
+    try {
+      const { data: existingUser, error } = await supabase
+        .from("user_profiles")
+        .select("username")
+        .eq("username", testUsername)
+        .limit(1);
+
+      if (error) {
+        console.error("Error checking username availability:", error);
+        throw error;
+      }
+
+      if (!data || data.length === 0) {
+        return testUsername; // Username is available
+      }
+
+      // Username is taken, try next variation
+      return this.generateUniqueUsername(baseUsername, attempts + 1);
+    } catch (error) {
+      console.error("Error in generateUniqueUsername:", error);
+      // Fallback to timestamp-based username on error
+      return `user_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
     }
   }
 
@@ -76,28 +111,35 @@ export class UserProfileService {
         throw new Error("Authentication required to create or update profile");
       }
 
-      console.log("🔍 Looking for existing user with email:", data.email, "or username:", data.username);
+      console.log("🔍 Looking for existing user with auth_id:", authUser.id);
       
-      // First, try to find existing user by auth_id
-      const { data: existingByAuthId, error: authIdError } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("auth_id", authUser.id)
-        .maybeSingle();
-
-      if (authIdError && authIdError.code !== "PGRST116") {
-        console.error("❌ Error finding user by auth_id:", authIdError);
-        throw authIdError;
-      }
+      // First, try to find existing user by auth_id using the improved method
+      const existingByAuthId = await this.getUserProfileByAuthId(authUser.id);
 
       if (existingByAuthId) {
         console.log("🔄 Found existing user by auth_id, updating:", existingByAuthId.id);
+        
+        // Generate unique username if the requested one is different and taken
+        let finalUsername = data.username;
+        if (existingByAuthId.username !== data.username) {
+          const { data: usernameCheck } = await supabase
+            .from("user_profiles")
+            .select("username")
+            .eq("username", data.username)
+            .neq("id", existingByAuthId.id)
+            .limit(1);
+            
+          if (usernameCheck && usernameCheck.length > 0) {
+            finalUsername = await this.generateUniqueUsername(data.username);
+            console.log("🔄 Username taken, generated unique:", finalUsername);
+          }
+        }
         
         // Update existing user found by auth_id
         const { data: updatedUser, error: updateError } = await supabase
           .from("user_profiles")
           .update({
-            username: data.username,
+            username: finalUsername,
             email: data.email,
             raw_city_input: data.city || null,
             last_active: new Date().toISOString()
@@ -116,26 +158,44 @@ export class UserProfileService {
       }
 
       // If not found by auth_id, try to find existing user by email
-      const { data: existingByEmail, error: emailError } = await supabase
+      const { data: existingByEmailData, error: emailError } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("email", data.email)
-        .maybeSingle();
+        .limit(1);
 
-      if (emailError && emailError.code !== "PGRST116") {
+      if (emailError) {
         console.error("❌ Error finding user by email:", emailError);
         throw emailError;
       }
 
+      const existingByEmail = existingByEmailData && existingByEmailData.length > 0 ? existingByEmailData[0] : null;
+
       if (existingByEmail) {
         console.log("🔄 Found existing user by email, updating auth_id:", existingByEmail.id);
+        
+        // Generate unique username if needed
+        let finalUsername = data.username;
+        if (existingByEmail.username !== data.username) {
+          const { data: usernameCheck } = await supabase
+            .from("user_profiles")
+            .select("username")
+            .eq("username", data.username)
+            .neq("id", existingByEmail.id)
+            .limit(1);
+            
+          if (usernameCheck && usernameCheck.length > 0) {
+            finalUsername = await this.generateUniqueUsername(data.username);
+            console.log("🔄 Username taken, generated unique:", finalUsername);
+          }
+        }
         
         // Update existing user found by email and link to current auth user
         const { data: updatedUser, error: updateError } = await supabase
           .from("user_profiles")
           .update({
             auth_id: authUser.id, // Link to current auth user
-            username: data.username,
+            username: finalUsername,
             email: data.email,
             raw_city_input: data.city || null,
             last_active: new Date().toISOString()
@@ -156,11 +216,14 @@ export class UserProfileService {
       // No existing user found, create new one
       console.log("➕ Creating new user");
 
+      // Generate unique username
+      const uniqueUsername = await this.generateUniqueUsername(data.username);
+
       const { data: newUser, error: createError } = await supabase
         .from("user_profiles")
         .insert([{
           auth_id: authUser.id, // Link to current auth user
-          username: data.username,
+          username: uniqueUsername,
           email: data.email,
           raw_city_input: data.city || null,
           total_points: 0,
@@ -176,15 +239,23 @@ export class UserProfileService {
           console.log("🔄 Duplicate key detected, trying to find existing user...");
           
           // Try to find by auth_id first
-          const { data: existingUser, error: findError } = await supabase
-            .from("user_profiles")
-            .select("*")
-            .eq("auth_id", authUser.id)
-            .single();
+          const existingUser = await this.getUserProfileByAuthId(authUser.id);
             
-          if (!findError && existingUser) {
+          if (existingUser) {
             console.log("✅ Found existing user after duplicate key error:", existingUser.id);
             return existingUser;
+          }
+
+          // If still not found, try by email
+          const { data: byEmailData } = await supabase
+            .from("user_profiles")
+            .select("*")
+            .eq("email", data.email)
+            .limit(1);
+
+          if (byEmailData && byEmailData.length > 0) {
+            console.log("✅ Found existing user by email after duplicate key error:", byEmailData[0].id);
+            return byEmailData[0] as UserProfile;
           }
         }
         
@@ -217,14 +288,14 @@ export class UserProfileService {
           break;
       }
 
-      const { data, error } = await query.single();
+      const { data, error } = await query.limit(1);
 
       if (error) {
-        if (error.code === "PGRST116") return null;
+        console.error("Error getting user profile:", error);
         throw error;
       }
 
-      return data as UserProfile;
+      return data && data.length > 0 ? (data[0] as UserProfile) : null;
     } catch (error) {
       console.error("Error getting user profile:", error);
       throw error;
@@ -237,7 +308,7 @@ export class UserProfileService {
     pointsEarned: number,
     weekIdentifier: string,
     artistUuid?: string,
-    metadata?: any
+    metadata?: Record<string, any>
   ): Promise<UserEngagement> {
     try {
       // Record the engagement
@@ -341,12 +412,15 @@ export class UserProfileService {
         .eq("artist_uuid", artistUuid)
         .eq("week_identifier", weekIdentifier)
         .eq("engagement_type", "video_view")
-        .single();
+        .limit(1);
 
-      if (error && error.code !== "PGRST116") throw error;
+      if (error) {
+        console.error("Error checking video view eligibility:", error);
+        return false;
+      }
       
       // Return true if no existing video view found (eligible for points)
-      return !data;
+      return !data || data.length === 0;
     } catch (error) {
       console.error("Error checking video view eligibility:", error);
       return false;
@@ -361,12 +435,15 @@ export class UserProfileService {
         .eq("user_id", userId)
         .eq("week_identifier", weekIdentifier)
         .in("engagement_type", ["vote_submission", "ranking_submission"])
-        .maybeSingle();
+        .limit(1);
 
-      if (error && error.code !== "PGRST116") throw error;
+      if (error) {
+        console.error("Error checking vote submission eligibility:", error);
+        return false;
+      }
       
       // Return true if no existing vote submission found (eligible for points)
-      return !data;
+      return !data || data.length === 0;
     } catch (error) {
       console.error("Error checking vote submission eligibility:", error);
       return false;

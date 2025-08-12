@@ -155,15 +155,28 @@ export class TicketCubeService {
     }
   }
 
-  async getUserTicketCubes(userId: string, page: number = 1, limit: number = 10): Promise<{ cubes: TicketCube[]; count: number }> {
+  async getUserTicketCubes(authId: string, page: number = 1, limit: number = 10): Promise<{ cubes: TicketCube[]; count: number }> {
     try {
+      // Verify we have a current authenticated session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session?.user) {
+        throw new Error("Authentication required to fetch TicketCubes.");
+      }
+
+      // Ensure the passed authId matches the current session
+      if (session.user.id !== authId) {
+        throw new Error("Authentication mismatch. Please refresh and try again.");
+      }
+
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
+      // Use the session user ID directly for the query since it matches the user_id in ticketcubes table
       const { data, error, count } = await supabase
         .from("ticketcubes")
         .select("*", { count: "exact" })
-        .eq("user_id", userId)
+        .eq("user_id", session.user.id) // Use the auth user ID which is stored in user_id column
         .order("created_at", { ascending: false })
         .range(from, to);
 
@@ -172,12 +185,15 @@ export class TicketCubeService {
         throw error;
       }
 
+      console.log(`Successfully fetched ${data?.length || 0} ticketcubes for user ${authId}`);
+
       return {
         cubes: data as TicketCube[],
         count: count || 0
       };
     } catch (error) {
       console.error("Unexpected error in getUserTicketCubes:", error);
+      // Return empty result instead of throwing to prevent page crashes
       return { cubes: [], count: 0 };
     }
   }
