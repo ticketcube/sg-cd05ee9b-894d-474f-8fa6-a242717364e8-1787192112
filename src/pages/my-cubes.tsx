@@ -333,7 +333,7 @@ export default function MyCubesPage() {
                                      flex flex-col md:flex-row gap-6
                                      h-[66vw]           /* mobile: height = 2/3 of screen width */
                                      md:h-[400px]       /* desktop: fixed height */
-                                    
+                                     overflow-hidden
                                      "
                                     >
 
