@@ -324,7 +324,7 @@ export default function MyCubesPage() {
               </div>
 
                  {/* Cubes Grid - Mobile Friendly */}
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                 <div className="space-y-6">
                   {cubes.map((cube) => (
                       <Card key={cube.id} className="bg-gray-900 border-gray-700">
                          <CardHeader className="pb-3">
