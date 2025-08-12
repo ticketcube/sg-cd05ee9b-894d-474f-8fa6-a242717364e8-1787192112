@@ -314,19 +314,10 @@ export default function MyCubesPage() {
                   </Card>
                   </div>          
 
-              {/* Create New Button */}
-              <div className="mt-8 text-center">
-                <Button 
-                  onClick={() => window.location.href = "/ticketcube"}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Box className="w-4 h-4 mr-2" />
-                  Create New TicketCube
-                </Button>
-              </div>
+              
             </>
           )}
-                      </div>
+            </div>
               </div>
     
     </AuthGuard>
