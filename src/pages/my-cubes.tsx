@@ -443,8 +443,7 @@ export default function MyCubesPage() {
                   <Box className="w-4 h-4 mr-2" />
                   Create New TicketCube
                 </Button>
-                </div>
-             
+             </div>
             </>
           )}
         </div>
