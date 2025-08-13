@@ -180,7 +180,7 @@ export default function ProfilePage() {
                       disabled={refreshing}
                       variant="outline"
                       size="sm"
-                      className="bg-transparent hover:bg-gray-800 border-gray-600"
+                    className="text-white bg-transparent hover:bg-gray-800 border-gray-600"
                     >
                       <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                       {refreshing ? 'Refreshing...' : 'Refresh Profile'}
