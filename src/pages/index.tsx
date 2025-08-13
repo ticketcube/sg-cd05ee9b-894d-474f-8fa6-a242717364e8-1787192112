@@ -61,12 +61,7 @@ export default function HomePage() {
               <>
                 {isAuthenticated && user ? (
                   <>
-                    <Link href="/brandfolder-upload" passHref>
-                      <Button variant="ghost" className="flex items-center gap-2 text-sm md:text-base">
-                        <UploadCloud className="w-4 h-4 md:w-5 md:h-5" />
-                        <span className="hidden md:inline">Upload</span>
-                      </Button>
-                    </Link>
+                  
                     <Link href="/profile" passHref>
                       <Button variant="ghost" className="flex items-center gap-2 text-sm md:text-base">
                         <User className="w-4 h-4 md:w-5 md:h-5" />
