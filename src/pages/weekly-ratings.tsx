@@ -244,7 +244,7 @@ function WeeklyRatingsPageContent() {
             <h2 className="text-lg font-bold text-white mb-3">Watch & Rate Each Artist</h2>
           </div>
         </div>
-      </div>
+      
 
       <div className="p-4 bg-gray-800 border-b border-gray-700">
         <div className="max-w-md mx-auto">
