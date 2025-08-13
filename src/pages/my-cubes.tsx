@@ -319,32 +319,33 @@ export default function MyCubesPage() {
                                 {/* Cubes Grid - Mobile Friendly */}
                                 <div className="space-y-6">
                                     {cubes.map((cube) => (
-                                        <Card key={cube.id} className="bg-gray-900 border-gray-700">
+                                        <Card
+                                            key={cube.id}
+                                            className="bg-gray-900 border-gray-700"
+                                        >
                                             <CardHeader className="pb-3">
-                                                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-6 items-stretch">
-
-                                                    {/* Left Column - Cube Details */}
-                                                    <div className="flex flex-col justify-between space-y-4">
-                                                        {/* Title */}
-                                                        <CardTitle className="text-lg font-bold text-white">
-                                                            {cube.title}
-                                                        </CardTitle>
-
-                                                        {/* Tier + Status */}
-                                                        <div className="flex items-center gap-2">
-                                                            <TierBadge tier={cube.tier || "free"} />
-                                                            {cube.is_secured ? (
-                                                                <Badge className="bg-green-600 text-white">
-                                                                    <Lock className="w-3 h-3 mr-1" />
-                                                                    Secured
-                                                                </Badge>
-                                                            ) : (
-                                                                <Badge variant="secondary">
-                                                                    <Unlock className="w-3 h-3 mr-1" />
-                                                                    Draft
-                                                                </Badge>
-                                                            )}
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+                                                    {/* Left Column - Text */}
+                                                    <div className="flex flex-col justify-between">
+                                                        <div>
+                                                            <CardTitle>{cube.name}</CardTitle>
+                                                            <p className="text-gray-400">{cube.description}</p>
                                                         </div>
+                                                        <Button className="mt-4">View Details</Button>
+                                                    </div>
+
+                                                    {/* Right Column - Cube Preview */}
+                                                    <div className="flex items-center justify-center h-full">
+                                                        <div className="relative w-full h-full aspect-square max-h-[400px]">
+                                                            <CubePreview cube={cube} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </CardHeader>
+                                        </Card>
+                                    ))}
+                                </div>
+
 
                                                         {/* Event */}
                                                         <div>
