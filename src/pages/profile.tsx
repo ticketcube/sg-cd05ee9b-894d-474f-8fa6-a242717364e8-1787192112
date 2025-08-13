@@ -347,7 +347,8 @@ export default function ProfilePage() {
           </Tabs>
 
           {/* OTW STAFF ONLY Action Buttons */}
-          <div className="flex gap-3">
+                  <div className="flex gap-3">
+                OTW STAFF ONLY
             <Button 
               onClick={() => window.location.href = "/brandfolder-upload"}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
