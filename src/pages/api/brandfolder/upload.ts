@@ -2,7 +2,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import fs from "fs";
-import fetch from "node-fetch";
 
 // Disable default body parser for file uploads
 export const config = {
@@ -38,9 +37,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userName = Array.isArray(fields.userName) ? fields.userName[0] : fields.userName;
     const fileName = Array.isArray(fields.fileName) ? fields.fileName[0] : fields.fileName;
     const fileType = Array.isArray(fields.fileType) ? fields.fileType[0] : fields.fileType;
+    const description = Array.isArray(fields.description) ? fields.description[0] : fields.description;
+
+    console.log("Upload request received:", { userName, fileName, fileType, hasFile: !!file });
 
     if (!file || !userName || !fileName) {
-      return res.status(400).json({ error: "Missing required fields" });
+      console.error("Missing required fields:", { file: !!file, userName: !!userName, fileName: !!fileName });
+      return res.status(400).json({ error: "Missing required fields: file, userName, or fileName" });
+    }
+
+    // Get Brandfolder API key from environment
+    const brandfolderApiKey = process.env.BF_API_KEY;
+    if (!brandfolderApiKey) {
+      console.error("Brandfolder API key not configured");
+      return res.status(500).json({ error: "Brandfolder API key not configured" });
     }
 
     // Read the file
@@ -48,53 +58,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const fileExtension = fileName.split('.').pop() || '';
     const sanitizedFileName = `${userName.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.${fileExtension}`;
 
-    // Get Brandfolder API key from environment
-    const brandfolderApiKey = process.env.BF_API_KEY;
-    if (!brandfolderApiKey) {
-      return res.status(500).json({ error: "Brandfolder API key not configured" });
+    console.log("File processed:", { originalName: fileName, sanitizedName: sanitizedFileName, size: fileBuffer.length });
+
+    // Try a simpler approach - upload directly using multipart/form-data
+    const FormData = (await import('form-data')).default;
+    const uploadForm = new FormData();
+    uploadForm.append('file', fileBuffer, {
+      filename: sanitizedFileName,
+      contentType: fileType || 'application/octet-stream'
+    });
+    uploadForm.append('name', sanitizedFileName);
+    if (description) {
+      uploadForm.append('description', `${description} (Uploaded by ${userName} via OTWChart)`);
+    } else {
+      uploadForm.append('description', `Uploaded by ${userName} via OTWChart`);
     }
 
-    // First, create the asset in Brandfolder
-    const createAssetResponse = await fetch("https://brandfolder.com/api/v4/assets", {
+    // Use the simpler assets endpoint for direct upload
+    const uploadResponse = await fetch("https://brandfolder.com/api/v4/assets", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${brandfolderApiKey}`,
-        "Content-Type": "application/json",
+        ...uploadForm.getHeaders(),
       },
-      body: JSON.stringify({
-        data: {
-          attributes: {
-            name: sanitizedFileName,
-            description: `Uploaded by ${userName} via OTWChart`,
-          }
-        }
-      }),
+      body: uploadForm,
     });
 
-    if (!createAssetResponse.ok) {
-      const errorText = await createAssetResponse.text();
-      console.error("Brandfolder asset creation failed:", errorText);
-      return res.status(500).json({ error: "Failed to create asset in Brandfolder" });
-    }
-
-    const assetData: BrandfolderAssetResponse = await createAssetResponse.json() as BrandfolderAssetResponse;
-    const assetId = assetData.data.id;
-
-    // Upload the actual file content
-    const uploadResponse = await fetch(`https://brandfolder.com/api/v4/assets/${assetId}/attachments`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${brandfolderApiKey}`,
-        "Content-Type": fileType || "application/octet-stream",
-      },
-      body: fileBuffer,
-    });
+    console.log("Brandfolder response status:", uploadResponse.status);
 
     if (!uploadResponse.ok) {
       const errorText = await uploadResponse.text();
-      console.error("Brandfolder file upload failed:", errorText);
-      return res.status(500).json({ error: "Failed to upload file to Brandfolder" });
+      console.error("Brandfolder upload failed:", {
+        status: uploadResponse.status,
+        statusText: uploadResponse.statusText,
+        body: errorText
+      });
+      
+      let errorMessage = "Failed to upload to Brandfolder";
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.message || errorJson.error || errorMessage;
+      } catch (e) {
+        // If not JSON, use the status text
+        errorMessage = `Brandfolder error (${uploadResponse.status}): ${uploadResponse.statusText}`;
+      }
+      
+      return res.status(uploadResponse.status).json({ error: errorMessage });
     }
+
+    const result = await uploadResponse.json();
+    console.log("Upload successful:", { assetId: result.data?.id, fileName: sanitizedFileName });
 
     // Clean up temporary file
     fs.unlinkSync(file.filepath);
@@ -102,8 +115,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({
       success: true,
       message: "File uploaded successfully to Brandfolder",
-      assetId: assetId,
-      fileName: sanitizedFileName
+      assetId: result.data?.id,
+      fileName: sanitizedFileName,
+      result: result
     });
 
   } catch (error) {
