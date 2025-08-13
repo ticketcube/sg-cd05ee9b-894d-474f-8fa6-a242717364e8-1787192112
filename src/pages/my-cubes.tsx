@@ -307,120 +307,128 @@ export default function MyCubesPage() {
                                  <Card className="bg-gray-900 border-gray-700">
                                   <CardContent className="p-4 text-center">
                                      <div className="text-2xl font-bold text-purple-500">
-                                                {cubes.filter(cube => cube.tier === 'collector').length}
-                                            </div>
-                                            <div className="text-sm text-gray-400">Collector Cubes</div>
+                                      {cubes.filter(cube => cube.tier === 'collector').length}
+                                     </div>
+                                      <div className="text-sm text-gray-400">Collector Cubes</div>
                                         </CardContent>
                                     </Card>
                                 </div>
                             </div>
 
+
                                 {/* Cubes Grid - Mobile Friendly */}
                                 <div className="space-y-6">
-                                 {cubes.map((cube) => (
-                                  <Card key={cube.id} className="bg-gray-900 border-gray-700">
-                                     <CardHeader className="pb-3">
-
-            {/* Left Column - Cube Details */}
-    <div className="flex flex-col justify-between space-y-4">
-      {/* Title */}
-      <CardTitle className="text-lg font-bold text-white">
-        {cube.title}
-      </CardTitle>
-
-      {/* Tier + Status */}
-      <div className="flex items-center gap-2">
-        <TierBadge tier={cube.tier || "free"} />
-        {cube.is_secured ? (
-          <Badge className="bg-green-600 text-white">
-            <Lock className="w-3 h-3 mr-1" />
-            Secured
-          </Badge>
-        ) : (
-          <Badge variant="secondary">
-            <Unlock className="w-3 h-3 mr-1" />
-            Draft
-          </Badge>
-        )}
-      </div>
-
-      {/* Event */}
-      <div>
-        <div className="text-sm text-gray-400">Event</div>
-        <div className="text-white font-medium">
-          {cube.event_name || "No event specified"}
-        </div>
-      </div>
-
-      {/* Venue */}
-      <div>
-        <div className="text-sm text-gray-400">Venue</div>
-        <div className="text-white font-medium">
-          {cube.venue || "No venue specified"}
-        </div>
-      </div>
-
-      {/* Date */}
-      <div>
-        <div className="text-sm text-gray-400">Date</div>
-        <div className="text-white font-medium flex items-center gap-2">
-          <Calendar className="w-4 h-4" />
-          {formatDate(cube.event_date)}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="mt-auto">
-        <Button variant="secondary" className="w-full">
-          View Details
-        </Button>
-      </div>
-    </div>
-
-        {/* Right Column - Cube Preview */}
-
-                                                    <div className="space-y-4">
-                                                        
-                                                        <CubePreview cube={cube} />
-
-                                                        
-                                                            <Card className="bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/20 dark:to-neutral-800 border-emerald-200/60">
-                                                               
-                                                            </Card>
-                                                        
+                                    {cubes.map((cube) => (
+                                        <Card key={cube.id} className="bg-gray-900 border-gray-700">
+                                            <CardHeader className="pb-3">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex-1">
+                                                        <CardTitle className="text-lg font-bold text-white mb-2">
+                                                            {cube.title}
+                                                        </CardTitle>
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <TierBadge tier={cube.tier || 'free'} />
+                                                            {cube.is_secured ? (
+                                                                <Badge className="bg-green-600 text-white">
+                                                                    <Lock className="w-3 h-3 mr-1" />
+                                                                    Secured
+                                                                </Badge>
+                                                            ) : (
+                                                                <Badge variant="secondary">
+                                                                    <Unlock className="w-3 h-3 mr-1" />
+                                                                    Draft
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                     </div>
+                                                    <div className="flex-shrink-0 ml-4">
+                                                        <CubePreview cube={cube} />
+                                                    </div>
+                                                </div>
+                                            </CardHeader>
 
-    
-                                                  
-  </div>
-</CardHeader>
+                                            <CardContent className="pt-0">
+                                                {/* Cube Info */}
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                    <div>
+                                                        <div className="text-sm text-gray-400 mb-1">Event</div>
+                                                        <div className="text-white font-medium">
+                                                            {cube.event_name || 'No event specified'}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm text-gray-400 mb-1">Venue</div>
+                                                        <div className="text-white font-medium">
+                                                            {cube.venue || 'No venue specified'}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm text-gray-400 mb-1">Date</div>
+                                                        <div className="text-white font-medium flex items-center gap-2">
+                                                            <Calendar className="w-4 h-4" />
+                                                            {formatDate(cube.event_date)}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm text-gray-400 mb-1">Created</div>
+                                                        <div className="text-white font-medium">
+                                                            {formatDate(cube.created_at)}
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-
-
-                                            <CardContent>
                                                 {/* Description */}
                                                 {cube.description && (
                                                     <div className="mb-4">
                                                         <div className="text-sm text-gray-400 mb-1">Description</div>
-                                                        <div className="text-gray-300 text-sm">{cube.description}</div>
+                                                        <div className="text-gray-300 text-sm">
+                                                            {cube.description}
+                                                        </div>
                                                     </div>
                                                 )}
 
+                                                {/* Tier Features */}
+                                                <div className="mb-4">
+                                                    <div className="text-sm text-gray-400 mb-2">Plan Features</div>
+                                                    <div className="space-y-1">
+                                                        {getTierFeatures(cube.tier || 'free', cube.updates_remaining, cube.gifts_remaining).map((feature, index) => (
+                                                            <div key={index} className="text-xs text-gray-300 flex items-center gap-2">
+                                                                <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
+                                                                {feature}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
                                                 {/* Actions */}
                                                 <div className="flex gap-2 flex-wrap">
-                                                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700"
-                                                        onClick={() => (window.location.href = `/ticketcube?edit=${cube.id}`)}>
-                                                        <Eye className="w-4 h-4 mr-1" /> View
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => window.location.href = `/ticketcube?edit=${cube.id}`}
+                                                        className="bg-blue-600 hover:bg-blue-700"
+                                                    >
+                                                        <Eye className="w-4 h-4 mr-1" />
+                                                        View
                                                     </Button>
+
                                                     {!cube.is_secured && (
-                                                        <Button size="sm" variant="outline"
-                                                            onClick={() => (window.location.href = `/ticketcube?edit=${cube.id}`)}>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => window.location.href = `/ticketcube?edit=${cube.id}`}
+                                                        >
                                                             Edit
                                                         </Button>
                                                     )}
+
                                                     {cube.gifts_remaining && cube.gifts_remaining > 0 && (
-                                                        <Button size="sm" variant="outline" disabled>
-                                                            <Gift className="w-4 h-4 mr-1" /> Gift Copy
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            disabled
+                                                        >
+                                                            <Gift className="w-4 h-4 mr-1" />
+                                                            Gift Copy
                                                         </Button>
                                                     )}
                                                 </div>
@@ -428,6 +436,7 @@ export default function MyCubesPage() {
                                         </Card>
                                     ))}
                                 </div>
+
 
 
                             {/* Create New Button */}
