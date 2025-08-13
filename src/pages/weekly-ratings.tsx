@@ -189,7 +189,7 @@ function WeeklyRatingsPageContent() {
         <div className="max-w-md mx-auto">
           <div className="flex items-center gap-3 mb-4">
            
-            <h1 className="text-xl font-bold text-blue-500 truncate">WE REWARD DISCOVERY </h1>
+            <h1 className="text-xl font-bold text-blue-500 truncate">WEEKLY DISCOVERY REWARDS </h1>
           </div>
           <div className="text-center mb-4">
             <h2 className="text-lg font-bold text-white mb-3">SELECT WEEK</h2>
@@ -206,9 +206,7 @@ function WeeklyRatingsPageContent() {
               </SelectContent>
             </Select>
           </div>
-          <div className="text-center mb-4">
-            <h2 className="text-lg font-bold text-white mb-3">Watch & Rate Each Artist</h2>
-          </div>
+         
         </div>
       </div>
 
