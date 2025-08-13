@@ -269,7 +269,7 @@ function WeeklyRatingsPageContent() {
         <div className="max-w-md mx-auto">
           <Card className="bg-gray-900 border-gray-700">
             <CardContent className="p-4">
-              <div className="relative w-72 h-64 bg-gray-800 rounded-lg border-2 border-gray-600">
+              <div className="relative w-72 h-64 bg-gray-800 rounded-lg border-2 border-gray-600 mx-auto">
 
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 text-xs text-gray-400">Would Tell Friends</div>
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-gray-400">Not For Them</div>
