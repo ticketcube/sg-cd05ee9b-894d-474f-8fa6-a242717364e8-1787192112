@@ -399,7 +399,7 @@ export default function ProfilePage() {
                     onClick={() => window.location.href = "/brandfolder-upload"}
                     className="w-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2"
                   >
-                                      <BarChart className="w-4 h-4 text-white" />
+                    <BarChart className="w-4 h-4" />
                     Submit Content
                   </Button>
                   <Button 
@@ -407,7 +407,7 @@ export default function ProfilePage() {
                     onClick={() => window.location.href = "/discovery-charts"}
                     className="w-full bg-transparent hover:bg-gray-800 flex items-center justify-center gap-2"
                   >
-                    <TrendingUp className="w-4 h-4" />
+                     <TrendingUp className="text-white w-4 h-4" />
                     Engagement Pipeline
                   </Button>
                 </div>
