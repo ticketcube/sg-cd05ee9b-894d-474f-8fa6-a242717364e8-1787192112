@@ -156,7 +156,13 @@ export default function HomePage() {
                       className="text-white hover:bg-gray-800 flex-shrink-0"
                   >
                       
-                      OTW STAFF
+                      <Image
+                          src="/OTWLogocolor.png"
+                          alt="OnesToWatch"
+                          width={120}
+                          height={40}
+                          className="h-8 md:h-10 w-auto"
+                      />
                   </Button>  
         </div>
       </div>
