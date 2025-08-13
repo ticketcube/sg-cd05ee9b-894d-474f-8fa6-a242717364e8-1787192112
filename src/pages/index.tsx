@@ -147,7 +147,14 @@ export default function HomePage() {
           <div className="flex items-center justify-center mb-4">
             <Music className="w-5 h-5 md:w-6 md:h-6 text-blue-400 mr-2" />
             <span className="text-gray-400 text-sm md:text-base">Powered by community votes and engagement</span>
-          </div>
+         </div>
+                  <div className="flex items-center justify-center mb-4">
+                  <Link href="/discovery-charts" passHref>
+                      <Button variant="ghost" className="flex items-center gap-2 text-sm md:text-base">
+                          <User className="w-4 h-4 md:w-5 md:h-5" />
+                          <span className="truncate max-w-[100px] md:max-w-none">{user.username}</span>
+                      </Button>
+                  </div>
         </div>
       </div>
       
