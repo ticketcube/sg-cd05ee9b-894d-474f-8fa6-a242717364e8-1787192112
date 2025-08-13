@@ -75,6 +75,7 @@ function WeeklyRatingsPageContent() {
   const loadSpecificWeeklyList = async (weekIdentifier: string) => {
     try {
       setListError(null);
+      // Don't set loading here to prevent flash
       const list = await weeklyListService.getWeeklyList(weekIdentifier);
       if (!list) {
         setListError("Selected weekly list not found");
@@ -154,7 +155,8 @@ function WeeklyRatingsPageContent() {
     return { x, y };
   };
 
-  if (loading) return (
+  // Show loading spinner while initially loading or while weeklyList is still being fetched
+  if (loading || (!weeklyList && !listError)) return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin" />
     </div>
@@ -169,7 +171,8 @@ function WeeklyRatingsPageContent() {
     </div>
   );
 
-  if (!weeklyList) return (
+  // Only show this message if we're not loading and we have an explicit null weeklyList
+  if (!loading && !weeklyList) return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <p>No weekly list available.</p>
     </div>
