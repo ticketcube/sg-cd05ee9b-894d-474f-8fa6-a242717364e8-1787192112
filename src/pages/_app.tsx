@@ -8,8 +8,10 @@ import { Toaster } from "@/components/ui/toaster";
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
-      <CubeProvider>
-        <Component {...pageProps} />
+          <CubeProvider>
+              <Layout>
+                  <Component {...pageProps} />
+                  </Layout>
         <Toaster />
       </CubeProvider>
     </AuthProvider>
