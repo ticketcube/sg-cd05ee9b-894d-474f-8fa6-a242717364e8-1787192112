@@ -141,9 +141,6 @@ export default function HomePage() {
                     )}
                 </div>
             </div>
-        </main>
-    );
-}
 
         {/* Bottom Section */}
         <div className="text-center mt-8 md:mt-16">
