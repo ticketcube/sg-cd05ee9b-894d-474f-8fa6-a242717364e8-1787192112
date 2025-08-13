@@ -346,29 +346,25 @@ export default function ProfilePage() {
             </TabsContent>
           </Tabs>
 
-          {/* Action Buttons */}
+          {/* OTW STAFF ONLY Action Buttons */}
           <div className="flex gap-3">
             <Button 
-              onClick={() => window.location.href = "/weekly"}
+              onClick={() => window.location.href = "/brandfolder-upload"}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
             >
-              Continue Voting
+              UPLOAD CONTENT
             </Button>
             <Button 
               variant="outline"
-              onClick={() => window.location.href = "/"}
+              onClick={() => window.location.href = "/discovery-charts"}
               className="flex-1"
             >
-              Explore Artists
+              ENGAGEMENT PIPELINE
             </Button>
           </div>
 
-          {/* User Stats */}
-          <div className="grid grid-cols-3 gap-4">
-            <StatCard icon={<Users className="w-6 h-6 text-white" />} title="Total Votes" value={userStats.total_votes} />
-            <StatCard icon={<BarChart className="w-6 h-6 text-white" />} title="Weekly Participations" value={userStats.weekly_participations} />
-            <StatCard icon={<Settings className="w-6 h-6 text-white" />} title="Top Genre" value={userStats.top_genre || "N/A"} />
-          </div>
+        
+         
         </div>
       </div>
     </AuthGuard>
