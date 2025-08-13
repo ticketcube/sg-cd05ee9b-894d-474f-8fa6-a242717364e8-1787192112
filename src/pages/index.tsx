@@ -149,22 +149,23 @@ export default function HomePage() {
             <span className="text-gray-400 text-sm md:text-base">Powered by community votes and engagement</span>
          </div>
 
-                  <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => window.location.href = "/discovery-charts"}
-                      className="text-white hover:bg-gray-800 flex-shrink-0"
-                  >
-                      
-                      <Image
-                          src="/OTWLogocolor.png"
-                          alt="OnesToWatch"
-                          width={120}
-                          height={40}
-                          className="h-8 md:h-10 w-auto"
-                      />
-                  </Button>  
-        </div>
+                 
+              </div>
+              <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.location.href = "/discovery-charts"}
+                  className="text-white hover:bg-gray-800 flex-shrink-0"
+              >
+
+                  <Image
+                      src="/OTWLogocolor.png"
+                      alt="OnesToWatch"
+                      width={120}
+                      height={40}
+                      className="h-8 md:h-10 w-auto"
+                  />
+              </Button>  
       </div>
       
       {/* Auth Dialog for protected navigation */}
