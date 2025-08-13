@@ -10,6 +10,8 @@ import Link from "next/link";
 import Image from "next/image";
 import PromotionPopup from "@/components/PromotionPopup";
 
+const showDiscoveryCharts = false;
+
 export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated, user, logout, loading } = useAuth();
