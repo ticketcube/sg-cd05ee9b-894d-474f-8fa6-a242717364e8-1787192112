@@ -220,41 +220,47 @@ function WeeklyRatingsPageContent() {
                 const artist = artistData.artist as Artist;
                 const isRated = artistRatings.some(rating => rating.artistUuid === artist.uuid && rating.isRated);
                 return (
-  <div 
-    key={artist.uuid} 
-    className="text-center cursor-pointer"
-    onClick={() => handleWatchArtist(artist)}
-  >
-    <div 
-      className={`select-none transition-opacity ${isRated ? 'opacity-50' : ''}`}
-    >
-      {artist.artist_image ? (
-        <Image 
-          src={artist.artist_image} 
-          alt={artist.artist_name} 
-          width={48} 
-          height={48} 
-          className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white" 
-        />
-      ) : (
-        <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center mx-auto">
-          <User className="w-6 h-6" />
-        </div>
-      )}
-      <div className="text-xs text-white mt-1 truncate">
-        {artist.artist_name}
-      </div>
-    </div>
+                  <div
+                    key={artist.uuid}
+                    className="
+      text-center cursor-pointer rounded-lg 
+      transition-all duration-200
+      hover:bg-blue-800 hover:scale-105
+    "
+                    onClick={() => handleWatchArtist(artist)}
+                  >
+                    <div
+                      className={`select-none transition-opacity ${isRated ? 'opacity-50' : ''}`}
+                    >
+                      {artist.artist_image ? (
+                        <Image
+                          src={artist.artist_image}
+                          alt={artist.artist_name}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center mx-auto">
+                          <User className="w-6 h-6" />
+                        </div>
+                      )}
+                      <div className="text-xs text-white mt-1 truncate">
+                        {artist.artist_name}
+                      </div>
+                    </div>
 
-    <div 
-      className={`mt-1 inline-flex items-center justify-center h-5 px-1 text-xs rounded 
-        ${isRated ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}`}
-    >
-      <Play className="w-2 h-2 mr-1" />
-      {isRated ? 'Rated' : 'Watch'}
-    </div>
-  </div>
-);
+                    <div
+                      className={`mt-1 inline-flex items-center justify-center h-5 px-1 text-xs rounded 
+        ${isRated ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}
+      `}
+                    >
+                      <Play className="w-2 h-2 mr-1" />
+                      {isRated ? 'Rated' : 'Watch'}
+                    </div>
+                  </div>
+                );
+
               })}
             </div>
           ))}
