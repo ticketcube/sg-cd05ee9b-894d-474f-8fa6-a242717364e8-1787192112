@@ -166,7 +166,7 @@ export default function HomePage() {
                   </Button>  
                  
               </div>
-             
+              </div>
       </div>
       
       {/* Auth Dialog for protected navigation */}
