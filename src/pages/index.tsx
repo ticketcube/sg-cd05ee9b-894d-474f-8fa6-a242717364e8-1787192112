@@ -118,7 +118,7 @@ export default function HomePage() {
               </Button>
             </CardContent>
           </Card>
-
+            <!--
           {/* Discovery Charts Card */}
           <Card 
             className="bg-gradient-to-br from-purple-600 to-pink-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group"
@@ -142,7 +142,8 @@ export default function HomePage() {
                 Explore Charts
               </Button>
             </CardContent>
-          </Card>
+                  </Card>
+          -->
         </div>
 
         {/* Bottom Section */}
