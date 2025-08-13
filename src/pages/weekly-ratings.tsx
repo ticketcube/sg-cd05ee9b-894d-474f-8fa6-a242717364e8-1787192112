@@ -191,8 +191,8 @@ function WeeklyRatingsPageContent() {
            
             <h1 className="text-xl font-bold text-blue-500 truncate">WEEKLY DISCOVERY REWARDS </h1>
           </div>
-          <div className="text-center mb-4">
-            <h2 className="text-lg font-bold text-white mb-3">SELECT WEEK</h2>
+          <div className="text-left mb-4">
+            <h2 className="text-sm font-bold text-white mb-3">SELECT WEEK</h2>
             <Select value={selectedListId} onValueChange={setSelectedListId}>
               <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white">
                 <SelectValue placeholder="Select a weekly list..." />
