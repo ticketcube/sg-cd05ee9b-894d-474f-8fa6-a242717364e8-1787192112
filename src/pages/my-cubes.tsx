@@ -316,10 +316,10 @@ export default function MyCubesPage() {
                             </div>
 
                                 {/* Cubes Grid - Mobile Friendly */}
+                                <div className="space-y-6">
                                     {cubes.map((cube) => (
                                         <Card key={cube.id} className="bg-gray-900 border-gray-700">
                                           <CardHeader className="pb-3">
-  <div className="grid grid-cols-2 md:grid-cols-[1fr_2fr] gap-6 items-stretch">
 
     {/* Left Column - Cube Details */}
     <div className="flex flex-col justify-between space-y-4">
