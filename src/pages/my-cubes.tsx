@@ -381,7 +381,7 @@ export default function MyCubesPage() {
         {/* Right Column - Cube Preview */}
 
                                                     <div className="space-y-6">
-                                                        <div className="relative w-full h-full max-h-[400px] aspect-square">
+                                                        <div className="flex items-center justify-center h-full">
                                                         <CubePreview cube={cube} />
 
                                                         
