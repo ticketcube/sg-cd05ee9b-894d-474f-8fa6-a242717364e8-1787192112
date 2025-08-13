@@ -378,9 +378,29 @@ export default function MyCubesPage() {
       </div>
     </div>
 
-    {/* Right Column - Cube Preview */}
+        {/* Right Column - Cube Preview */}
+
+                                                    <div className="space-y-6">
+                                                        <CubePreview cube={cube} />
+
+                                                        {isPreviewMode && (
+                                                            <Card className="bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/20 dark:to-neutral-800 border-emerald-200/60">
+                                                                <CardContent className="pt-6">
+                                                                    <h3 className="font-semibold mb-2 text-emerald-800 dark:text-emerald-200">🎉 Your Cube is Ready!</h3>
+                                                                   
+                                                                    <div className="text-xs text-emerald-600 dark:text-emerald-400">
+                                                                        • Drag to rotate the cube
+                                                                        • Scroll to zoom in/out
+                                                                        • Your cube will be saved to the blockchain
+                                                                    </div>
+                                                                </CardContent>
+                                                            </Card>
+                                                        )}
+                                                    </div>
+
+    
                                                     <div className="flex items-center justify-center h-full">
-                                                        <div className="relative w-full h-full max-h-[400px] aspect-square">      <CubePreview cube={cube} />
+                                                        <div className="relative w-full h-full max-h-[400px] aspect-square">      
                                                         </div>
                                                     </div>
   </div>
