@@ -319,72 +319,72 @@ export default function MyCubesPage() {
                                 <div className="space-y-6">
                                     {cubes.map((cube) => (
                                         <Card key={cube.id} className="bg-gray-900 border-gray-700">
-                                            <CardHeader className="pb-3">
-                                                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-6 items-stretch">
+                                          <CardHeader className="pb-3">
+  <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-6 items-stretch">
 
-                                                    {/* Left Column - Cube Details */}
-                                                    <div className="flex flex-col justify-between space-y-4">
-                                                        {/* Title */}
-                                                        <CardTitle className="text-lg font-bold text-white">
-                                                            {cube.title}
-                                                        </CardTitle>
+    {/* Left Column - Cube Details */}
+    <div className="flex flex-col justify-between space-y-4">
+      {/* Title */}
+      <CardTitle className="text-lg font-bold text-white">
+        {cube.title}
+      </CardTitle>
 
-                                                        {/* Tier + Status */}
-                                                        <div className="flex items-center gap-2">
-                                                            <TierBadge tier={cube.tier || "free"} />
-                                                            {cube.is_secured ? (
-                                                                <Badge className="bg-green-600 text-white">
-                                                                    <Lock className="w-3 h-3 mr-1" />
-                                                                    Secured
-                                                                </Badge>
-                                                            ) : (
-                                                                <Badge variant="secondary">
-                                                                    <Unlock className="w-3 h-3 mr-1" />
-                                                                    Draft
-                                                                </Badge>
-                                                            )}
-                                                        </div>
+      {/* Tier + Status */}
+      <div className="flex items-center gap-2">
+        <TierBadge tier={cube.tier || "free"} />
+        {cube.is_secured ? (
+          <Badge className="bg-green-600 text-white">
+            <Lock className="w-3 h-3 mr-1" />
+            Secured
+          </Badge>
+        ) : (
+          <Badge variant="secondary">
+            <Unlock className="w-3 h-3 mr-1" />
+            Draft
+          </Badge>
+        )}
+      </div>
 
-                                                        {/* Event */}
-                                                        <div>
-                                                            <div className="text-sm text-gray-400">Event</div>
-                                                            <div className="text-white font-medium">
-                                                                {cube.event_name || "No event specified"}
-                                                            </div>
-                                                        </div>
+      {/* Event */}
+      <div>
+        <div className="text-sm text-gray-400">Event</div>
+        <div className="text-white font-medium">
+          {cube.event_name || "No event specified"}
+        </div>
+      </div>
 
-                                                        {/* Venue */}
-                                                        <div>
-                                                            <div className="text-sm text-gray-400">Venue</div>
-                                                            <div className="text-white font-medium">
-                                                                {cube.venue || "No venue specified"}
-                                                            </div>
-                                                        </div>
+      {/* Venue */}
+      <div>
+        <div className="text-sm text-gray-400">Venue</div>
+        <div className="text-white font-medium">
+          {cube.venue || "No venue specified"}
+        </div>
+      </div>
 
-                                                        {/* Date */}
-                                                        <div>
-                                                            <div className="text-sm text-gray-400">Date</div>
-                                                            <div className="text-white font-medium flex items-center gap-2">
-                                                                <Calendar className="w-4 h-4" />
-                                                                {formatDate(cube.event_date)}
-                                                            </div>
-                                                        </div>
+      {/* Date */}
+      <div>
+        <div className="text-sm text-gray-400">Date</div>
+        <div className="text-white font-medium flex items-center gap-2">
+          <Calendar className="w-4 h-4" />
+          {formatDate(cube.event_date)}
+        </div>
+      </div>
 
-                                                        {/* Actions */}
-                                                        <div className="mt-auto">
-                                                            <Button variant="secondary" className="w-full">
-                                                                View Details
-                                                            </Button>
-                                                        </div>
-                                                    </div>
+      {/* Actions */}
+      <div className="mt-auto">
+        <Button variant="secondary" className="w-full">
+          View Details
+        </Button>
+      </div>
+    </div>
 
-                                                    {/* Right Column - Cube Preview */}
+    {/* Right Column - Cube Preview */}
                                                     <div className="flex items-center justify-center h-full">
-                                                        <div className="relative w-full h-full max-h-[400px] aspect-square">
-                                                            <CubePreview cube={cube} />
+                                                        <div className="relative w-full h-full max-h-[400px] aspect-square">      <CubePreview cube={cube} />
                                                         </div>
                                                     </div>
-                                            </CardHeader>
+  </div>
+</CardHeader>
 
 
 
