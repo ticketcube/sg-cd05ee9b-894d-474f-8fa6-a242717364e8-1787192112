@@ -12,6 +12,7 @@ import Image from "next/image";
 import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { WeeklyArtistRatingPopup } from "@/components/WeeklyArtistRatingPopup";
+import Link from "next/link";
 
 type Artist = Tables<"artists">;
 type WeeklyList = Tables<"weekly_lists">;
@@ -187,7 +188,22 @@ function WeeklyRatingsPageContent() {
     <div className="min-h-screen bg-black text-white">
       <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
         <div className="max-w-md mx-auto">
-            <h1 className="text-xl font-bold text-blue-500 truncate">WE REWARD DISCOVERY </h1>
+
+                    <Link href="/profile" passHref>
+                      <Button variant="ghost" className="flex items-center gap-2 text-sm md:text-base">
+                        <User className="w-4 h-4 md:w-5 md:h-5" />
+                        <span className="truncate max-w-[100px] md:max-w-none">{user.username}</span>
+                      </Button>
+                    </Link>
+                    <Button 
+                      onClick={handleLogout} 
+                      size="sm" 
+                      className="bg-transparent border border-white text-white hover:bg-white hover:text-black transition-colors text-xs md:text-sm"
+                    >
+                      <LogOut className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                      Logout
+                    </Button>
+           
          
              
           </div>
