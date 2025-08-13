@@ -148,7 +148,16 @@ export default function HomePage() {
             <Music className="w-5 h-5 md:w-6 md:h-6 text-blue-400 mr-2" />
             <span className="text-gray-400 text-sm md:text-base">Powered by community votes and engagement</span>
          </div>
-                 
+
+                  <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => window.location.href = "/"}
+                      className="text-white hover:bg-gray-800 flex-shrink-0"
+                  >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Back
+                  </Button>  
         </div>
       </div>
       
