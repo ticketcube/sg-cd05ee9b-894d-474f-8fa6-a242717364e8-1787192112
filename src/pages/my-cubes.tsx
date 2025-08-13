@@ -343,7 +343,7 @@ export default function MyCubesPage() {
                                                 </div>
                                             </CardHeader>
                                         </Card>
-                                    ))}
+                                    )}
                                 </div>
 
 
