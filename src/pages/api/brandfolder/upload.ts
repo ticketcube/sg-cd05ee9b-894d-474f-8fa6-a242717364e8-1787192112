@@ -116,17 +116,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const uploadData = await uploadReq.json();
     console.log("✅ Step 1 complete: Got upload URL");
+    console.log("📋 Upload response data:", JSON.stringify(uploadData, null, 2));
 
-    const uploadUrl = uploadData.data?.attributes?.upload_url;
-    const objectUrl = uploadData.data?.attributes?.object_url;
+    // Fix: The response structure is different - it's directly upload_url and object_url, not nested in data.attributes
+    const uploadUrl = uploadData.upload_url;
+    const objectUrl = uploadData.object_url;
 
     if (!uploadUrl || !objectUrl) {
       console.error("❌ Missing upload URLs in response:", { 
         hasUploadUrl: !!uploadUrl, 
-        hasObjectUrl: !!objectUrl 
+        hasObjectUrl: !!objectUrl,
+        responseKeys: Object.keys(uploadData)
       });
       return res.status(500).json({ 
-        error: "Invalid response from Brandfolder - missing upload URLs" 
+        error: "Invalid response from Brandfolder - missing upload URLs",
+        responseData: uploadData
       });
     }
 
