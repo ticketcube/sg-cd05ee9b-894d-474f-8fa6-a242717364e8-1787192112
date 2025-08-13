@@ -140,7 +140,7 @@ export default function HomePage() {
                         </Card>
                     )}
                 </div>
-            </div>
+           
 
         {/* Bottom Section */}
         <div className="text-center mt-8 md:mt-16">
