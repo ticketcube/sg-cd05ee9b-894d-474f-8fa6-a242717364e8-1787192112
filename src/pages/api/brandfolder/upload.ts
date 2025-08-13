@@ -170,20 +170,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? `${description} (Uploaded by ${userName} via OTWChart)`
       : `User-submitted content by ${userName} via OTWChart`;
 
+    // Fix: Use the exact structure from the user's example
     const assetPayload = {
       data: {
-        attributes: {
-          name: `${userName} Upload - ${fileName}`,
-          description: finalDescription,
-          attachments: [
-            {
-              url: objectUrl,
-              filename: fileName
-            }
-          ]
-        }
+        attributes: [
+          {
+            name: `${userName} Upload - ${fileName}`,
+            description: finalDescription,
+            attachments: [
+              {
+                url: objectUrl,
+                filename: fileName
+              }
+            ]
+          }
+        ]
       },
-      section_id: SECTION_ID
+      section_key: SECTION_ID  // Changed from section_id to section_key
     };
 
     console.log("📋 Asset creation payload:", JSON.stringify(assetPayload, null, 2));
