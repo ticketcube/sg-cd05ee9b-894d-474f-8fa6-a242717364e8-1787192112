@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, User, Trophy, Calendar, Star, TrendingUp, Award, Eye, Vote, Users, BarChart, Settings } from "lucide-react";
+import { ArrowLeft, User, Trophy, Calendar, Star, TrendingUp, Award, Eye, Vote, Users, BarChart, Settings, RefreshCw } from "lucide-react";
 import { userProfileService } from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
 
@@ -30,10 +30,11 @@ const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string
 );
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, refreshUserProfile } = useAuth();
   const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -59,6 +60,21 @@ export default function ProfilePage() {
       setError(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefreshProfile = async () => {
+    try {
+      setRefreshing(true);
+      await refreshUserProfile();
+      // Also reload the user engagement history to get fresh data
+      if (user) {
+        await loadUserProfile(user.id);
+      }
+    } catch (error) {
+      console.error("Error refreshing profile:", error);
+    } finally {
+      setRefreshing(false);
     }
   };
 
