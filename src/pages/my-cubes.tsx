@@ -380,7 +380,7 @@ export default function MyCubesPage() {
 
         {/* Right Column - Cube Preview */}
 
-                                                    <div className="div className="flex flex-col justify-between space-y-4">
+                                                    <div className="flex flex-col justify-between space-y-4">
                                                         
                                                         <CubePreview cube={cube} />
 
