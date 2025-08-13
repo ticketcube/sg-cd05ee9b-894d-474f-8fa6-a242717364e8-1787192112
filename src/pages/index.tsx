@@ -105,7 +105,7 @@ export default function HomePage() {
                                     <Trophy className="w-6 h-6 md:w-8 md:h-8 text-white" />
                                 </div>
                                 <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-2 md:mb-4">
-                                    Weekly Rewards
+                                  We Reward Discovery
                                 </h2>
                                 <p className="text-center text-white/90 mb-4 md:mb-6 text-sm md:text-base">
                                     Vote on weekly artist discoveries and earn points for exclusive rewards
