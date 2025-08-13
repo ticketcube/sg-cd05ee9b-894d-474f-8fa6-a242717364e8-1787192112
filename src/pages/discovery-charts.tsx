@@ -5,6 +5,8 @@ import { ArrowLeft, Trophy, Database, Music2 } from "lucide-react";
 import { useRouter } from "next/router";
 import AuthGuard from "@/components/AuthGuard";
 
+const REQUIRED_PASSCODE = "otw10";
+
 export default function DiscoveryChartsPage() {
   const router = useRouter();
 
