@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +36,26 @@ export default function BrandfolderUploadPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [description, setDescription] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Role-based access control - redirect non-staff users
+  useEffect(() => {
+    if (user && user.role !== 'otwstaff') {
+      console.warn('Access denied: User does not have otwstaff role');
+      router.push('/');
+    }
+  }, [user, router]);
+
+  // Don't render the page content if user is not otwstaff
+  if (user && user.role !== 'otwstaff') {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-500 mb-2">Access Denied</h1>
+          <p className="text-gray-400">Redirecting you to the homepage...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
