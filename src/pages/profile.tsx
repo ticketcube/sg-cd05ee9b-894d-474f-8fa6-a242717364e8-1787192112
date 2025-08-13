@@ -173,11 +173,30 @@ export default function ProfilePage() {
                   <User className="w-8 h-8 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-white">{user_profile.username}</h2>
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-2xl font-bold text-white">{user_profile.username}</h2>
+                    <Button
+                      onClick={handleRefreshProfile}
+                      disabled={refreshing}
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent hover:bg-gray-800 border-gray-600"
+                    >
+                      <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                      {refreshing ? 'Refreshing...' : 'Refresh Profile'}
+                    </Button>
+                  </div>
                   <p className="text-gray-400">{user_profile.email}</p>
                   <p className="text-sm text-gray-500">
                     Member since {formatDate(user_profile.created_at)}
                   </p>
+                  {user?.role && (
+                    <div className="mt-1">
+                      <Badge variant="secondary" className="bg-blue-600 text-white text-xs">
+                        {user.role}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               </div>
 
