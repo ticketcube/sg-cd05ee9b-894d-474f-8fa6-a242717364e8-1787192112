@@ -148,25 +148,7 @@ export default function HomePage() {
             <Music className="w-5 h-5 md:w-6 md:h-6 text-blue-400 mr-2" />
             <span className="text-gray-400 text-sm md:text-base">Powered by community votes and engagement</span>
          </div>
-                  <div className="flex items-center justify-center  mt-8 md:mt-16">
-                  <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => window.location.href = "/discovery-charts"}
-                      className="text-white hover:bg-gray-800 flex-shrink-0"
-                  >
-
-                      <Image
-                          src="/OTWLogocolor.png"
-                          alt="OnesToWatch"
-                          width={120}
-                          height={60}
-                          className="h-4 md:h-5 w-auto"
-                      />
-                  </Button>  
-                 
-              </div>
-              </div>
+               
       </div>
       
       {/* Auth Dialog for protected navigation */}
