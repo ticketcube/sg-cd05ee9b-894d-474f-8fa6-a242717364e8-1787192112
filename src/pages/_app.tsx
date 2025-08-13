@@ -4,7 +4,7 @@ import type { AppProps } from "next/app";
 import AuthProvider from "@/contexts/AuthContext";
 import { CubeProvider } from "@/contexts/CubeContext";
 import { Toaster } from "@/components/ui/toaster";
-import { Layout } from '@/components/layout/Layout'
+import { Layout } from '@/components/layout/Navbar'
 
 
 export default function App({ Component, pageProps }: AppProps) {
