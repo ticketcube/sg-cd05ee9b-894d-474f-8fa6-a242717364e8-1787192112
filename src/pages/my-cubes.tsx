@@ -265,48 +265,48 @@ export default function MyCubesPage() {
                 <div className="p-4 max-w-4xl mx-auto">
                     {cubes.length === 0 ? (
                         <div className="text-center py-16">
-                            <Box className="w-20 h-20 mx-auto mb-6 text-gray-600" />
-                            <h2 className="text-2xl font-bold mb-4">No TicketCubes Yet</h2>
-                            <p className="text-gray-400 mb-6">
+                         <Box className="w-20 h-20 mx-auto mb-6 text-gray-600" />
+                         <h2 className="text-2xl font-bold mb-4">No TicketCubes Yet</h2>
+                         <p className="text-gray-400 mb-6">
                                 Create your first TicketCube to preserve your concert memories!
-                            </p>
-                            <Button
+                         </p>
+                        <Button
                                 onClick={() => window.location.href = "/ticketcube"}
                                 className="bg-blue-600 hover:bg-blue-700"
-                            >
-                                Create Your First Cube
+                        >
+                             Create Your First Cube
                             </Button>
                         </div>
                     ) : (
                         <>
-                            {/* Header Stats */}
-                            <div className="mb-8">
-                                <h2 className="text-2xl font-bold mb-4">
-                                    Your TicketCube Collection ({cubes.length})
-                                </h2>
+                 {/* Header Stats */}
+                 <div className="mb-8">
+                     <h2 className="text-2xl font-bold mb-4">
+                        Your TicketCube Collection ({cubes.length})
+                         </h2>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                    <Card className="bg-gray-900 border-gray-700">
-                                        <CardContent className="p-4 text-center">
-                                            <div className="text-2xl font-bold text-green-500">
-                                                {cubes.filter(cube => cube.is_secured).length}
-                                            </div>
-                                            <div className="text-sm text-gray-400">Secured Cubes</div>
-                                        </CardContent>
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                         <Card className="bg-gray-900 border-gray-700">
+                         <CardContent className="p-4 text-center">
+                                 <div className="text-2xl font-bold text-green-500">
+                                 {cubes.filter(cube => cube.is_secured).length}
+                                 </div>
+                                  <div className="text-sm text-gray-400">Secured Cubes</div>
+                                     </CardContent>
                                     </Card>
 
-                                    <Card className="bg-gray-900 border-gray-700">
-                                        <CardContent className="p-4 text-center">
-                                            <div className="text-2xl font-bold text-blue-500">
-                                                {cubes.filter(cube => cube.tier === 'pro').length}
-                                            </div>
-                                            <div className="text-sm text-gray-400">Pro Cubes</div>
-                                        </CardContent>
-                                    </Card>
+                         <Card className="bg-gray-900 border-gray-700">
+                          <CardContent className="p-4 text-center">
+                              <div className="text-2xl font-bold text-blue-500">
+                                 {cubes.filter(cube => cube.tier === 'pro').length}
+                                 </div>
+                                 <div className="text-sm text-gray-400">Pro Cubes</div>
+                                 </CardContent>
+                                  </Card>
 
-                                    <Card className="bg-gray-900 border-gray-700">
-                                        <CardContent className="p-4 text-center">
-                                            <div className="text-2xl font-bold text-purple-500">
+                                 <Card className="bg-gray-900 border-gray-700">
+                                  <CardContent className="p-4 text-center">
+                                     <div className="text-2xl font-bold text-purple-500">
                                                 {cubes.filter(cube => cube.tier === 'collector').length}
                                             </div>
                                             <div className="text-sm text-gray-400">Collector Cubes</div>
@@ -317,10 +317,9 @@ export default function MyCubesPage() {
 
                                 {/* Cubes Grid - Mobile Friendly */}
                                 <div className="space-y-6">
-                                    {cubes.map((cube) => (
-                                        <Card key={cube.id} className="bg-gray-900 border-gray-700">
-                                          <CardHeader className="pb-3">
-  <div className="grid grid-cols-2 md:grid-cols-[1fr_2fr] gap-6 items-stretch">
+                                 {cubes.map((cube) => (
+                                  <Card key={cube.id} className="bg-gray-900 border-gray-700">
+                                     <CardHeader className="pb-3">
 
     {/* Left Column - Cube Details */}
     <div className="flex flex-col justify-between space-y-4">
