@@ -53,9 +53,7 @@ export default function HomePage() {
                 className="h-8 md:h-10 w-auto"
               />
             </div>
-            <p className="text-base md:text-lg lg:text-xl text-gray-300">
-              
-            </p>
+           
           </div>
           {/* Mobile-responsive user section */}
           <div className="flex flex-col items-end gap-2 md:flex-row md:items-center md:gap-4">
