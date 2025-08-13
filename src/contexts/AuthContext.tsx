@@ -11,6 +11,7 @@ export interface User {
   email: string;
   city?: string;
   points?: number;
+  role?: string;
 }
 
 interface AuthContextType {
@@ -116,7 +117,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             username: userProfile.username,
             email: userProfile.email,
             city: userProfile.raw_city_input || undefined,
-            points: userProfile.total_points || 0
+            points: userProfile.total_points || 0,
+            role: userProfile.role || undefined
           };
           
           setUser(userData);
@@ -141,7 +143,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             username: userProfile.username,
             email: userProfile.email,
             city: userProfile.raw_city_input || undefined,
-            points: userProfile.total_points || 0
+            points: userProfile.total_points || 0,
+            role: userProfile.role || undefined
           };
           setUser(userData);
           localStorage.setItem("otwchart_user", JSON.stringify(userData));
@@ -215,7 +218,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         username: userProfile.username,
         email: userProfile.email,
         city: userProfile.raw_city_input || undefined,
-        points: userProfile.total_points || 0
+        points: userProfile.total_points || 0,
+        role: userProfile.role || undefined
       };
       
       setUser(userData);

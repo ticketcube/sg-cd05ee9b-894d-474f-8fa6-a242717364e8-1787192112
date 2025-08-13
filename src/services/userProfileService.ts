@@ -10,6 +10,7 @@ export interface UserProfile {
   total_points?: number | null;
   last_active?: string | null;
   city_id?: number | null;
+  role?: string | null;
   created_at: string;
   updated_at?: string;
 }
