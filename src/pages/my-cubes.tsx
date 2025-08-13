@@ -399,10 +399,7 @@ export default function MyCubesPage() {
                                                     </div>
 
     
-                                                    <div className="flex items-center justify-center h-full">
-                                                        <div className="relative w-full h-full max-h-[400px] aspect-square">      
-                                                        </div>
-                                                    </div>
+                                                  
   </div>
 </CardHeader>
 
