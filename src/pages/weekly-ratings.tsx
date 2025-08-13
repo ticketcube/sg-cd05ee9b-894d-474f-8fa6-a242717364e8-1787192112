@@ -187,22 +187,8 @@ function WeeklyRatingsPageContent() {
     <div className="min-h-screen bg-black text-white">
       <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
         <div className="max-w-md mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-8 md:mb-12">
-            <div className="text-left">
-              <div className="flex items-center mb-2">
-                <Image
-                  src="/OTWLogocolor.png"
-                  alt="OnesToWatch"
-                  width={120}
-                  height={40}
-                  className="h-8 md:h-10 w-auto"
-                />
-              </div>
-
-            </div>
-            {/* Mobile-responsive user section */}
-            <div className="flex flex-col items-end gap-2 md:flex-row md:items-center md:gap-4">
+            <h1 className="text-xl font-bold text-blue-500 truncate">WE REWARD DISCOVERY </h1>
+         
              
           </div>
           <div className="text-left mb-4">
