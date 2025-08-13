@@ -152,11 +152,11 @@ export default function HomePage() {
                   <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => window.location.href = "/"}
+                      onClick={() => window.location.href = "/discovery-charts"}
                       className="text-white hover:bg-gray-800 flex-shrink-0"
                   >
                       
-                      Back
+                      OTW STAFF
                   </Button>  
         </div>
       </div>
