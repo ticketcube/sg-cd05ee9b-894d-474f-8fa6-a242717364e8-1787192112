@@ -321,7 +321,7 @@ export default function MyCubesPage() {
                                   <Card key={cube.id} className="bg-gray-900 border-gray-700">
                                      <CardHeader className="pb-3">
 
-    {/* Left Column - Cube Details */}
+            {/* Left Column - Cube Details */}
     <div className="flex flex-col justify-between space-y-4">
       {/* Title */}
       <CardTitle className="text-lg font-bold text-white">
