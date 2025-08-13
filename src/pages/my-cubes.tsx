@@ -316,7 +316,6 @@ export default function MyCubesPage() {
                             </div>
 
                                 {/* Cubes Grid - Mobile Friendly */}
-                                <div className="space-y-6">
                                     {cubes.map((cube) => (
                                         <Card key={cube.id} className="bg-gray-900 border-gray-700">
                                           <CardHeader className="pb-3">
