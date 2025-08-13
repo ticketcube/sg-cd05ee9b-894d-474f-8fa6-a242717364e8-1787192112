@@ -380,8 +380,8 @@ export default function MyCubesPage() {
 
         {/* Right Column - Cube Preview */}
 
-                                                    <div className="space-y-6">
-                                                        <div className="flex items-center justify-center h-full">
+                                                    <div className="flex items-center justify-center h-full">
+                                                        
                                                         <CubePreview cube={cube} />
 
                                                         
@@ -396,7 +396,7 @@ export default function MyCubesPage() {
                                                                     </div>
                                                                 </CardContent>
                                                             </Card>
-                                                        </div>
+                                                        
                                                     </div>
 
     
