@@ -399,7 +399,7 @@ export default function ProfilePage() {
                     onClick={() => window.location.href = "/brandfolder-upload"}
                     className="w-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2"
                   >
-                    <BarChart className="w-4 h-4" />
+                                      <BarChart className="w-4 h-4 text-white" />
                     Submit Content
                   </Button>
                   <Button 
