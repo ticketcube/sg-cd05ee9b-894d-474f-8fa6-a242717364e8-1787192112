@@ -148,24 +148,24 @@ export default function HomePage() {
             <Music className="w-5 h-5 md:w-6 md:h-6 text-blue-400 mr-2" />
             <span className="text-gray-400 text-sm md:text-base">Powered by community votes and engagement</span>
          </div>
+                  <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => window.location.href = "/discovery-charts"}
+                      className="text-white hover:bg-gray-800 flex-shrink-0"
+                  >
 
+                      <Image
+                          src="/OTWLogocolor.png"
+                          alt="OnesToWatch"
+                          width={60}
+                          height=20}
+                          className="h-8 md:h-10 w-auto"
+                      />
+                  </Button>  
                  
               </div>
-              <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => window.location.href = "/discovery-charts"}
-                  className="text-white hover:bg-gray-800 flex-shrink-0"
-              >
-
-                  <Image
-                      src="/OTWLogocolor.png"
-                      alt="OnesToWatch"
-                      width={120}
-                      height={40}
-                      className="h-8 md:h-10 w-auto"
-                  />
-              </Button>  
+             
       </div>
       
       {/* Auth Dialog for protected navigation */}
