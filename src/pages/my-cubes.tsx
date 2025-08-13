@@ -386,15 +386,7 @@ export default function MyCubesPage() {
 
                                                         
                                                             <Card className="bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/20 dark:to-neutral-800 border-emerald-200/60">
-                                                                <CardContent className="pt-6">
-                                                            
-                                                                   
-                                                                    <div className="text-xs text-emerald-600 dark:text-emerald-400">
-                                                                        • Drag to rotate the cube
-                                                                        • Scroll to zoom in/out
-                                                                        • Your cube will be saved to the blockchain
-                                                                    </div>
-                                                                </CardContent>
+                                                               
                                                             </Card>
                                                         
                                                     </div>
