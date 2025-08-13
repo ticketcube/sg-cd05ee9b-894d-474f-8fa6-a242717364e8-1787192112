@@ -9,9 +9,9 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
           <CubeProvider>
-              <Layout>
+             
                   <Component {...pageProps} />
-                  </Layout>
+                 
         <Toaster />
       </CubeProvider>
     </AuthProvider>
