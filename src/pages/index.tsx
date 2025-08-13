@@ -54,7 +54,7 @@ export default function HomePage() {
               />
             </div>
             <p className="text-base md:text-lg lg:text-xl text-gray-300">
-              We Reward Discovery
+              
             </p>
           </div>
           {/* Mobile-responsive user section */}
