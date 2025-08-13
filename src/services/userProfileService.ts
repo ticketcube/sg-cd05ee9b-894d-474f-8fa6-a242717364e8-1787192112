@@ -89,7 +89,7 @@ export class UserProfileService {
         throw error;
       }
 
-      if (!data || data.length === 0) {
+      if (!existingUser || existingUser.length === 0) {
         return testUsername; // Username is available
       }
 

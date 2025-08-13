@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trophy, TrendingUp, Music, User, LogOut } from "lucide-react";
+import { Trophy, TrendingUp, Music, User, LogOut, UploadCloud } from "lucide-react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthDialog from "@/components/AuthDialog";
@@ -61,6 +61,12 @@ export default function HomePage() {
               <>
                 {isAuthenticated && user ? (
                   <>
+                    <Link href="/brandfolder-upload" passHref>
+                      <Button variant="ghost" className="flex items-center gap-2 text-sm md:text-base">
+                        <UploadCloud className="w-4 h-4 md:w-5 md:h-5" />
+                        <span className="hidden md:inline">Upload</span>
+                      </Button>
+                    </Link>
                     <Link href="/profile" passHref>
                       <Button variant="ghost" className="flex items-center gap-2 text-sm md:text-base">
                         <User className="w-4 h-4 md:w-5 md:h-5" />
