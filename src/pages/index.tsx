@@ -148,7 +148,7 @@ export default function HomePage() {
             <Music className="w-5 h-5 md:w-6 md:h-6 text-blue-400 mr-2" />
             <span className="text-gray-400 text-sm md:text-base">Powered by community votes and engagement</span>
          </div>
-             <div className="flex items-center justify-center mb-4">
+                  <div className="flex items-center justify-center  mt-8 md:mt-16">
                   <Button
                       variant="ghost"
                       size="sm"
