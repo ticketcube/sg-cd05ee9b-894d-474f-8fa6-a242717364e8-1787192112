@@ -405,9 +405,9 @@ export default function ProfilePage() {
                   <Button 
                     variant="outline"
                     onClick={() => window.location.href = "/discovery-charts"}
-                    className="w-full bg-transparent hover:bg-gray-800 flex items-center justify-center gap-2"
+                                      className="w-full bg-transparent text-white hover:bg-gray-800 flex items-center justify-center gap-2"
                   >
-                     <TrendingUp className="text-white w-4 h-4" />
+                     <TrendingUp className="w-4 h-4" />
                     Engagement Pipeline
                   </Button>
                 </div>
