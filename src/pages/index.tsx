@@ -159,9 +159,9 @@ export default function HomePage() {
                       <Image
                           src="/OTWLogocolor.png"
                           alt="OnesToWatch"
-                          width={60}
-                          height={20}
-                          className="h-8 md:h-10 w-auto"
+                          width={120}
+                          height={60}
+                          className="h-4 md:h-5 w-auto"
                       />
                   </Button>  
                  
