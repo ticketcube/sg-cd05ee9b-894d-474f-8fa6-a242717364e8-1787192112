@@ -20,6 +20,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (username: string, email: string, city?: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
   loading: boolean;
 }
 
@@ -80,20 +81,55 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const loadUserProfile = async (authUser: SupabaseUser) => {
+  const refreshUserProfile = async () => {
+    if (!supabaseUser) {
+      console.log("No authenticated user to refresh profile for");
+      return;
+    }
+    
+    console.log("🔄 Refreshing user profile from database...");
+    
     try {
-      // Check if we have cached user data first
-      const storedUser = localStorage.getItem("otwchart_user");
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          if (userData.auth_id === authUser.id) {
-            setUser(userData);
-            return;
+      // Force fetch from database, bypassing cache
+      const userProfile = await userProfileService.getUserProfileByAuthId(supabaseUser.id);
+      if (userProfile) {
+        const userData: User = {
+          id: userProfile.id,
+          auth_id: supabaseUser.id,
+          username: userProfile.username,
+          email: userProfile.email,
+          city: userProfile.raw_city_input || undefined,
+          points: userProfile.total_points || 0,
+          role: userProfile.role || undefined
+        };
+        
+        setUser(userData);
+        localStorage.setItem("otwchart_user", JSON.stringify(userData));
+        console.log("✅ User profile refreshed successfully:", userData);
+      } else {
+        console.log("⚠️ No profile found in database for user:", supabaseUser.id);
+      }
+    } catch (error) {
+      console.error("Error refreshing user profile:", error);
+    }
+  };
+
+  const loadUserProfile = async (authUser: SupabaseUser, forceRefresh = false) => {
+    try {
+      // Check if we have cached user data first (unless forcing refresh)
+      if (!forceRefresh) {
+        const storedUser = localStorage.getItem("otwchart_user");
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            if (userData.auth_id === authUser.id) {
+              setUser(userData);
+              return;
+            }
+          } catch (error) {
+            console.error("Error parsing stored user data:", error);
+            localStorage.removeItem("otwchart_user");
           }
-        } catch (error) {
-          console.error("Error parsing stored user data:", error);
-          localStorage.removeItem("otwchart_user");
         }
       }
 
@@ -249,9 +285,10 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     user,
     supabaseUser,
-    isAuthenticated: !!supabaseUser, // Simplify to rely on Supabase auth primarily
+    isAuthenticated: !!supabaseUser,
     login,
     logout,
+    refreshUserProfile,
     loading
   };
 
