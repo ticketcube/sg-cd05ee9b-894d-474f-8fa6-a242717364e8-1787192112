@@ -147,8 +147,8 @@ export default function HomePage() {
           <div className="flex items-center justify-center mb-4">
             <Music className="w-5 h-5 md:w-6 md:h-6 text-blue-400 mr-2" />
             <span className="text-gray-400 text-sm md:text-base">Powered by community votes and engagement</span>
-                  </div>
-                  <div className="flex items-center justify-center mb-4">
+         </div>
+             <div className="flex items-center justify-center mb-4">
                   <Button
                       variant="ghost"
                       size="sm"
@@ -160,7 +160,7 @@ export default function HomePage() {
                           src="/OTWLogocolor.png"
                           alt="OnesToWatch"
                           width={60}
-                          height=20}
+                          height={20}
                           className="h-8 md:h-10 w-auto"
                       />
                   </Button>  
