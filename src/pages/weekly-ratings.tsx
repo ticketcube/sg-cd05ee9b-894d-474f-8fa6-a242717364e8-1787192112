@@ -29,6 +29,7 @@ function WeeklyRatingsPageContent() {
   const [allWeeklyLists, setAllWeeklyLists] = useState<WeeklyList[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [loadingSpecificList, setLoadingSpecificList] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
   const [artistRatings, setArtistRatings] = useState<ArtistRating[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -74,8 +75,8 @@ function WeeklyRatingsPageContent() {
 
   const loadSpecificWeeklyList = async (weekIdentifier: string) => {
     try {
+      setLoadingSpecificList(true);
       setListError(null);
-      // Don't set loading here to prevent flash
       const list = await weeklyListService.getWeeklyList(weekIdentifier);
       if (!list) {
         setListError("Selected weekly list not found");
@@ -86,6 +87,8 @@ function WeeklyRatingsPageContent() {
       setSubmitted(false);
     } catch (err) {
       setListError(err instanceof Error ? err.message : "Failed to load weekly list");
+    } finally {
+      setLoadingSpecificList(false);
     }
   };
 
@@ -155,8 +158,8 @@ function WeeklyRatingsPageContent() {
     return { x, y };
   };
 
-  // Show loading spinner while initially loading or while weeklyList is still being fetched
-  if (loading || (!weeklyList && !listError)) return (
+  // Show loading spinner while initially loading OR while loading a specific weekly list
+  if (loading || loadingSpecificList) return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin" />
     </div>
@@ -171,8 +174,8 @@ function WeeklyRatingsPageContent() {
     </div>
   );
 
-  // Only show this message if we're not loading and we have an explicit null weeklyList
-  if (!loading && !weeklyList) return (
+  // Only show this message if we're not loading anything and we have an explicit null weeklyList
+  if (!loading && !loadingSpecificList && !weeklyList) return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <p>No weekly list available.</p>
     </div>
