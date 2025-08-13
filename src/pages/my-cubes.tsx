@@ -383,7 +383,7 @@ export default function MyCubesPage() {
                                                     <div className="space-y-6">
                                                         <CubePreview cube={cube} />
 
-                                                        {isPreviewMode && (
+                                                        
                                                             <Card className="bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/20 dark:to-neutral-800 border-emerald-200/60">
                                                                 <CardContent className="pt-6">
                                                                     <h3 className="font-semibold mb-2 text-emerald-800 dark:text-emerald-200">🎉 Your Cube is Ready!</h3>
@@ -395,7 +395,7 @@ export default function MyCubesPage() {
                                                                     </div>
                                                                 </CardContent>
                                                             </Card>
-                                                        )}
+                                                        
                                                     </div>
 
     
