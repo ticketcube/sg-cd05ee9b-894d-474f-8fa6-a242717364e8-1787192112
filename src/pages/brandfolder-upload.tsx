@@ -101,8 +101,26 @@ export default function BrandfolderUploadPage() {
         console.log("Upload successful:", result);
         setUploadStatus("success");
       } else {
-        const error = await response.json();
-        throw new Error(error.error || "Upload failed");
+        // Check if response is JSON before trying to parse
+        const contentType = response.headers.get("content-type");
+        let errorMessage = "Upload failed";
+        
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const error = await response.json();
+            errorMessage = error.error || error.message || "Upload failed";
+          } catch (parseError) {
+            console.error("Error parsing JSON response:", parseError);
+            errorMessage = `Server error (${response.status}): ${response.statusText}`;
+          }
+        } else {
+          // Response is not JSON, likely an HTML error page
+          const errorText = await response.text();
+          console.error("Non-JSON response:", errorText.substring(0, 200));
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
+        
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Upload error:", error);
