@@ -1,7 +1,9 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import type {
-  Tables
-} from "@/integrations/supabase/types";
+import { pointsConfigService } from "./pointsConfigService";
+import { weeklyVotingService } from "./weeklyVotingService";
+import { videoWatchService } from "./videoWatchService";
+import type { Tables } from "@/integrations/supabase/types";
 
 type UserProfile = Tables<"user_profiles">;
 
@@ -21,7 +23,6 @@ const pointsTestService = {
       return data;
     }
 
-    // If no userId is provided, create or find a generic test user
     const timestamp = Date.now();
     const randomSuffix = Math.floor(Math.random() * 10000);
     const testUsername = `testuser_${timestamp}_${randomSuffix}`;
@@ -29,7 +30,6 @@ const pointsTestService = {
 
     console.log(`🔍 Attempting to create test user: ${testUsername}`);
 
-    // First, check if a test user with this exact username already exists
     const { data: existingUser, error: findError } = await supabase
       .from("user_profiles")
       .select("*")
@@ -45,7 +45,6 @@ const pointsTestService = {
       return existingUser;
     }
 
-    // Try to create the new test user
     const { data, error } = await supabase
       .from("user_profiles")
       .insert({
@@ -57,11 +56,9 @@ const pointsTestService = {
       .single();
 
     if (error) {
-      // If we get a duplicate key error, try to find any existing test user
       if (error.code === "23505") {
         console.log("🔄 Duplicate key detected, looking for any existing test user...");
         
-        // Find any test user that we can use
         const { data: anyTestUser, error: findAnyError } = await supabase
           .from("user_profiles")
           .select("*")
@@ -86,142 +83,219 @@ const pointsTestService = {
     return data;
   },
 
-  // Test 2: Verify that the user's points are initially zero
-  async testInitialPoints(user: UserProfile) {
-    console.log(`🧪 Testing initial points for user ${user.id}...`);
-    if (user.total_points !== 0) {
-      // If points are not 0, try to reset them for a clean test state.
-      console.warn(`User points are not 0, attempting to reset...`);
-      const { error } = await supabase
-        .from("user_profiles")
-        .update({ total_points: 0 })
-        .eq("id", user.id);
-      if (error) {
-        throw new Error(`Failed to reset user points: ${error.message}`);
-      }
-      console.log(`✅ User points reset to 0.`);
-    } else {
-      console.log("✅ Initial points are correctly set to 0.");
-    }
-  },
-
-  // Test 3: Test the increment_user_points database function
-  async testPointsIncrement(userId: number) {
-    console.log(`🧪 Testing points increment for user ${userId}...`);
-    
-    // Get points before
-    const { data: userBefore, error: beforeError } = await supabase
-      .from("user_profiles")
-      .select("total_points")
-      .eq("id", userId)
-      .single();
-
-    if (beforeError) throw new Error(`Error getting points before: ${beforeError.message}`);
-    const pointsBefore = userBefore?.total_points || 0;
-    console.log(`📊 Points before: ${pointsBefore}`);
-
-    // Call the RPC function to add points
-    const { error } = await supabase.rpc("increment_user_points", {
-      user_id_to_update: userId,
-      points_to_add: 3
-    });
-
-    if (error) {
-      throw new Error(`RPC increment_user_points failed: ${error.message}`);
-    }
-
-    // Get points after
-    const { data: userAfter, error: afterError } = await supabase
-      .from("user_profiles")
-      .select("total_points")
-      .eq("id", userId)
-      .single();
-
-    if (afterError) throw new Error(`Error getting points after: ${afterError.message}`);
-    const pointsAfter = userAfter?.total_points || 0;
-    console.log(`📊 Points after: ${pointsAfter}`);
-
-    // Verify points were added
-    if (pointsAfter !== pointsBefore + 3) {
-      throw new Error(`Points increment failed: expected ${pointsBefore + 3}, got ${pointsAfter}`);
-    }
-    
-    console.log("✅ Points increment working correctly.");
-  },
-
-  // Test 4: Test achievement logging (manual achievement creation)
-  async testAchievementLogging(userId: number) {
-    console.log(`🧪 Testing achievement logging for user ${userId}...`);
+  // Test 2: Test points configuration service
+  async testPointsConfiguration() {
+    console.log("🧪 Testing points configuration service...");
     
     try {
-      // Count achievements before
-      const { data: achievementsBefore, error: beforeError } = await supabase
-        .from("user_achievements")
-        .select("*", { count: "exact" })
-        .eq("user_id", userId);
+      // Test loading configuration
+      const config = await pointsConfigService.getAllConfigs();
+      console.log("✅ Points configuration loaded successfully");
       
-      if (beforeError) {
-        throw new Error(`Error getting achievements before: ${beforeError.message}`);
-      }
+      // Test specific point values
+      const videoViewPoints = await pointsConfigService.getPoints('video_view');
+      const minWatchTime = await pointsConfigService.getMinValue('video_view');
+      const frequency = await pointsConfigService.getFrequency('video_view');
       
-      const countBefore = achievementsBefore?.length || 0;
-      console.log(`📊 Achievements before: ${countBefore}`);
+      console.log(`📊 Video view points: ${videoViewPoints}`);
+      console.log(`📊 Min watch time: ${minWatchTime} seconds`);
+      console.log(`📊 Frequency: ${frequency}`);
       
-      // Manually create an achievement record to test the table functionality
-      const { data: newAchievement, error: insertError } = await supabase
-        .from("user_achievements")
-        .insert({
-          user_id: userId,
-          achievement_type: "test_achievement",
-          achievement_name: "Test Achievement",
-          points_earned: 3
-        })
-        .select()
-        .single();
+      // Verify expected values
+      if (videoViewPoints !== 5) throw new Error(`Expected 5 points for video_view, got ${videoViewPoints}`);
+      if (minWatchTime !== 15) throw new Error(`Expected 15 seconds min watch time, got ${minWatchTime}`);
+      if (frequency !== 'once_per_artist_per_week') throw new Error(`Expected 'once_per_artist_per_week', got ${frequency}`);
       
-      if (insertError) {
-        throw new Error(`Achievement creation error: ${insertError.message}`);
-      }
+      console.log("✅ Points configuration values verified correctly");
       
-      console.log(`📊 Created achievement:`, newAchievement);
-      
-      // Count achievements after
-      const { data: achievementsAfter, error: afterError } = await supabase
-        .from("user_achievements")
-        .select("*")
-        .eq("user_id", userId)
-        .order("earned_at", { ascending: false });
-      
-      if (afterError) {
-        throw new Error(`Error getting achievements after: ${afterError.message}`);
-      }
-      
-      const countAfter = achievementsAfter?.length || 0;
-      console.log(`📊 Achievements after: ${countAfter}`);
-      
-      if (countAfter !== countBefore + 1) {
-        throw new Error(`Achievement not logged: expected ${countBefore + 1}, got ${countAfter}`);
-      }
-      
-      const latestAchievement = achievementsAfter?.[0];
-      console.log(`📊 Latest achievement:`, latestAchievement);
-      
-      console.log("✅ Achievement logging working correctly");
-      
-      return {
-        success: true,
-        achievementsBefore: countBefore,
-        achievementsAfter: countAfter,
-        latestAchievement
-      };
-      
+      return { success: true, config };
     } catch (error) {
-      console.error("❌ Achievement logging test failed:", error);
+      console.error("❌ Points configuration test failed:", error);
       throw error;
     }
   },
 
-  // Test 5: Clean up test data
+  // Test 3: Test video view points with "once per artist per week" logic
+  async testVideoViewPoints(userId: number) {
+    console.log(`🧪 Testing video view points for user ${userId}...`);
+    
+    try {
+      const testArtistUuid = "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c"; // Laufey
+      const testWeekIdentifier = "2025-W30";
+      
+      console.log("📊 Testing first video view (should earn points)...");
+      
+      // First video view - should earn points
+      const firstViewResult = await weeklyVotingService.recordVideoView({
+        userId: userId,
+        artistUuid: testArtistUuid,
+        weekIdentifier: testWeekIdentifier,
+        watchTimeSeconds: 20 // Above 15 second minimum
+      });
+      
+      console.log(`📊 First view result:`, firstViewResult);
+      
+      if (!firstViewResult.eligible || firstViewResult.pointsEarned !== 5) {
+        throw new Error(`First video view should earn 5 points and be eligible. Got: ${JSON.stringify(firstViewResult)}`);
+      }
+      
+      console.log("✅ First video view correctly earned points");
+      
+      // Second video view - should NOT earn points (once per artist per week)
+      console.log("📊 Testing second video view (should NOT earn points)...");
+      
+      const secondViewResult = await weeklyVotingService.recordVideoView({
+        userId: userId,
+        artistUuid: testArtistUuid,
+        weekIdentifier: testWeekIdentifier,
+        watchTimeSeconds: 25
+      });
+      
+      console.log(`📊 Second view result:`, secondViewResult);
+      
+      if (secondViewResult.eligible || secondViewResult.pointsEarned !== 0) {
+        throw new Error(`Second video view should NOT earn points. Got: ${JSON.stringify(secondViewResult)}`);
+      }
+      
+      console.log("✅ Second video view correctly did NOT earn points (once per artist per week rule working)");
+      
+      // Test different week - should earn points again
+      console.log("📊 Testing same artist, different week (should earn points)...");
+      
+      const differentWeekResult = await weeklyVotingService.recordVideoView({
+        userId: userId,
+        artistUuid: testArtistUuid,
+        weekIdentifier: "2025-W31", // Different week
+        watchTimeSeconds: 18
+      });
+      
+      console.log(`📊 Different week result:`, differentWeekResult);
+      
+      if (!differentWeekResult.eligible || differentWeekResult.pointsEarned !== 5) {
+        throw new Error(`Same artist in different week should earn points. Got: ${JSON.stringify(differentWeekResult)}`);
+      }
+      
+      console.log("✅ Same artist in different week correctly earned points");
+      
+      return {
+        success: true,
+        firstView: firstViewResult,
+        secondView: secondViewResult,
+        differentWeek: differentWeekResult
+      };
+      
+    } catch (error) {
+      console.error("❌ Video view points test failed:", error);
+      throw error;
+    }
+  },
+
+  // Test 4: Test video watch status tracking
+  async testVideoWatchStatus(userId: number) {
+    console.log(`🧪 Testing video watch status tracking for user ${userId}...`);
+    
+    try {
+      const testArtistUuid = "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c"; // Laufey
+      const testWeekIdentifier = "2025-W30";
+      
+      // Get video watch status after our previous tests
+      const watchStatus = await videoWatchService.getVideoWatchStatus(
+        userId,
+        testArtistUuid,
+        testWeekIdentifier
+      );
+      
+      console.log(`📊 Video watch status:`, watchStatus);
+      
+      // Should show as watched with points earned
+      if (!watchStatus.hasWatched) {
+        throw new Error("Video should show as watched after recording view");
+      }
+      
+      if (!watchStatus.meetsMinRequirement) {
+        throw new Error("Video should meet minimum requirement (20 seconds > 15 second requirement)");
+      }
+      
+      if (!watchStatus.earnedPoints) {
+        throw new Error("Video should show points were earned");
+      }
+      
+      console.log("✅ Video watch status tracking working correctly");
+      
+      return { success: true, watchStatus };
+      
+    } catch (error) {
+      console.error("❌ Video watch status test failed:", error);
+      throw error;
+    }
+  },
+
+  // Test 5: Test eligibility checking system
+  async testEligibilitySystem(userId: number) {
+    console.log(`🧪 Testing eligibility checking system for user ${userId}...`);
+    
+    try {
+      const testArtistUuid = "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c"; // Laufey
+      const testWeekIdentifier = "2025-W30";
+      
+      // Check eligibility for same artist/week (should be false since we already earned points)
+      const eligibleSameWeek = await pointsConfigService.checkEligibility(
+        'video_view',
+        userId,
+        testArtistUuid,
+        testWeekIdentifier
+      );
+      
+      console.log(`📊 Eligible for same artist/week: ${eligibleSameWeek}`);
+      
+      if (eligibleSameWeek) {
+        throw new Error("User should NOT be eligible for same artist in same week");
+      }
+      
+      // Check eligibility for same artist, different week (should be true)
+      const eligibleDifferentWeek = await pointsConfigService.checkEligibility(
+        'video_view',
+        userId,
+        testArtistUuid,
+        "2025-W32" // Different week
+      );
+      
+      console.log(`📊 Eligible for same artist, different week: ${eligibleDifferentWeek}`);
+      
+      if (!eligibleDifferentWeek) {
+        throw new Error("User SHOULD be eligible for same artist in different week");
+      }
+      
+      // Check eligibility for different artist, same week (should be true)
+      const eligibleDifferentArtist = await pointsConfigService.checkEligibility(
+        'video_view',
+        userId,
+        "different-artist-uuid",
+        testWeekIdentifier
+      );
+      
+      console.log(`📊 Eligible for different artist, same week: ${eligibleDifferentArtist}`);
+      
+      if (!eligibleDifferentArtist) {
+        throw new Error("User SHOULD be eligible for different artist in same week");
+      }
+      
+      console.log("✅ Eligibility system working correctly");
+      
+      return {
+        success: true,
+        sameWeek: eligibleSameWeek,
+        differentWeek: eligibleDifferentWeek,
+        differentArtist: eligibleDifferentArtist
+      };
+      
+    } catch (error) {
+      console.error("❌ Eligibility system test failed:", error);
+      throw error;
+    }
+  },
+
+  // Test 6: Clean up test data
   async cleanup(userId: number) {
     console.log(`🧹 Cleaning up test data for user ${userId}...`);
     
@@ -230,57 +304,94 @@ const pointsTestService = {
       .from("user_achievements")
       .delete()
       .eq("user_id", userId)
-      .eq("achievement_type", "test_achievement");
+      .in("achievement_type", ["test_achievement", "video_view", "video_completion_bonus"]);
       
     if (achievementError) console.error("Error cleaning up achievements:", achievementError.message);
     else console.log("✅ Test achievements cleaned up.");
 
-    // Optionally, delete the user if it was a generic test user
-    const { data: user } = await supabase.from("user_profiles").select("email").eq("id", userId).single();
+    // Reset user points
+    const { error: pointsError } = await supabase
+      .from("user_profiles")
+      .update({ total_points: 0 })
+      .eq("id", userId);
+      
+    if (pointsError) console.error("Error resetting user points:", pointsError.message);
+    else console.log("✅ User points reset.");
+
+    // Optionally delete test user
+    const { data: user } = await supabase
+      .from("user_profiles")
+      .select("email")
+      .eq("id", userId)
+      .single();
+      
     if (user && user.email && user.email.endsWith("@test.com")) {
-        const { error: userError } = await supabase
-            .from("user_profiles")
-            .delete()
-            .eq("id", userId);
-        
-        if (userError) console.error("Error cleaning up test user:", userError.message);
-        else console.log("✅ Test user cleaned up.");
+      const { error: userError } = await supabase
+        .from("user_profiles")
+        .delete()
+        .eq("id", userId);
+      
+      if (userError) console.error("Error cleaning up test user:", userError.message);
+      else console.log("✅ Test user cleaned up.");
     }
   },
 
-  // Main test runner
-  async runFullTestSuite(userId?: number) {
-    console.log("🚀 Starting full points system test suite...");
+  // Main comprehensive test runner
+  async runComprehensiveTestSuite(userId?: number) {
+    console.log("🚀 Starting comprehensive points system test suite...");
+    console.log("==================================================");
     let testUser: UserProfile | null = null;
     
     try {
-      // Step 1: Get or create user
+      // Step 1: Get or create test user
+      console.log("Step 1: User Setup");
       testUser = await this.getTestUser(userId);
       const currentUserId = testUser.id;
+      console.log("==================================================");
 
-      // Step 2: Check initial points
-      await this.testInitialPoints(testUser);
+      // Step 2: Test points configuration system
+      console.log("Step 2: Points Configuration Test");
+      const configResult = await this.testPointsConfiguration();
+      console.log("==================================================");
 
-      // Step 3: Test points increment
-      await this.testPointsIncrement(currentUserId);
+      // Step 3: Test video view points and frequency rules
+      console.log("Step 3: Video View Points & Frequency Rules Test");
+      const videoResult = await this.testVideoViewPoints(currentUserId);
+      console.log("==================================================");
 
-      // Step 4: Test achievement logging
-      const achievementResult = await this.testAchievementLogging(currentUserId);
+      // Step 4: Test video watch status tracking
+      console.log("Step 4: Video Watch Status Tracking Test");
+      const statusResult = await this.testVideoWatchStatus(currentUserId);
+      console.log("==================================================");
 
-      console.log("✅ Full test suite passed successfully!");
+      // Step 5: Test eligibility system
+      console.log("Step 5: Eligibility System Test");
+      const eligibilityResult = await this.testEligibilitySystem(currentUserId);
+      console.log("==================================================");
+
+      console.log("🎉 ALL TESTS PASSED! Points system is working correctly!");
+      
       return {
         success: true,
         userId: currentUserId,
-        ...achievementResult
+        results: {
+          configuration: configResult,
+          videoPoints: videoResult,
+          statusTracking: statusResult,
+          eligibility: eligibilityResult
+        }
       };
+      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      console.error("❌ Full test suite failed:", errorMessage);
+      console.error("❌ Comprehensive test suite failed:", errorMessage);
       throw new Error(`Test suite failed: ${errorMessage}`);
     } finally {
-      // Step 5: Cleanup
+      // Step 6: Cleanup
       if (testUser) {
+        console.log("Step 6: Cleanup");
         await this.cleanup(testUser.id);
+        console.log("==================================================");
       }
       console.log("🏁 Test suite finished.");
     }
