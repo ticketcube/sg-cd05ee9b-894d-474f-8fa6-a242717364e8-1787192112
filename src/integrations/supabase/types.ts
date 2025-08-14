@@ -752,6 +752,10 @@ export type Database = {
                     vote_count: number
                 }[]
             }
+            get_user_role: {
+                Args: { user_id: string }
+                Returns: string
+            }
             increment_user_points: {
                 Args: { user_id_to_update: number; points_to_add: number }
                 Returns: undefined
