@@ -305,7 +305,7 @@ export class UserProfileService {
 
   async recordEngagement(
     userId: number,
-    engagementType: "video_view" | "vote_submission" | "ranking_submission",
+      engagementType: "video_view" | "vote_submission" | "ranking_submission" | "video_completion_bonus" | "daily_login" | "weekly_streak" | "referral_bonus",
     pointsEarned: number,
     weekIdentifier: string,
     artistUuid?: string,
