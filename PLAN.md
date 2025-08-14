@@ -1,84 +1,81 @@
-# Points &amp; Voting System - Strategic Review &amp; Improvement Plan
+# OTWChart Points &amp; Engagement System - Improvement Plan
 
-**Document Version:** 1.0
-**Date:** 2025-08-13
+**Document Version:** 2.0
+**Date:** 2025-08-14
 
 ## 1. Executive Summary
 
-This document outlines the findings from a comprehensive review of the OTWChart points and weekly voting system. The current implementation contains several critical inconsistencies related to point allocation, video timers, voting locks, and the logic that determines the active voting week.
+This document outlines a revised, two-phase strategic plan to overhaul the OTWChart points and user engagement systems. Based on new requirements, we will pivot from a static, hardcoded points system to a dynamic, database-driven one. This plan introduces new engagement loops and clarifies existing rules to create a more robust, flexible, and user-centric platform.
 
-The following plan provides a clear, cost-effective strategy to resolve these issues, creating a more robust, automated, and user-friendly system.
+---
 
-## 2. Current State Analysis &amp; Findings
+## **Phase 1: Core System Overhaul &amp; New Engagement Rules**
 
-This section answers the key questions about the system's current functionality based on a thorough code review.
+This phase prioritizes foundational changes and the implementation of critical new features.
 
-### 2.1. Points Allocation
+### **1.1. Points Allocation: From Hardcoded to Database-Driven**
 
-Points are defined in `src/services/weeklyVotingService.ts` and allocated as follows:
+-   **Action:** All point values will be fetched directly from the `public.points_config` table in Supabase, replacing the current hardcoded values.
+-   **Strategic Recommendation:** To maximize flexibility, the `points_config` table should be structured to include:
+    -   `action_name` (text, primary key): A unique identifier (e.g., `VIDEO_VIEW`, `VOTE_SUBMIT`).
+    -   `points_value` (integer): The points awarded.
+    -   `frequency` (text): Defines how often points can be earned (e.g., `ONCE_PER_VIDEO`, `ONCE_PER_WEEKLY_LIST`).
+    -   `min_value` (integer, nullable): A conditional value, such as the **15**-second minimum watch time for videos.
+-   **Benefit:** This architecture allows for real-time adjustments to the points economy directly from the Supabase dashboard, without requiring new code deployments.
 
--   **Video View**: **5 points**.
-    -   **Conditions**: Requires a minimum **15-second** watch time and is only awarded **once per artist per week**.
--   **Vote Submission**: **10 points**.
-    -   **Condition**: Awarded only on the **first submission** for a given week.
--   **Completion Bonus**: **5 additional points**.
-    -   **Condition**: Awarded when a user votes on exactly **5 artists**.
-    -   **Identified Issue**: This is inconsistent, as the weekly list presents 10 artists. Users voting for all 10 will not receive this bonus.
+### **1.2. Reworked Video View Points**
 
-### 2.2. Video Timers
+-   **New Rule:** Users can earn points for watching a video (15+ seconds) at any time, independent of a weekly list's voting window. This makes all video content "evergreen" for engagement.
+-   **Tracking Logic:** Points will be awarded **once per unique artist video**. The system will log each video view to prevent duplicate point awards.
 
--   **Finding**: **The video watch timer is NOT implemented.**
--   **Impact**: Although the backend is designed to award points based on a `watchTimeSeconds` value, the frontend never tracks or sends this data. As a result, **users cannot earn points for watching videos**.
+### **1.3. New "Watch Completion" Bonus**
 
-### 2.3. Weekly Vote Locking
+-   **Action:** The previous, confusing "vote completion bonus" will be deprecated.
+-   **New Feature:** A **"Watch Completion Bonus"** will be introduced, rewarding users for watching all videos on a given weekly list.
+-   **UI Impact:** The frontend will be updated to display a "watched" status indicator (e.g., a checkmark) on videos the user has already viewed, providing clear visual feedback on their progress.
 
--   **Finding**: A user **can vote multiple times** for the same week by refreshing the page. Their latest vote overwrites the previous one.
--   **Point System**: The system correctly prevents users from earning points on subsequent votes.
--   **Identified Issue**: The UI provides a poor user experience. The "SUBMIT VOTES" button re-enables on page refresh, misleading the user into thinking they can earn more points.
+### **1.4. Decouple Voting and Viewing Windows**
 
-### 2.4. Weekly List Availability
+-   **Action:** The `start_date` and `end_date` fields on a weekly list will now control **voting eligibility only**.
+-   **User Experience:** On expired lists, the voting functionality will be disabled, but users will retain the ability to watch videos and earn associated points.
 
--   **Finding**: The active weekly list is determined by a `status = 'active'` field in the database.
--   **Identified Issue**: The `start_date` and `end_date` fields are **completely ignored**. This requires manual, time-sensitive database updates to start and stop weekly voting contests and is highly prone to human error.
+### **1.5. "How It Works" Onboarding Modal**
 
-## 3. Strategic Recommendations for Improvement
+-   **Action:** An informational popup will be created to explain the points system.
+-   **Implementation:**
+    -   A `Dialog` component will be used, capable of displaying text or an embedded video.
+    -   It will load automatically on a user's first visit, tracked via the browser's `localStorage`.
+    -   A persistent link (e.g., "How It Works?") will be added to the UI, allowing users to access the guide at any time.
 
-The following recommendations are designed to be the fastest and most cost-effective way to create a consistent and reliable system.
+---
 
-### Recommendation 1: Centralize and Standardize Points Logic
+## **Phase 2: Advanced Growth &amp; Retention Features**
 
--   **Action**: Create a single configuration file at `src/config/points.ts` to store all point values (e.g., `VIDEO_VIEW`, `VOTE_SUBMISSION`, `MIN_WATCH_TIME`).
--   **Benefit**: Simplifies future adjustments and ensures all parts of the application use the same values.
--   **Action**: Modify the "Completion Bonus" logic to be flexible, awarding the bonus based on the total number of artists available in that week's list, not a hardcoded value of `5`.
+These features add significant value but are more complex and should be built upon the stable foundation of Phase 1.
 
-### Recommendation 2: Implement the Video Watch Timer (Critical Fix)
+### **2.1. Weekly Voting Streak Bonus**
 
--   **Action**: Modify the video player popup component (`UnifiedArtistPopup.tsx` or equivalent).
--   **Implementation**:
-    1.  Use a `useEffect` hook with `setInterval` to start a timer when the video begins playing.
-    2.  When the popup is closed or the video ends, call `weeklyVotingService.recordVideoView` and pass the total tracked `watchTimeSeconds`.
--   **Benefit**: This will fix the non-functional video points feature, a core part of the user engagement loop.
+-   **Concept:** Reward users with bonus points for voting in consecutive weeks.
+-   **Recommendation:** Implement as a **weekly streak** to align with the platform's content cycle. This is a powerful retention mechanic.
+-   **Implementation Note:** Requires backend logic to track each user's weekly voting history and check for continuity. This is a well-defined feature perfect for Phase 2.
 
-### Recommendation 3: Improve Voting State Management &amp; UI
+### **2.2. Referral Bonus System**
 
--   **Action**: Implement a persistent "voted" state on the frontend.
--   **Implementation**:
-    1.  In `weekly.tsx`, before rendering the page content, make a call to the backend to check if the user has already voted for the current `week_identifier`.
-    2.  If they have, permanently disable the "SUBMIT VOTES" button and display a clear, friendly message (e.g., "Thanks for voting this week!").
--   **Benefit**: Prevents user confusion and provides a much better user experience.
+-   **Concept:** Reward users with points for referring new users who actively participate.
+-   **Recommendation:** Defer to **Phase 2** due to complexity.
+-   **Reasoning:** A secure referral system is a significant undertaking. It requires mechanisms for unique code generation, fraud prevention (e.g., preventing users from referring themselves), tracking the lifecycle of referred users, and reliably awarding points upon a valid conversion event (e.g., the new user's first vote).
 
-### Recommendation 4: Automate Weekly List Availability (Architectural Improvement)
+---
 
--   **Action**: Modify the backend logic to respect the `start_date` and `end_date` for weekly lists.
--   **Implementation**:
-    1.  Update the `weeklyListService.getActiveWeeklyList` function.
-    2.  The new database query should select the list where `CURRENT_TIMESTAMP` is between `start_date` and `end_date`. The `status` field can still be used for drafts.
--   **Benefit**: This is a huge improvement. It makes the system **fully automated**, removing the need for manual weekly database updates and eliminating a major potential point of failure.
+## **Implementation Priority (Phase 1)**
 
-## 4. Implementation Priority
-
-The recommended order of implementation is:
-
-1.  **High Priority**: Fix the weekly list availability logic (**Rec. 4**) and implement the video timer (**Rec. 2**), as these are core functional gaps.
-2.  **Medium Priority**: Improve the voting state UI (**Rec. 3**) to fix the user experience issue.
-3.  **Low Priority**: Centralize the points configuration (**Rec. 1**) as a code quality improvement.
+1.  **Backend First:**
+    -   Ensure `points_config` schema is updated.
+    -   Refactor all services (`weeklyVotingService`, etc.) to read from this table instead of using hardcoded values.
+    -   Update `weeklyListService` to use `start_date` and `end_date` for voting status.
+2.  **Frontend Next:**
+    -   Implement the video watch timer and the logic to call the backend.
+    -   Develop the "watched" status UI indicators.
+    -   Build the "How It Works" modal and its associated `localStorage` logic.
+3.  **Testing:**
+    -   Thoroughly test all point-awarding scenarios to ensure accuracy and adherence to the new rules.
