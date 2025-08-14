@@ -255,7 +255,7 @@ export default function ProfilePage() {
                 Weekly Activity
               </TabsTrigger>
               <TabsTrigger value="achievements" className="text-white data-[state=active]:bg-blue-600">
-                REWARDS
+                Rewards
               </TabsTrigger>
             </TabsList>
 
