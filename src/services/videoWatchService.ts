@@ -42,7 +42,7 @@ export class VideoWatchService {
         .eq("user_id", userId)
         .eq("achievement_type", "video_view")
         .like("metadata", `%${artistUuid}%`)
-        .like("metadata", `%${weekIdentifier}%`)
+        .like("metadata::text", `%${weekIdentifier}%`)
         .maybeSingle();
 
       if (error && error.code !== "PGRST116") {
@@ -136,7 +136,7 @@ export class VideoWatchService {
         .select("id")
         .eq("user_id", userId)
         .eq("achievement_type", "video_completion_bonus")
-        .like("metadata", `%${weekIdentifier}%`)
+          .like("metadata::text", `%${weekIdentifier}%`)
         .maybeSingle();
 
       if (bonusError && bonusError.code !== "PGRST116") {
