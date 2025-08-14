@@ -239,7 +239,7 @@ export class VideoWatchService {
         try {
           const metadata = JSON.parse(view.metadata || "{}");
           if (metadata.week_identifier && metadata.meets_watch_time) {
-            weeksWithProgress.add(metadata.week_identifier);
+            weeksWithProgress.add(String(metadata.week_identifier));
             totalVideosWatched++;
           }
         } catch (e) {
