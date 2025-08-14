@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/router";
 import AuthGuard from "@/components/AuthGuard";
-import { startResumableUpload } from "@/lib/upload"; // consolidated upload.ts
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
@@ -36,11 +35,6 @@ export default function MobileUploader() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [description, setDescription] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
-
-    // Role-based access control
-    useEffect(() => {
-        if (user && user.role !== 'otwstaff') router.push('/');
-    }, [user, router]);
 
     if (user && user.role !== 'otwstaff') {
         return (
@@ -68,12 +62,9 @@ export default function MobileUploader() {
         }
 
         setErrorMessage("");
-        setSelectedFile({
-            file,
-            preview: URL.createObjectURL(file),
-            type: file.type.startsWith("image/") ? "image" :
-                file.type.startsWith("video/") ? "video" : "other"
-        });
+        const preview = URL.createObjectURL(file);
+        const type = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "other";
+        setSelectedFile({ file, preview, type });
     };
 
     const handleUpload = async () => {
@@ -84,19 +75,41 @@ export default function MobileUploader() {
         setErrorMessage("");
 
         try {
-            await startResumableUpload({
-                file: selectedFile.file,
-                userName: user.username,
-                description: description.trim(),
-                onProgress: (percent) => setUploadProgress(percent)
-            });
+            const formData = new FormData();
+            formData.append("file", selectedFile.file);
+            formData.append("fileName", selectedFile.file.name);
+            formData.append("fileType", selectedFile.file.type);
+            formData.append("userName", user.username);
+            if (description.trim()) formData.append("description", description.trim());
 
-            setUploadProgress(100);
-            setUploadStatus("success");
-        } catch (err: any) {
-            console.error("Upload failed:", err);
-            setErrorMessage(err?.message || "Upload failed");
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/brandfolder/upload");
+
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    setUploadProgress((event.loaded / event.total) * 100);
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    setUploadStatus("success");
+                } else {
+                    setUploadStatus("error");
+                    setErrorMessage(`Upload failed: ${xhr.statusText}`);
+                }
+            };
+
+            xhr.onerror = () => {
+                setUploadStatus("error");
+                setErrorMessage("Upload failed due to network error.");
+            };
+
+            xhr.send(formData);
+
+        } catch (err) {
             setUploadStatus("error");
+            setErrorMessage(err instanceof Error ? err.message : "Upload failed");
             setUploadProgress(0);
         }
     };
@@ -107,55 +120,3 @@ export default function MobileUploader() {
         setUploadProgress(0);
         setDescription("");
         setErrorMessage("");
-        if (fileInputRef.current) fileInputRef.current.value = "";
-    };
-
-    const getFileIcon = (type: string) => {
-        if (type === "image") return <ImageIcon className="w-6 h-6" />;
-        if (type === "video") return <Video className="w-6 h-6" />;
-        return <File className="w-6 h-6" />;
-    };
-
-    const formatFileSize = (bytes: number) => {
-        const sizes = ["Bytes", "KB", "MB", "GB"];
-        if (bytes === 0) return "0 Bytes";
-        const i = Math.floor(Math.log(bytes) / Math.log(1024));
-        return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + " " + sizes[i];
-    };
-
-    return (
-        <AuthGuard>
-            <div className="min-h-screen bg-black text-white">
-                <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
-                    <div className="max-w-md mx-auto flex items-center gap-3 mb-4">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => router.push("/")}
-                            className="text-white hover:bg-gray-800"
-                        >
-                            <ArrowLeft className="w-4 h-4 mr-2" /> Back
-                        </Button>
-                        <h1 className="text-xl font-bold text-blue-500 truncate">SHOW US YOUR FAVS</h1>
-                    </div>
-                </div>
-
-                <div className="p-4 max-w-md mx-auto">
-                    {uploadStatus === "success" ? (
-                        <Card className="bg-gray-900 border-gray-700">
-                            <CardContent className="p-8 text-center">
-                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <CheckCircle className="w-8 h-8 text-green-600" />
-                                </div>
-                                <h2 className="text-xl font-semibold text-white mb-2">Upload Successful!</h2>
-                                <p className="text-gray-400 mb-6">Your file has been uploaded successfully.</p>
-                                <div className="space-y-3">
-                                    <Button onClick={resetUpload} className="w-full bg-green-600 hover:bg-green-700">
-                                        Upload Another File
-                                    </Button>
-                                    <Button onClick={() => router.push("/")} variant="ghost" className="w-full text-white hover:bg-gray-800">
-                                        Return Home
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
