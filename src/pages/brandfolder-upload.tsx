@@ -75,39 +75,57 @@ export default function MobileUploader() {
         setErrorMessage("");
 
         try {
-            const formData = new FormData();
-            formData.append("file", selectedFile.file);
-            formData.append("fileName", selectedFile.file.name);
-            formData.append("fileType", selectedFile.file.type);
-            formData.append("userName", user.username);
-            if (description.trim()) formData.append("description", description.trim());
+            // 1️⃣ Start the resumable upload
+            const startRes = await fetch("/api/brandfolder/upload?action=start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ fileType: selectedFile.file.type }),
+            });
+            if (!startRes.ok) throw new Error("Failed to start upload session");
 
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", "/api/brandfolder/upload");
+            const startData = await startRes.json();
+            const { resumableUploadUrl, objectUrl } = startData;
+            if (!resumableUploadUrl) throw new Error("No resumable upload URL returned");
 
-            xhr.upload.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    setUploadProgress((event.loaded / event.total) * 100);
-                }
-            };
+            // 2️⃣ Upload file with progress
+            await new Promise < void> ((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open("PUT", resumableUploadUrl);
 
-            xhr.onload = () => {
-                if (xhr.status === 200) {
-                    setUploadStatus("success");
-                } else {
-                    setUploadStatus("error");
-                    setErrorMessage(`Upload failed: ${xhr.statusText}`);
-                }
-            };
+                xhr.upload.onprogress = (event) => {
+                    if (event.lengthComputable) {
+                        setUploadProgress((event.loaded / event.total) * 100);
+                    }
+                };
 
-            xhr.onerror = () => {
-                setUploadStatus("error");
-                setErrorMessage("Upload failed due to network error.");
-            };
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        setUploadProgress(100);
+                        resolve();
+                    } else {
+                        reject(new Error(`Upload failed: ${xhr.statusText}`));
+                    }
+                };
 
-            xhr.send(formData);
+                xhr.onerror = () => reject(new Error("Upload failed due to network error"));
 
+                xhr.setRequestHeader("Content-Type", selectedFile.file.type);
+                xhr.send(selectedFile.file);
+            });
+
+            // 3️⃣ Create asset in Brandfolder
+            const createRes = await fetch("/api/brandfolder/upload?action=create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ objectUrl, fileName: selectedFile.file.name }),
+            });
+
+            if (!createRes.ok) throw new Error("Failed to create asset in Brandfolder");
+            await createRes.json();
+
+            setUploadStatus("success");
         } catch (err) {
+            console.error(err);
             setUploadStatus("error");
             setErrorMessage(err instanceof Error ? err.message : "Upload failed");
             setUploadProgress(0);
@@ -133,7 +151,7 @@ export default function MobileUploader() {
         const sizes = ["Bytes", "KB", "MB", "GB"];
         if (bytes === 0) return "0 Bytes";
         const i = Math.floor(Math.log(bytes) / Math.log(1024));
-        return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + " " + sizes[i];
+        return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
     };
 
     return (
@@ -176,11 +194,13 @@ export default function MobileUploader() {
                     ) : (
                         <Card className="bg-gray-900 border-gray-700">
                             <CardContent className="p-6 space-y-6">
+                                {/* User Info */}
                                 <div className="text-center">
                                     <p className="text-sm text-gray-400">Uploading as</p>
                                     <p className="text-lg font-semibold text-white">{user?.username}</p>
                                 </div>
 
+                                {/* File Selection / Preview */}
                                 {!selectedFile ? (
                                     <div
                                         className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-blue-500 hover:bg-gray-800/50 transition-all duration-300 cursor-pointer group"
@@ -239,6 +259,7 @@ export default function MobileUploader() {
                                     </div>
                                 )}
 
+                                {/* Upload Progress */}
                                 {uploadStatus === "uploading" && (
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-center">
@@ -250,6 +271,7 @@ export default function MobileUploader() {
                                     </div>
                                 )}
 
+                                {/* Error Message */}
                                 {errorMessage && (
                                     <div className="p-3 bg-red-900/20 border border-red-800 rounded-lg flex items-center gap-2">
                                         <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
