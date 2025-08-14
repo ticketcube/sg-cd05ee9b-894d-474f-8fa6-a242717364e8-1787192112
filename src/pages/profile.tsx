@@ -320,7 +320,7 @@ export default function ProfilePage() {
                         <Trophy className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-white">Level {level} Achiever</h3>
+                        <h3 className="font-semibold text-white">September {level} Leaderboard</h3>
                         <p className="text-sm text-gray-400">
                           Reached level {level} with {total_points} total points
                         </p>
