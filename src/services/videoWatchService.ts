@@ -237,7 +237,7 @@ export class VideoWatchService {
 
       videoViews?.forEach(view => {
         try {
-          const metadata = JSON.parse(view.metadata || "{}");
+          const metadata = typeof view.metadata === 'string' ? JSON.parse(view.metadata) : view.metadata || {};
           if (metadata.week_identifier && metadata.meets_watch_time) {
             weeksWithProgress.add(String(metadata.week_identifier));
             totalVideosWatched++;

@@ -115,7 +115,7 @@ export class WeeklyVotingService {
       // Parse metadata to extract watched artist UUIDs
       userEngagements?.forEach(engagement => {
         try {
-          const metadata = JSON.parse(engagement.metadata || "{}");
+          const metadata = typeof engagement.metadata === 'string' ? JSON.parse(engagement.metadata) : engagement.metadata || {};
           if (metadata.artist_uuid && metadata.week_identifier === weekIdentifier) {
             watchedVideos.add(metadata.artist_uuid);
           }
