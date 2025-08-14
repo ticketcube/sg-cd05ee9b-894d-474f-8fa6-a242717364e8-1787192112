@@ -175,6 +175,26 @@ export class PointsConfigService {
 
           return !artistEngagement || artistEngagement.length === 0;
 
+        case 'once_per_artist_per_week':
+          // Check if user has earned points for this artist in this specific week
+          if (!artistUuid || !weekIdentifier) return false;
+          
+          const { data: artistWeekEngagement, error: artistWeekError } = await supabase
+            .from("user_achievements")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("achievement_type", actionName)
+            .like("metadata", `%${artistUuid}%`)
+            .like("metadata", `%${weekIdentifier}%`)
+            .limit(1);
+
+          if (artistWeekError) {
+            console.error("Error checking artist per week eligibility:", artistWeekError);
+            return false;
+          }
+
+          return !artistWeekEngagement || artistWeekEngagement.length === 0;
+
         case 'once_per_week':
           // Check if user has earned points for this action this week
           if (!weekIdentifier) return false;
