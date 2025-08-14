@@ -1,226 +1,277 @@
-// src/pages/api/brandfolder/upload.ts
 
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { SignJWT, jwtVerify } from 'jose';
-import { Readable } from 'stream';
-import { request as httpsRequest } from 'https';
-import { URL } from 'url';
+import { NextApiRequest, NextApiResponse } from "next";
+import formidable from "formidable";
+import fs from "fs";
 
+// Disable default body parser for file uploads
 export const config = {
-    api: { bodyParser: false }, // important for streaming binary chunks
+  api: {
+    bodyParser: false,
+  },
 };
 
-// === ENVIRONMENT VARS ===
-const BF_API_KEY = process.env.BF_API_KEY!;
-const DEFAULT_BRANDFOLDER_ID = process.env.BRANDFOLDER_ID!;
-const DEFAULT_SECTION_ID = process.env.SECTION_ID!;
-const JWT_SECRET = new TextEncoder().encode(process.env.BRANDFOLDER_JWT_SECRET!);
-const MAX_FILE_SIZE = 15 * 1024 * 1024 * 1024; // 15 GB
+// Brandfolder configuration
+const BRANDFOLDER_ID = "t5mbs6jqqqbqhw8mmqmmn945";
+const SECTION_ID = "b73rkvfrhqbbt9hfq93bsw";
 
-// === TYPES ===
-interface UploadJWTData {
-    v: number;
-    sessionUrl: string;
-    objectUrl: string;
-    fileName: string;
-    contentType: string;
+interface BrandfolderAssetResponse {
+  data: {
+    id: string;
+    attributes: {
+      name: string;
+      url: string;
+      cdn_url: string;
+    };
+  };
 }
 
-// === UTILS ===
-async function signUploadJWT(data: UploadJWTData) {
-    return await new SignJWT(data as any)
-        .setProtectedHeader({ alg: 'HS256' })
-        .setIssuedAt()
-        .setExpirationTime('24h')
-        .sign(JWT_SECRET);
-}
-
-async function verifyUploadJWT(token: string): Promise<UploadJWTData> {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as any as UploadJWTData;
-}
-
-async function json(res: NextApiResponse, status: number, data: any) {
-    res.status(status).json(data);
-}
-
-// === MAIN HANDLER ===
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const action = req.query.action as string;
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
+  console.log("=== BRANDFOLDER UPLOAD API CALLED ===");
+
+  try {
+    const form = formidable({
+      maxFileSize: 100 * 1024 * 1024, // 100MB limit
+    });
+
+    const [fields, files] = await form.parse(req);
+    
+    const file = Array.isArray(files.file) ? files.file[0] : files.file;
+    const userName = Array.isArray(fields.userName) ? fields.userName[0] : fields.userName;
+    const fileName = Array.isArray(fields.fileName) ? fields.fileName[0] : fields.fileName;
+    const fileType = Array.isArray(fields.fileType) ? fields.fileType[0] : fields.fileType;
+    const description = Array.isArray(fields.description) ? fields.description[0] : fields.description;
+
+    console.log("📋 Request details:", { 
+      userName, 
+      fileName, 
+      fileType, 
+      hasFile: !!file,
+      fileSize: file?.size,
+      description: description ? "provided" : "none"
+    });
+
+    if (!file || !userName || !fileName) {
+      console.error("❌ Missing required fields:", { 
+        file: !!file, 
+        userName: !!userName, 
+        fileName: !!fileName 
+      });
+      return res.status(400).json({ error: "Missing required fields: file, userName, or fileName" });
+    }
+
+    // Get Brandfolder API key from environment
+    const brandfolderApiKey = process.env.BF_API_KEY;
+    console.log("🔑 API Key check:", { 
+      hasApiKey: !!brandfolderApiKey,
+      keyPrefix: brandfolderApiKey?.substring(0, 10) + "..." || "MISSING"
+    });
+    
+    if (!brandfolderApiKey) {
+      console.error("❌ Brandfolder API key not configured");
+      return res.status(500).json({ error: "Brandfolder API key not configured" });
+    }
+
+    // Read the file
+    const fileBuffer = fs.readFileSync(file.filepath);
+    console.log("📁 File processed:", { 
+      originalName: fileName, 
+      size: fileBuffer.length,
+      brandfolderID: BRANDFOLDER_ID,
+      sectionID: SECTION_ID
+    });
+
+    // Step 1: Get upload URL from Brandfolder
+    console.log("🚀 Step 1: Getting upload URL from Brandfolder...");
+    const uploadReq = await fetch("https://brandfolder.com/api/v4/upload_requests", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${brandfolderApiKey}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      }
+    });
+
+    console.log("📡 Upload request response:", {
+      status: uploadReq.status,
+      statusText: uploadReq.statusText,
+      headers: Object.fromEntries(uploadReq.headers.entries())
+    });
+
+    if (!uploadReq.ok) {
+      const errorText = await uploadReq.text();
+      console.error("❌ Failed to get upload URL:", {
+        status: uploadReq.status,
+        statusText: uploadReq.statusText,
+        errorBody: errorText.substring(0, 500)
+      });
+      return res.status(uploadReq.status).json({ 
+        error: `Failed to get upload URL (${uploadReq.status}): ${uploadReq.statusText}`,
+        details: errorText.substring(0, 200)
+      });
+    }
+
+    const uploadData = await uploadReq.json();
+    console.log("✅ Step 1 complete: Got upload URL");
+    console.log("📋 Upload response data:", JSON.stringify(uploadData, null, 2));
+
+    // Fix: The response structure is different - it's directly upload_url and object_url, not nested in data.attributes
+    const uploadUrl = uploadData.upload_url;
+    const objectUrl = uploadData.object_url;
+
+    if (!uploadUrl || !objectUrl) {
+      console.error("❌ Missing upload URLs in response:", { 
+        hasUploadUrl: !!uploadUrl, 
+        hasObjectUrl: !!objectUrl,
+        responseKeys: Object.keys(uploadData)
+      });
+      return res.status(500).json({ 
+        error: "Invalid response from Brandfolder - missing upload URLs",
+        responseData: uploadData
+      });
+    }
+
+    // Step 2: Upload file to Brandfolder's storage
+    console.log("🚀 Step 2: Uploading file to Brandfolder storage...");
+    const storageUpload = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { 
+        "Content-Type": fileType || 'application/octet-stream'
+      },
+      body: fileBuffer
+    });
+
+    console.log("📡 Storage upload response:", {
+      status: storageUpload.status,
+      statusText: storageUpload.statusText
+    });
+
+    if (!storageUpload.ok) {
+      const errorText = await storageUpload.text();
+      console.error("❌ Failed to upload to storage:", {
+        status: storageUpload.status,
+        statusText: storageUpload.statusText,
+        errorBody: errorText.substring(0, 500)
+      });
+      return res.status(storageUpload.status).json({ 
+        error: `Failed to upload file to storage (${storageUpload.status}): ${storageUpload.statusText}`,
+        details: errorText.substring(0, 200)
+      });
+    }
+
+    console.log("✅ Step 2 complete: File uploaded to storage");
+
+    // Step 3: Create Asset in Brandfolder
+    console.log("🚀 Step 3: Creating asset record in Brandfolder...");
+    const finalDescription = description 
+      ? `${description} (Uploaded by ${userName} via OTWChart)`
+      : `User-submitted content by ${userName} via OTWChart`;
+
+    // Fix: Use the exact structure from the user's example
+    const assetPayload = {
+      data: {
+        attributes: [
+          {
+            name: `${userName} Upload - ${fileName}`,
+            description: finalDescription,
+            attachments: [
+              {
+                url: objectUrl,
+                filename: fileName
+              }
+            ]
+          }
+        ]
+      },
+      section_key: SECTION_ID  // Changed from section_id to section_key
+    };
+
+    console.log("📋 Asset creation payload:", JSON.stringify(assetPayload, null, 2));
+
+    const createAsset = await fetch(
+      `https://brandfolder.com/api/v4/brandfolders/${BRANDFOLDER_ID}/assets`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${brandfolderApiKey}`
+        },
+        body: JSON.stringify(assetPayload)
+      }
+    );
+
+    console.log("📡 Asset creation response:", {
+      status: createAsset.status,
+      statusText: createAsset.statusText,
+      headers: Object.fromEntries(createAsset.headers.entries())
+    });
+
+    if (!createAsset.ok) {
+      const errorText = await createAsset.text();
+      console.error("❌ Failed to create asset:", {
+        status: createAsset.status,
+        statusText: createAsset.statusText,
+        errorBody: errorText.substring(0, 1000)
+      });
+      
+      let errorMessage = "Failed to create asset in Brandfolder";
+      try {
+        const errorJson = JSON.parse(errorText);
+        console.log("📋 Parsed error JSON:", errorJson);
+        if (errorJson.errors && Array.isArray(errorJson.errors)) {
+          errorMessage = errorJson.errors.map((err: any) => err.detail || err.title || 'Unknown error').join(', ');
+        } else {
+          errorMessage = errorJson.message || errorJson.error || errorMessage;
+        }
+      } catch (e) {
+        console.log("⚠️ Could not parse error as JSON, using text response");
+        errorMessage = `Brandfolder error (${createAsset.status}): ${createAsset.statusText}`;
+      }
+      
+      return res.status(createAsset.status).json({ error: errorMessage });
+    }
+
+    const assetResult = await createAsset.json();
+    console.log("✅ Step 3 complete: Asset created successfully");
+    console.log("📋 Asset result:", {
+      assetId: assetResult.data?.id, 
+      fileName: fileName,
+      assetUrl: assetResult.data?.attributes?.cdn_url 
+    });
+
+    // Clean up temporary file
     try {
-        if (req.method === 'POST' && action === 'initiate') {
-            return await initiateUpload(req, res);
-        }
-        if (req.method === 'PUT' && action === 'chunk') {
-            return await uploadChunk(req, res);
-        }
-        if (req.method === 'POST' && action === 'status') {
-            return await getStatus(req, res);
-        }
-        if (req.method === 'POST' && action === 'complete') {
-            return await completeUpload(req, res);
-        }
-
-        return json(res, 400, { error: 'Invalid route or method' });
-    } catch (err: any) {
-        console.error(err);
-        return json(res, 500, { error: err.message || 'Internal server error' });
-    }
-}
-
-// === STEP 1: INITIATE ===
-async function initiateUpload(req: NextApiRequest, res: NextApiResponse) {
-    const { fileName, contentType, brandfolderId, sectionId } = req.body || {};
-
-    if (!fileName || !contentType) {
-        return json(res, 400, { error: 'Missing fileName or contentType' });
+      fs.unlinkSync(file.filepath);
+      console.log("🗑️ Cleaned up temporary file");
+    } catch (cleanupError) {
+      console.warn("⚠️ Failed to clean up temporary file:", cleanupError);
     }
 
-    // 1) Get upload_request from Brandfolder
-    const bfId = brandfolderId || DEFAULT_BRANDFOLDER_ID;
-    const secId = sectionId || DEFAULT_SECTION_ID;
-
-    const uploadReqResp = await fetch('https://brandfolder.com/api/v4/upload_requests', {
-        headers: { Authorization: `Bearer ${BF_API_KEY}` },
-    });
-    if (!uploadReqResp.ok) {
-        throw new Error(`Brandfolder upload_requests failed: ${await uploadReqResp.text()}`);
-    }
-    const uploadReqData = await uploadReqResp.json();
-    const { resumable_upload_url, object_url } = uploadReqData;
-
-    // 2) Initiate GCS session
-    const gcsResp = await fetch(resumable_upload_url, {
-        method: 'POST',
-        headers: {
-            'x-goog-resumable': 'start',
-            'Content-Type': contentType,
-        },
-    });
-    if (!gcsResp.ok) {
-        throw new Error(`GCS start failed: ${await gcsResp.text()}`);
-    }
-    const sessionUrl = gcsResp.headers.get('Location');
-    if (!sessionUrl) throw new Error('No session URL returned from GCS');
-
-    // 3) Return signed uploadId
-    const uploadId = await signUploadJWT({
-        v: 1,
-        sessionUrl,
-        objectUrl: object_url,
-        fileName,
-        contentType,
+    console.log("🎉 UPLOAD COMPLETED SUCCESSFULLY!");
+    return res.status(200).json({
+      success: true,
+      message: "File uploaded successfully to Brandfolder",
+      asset: assetResult,
+      assetId: assetResult.data?.id,
+      fileName: fileName,
+      assetName: assetResult.data?.attributes?.name,
+      assetUrl: assetResult.data?.attributes?.cdn_url,
+      brandfolderInfo: {
+        brandfolderId: BRANDFOLDER_ID,
+        sectionId: SECTION_ID
+      }
     });
 
-    return json(res, 200, {
-        uploadId,
-        brandfolderId: bfId,
-        sectionId: secId,
+  } catch (error) {
+    console.error("💥 UPLOAD ERROR:", error);
+    console.error("Stack trace:", error instanceof Error ? error.stack : "No stack trace");
+    return res.status(500).json({ 
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : "Unknown error"
     });
-}
-
-// === STEP 2: CHUNK UPLOAD ===
-async function uploadChunk(req: NextApiRequest, res: NextApiResponse) {
-    const uploadId = req.query.uploadId as string;
-    if (!uploadId) return json(res, 400, { error: 'Missing uploadId' });
-
-    const { sessionUrl, contentType } = await verifyUploadJWT(uploadId);
-
-    const start = parseInt(req.headers['x-upload-offset-start'] as string, 10);
-    const end = parseInt(req.headers['x-upload-offset-end'] as string, 10);
-    const total = parseInt(req.headers['x-upload-total'] as string, 10);
-
-    if (!Number.isFinite(start) || !Number.isFinite(end) || !Number.isFinite(total)) {
-        return json(res, 400, { error: 'Missing or invalid offset headers' });
-    }
-    if (total > MAX_FILE_SIZE) {
-        return json(res, 400, { error: 'File too large (max 15GB)' });
-    }
-
-    // Stream directly to GCS
-    const gcsUrl = new URL(sessionUrl);
-    const options = {
-        method: 'PUT',
-        headers: {
-            'Content-Type': contentType,
-            'Content-Length': String(end - start + 1),
-            'Content-Range': `bytes ${start}-${end}/${total}`,
-        },
-    };
-
-    const gcsReq = httpsRequest(gcsUrl, options as any, (gcsRes) => {
-        res.status(gcsRes.statusCode || 500);
-        gcsRes.pipe(res);
-    });
-
-    req.pipe(gcsReq);
-}
-
-// === STEP 3: STATUS PROBE ===
-async function getStatus(req: NextApiRequest, res: NextApiResponse) {
-    const { uploadId, total } = req.body || {};
-    if (!uploadId || !total) return json(res, 400, { error: 'Missing uploadId or total' });
-
-    const { sessionUrl, contentType } = await verifyUploadJWT(uploadId);
-
-    const gcsUrl = new URL(sessionUrl);
-    const options = {
-        method: 'PUT',
-        headers: {
-            'Content-Type': contentType,
-            'Content-Length': '0',
-            'Content-Range': `bytes */${total}`,
-        },
-    };
-
-    const gcsReq = httpsRequest(gcsUrl, options as any, (gcsRes) => {
-        const range = gcsRes.headers['range'] || null;
-        const complete = (gcsRes.statusCode === 200 || gcsRes.statusCode === 201);
-        json(res, 200, {
-            uploaded: range ? parseInt(range.split('-')[1], 10) + 1 : 0,
-            complete,
-        });
-    });
-
-    gcsReq.end();
-}
-
-// === STEP 4: COMPLETE UPLOAD ===
-async function completeUpload(req: NextApiRequest, res: NextApiResponse) {
-    const { uploadId, brandfolderId, sectionId, name, description, labels, customFields } = req.body || {};
-    if (!uploadId || !name) return json(res, 400, { error: 'Missing uploadId or name' });
-
-    const { objectUrl, fileName, contentType } = await verifyUploadJWT(uploadId);
-
-    const bfId = brandfolderId || DEFAULT_BRANDFOLDER_ID;
-    const secId = sectionId || DEFAULT_SECTION_ID;
-
-    const payload: any = {
-        name,
-        attachments: [{
-            url: objectUrl,
-            filename: fileName,
-            content_type: contentType,
-        }],
-    };
-    if (secId) payload.section_id = secId;
-    if (description) payload.description = description;
-    if (labels) payload.labels = labels;
-    if (customFields) payload.custom_fields = customFields;
-
-    const resp = await fetch(`https://brandfolder.com/api/v4/brandfolders/${bfId}/assets`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${BF_API_KEY}`,
-        },
-        body: JSON.stringify(payload),
-    });
-
-    if (!resp.ok) {
-        throw new Error(`Brandfolder asset creation failed: ${await resp.text()}`);
-    }
-    const data = await resp.json();
-    return json(res, 200, data);
+  }
 }
