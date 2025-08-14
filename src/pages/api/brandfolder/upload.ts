@@ -10,22 +10,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-        if (req.method === "POST") {
-            // Get form data from frontend
-            const { fileName, fileType, userName } = req.body;
-            const file = req.body.file; // Must be sent as a blob / base64 string from frontend
+        const action = req.query.action;
 
-            if (!file || !fileName || !fileType) {
-                return res.status(400).json({ error: "Missing file or file info" });
-            }
+        if (req.method === "POST" && action === "start") {
+            const { fileType } = req.body;
+            if (!fileType) return res.status(400).json({ error: "Missing fileType" });
 
             // 1️⃣ Get upload request from Brandfolder
             const uploadReq = await fetch("https://brandfolder.com/api/v4/upload_requests", {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${brandfolderApiKey}`,
-                    Accept: "application/json"
-                }
+                    Accept: "application/json",
+                },
             });
             const uploadData = await uploadReq.json();
             const resumableInitUrl = uploadData.upload_url;
@@ -36,40 +33,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 method: "POST",
                 headers: {
                     "x-goog-resumable": "start",
-                    "Content-Type": fileType
-                }
+                    "Content-Type": fileType,
+                },
             });
-
             const resumableUploadUrl = startResumable.headers.get("location");
+
             if (!resumableUploadUrl) {
                 return res.status(500).json({ error: "Failed to start resumable upload" });
             }
 
-            // 3️⃣ Upload file in one request (suitable for <=100MB)
-            const uploadResponse = await fetch(resumableUploadUrl, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": fileType,
-                    "Content-Length": `${file.length}`
-                },
-                body: file
+            return res.status(200).json({
+                resumableUploadUrl,
+                objectUrl,
+                brandfolderId: BRANDFOLDER_ID,
+                sectionId: SECTION_ID,
             });
+        }
 
-            if (!uploadResponse.ok) {
-                return res.status(500).json({ error: "Failed to upload file", details: await uploadResponse.text() });
+        if (req.method === "POST" && action === "create") {
+            const { objectUrl, fileName } = req.body;
+            if (!objectUrl || !fileName) {
+                return res.status(400).json({ error: "Missing objectUrl or fileName" });
             }
 
-            // 4️⃣ Create the asset in Brandfolder
+            // 3️⃣ Create the asset in Brandfolder
             const assetPayload = {
                 data: {
                     attributes: [
                         {
                             name: `Upload - ${fileName}`,
-                            attachments: [{ url: objectUrl, filename: fileName }]
-                        }
-                    ]
+                            attachments: [{ url: objectUrl, filename: fileName }],
+                        },
+                    ],
                 },
-                section_key: SECTION_ID
+                section_key: SECTION_ID,
             };
 
             const createAsset = await fetch(
@@ -79,17 +76,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     headers: {
                         "Content-Type": "application/json",
                         Accept: "application/json",
-                        Authorization: `Bearer ${brandfolderApiKey}`
+                        Authorization: `Bearer ${brandfolderApiKey}`,
                     },
-                    body: JSON.stringify(assetPayload)
+                    body: JSON.stringify(assetPayload),
                 }
             );
 
             const assetResult = await createAsset.json();
             return res.status(200).json({ success: true, asset: assetResult });
-        } else {
-            return res.status(405).json({ error: "Method not allowed" });
         }
+
+        return res.status(400).json({ error: "Invalid action or method" });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: "Server error", details: err });
