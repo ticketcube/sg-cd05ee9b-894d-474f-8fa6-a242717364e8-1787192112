@@ -41,8 +41,7 @@ export class VideoWatchService {
         .select("metadata, points_earned")
         .eq("user_id", userId)
         .eq("achievement_type", "video_view")
-        .contains("metadata", { artist_uuid: artistUuid, week_identifier: weekIdentifier })
-        .maybeSingle();
+        .contains("metadata", { artist_uuid: artistUuid, week_identifier: weekIdentifier });
 
       if (error && error.code !== "PGRST116") {
         console.error("Error checking video watch status:", error);
