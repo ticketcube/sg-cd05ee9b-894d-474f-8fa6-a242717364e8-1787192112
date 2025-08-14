@@ -15,10 +15,19 @@ export interface UserProfile {
   updated_at?: string;
 }
 
+export type EngagementType = 
+  | "video_view" 
+  | "vote_submission" 
+  | "ranking_submission" 
+  | "video_completion_bonus" 
+  | "daily_login" 
+  | "weekly_streak" 
+  | "referral_bonus";
+
 export interface UserEngagement {
   id: number;
   user_id: number;
-  engagement_type: "video_view" | "vote_submission" | "ranking_submission";
+  engagement_type: EngagementType;
   points_earned?: number | null;
   week_identifier?: string | null;
   artist_uuid?: string | null;
@@ -305,7 +314,7 @@ export class UserProfileService {
 
   async recordEngagement(
     userId: number,
-      engagementType: "video_view" | "vote_submission" | "ranking_submission" | "video_completion_bonus" | "daily_login" | "weekly_streak" | "referral_bonus",
+    engagementType: EngagementType,
     pointsEarned: number,
     weekIdentifier: string,
     artistUuid?: string,
