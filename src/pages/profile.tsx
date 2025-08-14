@@ -255,7 +255,7 @@ export default function ProfilePage() {
                 Weekly Activity
               </TabsTrigger>
               <TabsTrigger value="achievements" className="text-white data-[state=active]:bg-blue-600">
-                Achievements
+                REWARDS
               </TabsTrigger>
             </TabsList>
 
@@ -309,7 +309,7 @@ export default function ProfilePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-white">
                     <Award className="w-5 h-5" />
-                    Achievements & Milestones
+                    Rewards & Leaderboard
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
