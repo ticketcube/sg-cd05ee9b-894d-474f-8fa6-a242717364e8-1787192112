@@ -105,7 +105,7 @@ export class WeeklyVotingService {
         .select("metadata")
         .eq("user_id", userId)
         .eq("achievement_type", "video_view")
-        .like("metadata", `%${weekIdentifier}%`);
+          .like("metadata::text", `%${weekIdentifier}%`);
 
       if (engagementError) {
         console.error("Error checking user video engagements:", engagementError);
