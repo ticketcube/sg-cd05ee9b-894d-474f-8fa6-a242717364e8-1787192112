@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ interface WeeklyArtistPopupProps {
   showGenre?: boolean;
   showBio?: boolean;
   showVibes?: boolean;
+  weekIdentifier?: string;
 }
 
 interface ArtistRating {
@@ -30,11 +32,12 @@ export function WeeklyArtistPopup({
   isOpen, 
   onClose,
   onFinishRating,
+  weekIdentifier,
   showGenre = true,
   showBio = true,
   showVibes = false
 }: WeeklyArtistPopupProps) {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [watchTimer, setWatchTimer] = useState(0);
   const [isWatching, setIsWatching] = useState(false);
@@ -42,19 +45,19 @@ export function WeeklyArtistPopup({
   const [showPointsAnimation, setShowPointsAnimation] = useState(false);
   
   // Rating states
-  const [ticketInterest, setTicketInterest] = useState([0]); // Slider value array
-  const [shareInterest, setShareInterest] = useState([0]); // Slider value array
+  const [ticketInterest, setTicketInterest] = useState([50]); // Use 50 as neutral center for 0-100 slider
+  const [shareInterest, setShareInterest] = useState([50]); // Use 50 as neutral center for 0-100 slider
   const [hasRated, setHasRated] = useState(false);
 
   const awardWatchPoints = async () => {
-    if (!user || pointsAwarded || !artist) return;
+    if (!profile || pointsAwarded || !artist || !weekIdentifier) return;
     
     try {
       await userProfileService.recordEngagement(
-        user.id, 
+        profile.id, // Use numeric profile ID
         "video_view", 
         10, 
-        "weekly-discovery", // You might want to pass the actual week identifier here
+        weekIdentifier,
         artist.uuid
       );
       setPointsAwarded(true);
@@ -72,14 +75,14 @@ export function WeeklyArtistPopup({
       setIsWatching(false);
       setPointsAwarded(false);
       setShowPointsAnimation(false);
-      setTicketInterest([0]);
-      setShareInterest([0]);
+      setTicketInterest([50]);
+      setShareInterest([50]);
       setHasRated(false);
     }
   }, [artist]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | undefined;
     
     if (isWatching && !pointsAwarded) {
       interval = setInterval(() => {

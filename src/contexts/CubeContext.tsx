@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from "react"
 import { ticketCubeService } from "@/services/ticketCubeService"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from './AuthContext';
 
+// Define types for Cube data
 export interface CubeFace {
   id: string
   number: number // 1-6
@@ -48,46 +49,19 @@ interface CubeContextType {
 
 const CubeContext = createContext<CubeContextType | undefined>(undefined)
 
-interface CubeProviderProps {
-  children: ReactNode
-}
+export function CubeProvider({ children }: { children: ReactNode }) {
+  const [cubeData, setCubeData] = useState<CubeData | null>(null);
+  const [isPreviewMode, setPreviewMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { user } = useAuth(); // Removed supabaseUser
 
-export function CubeProvider({ children }: CubeProviderProps) {
-  const [cubeData, setCubeDataState] = useState<CubeData | null>(null)
-  const [isPreviewMode, setIsPreviewMode] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const { user, supabaseUser } = useAuth()
-
-  const setCubeData = useCallback(async (data: CubeData) => {
-    setCubeDataState(data)
-  }, [])
-
-  const updateCubeFace = useCallback(async (faceNumber: number, faceUpdate: Partial<CubeFace>) => {
-    if (!cubeData || cubeData.type !== "standard") return
-
-    const updatedFaces = cubeData.faces.map(face => 
-      face.number === faceNumber 
-        ? { ...face, ...faceUpdate }
-        : face
-    )
-
-    setCubeDataState({
-      ...cubeData,
-      faces: updatedFaces
-    })
-  }, [cubeData])
-
-  const setPreviewMode = useCallback((preview: boolean) => {
-    setIsPreviewMode(preview)
-  }, [])
-
-  const resetCube = useCallback(() => {
-    setCubeDataState(null)
-    setIsPreviewMode(false)
-  }, [])
+  const resetCube = () => {
+    setCubeData(null);
+  }
 
   const saveCube = useCallback(async (): Promise<string | null> => {
-    if (!cubeData || !supabaseUser) {
+    if (!cubeData || !user) {
       throw new Error("User must be logged in to save cubes")
     }
     
@@ -99,9 +73,9 @@ export function CubeProvider({ children }: CubeProviderProps) {
         // Upload images for faces that have them
         const facesWithUploadedImages = await Promise.all(
           cubeData.faces.map(async (face) => {
-            if (face.image.file && supabaseUser) {
+            if (face.image.file && user) {
               try {
-                const imageUrl = await ticketCubeService.uploadImage(face.image.file, supabaseUser.id)
+                const imageUrl = await ticketCubeService.uploadImage(face.image.file, user.id)
                 return {
                   face_number: face.number,
                   content_type: face.contentType,
@@ -187,7 +161,7 @@ export function CubeProvider({ children }: CubeProviderProps) {
       }
 
       const savedCube = await ticketCubeService.createTicketCube(
-        supabaseUser.id, // Use the Supabase user ID directly
+        user.id, // Use the Supabase user ID directly
         cubeDataToSave
       )
 
@@ -198,16 +172,16 @@ export function CubeProvider({ children }: CubeProviderProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [cubeData, supabaseUser])
+  }, [cubeData, user])
 
   const loadCube = useCallback(async (cubeId: string) => {
-    if (!supabaseUser) {
+    if (!user) {
       throw new Error("User must be logged in to load cubes")
     }
 
     setIsLoading(true)
     try {
-      const cubeResult = await ticketCubeService.getTicketCube(cubeId, supabaseUser.id)
+      const cubeResult = await ticketCubeService.getTicketCube(cubeId, user.id)
       
       if (!cubeResult) {
         throw new Error("Cube not found or access denied")
@@ -227,7 +201,7 @@ export function CubeProvider({ children }: CubeProviderProps) {
           }
         }))
 
-        setCubeDataState({
+        setCubeData({
           type: "standard",
           title: cube.title,
           description: cube.description,
@@ -235,7 +209,7 @@ export function CubeProvider({ children }: CubeProviderProps) {
         })
       } else {
         // SpecTix cube - reconstruct from stored data
-        setCubeDataState({
+        setCubeData({
           type: "spectix",
           eventName: cube.event_name || "",
           venue: cube.venue || "",
@@ -246,14 +220,14 @@ export function CubeProvider({ children }: CubeProviderProps) {
         })
       }
 
-      setIsPreviewMode(true)
+      setPreviewMode(true)
     } catch (error) {
       console.error("Error loading cube:", error)
       throw error
     } finally {
       setIsLoading(false)
     }
-  }, [supabaseUser])
+  }, [user])
 
   const value: CubeContextType = {
     cubeData,

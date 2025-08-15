@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,10 +9,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users } from "lucide-react";
 import ArtistVideoPlayer from "./ArtistVideoPlayer";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
-import userProfileService from "@/services/userProfileService";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Artist } from "@/types/artists";
-import { supabase } from "@/utils/supabase";
 
 interface WeeklyArtistRatingPopupProps {
   artist: Artist | null;
@@ -21,8 +20,8 @@ interface WeeklyArtistRatingPopupProps {
   weekIdentifier?: string;
 }
 
-export default function WeeklyArtistRatingPopup({ artist, weekIdentifier, onClose, onVoteSuccess }: WeeklyArtistRatingPopupProps) {
-  const { user, profile } = useAuth();
+export default function WeeklyArtistRatingPopup({ artist, isOpen, weekIdentifier, onClose, onRatingComplete }: WeeklyArtistRatingPopupProps) {
+  const { profile } = useAuth();
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [watchTimer, setWatchTimer] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -31,80 +30,42 @@ export default function WeeklyArtistRatingPopup({ artist, weekIdentifier, onClos
   const [ticketInterest, setTicketInterest] = useState([50]);
   const [shareInterest, setShareInterest] = useState([50]);
   const [showRatings, setShowRatings] = useState(false);
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [hasVoted, setHasVoted] = useState(false);
-
-  // Get user profile on component mount
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      if (user?.auth_id) {
-        try {
-          const profile = await userProfileService.getUserProfileByAuthId(user.auth_id);
-          setUserProfile(profile);
-          console.log("User profile loaded:", profile);
-        } catch (error) {
-          console.error("Error loading user profile:", error);
-        }
-      }
-    };
-
-    if (user?.auth_id) {
-      loadUserProfile();
-    }
-  }, [user?.auth_id]);
-
-  useEffect(() => {
-    if (profile) {
-      // Check if user has already voted this week
-      const checkExistingVote = async () => {
-        const { data } = await supabase
-          .from("weekly_votes")
-          .select("*")
-          .eq("user_id", profile.id)
-          .eq("week_identifier", weekIdentifier)
-          .eq("vote_type", "quadrant");
-        
-        if (data && data.length > 0) {
-          setHasVoted(true);
-        }
-      };
-      checkExistingVote();
-    }
-  }, [profile, weekIdentifier]);
-
+  
   const awardWatchPoints = useCallback(async () => {
-    if (!pointsAwarded && artist && userProfile && weekIdentifier) {
+    if (!pointsAwarded && artist && profile && weekIdentifier) {
       try {
         console.log("Recording video view for points...");
-        console.log("Using numeric user ID:", userProfile.id);
+        console.log("Using numeric user ID:", profile.id);
         
         const result = await weeklyVotingService.recordVideoView({
-          userId: userProfile.id, // Use numeric profile ID from userProfile
+          userId: profile.id, // Use numeric profile ID
           artistUuid: artist.uuid,
           weekIdentifier: weekIdentifier,
           watchTimeSeconds: watchTimer
         });
         
         console.log("Video view recorded:", result);
-        setPointsAwarded(true);
-        setPointsEarned(result.pointsEarned);
+        if (result.eligible) {
+            setPointsAwarded(true);
+            setPointsEarned(result.pointsEarned);
         
-        // Check for completion bonus after this video view
-        if (result.pointsEarned > 0) {
-          const completionBonus = await weeklyVotingService.checkVideoCompletionBonus(userProfile.id, weekIdentifier);
-          if (completionBonus.pointsEarned > 0) {
-            console.log("Completion bonus earned:", completionBonus.pointsEarned);
-            setPointsEarned(prev => prev + completionBonus.pointsEarned);
-          }
+            // Check for completion bonus after this video view
+            if (result.pointsEarned > 0) {
+              const completionBonus = await weeklyVotingService.checkVideoCompletionBonus(profile.id, weekIdentifier);
+              if (completionBonus.pointsEarned > 0) {
+                console.log("Completion bonus earned:", completionBonus.pointsEarned);
+                setPointsEarned(prev => prev + completionBonus.pointsEarned);
+              }
+            }
         }
       } catch (error) {
         console.error("Error awarding watch points:", error);
       }
     }
-  }, [pointsAwarded, artist, userProfile, weekIdentifier, watchTimer]);
+  }, [pointsAwarded, artist, profile, weekIdentifier, watchTimer]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
+    let interval: NodeJS.Timeout | undefined;
     
     if (isVideoPlaying && watchTimer < 15) {
       interval = setInterval(() => {
@@ -214,7 +175,6 @@ export default function WeeklyArtistRatingPopup({ artist, weekIdentifier, onClos
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         className="max-w-4xl w-full p-0 bg-black text-white border-gray-800"
-        hideCloseButton
       >
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Video Section */}
