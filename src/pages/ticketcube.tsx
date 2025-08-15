@@ -23,6 +23,16 @@ interface FaceFormData {
 }
 
 export default function TicketCubePage() {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <div>Please log in to access this page.</div>;
+  }
+
   const { cubeData, setCubeData, updateCubeFace, setPreviewMode, isPreviewMode, resetCube, saveCube, isLoading } = useCube()
   const { isAuthenticated, loading: authLoading } = useAuth()
   

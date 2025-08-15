@@ -13,33 +13,10 @@ import PromotionPopup from "@/components/PromotionPopup";
 const showDiscoveryCharts = false;
 
 export default function HomePage() {
-  const router = useRouter();
-  const { isAuthenticated, user, logout, loading } = useAuth();
-  const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
-  const [showPromotionAuthDialog, setShowPromotionAuthDialog] = useState(false);
-
-  const handleNavigation = (path: string) => {
-    if (!isAuthenticated) {
-      setAuthDialogOpen(true);
-    } else {
-      router.push(path);
-    }
-  };
-
-  const handleLogout = () => {
-    logout();
-  };
-
-  const handleRegisterClick = () => {
-    setShowPromotionAuthDialog(true);
-  };
-
-  const handleAuthClose = () => {
-    setShowPromotionAuthDialog(false);
-  };
-
+  const { user, profile } = useAuth();
+  
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-start mb-8 md:mb-12">
@@ -53,36 +30,15 @@ export default function HomePage() {
                 className="h-8 md:h-10 w-auto"
               />
             </div>
-           
           </div>
           {/* Mobile-responsive user section */}
           <div className="flex flex-col items-end gap-2 md:flex-row md:items-center md:gap-4">
-            {!loading && (
-              <>
-                {isAuthenticated && user ? (
-                  <>
-                  
-                    <Link href="/profile" passHref>
-                      <Button variant="ghost" className="flex items-center gap-2 text-sm md:text-base">
-                        <User className="w-4 h-4 md:w-5 md:h-5" />
-                        <span className="truncate max-w-[100px] md:max-w-none">{user.username}</span>
-                      </Button>
-                    </Link>
-                    <Button 
-                      onClick={handleLogout} 
-                      size="sm" 
-                      className="bg-transparent border border-white text-white hover:bg-white hover:text-black transition-colors text-xs md:text-sm"
-                    >
-                      <LogOut className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                      Logout
-                    </Button>
-                  </>
-                ) : (
-                  <Button onClick={() => setAuthDialogOpen(true)} size="sm" className="text-sm">
-                    Login
-                  </Button>
-                )}
-              </>
+            {user && (
+              <div className="text-center">
+                <p className="text-purple-200">
+                  Welcome back, {profile?.username || 'User'}!
+                </p>
+              </div>
             )}
           </div>
         </div>
@@ -164,6 +120,6 @@ export default function HomePage() {
         title="Get Local Events & Rewards"
         description="Register to see events in your city and earn rewards!"
       />
-    </main>
+    </div>
   );
 }

@@ -18,7 +18,7 @@ const ARTISTS_PER_PAGE = 25;
 const REQUIRED_PASSCODE = "otw10";
 
 export default function Top100Page() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [artists, setArtists] = useState<ArtistWithVoteCount[]>([]);
   const [isPasscodeDialogOpen, setIsPasscodeDialogOpen] = useState(false);
   const [isSubmissionDialogOpen, setIsSubmissionDialogOpen] = useState(false);
@@ -145,31 +145,29 @@ export default function Top100Page() {
     setPasscode("");
   };
 
-  const handleSubmitVotes = async () => {
-    if (!user) {
-      alert("Please log in to submit votes");
+  const handleVoteSubmit = async () => {
+    if (!profile) {
+      alert("Please log in to vote");
       return;
     }
 
     if (selectedArtists.length === 0) {
-      alert("Please select at least one artist before submitting");
+      alert("Please select at least one artist");
       return;
     }
 
     try {
-      const votesToSubmit = selectedArtists.map(artistUUID => ({
-        user_id: user.id,
-        artist_uuid: artistUUID,
+      const voteData = selectedArtists.map(artistUuid => ({
+        user_id: profile.id,
+        artist_uuid: artistUuid
       }));
 
-      await votingService.submitVotes(votesToSubmit);
-      setVotingState("submitted");
-      setIsSubmissionDialogOpen(true);
-      page.current = 1;
-      loadArtists(1, true);
+      await votingService.submitTop25Votes(voteData);
+      alert("Votes submitted successfully!");
+      setSelectedArtists([]);
     } catch (error) {
       console.error("Error submitting votes:", error);
-      alert("Error submitting votes. Please try again.");
+      alert("Failed to submit votes");
     }
   };
 
@@ -226,7 +224,7 @@ export default function Top100Page() {
         setIsPasscodeDialogOpen(true);
         break;
       case "voting":
-        handleSubmitVotes();
+        handleVoteSubmit();
         break;
       case "submitted":
         break;
@@ -300,6 +298,12 @@ export default function Top100Page() {
                 </p>
               </div>
             </div>
+            
+            {profile && (
+              <p className="text-center text-purple-200 mb-4">
+                Logged in as: {profile.username}
+              </p>
+            )}
             
             <Button
               className="w-full text-base sm:text-lg md:text-xl py-3 sm:py-4 md:py-6 bg-white text-black hover:bg-gray-100"
