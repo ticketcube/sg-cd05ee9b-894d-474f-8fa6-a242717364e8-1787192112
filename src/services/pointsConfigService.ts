@@ -145,6 +145,7 @@ export class PointsConfigService {
 
   /**
    * Check if user is eligible for points based on frequency rules
+   * FIXED: Now uses user_engagements table instead of user_achievements
    */
   async checkEligibility(
     actionName: keyof PointsConfigCache,
@@ -161,11 +162,12 @@ export class PointsConfigService {
           if (!artistUuid) return false;
           
           const { data: artistEngagement, error: artistError } = await supabase
-            .from("user_achievements")
+            .from("user_engagements")
             .select("id")
             .eq("user_id", userId)
-            .eq("achievement_type", actionName)
-            .like("metadata", `%${artistUuid}%`)
+            .eq("engagement_type", actionName)
+            .eq("artist_uuid", artistUuid)
+            .gt("points_earned", 0)
             .limit(1);
 
           if (artistError) {
@@ -180,12 +182,13 @@ export class PointsConfigService {
           if (!artistUuid || !weekIdentifier) return false;
           
           const { data: artistWeekEngagement, error: artistWeekError } = await supabase
-            .from("user_achievements")
+            .from("user_engagements")
             .select("id")
             .eq("user_id", userId)
-            .eq("achievement_type", actionName)
-            .like("metadata", `%${artistUuid}%`)
-            .like("metadata", `%${weekIdentifier}%`)
+            .eq("engagement_type", actionName)
+            .eq("artist_uuid", artistUuid)
+            .eq("week_identifier", weekIdentifier)
+            .gt("points_earned", 0)
             .limit(1);
 
           if (artistWeekError) {
@@ -200,11 +203,12 @@ export class PointsConfigService {
           if (!weekIdentifier) return false;
           
           const { data: weekEngagement, error: weekError } = await supabase
-            .from("user_achievements")
+            .from("user_engagements")
             .select("id")
             .eq("user_id", userId)
-            .eq("achievement_type", actionName)
-            .like("metadata", `%${weekIdentifier}%`)
+            .eq("engagement_type", actionName)
+            .eq("week_identifier", weekIdentifier)
+            .gt("points_earned", 0)
             .limit(1);
 
           if (weekError) {
@@ -222,10 +226,11 @@ export class PointsConfigService {
         default:
           // Check if user has ever earned points for this action
           const { data: generalEngagement, error: generalError } = await supabase
-            .from("user_achievements")
+            .from("user_engagements")
             .select("id")
             .eq("user_id", userId)
-            .eq("achievement_type", actionName)
+            .eq("engagement_type", actionName)
+            .gt("points_earned", 0)
             .limit(1);
 
           if (generalError) {
