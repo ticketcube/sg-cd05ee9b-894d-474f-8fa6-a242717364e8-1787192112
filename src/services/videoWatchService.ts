@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { pointsConfigService } from "./pointsConfigService";
+import userProfileService from "./userProfileService";
 import type { Tables } from "@/integrations/supabase/types";
 
 export interface VideoWatchStatus {
@@ -21,8 +22,62 @@ export interface WeeklyVideoProgress {
   videoStatuses: VideoWatchStatus[];
 }
 
+export interface VideoViewData {
+  userId: number;
+  artistUuid: string;
+  weekIdentifier: string;
+  watchTimeSeconds: number;
+}
+
 export class VideoWatchService {
   
+  /**
+   * NEWLY ADDED: Record video watch time and award points
+   * This is the core missing functionality that was breaking the system
+   */
+  async recordVideoView(data: VideoViewData): Promise<{ pointsEarned: number; eligible: boolean }> {
+    try {
+      // Get dynamic configuration
+      const minWatchTime = await pointsConfigService.getMinValue('video_view');
+      const videoViewPoints = await pointsConfigService.getPoints('video_view');
+      
+      // Check if user is eligible for points (once per artist per week)
+      const eligible = await pointsConfigService.checkEligibility(
+        'video_view',
+        data.userId,
+        data.artistUuid,
+        data.weekIdentifier
+      );
+
+      // Check if watch time meets minimum requirement
+      const meetsWatchTime = data.watchTimeSeconds >= minWatchTime;
+      
+      const pointsEarned = (eligible && meetsWatchTime) ? videoViewPoints : 0;
+
+      // Record the engagement regardless of points earned (for analytics)
+      await userProfileService.recordEngagement(
+        data.userId,
+        "video_view",
+        pointsEarned,
+        data.weekIdentifier,
+        data.artistUuid,
+        {
+          watch_time_seconds: data.watchTimeSeconds,
+          points_eligible: eligible,
+          meets_watch_time: meetsWatchTime
+        }
+      );
+
+      return {
+        pointsEarned,
+        eligible: eligible && meetsWatchTime
+      };
+    } catch (error) {
+      console.error("Error recording video view:", error);
+      throw error;
+    }
+  }
+
   /**
    * Get video watch status for a specific artist in a weekly list
    */
