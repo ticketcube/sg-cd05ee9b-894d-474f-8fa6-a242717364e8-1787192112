@@ -41,9 +41,9 @@ export function WeeklyArtistRatingPopup({
   // Get user profile on component mount
   useEffect(() => {
     const loadUserProfile = async () => {
-      if (user?.id) {
+      if (user?.auth_id) {
         try {
-          const profile = await userProfileService.getUserProfileByAuthId(user.id);
+          const profile = await userProfileService.getUserProfileByAuthId(user.auth_id);
           setUserProfile(profile);
           console.log("User profile loaded:", profile);
         } catch (error) {
@@ -52,10 +52,10 @@ export function WeeklyArtistRatingPopup({
       }
     };
 
-    if (user?.id) {
+    if (user?.auth_id) {
       loadUserProfile();
     }
-  }, [user?.id]);
+  }, [user?.auth_id]);
 
   const awardWatchPoints = useCallback(async () => {
     if (!pointsAwarded && artist && userProfile && weekIdentifier) {
