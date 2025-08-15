@@ -172,7 +172,7 @@ function WeeklyPageContent() {
     setSubmitting(true);
     try {
       const result = await weeklyVotingService.submitQuadrantVotes({
-        userId: user.id, // Use numeric profile ID
+        userId: user.profile.id, // Use numeric profile ID
         weekIdentifier: weeklyList.week_identifier,
         artistPositions: artistPositions.map(pos => ({
           artistUuid: pos.artistUuid,

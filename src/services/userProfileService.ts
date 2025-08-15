@@ -254,7 +254,7 @@ const userProfileService = {
   async getUserEngagementHistory(userId: number): Promise<UserEngagementHistory> {
     try {
       // Get user profile
-      const userProfile = await this.getUserProfile(userId.toString(), "id");
+      const userProfile = await this.getUserProfileById(userId);
       if (!userProfile) throw new Error("User profile not found");
 
       // Get all engagements grouped by week

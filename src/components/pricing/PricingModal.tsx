@@ -122,7 +122,7 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
 
     if (!tier.priceId) {
       try {
-        await ticketCubeService.secureTicketCube(cubeId, user.auth_id);
+        await ticketCubeService.secureTicketCube(cubeId, user.id);
         toast({
           title: "Cube Secured!",
           description: "Your TicketCube has been secured with the Free plan.",
