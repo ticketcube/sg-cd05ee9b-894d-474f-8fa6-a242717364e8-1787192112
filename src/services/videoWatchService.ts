@@ -36,12 +36,14 @@ export class VideoWatchService {
       const minWatchTime = await pointsConfigService.getMinValue('video_view');
       
       // Check if user has any engagement record for this video
+      // Using like queries instead of contains to avoid type issues
       const { data: engagement, error } = await supabase
         .from("user_achievements")
         .select("metadata, points_earned")
         .eq("user_id", userId)
         .eq("achievement_type", "video_view")
-        .contains("metadata", { artist_uuid: artistUuid, week_identifier: weekIdentifier });
+        .like("metadata::text", `%${artistUuid}%`)
+        .like("metadata::text", `%${weekIdentifier}%`);
 
       if (error && error.code !== "PGRST116") {
         console.error("Error checking video watch status:", error);
@@ -232,19 +234,17 @@ export class VideoWatchService {
         throw bonusError;
       }
 
-      // Parse data
-      const weeksWithProgress = new Set<string>();
-      let totalVideosWatched = 0;
-
-      videoViews?.forEach(view => {
+      // Parse metadata to extract watched artist UUIDs
+      userEngagements?.forEach(engagement => {
         try {
-          const metadata = typeof view.metadata === 'string' ? JSON.parse(view.metadata) : view.metadata || {};
-          if (metadata.week_identifier && metadata.meets_watch_time) {
-            weeksWithProgress.add(String(metadata.week_identifier));
-            totalVideosWatched++;
+          const metadata = typeof engagement.metadata === 'string' 
+            ? JSON.parse(engagement.metadata) 
+            : engagement.metadata || {};
+          if (metadata.artist_uuid && metadata.week_identifier === weekIdentifier && metadata.meets_watch_time) {
+            watchedVideos.add(String(metadata.artist_uuid));
           }
         } catch (e) {
-          console.warn("Error parsing video view metadata:", e);
+          console.warn("Error parsing engagement metadata:", e);
         }
       });
 
