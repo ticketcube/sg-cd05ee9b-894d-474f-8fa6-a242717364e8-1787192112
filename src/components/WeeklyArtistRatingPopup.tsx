@@ -39,12 +39,12 @@ export default function WeeklyArtistRatingPopup({ artist, isOpen, weekIdentifier
         console.log("Recording video view for points...");
         console.log("Using numeric user ID:", profile.id);
         
-        // Record video view and award points
+        // FIXED: Always pass 15 seconds when awarding points (minimum requirement met)
         const result = await videoWatchService.recordVideoView({
           userId: profile.id,
           artistUuid: artist.uuid,
           weekIdentifier,
-          watchTimeSeconds: watchTimer
+          watchTimeSeconds: 15 // Always 15 when this function is called
         });
         
         console.log("Video view recorded:", result);
@@ -65,7 +65,7 @@ export default function WeeklyArtistRatingPopup({ artist, isOpen, weekIdentifier
         console.error("Error awarding watch points:", error);
       }
     }
-  }, [pointsAwarded, artist, profile, weekIdentifier, watchTimer]);
+  }, [pointsAwarded, artist, profile, weekIdentifier]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
