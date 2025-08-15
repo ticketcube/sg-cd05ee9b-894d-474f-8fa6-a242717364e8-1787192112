@@ -7,7 +7,7 @@ export type Json =
     | Json[]
 
 export type Database = {
-    // Allows to automatically instanciate createClient with right options
+    // Allows to automatically instantiate createClient with right options
     // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
     __InternalSupabase: {
         PostgrestVersion: "12.2.3 (519615d)"
@@ -22,10 +22,10 @@ export type Database = {
         Functions: {
             graphql: {
                 Args: {
+                    extensions?: Json
                     operationName?: string
                     query?: string
                     variables?: Json
-                    extensions?: Json
                 }
                 Returns: Json
             }
@@ -411,44 +411,6 @@ export type Database = {
                     },
                 ]
             }
-            user_achievements: {
-                Row: {
-                    achievement_name: string
-                    achievement_type: string
-                    earned_at: string | null
-                    id: number
-                    metadata: Json | null
-                    points_earned: number | null
-                    user_id: number | null
-                }
-                Insert: {
-                    achievement_name: string
-                    achievement_type: string
-                    earned_at?: string | null
-                    id?: number
-                    metadata?: Json | null
-                    points_earned?: number | null
-                    user_id?: number | null
-                }
-                Update: {
-                    achievement_name?: string
-                    achievement_type?: string
-                    earned_at?: string | null
-                    id?: number
-                    metadata?: Json | null
-                    points_earned?: number | null
-                    user_id?: number | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "user_achievements_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "user_profiles"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
             user_engagements: {
                 Row: {
                     artist_uuid: string | null
@@ -757,11 +719,11 @@ export type Database = {
                 Returns: string
             }
             increment_user_points: {
-                Args: { user_id_to_update: number; points_to_add: number }
+                Args: { points_to_add: number; user_id_to_update: number }
                 Returns: undefined
             }
             insert_ticket_entry: {
-                Args: { p_email: string; p_username: string; p_user_id?: string }
+                Args: { p_email: string; p_user_id?: string; p_username: string }
                 Returns: Json
             }
         }
