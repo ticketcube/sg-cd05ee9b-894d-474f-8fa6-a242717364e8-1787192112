@@ -2,7 +2,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fetch from 'node-fetch';
 import { v4 as uuidv4 } from 'uuid';
-import { useState, useRef, useEffect } from "react"; import { useAuth } from "@/contexts/AuthContext"; import { Button } from "@/components/ui/button"; import { Card, CardContent } from "@/components/ui/card"; import { Textarea } from "@/components/ui/textarea"; import { Progress } from "@/components/ui/progress"; import { Upload, CheckCircle, AlertCircle, ArrowLeft, File, Image as ImageIcon, Video, X } from "lucide-react"; import { useRouter } from "next/router"; import AuthGuard from "@/components/AuthGuard";
 
 // Load from environment
 const BF_API_KEY = process.env.BF_API_KEY as string;
