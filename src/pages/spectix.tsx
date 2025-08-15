@@ -1,6 +1,4 @@
 import { Navbar } from "@/components/layout/Navbar"
-import { SpecTixRequestForm } from "@/components/spectix/SpecTixRequestForm"
-import { CubeViewer } from "@/components/3d/CubeViewer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Head from "next/head"
 import { useState } from "react"
@@ -88,10 +86,10 @@ export default function SpecTixPage() {
 
         <section className="grid gap-8 md:grid-cols-2 mb-16 animate-fade-up delay-300">
           <div>
-            <SpecTixRequestForm onRequestCreated={() => setRequestCreated(true)} />
+            {/* <SpecTixRequestForm onRequestCreated={() => setRequestCreated(true)} /> */}
           </div>
           <div className="flex flex-col gap-4">
-            <CubeViewer />
+            {/* <CubeViewer /> */}
           </div>
         </section>
       </main>

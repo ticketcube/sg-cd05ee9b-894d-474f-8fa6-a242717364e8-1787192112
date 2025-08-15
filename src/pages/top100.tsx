@@ -300,9 +300,7 @@ export default function Top100Page() {
             </div>
             
             {profile && (
-              <p className="text-center text-purple-200 mb-4">
-                Logged in as: {profile.username}
-              </p>
+              <p className="text-center text-purple-200">Logged in as: {profile.username} ({profile.email})</p>
             )}
             
             <Button

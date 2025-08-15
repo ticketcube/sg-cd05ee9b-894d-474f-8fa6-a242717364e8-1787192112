@@ -18,6 +18,7 @@ import {
 import { useRouter } from "next/router";
 import AuthGuard from "@/components/AuthGuard";
 import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
