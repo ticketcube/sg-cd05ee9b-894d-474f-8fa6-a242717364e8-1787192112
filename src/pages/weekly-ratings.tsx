@@ -11,7 +11,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import Image from "next/image";
 import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
-import { UnifiedArtistPopup } from "@/components/UnifiedArtistPopup";
+import { WeeklyArtistRatingPopup } from "@/components/WeeklyArtistRatingPopup";
 import Link from "next/link";
 
 type Artist = Tables<"artists">;
@@ -332,7 +332,7 @@ function WeeklyRatingsPageContent() {
       </div>
       
       {selectedArtist && (
-        <UnifiedArtistPopup
+        <WeeklyArtistRatingPopup
           artist={selectedArtist}
           isOpen={isPopupOpen}
           onClose={() => {
