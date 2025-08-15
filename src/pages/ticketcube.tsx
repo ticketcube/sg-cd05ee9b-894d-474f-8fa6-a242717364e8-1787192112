@@ -1,75 +1,152 @@
-import { useState, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CubeViewer } from "@/components/3d/CubeViewer"
-import { useCube, CubeFace } from "@/contexts/CubeContext"
-import { useAuth } from "@/contexts/AuthContext"
-import { Upload, Image as ImageIcon, Type, Trash2, Eye, Save, Lock, LogIn } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
-import Head from "next/head"
+
+import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CubeViewer } from "@/components/3d/CubeViewer";
+import { useCube, CubeFace } from "@/contexts/CubeContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { Upload, Image as ImageIcon, Type, Trash2, Eye, Save, Lock, LogIn } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import Head from "next/head";
 import { PricingModal } from "@/components/pricing/PricingModal";
-import AuthDialog from "@/components/AuthDialog"
+import AuthDialog from "@/components/AuthDialog";
 
 interface FaceFormData {
-  title: string
-  contentType: "image" | "text"
-  text: string
-  imageFile: File | null
-  imagePreview: string | null
+  title: string;
+  contentType: "image" | "text";
+  text: string;
+  imageFile: File | null;
+  imagePreview: string | null;
+}
+
+// Component for rendering when user is not authenticated
+function AuthRequiredContent({ onSignIn }: { onSignIn: () => void }) {
+  return (
+    <>
+      <Head>
+        <title>Create Your TicketCube™ - Interactive 3D Collectible</title>
+        <meta name="description" content="Create your own custom TicketCube™ with images and text. A unique 3D digital collectible." />
+      </Head>
+      <main className="container mx-auto min-h-screen pt-8 px-4 md:px-6 lg:px-8 max-w-[2000px]">
+        <section className="text-center mb-8 animate-fade-up">
+          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl bg-gradient-to-br from-neutral-900 to-neutral-600 bg-clip-text text-transparent dark:from-white dark:to-neutral-300">
+            Create Your TicketCube™
+          </h1>
+          <p className="text-xl text-muted-foreground mt-4 max-w-[800px] mx-auto">
+            Design a unique 3D digital collectible with your own images and text. Customize up to 5 faces with your memories, artwork, or messages.
+          </p>
+        </section>
+
+        <div className="max-w-2xl mx-auto">
+          <Card className="bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 border-neutral-200/60">
+            <CardContent className="pt-16 pb-16 text-center">
+              <div className="mb-6">
+                <LogIn className="w-16 h-16 mx-auto text-neutral-400 mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
+                <p className="text-muted-foreground mb-6">
+                  Please sign in to create and customize your TicketCube™. Your cubes will be securely saved to your account.
+                </p>
+              </div>
+              
+              <Button
+                onClick={onSignIn}
+                className="bg-gradient-to-r from-neutral-800 to-neutral-900 hover:from-neutral-900 hover:to-black"
+                size="lg"
+              >
+                <LogIn className="w-5 h-5 mr-2" />
+                Sign In to Continue
+              </Button>
+              
+              <div className="mt-8 pt-8 border-t border-neutral-200 dark:border-neutral-700">
+                <h3 className="font-semibold mb-3">What you can do with TicketCube™:</h3>
+                <div className="grid gap-3 text-sm text-muted-foreground">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    <span>Customize up to 5 faces with images or text</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    <span>Interactive 3D preview with rotation and zoom</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    <span>Secure your cube with blockchain minting options</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    <span>Share and gift cubes to friends</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    </>
+  );
 }
 
 export default function TicketCubePage() {
-  const { user, loading } = useAuth();
+  // All hooks are now at the top level
+  const { user, loading: authLoading } = useAuth();
+  const { cubeData, setCubeData, setPreviewMode, isPreviewMode, resetCube, saveCube, isLoading } = useCube();
   
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    return <div>Please log in to access this page.</div>;
-  }
-
-  const { cubeData, setCubeData, updateCubeFace, setPreviewMode, isPreviewMode, resetCube, saveCube, isLoading } = useCube()
-  const { isAuthenticated, loading: authLoading } = useAuth()
-  
-  const [cubeTitle, setCubeTitle] = useState("My Custom TicketCube")
-  const [cubeDescription, setCubeDescription] = useState("")
+  const [cubeTitle, setCubeTitle] = useState("My Custom TicketCube");
+  const [cubeDescription, setCubeDescription] = useState("");
   const [faces, setFaces] = useState<Record<number, FaceFormData>>({
     1: { title: "Face 1", contentType: "text", text: "", imageFile: null, imagePreview: null },
     2: { title: "Face 2", contentType: "text", text: "", imageFile: null, imagePreview: null },
     3: { title: "Face 3", contentType: "text", text: "", imageFile: null, imagePreview: null },
     4: { title: "Face 4", contentType: "text", text: "", imageFile: null, imagePreview: null },
     5: { title: "Face 5", contentType: "text", text: "", imageFile: null, imagePreview: null },
-  })
+  });
   
-  const [activeTab, setActiveTab] = useState("1")
-  const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
+  const [activeTab, setActiveTab] = useState("1");
+  const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [selectedCubeId, setSelectedCubeId] = useState<string | null>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
 
+  // Conditional returns are now after all hook calls
+  if (authLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return (
+      <>
+        <AuthDialog 
+          isOpen={showAuthDialog} 
+          onClose={() => setShowAuthDialog(false)} 
+        />
+        <AuthRequiredContent onSignIn={() => setShowAuthDialog(true)} />
+      </>
+    );
+  }
+
+  // All handler functions are defined within the component that can use the hooks
   const updateFace = (faceNumber: number, updates: Partial<FaceFormData>) => {
     setFaces(prev => ({
       ...prev,
       [faceNumber]: { ...prev[faceNumber], ...updates }
-    }))
-  }
+    }));
+  };
 
   const handleImageUpload = (faceNumber: number, event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const file = event.target.files?.[0];
+    if (!file) return;
 
     if (!file.type.startsWith("image/")) {
       toast({
         variant: "destructive",
         title: "Invalid file type",
         description: "Please select an image file"
-      })
-      return
+      });
+      return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
@@ -77,20 +154,20 @@ export default function TicketCubePage() {
         variant: "destructive", 
         title: "File too large",
         description: "Please select an image under 5MB"
-      })
-      return
+      });
+      return;
     }
 
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onload = (e) => {
       updateFace(faceNumber, {
         imageFile: file,
         imagePreview: e.target?.result as string,
         contentType: "image"
-      })
-    }
-    reader.readAsDataURL(file)
-  }
+      });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const removeFaceContent = (faceNumber: number) => {
     updateFace(faceNumber, {
@@ -98,11 +175,11 @@ export default function TicketCubePage() {
       imageFile: null,
       imagePreview: null,
       contentType: "text"
-    })
+    });
     if (fileInputRefs.current[faceNumber]) {
-      fileInputRefs.current[faceNumber]!.value = ""
+      fileInputRefs.current[faceNumber]!.value = "";
     }
-  }
+  };
 
   const handleViewCube = async () => {
     if (!isAnyFacePopulated()) {
@@ -110,8 +187,8 @@ export default function TicketCubePage() {
         variant: "destructive",
         title: "No content added",
         description: "Please add content to at least one face before viewing the cube"
-      })
-      return
+      });
+      return;
     }
 
     const cubeFaces: CubeFace[] = Object.entries(faces).map(([faceNum, face]) => ({
@@ -124,9 +201,8 @@ export default function TicketCubePage() {
         file: face.imageFile || undefined,
         preview: face.imagePreview || undefined
       }
-    }))
+    }));
 
-    // Add system face (face 6) with OTWChart branding
     cubeFaces.push({
       id: "face-6",
       number: 6,
@@ -134,21 +210,21 @@ export default function TicketCubePage() {
       contentType: "text",
       text: "Powered by OTWChart",
       image: {}
-    })
+    });
 
     await setCubeData({
       type: "standard",
       title: cubeTitle,
       description: cubeDescription,
       faces: cubeFaces
-    })
+    });
 
-    setPreviewMode(true)
+    setPreviewMode(true);
     toast({
       title: "Cube Generated!",
       description: "Your custom TicketCube has been created. Drag to rotate and scroll to zoom."
-    })
-  }
+    });
+  };
 
   const handleSecureCube = async () => {
     if (!cubeData) {
@@ -177,131 +253,38 @@ export default function TicketCubePage() {
         description: "Failed to save your cube. Please try again."
       });
     }
-  }
+  };
 
   const handleReset = () => {
-    resetCube()
+    resetCube();
     setFaces({
       1: { title: "Face 1", contentType: "text", text: "", imageFile: null, imagePreview: null },
       2: { title: "Face 2", contentType: "text", text: "", imageFile: null, imagePreview: null },
       3: { title: "Face 3", contentType: "text", text: "", imageFile: null, imagePreview: null },
       4: { title: "Face 4", contentType: "text", text: "", imageFile: null, imagePreview: null },
       5: { title: "Face 5", contentType: "text", text: "", imageFile: null, imagePreview: null },
-    })
-    setCubeTitle("My Custom TicketCube")
-    setCubeDescription("")
-    setActiveTab("1")
+    });
+    setCubeTitle("My Custom TicketCube");
+    setCubeDescription("");
+    setActiveTab("1");
     toast({
       title: "Cube Reset",
       description: "Your cube has been reset to start fresh."
-    })
-  }
+    });
+  };
 
   const isAnyFacePopulated = () => {
     return Object.values(faces).some(face => 
       face.text.trim() !== "" || face.imageFile !== null
-    )
-  }
+    );
+  };
 
   const getPopulatedFacesCount = () => {
     return Object.values(faces).filter(face => 
       face.text.trim() !== "" || face.imageFile !== null
-    ).length
-  }
-
-  // Show loading state while checking authentication
-  if (authLoading) {
-    return (
-      <>
-        <Head>
-          <title>Create Your TicketCube™ - Interactive 3D Collectible</title>
-          <meta name="description" content="Create your own custom TicketCube™ with images and text. A unique 3D digital collectible." />
-        </Head>
-        <main className="container mx-auto min-h-screen pt-8 px-4 md:px-6 lg:px-8 max-w-[2000px]">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900 mx-auto mb-4"></div>
-              <p>Loading...</p>
-            </div>
-          </div>
-        </main>
-      </>
-    )
-  }
-
-  // Show authentication required message if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <>
-        <Head>
-          <title>Create Your TicketCube™ - Interactive 3D Collectible</title>
-          <meta name="description" content="Create your own custom TicketCube™ with images and text. A unique 3D digital collectible." />
-        </Head>
-        
-        <AuthDialog 
-          isOpen={showAuthDialog} 
-          onClose={() => setShowAuthDialog(false)} 
-        />
-
-        <main className="container mx-auto min-h-screen pt-8 px-4 md:px-6 lg:px-8 max-w-[2000px]">
-          <section className="text-center mb-8 animate-fade-up">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl bg-gradient-to-br from-neutral-900 to-neutral-600 bg-clip-text text-transparent dark:from-white dark:to-neutral-300">
-              Create Your TicketCube™
-            </h1>
-            <p className="text-xl text-muted-foreground mt-4 max-w-[800px] mx-auto">
-              Design a unique 3D digital collectible with your own images and text. Customize up to 5 faces with your memories, artwork, or messages.
-            </p>
-          </section>
-
-          <div className="max-w-2xl mx-auto">
-            <Card className="bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-900 dark:to-neutral-800 border-neutral-200/60">
-              <CardContent className="pt-16 pb-16 text-center">
-                <div className="mb-6">
-                  <LogIn className="w-16 h-16 mx-auto text-neutral-400 mb-4" />
-                  <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
-                  <p className="text-muted-foreground mb-6">
-                    Please sign in to create and customize your TicketCube™. Your cubes will be securely saved to your account.
-                  </p>
-                </div>
-                
-                <Button
-                  onClick={() => setShowAuthDialog(true)}
-                  className="bg-gradient-to-r from-neutral-800 to-neutral-900 hover:from-neutral-900 hover:to-black"
-                  size="lg"
-                >
-                  <LogIn className="w-5 h-5 mr-2" />
-                  Sign In to Continue
-                </Button>
-                
-                <div className="mt-8 pt-8 border-t border-neutral-200 dark:border-neutral-700">
-                  <h3 className="font-semibold mb-3">What you can do with TicketCube™:</h3>
-                  <div className="grid gap-3 text-sm text-muted-foreground">
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                      <span>Customize up to 5 faces with images or text</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                      <span>Interactive 3D preview with rotation and zoom</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                      <span>Secure your cube with blockchain minting options</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                      <span>Share and gift cubes to friends</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-      </>
-    )
-  }
-
+    ).length;
+  };
+  
   // Main authenticated content
   return (
     <>
@@ -420,7 +403,7 @@ export default function TicketCubePage() {
                       </div>
 
                       <input
-                        ref={(el) => { fileInputRefs.current[faceNum] = el }}
+                        ref={(el) => { fileInputRefs.current[faceNum] = el; }}
                         type="file"
                         accept="image/*"
                         onChange={(e) => handleImageUpload(faceNum, e)}
@@ -536,5 +519,5 @@ export default function TicketCubePage() {
         </div>
       </main>
     </>
-  )
+  );
 }
