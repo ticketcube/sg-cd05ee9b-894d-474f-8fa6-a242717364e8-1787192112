@@ -43,7 +43,7 @@ export function WeeklyArtistRatingPopup({
     const loadUserProfile = async () => {
       if (user?.id) {
         try {
-          const profile = await userProfileService.getUserProfileByAuthId(user.id);
+          const profile = await userProfileService.getUserProfileByAuthId(auth.id);
           setUserProfile(profile);
           console.log("User profile loaded:", profile);
         } catch (error) {
@@ -64,7 +64,7 @@ export function WeeklyArtistRatingPopup({
         console.log("Using numeric user ID:", userProfile.id);
         
         const result = await weeklyVotingService.recordVideoView({
-          userId: userProfile.id, // Use numeric user profile ID
+          userId: userProfile.id, // Use numeric profile ID from userProfile
           artistUuid: artist.uuid,
           weekIdentifier: weekIdentifier,
           watchTimeSeconds: watchTimer
