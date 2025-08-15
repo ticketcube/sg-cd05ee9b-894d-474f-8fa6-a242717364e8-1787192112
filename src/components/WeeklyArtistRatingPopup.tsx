@@ -1,15 +1,16 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users } from "lucide-react";
-import ArtistVideoPlayer from "./ArtistVideoPlayer";
-import { weeklyVotingService } from "@/services/weeklyVotingService";
+import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users, X, Award, Timer, CheckCircle } from "lucide-react";
+import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { useAuth } from "@/contexts/AuthContext";
+import { videoWatchService } from "@/services/videoWatchService";
+import { usePointsNotifications } from "@/components/points/PointsNotification";
 import type { Artist } from "@/types/artists";
 
 interface WeeklyArtistRatingPopupProps {
@@ -37,10 +38,11 @@ export default function WeeklyArtistRatingPopup({ artist, isOpen, weekIdentifier
         console.log("Recording video view for points...");
         console.log("Using numeric user ID:", profile.id);
         
-        const result = await weeklyVotingService.recordVideoView({
-          userId: profile.id, // Use numeric profile ID
+        // Record video view and award points
+        const result = await videoWatchService.recordVideoView({
+          userId: profile.id,
           artistUuid: artist.uuid,
-          weekIdentifier: weekIdentifier,
+          weekIdentifier,
           watchTimeSeconds: watchTimer
         });
         
@@ -51,7 +53,7 @@ export default function WeeklyArtistRatingPopup({ artist, isOpen, weekIdentifier
         
             // Check for completion bonus after this video view
             if (result.pointsEarned > 0) {
-              const completionBonus = await weeklyVotingService.checkVideoCompletionBonus(profile.id, weekIdentifier);
+              const completionBonus = await videoWatchService.checkVideoCompletionBonus(profile.id, weekIdentifier);
               if (completionBonus.pointsEarned > 0) {
                 console.log("Completion bonus earned:", completionBonus.pointsEarned);
                 setPointsEarned(prev => prev + completionBonus.pointsEarned);

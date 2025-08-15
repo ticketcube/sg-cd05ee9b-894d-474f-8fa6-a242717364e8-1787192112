@@ -126,7 +126,7 @@ const pointsTestService = {
       console.log("📊 Testing first video view (should earn points)...");
       
       // First video view - should earn points
-      const firstViewResult = await weeklyVotingService.recordVideoView({
+      const firstViewResult = await videoWatchService.recordVideoView({
         userId: userId,
         artistUuid: testArtistUuid,
         weekIdentifier: testWeekIdentifier,
@@ -144,7 +144,7 @@ const pointsTestService = {
       // Second video view - should NOT earn points (once per artist per week)
       console.log("📊 Testing second video view (should NOT earn points)...");
       
-      const secondViewResult = await weeklyVotingService.recordVideoView({
+      const secondViewResult = await videoWatchService.recordVideoView({
         userId: userId,
         artistUuid: testArtistUuid,
         weekIdentifier: testWeekIdentifier,
@@ -162,7 +162,7 @@ const pointsTestService = {
       // Test different week - should earn points again
       console.log("📊 Testing same artist, different week (should earn points)...");
       
-      const differentWeekResult = await weeklyVotingService.recordVideoView({
+      const differentWeekResult = await videoWatchService.recordVideoView({
         userId: userId,
         artistUuid: testArtistUuid,
         weekIdentifier: "2025-W31", // Different week

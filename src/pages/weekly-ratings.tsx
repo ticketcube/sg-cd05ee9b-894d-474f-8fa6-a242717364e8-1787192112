@@ -21,6 +21,13 @@ import Link from "next/link";
 type Artist = Tables<"artists">;
 type WeeklyList = Tables<"weekly_lists">;
 
+interface ArtistRating {
+  artistUuid: string;
+  ticketInterest: number;
+  shareInterest: number;
+  isRated: boolean;
+}
+
 interface QuadrantPosition {
   artistUuid: string;
   ticketInterest: number; // -1 to 1 (maps to quadrant_x)
@@ -29,7 +36,7 @@ interface QuadrantPosition {
 }
 
 function WeeklyRatingsPageContent() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [weeklyList, setWeeklyList] = useState<WeeklyListWithArtists | null>(null);
   const [allWeeklyLists, setAllWeeklyLists] = useState<WeeklyList[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>("");
@@ -135,7 +142,7 @@ function WeeklyRatingsPageContent() {
   };
 
   const handleSubmitRatings = async () => {
-    if (!user) {
+    if (!user || !profile) {
       alert("Please log in first to submit your ratings.");
       return;
     }
@@ -151,7 +158,7 @@ function WeeklyRatingsPageContent() {
     setSubmitting(true);
     try {
       const voteData = {
-        userId: user.id,
+        userId: profile.id,
         weekIdentifier: weeklyList.week_identifier,
         artistPositions: artistRatings.map(rating => ({
           artistUuid: rating.artistUuid,

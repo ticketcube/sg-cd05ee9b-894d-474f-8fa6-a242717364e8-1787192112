@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import pointsTestService from '@/services/pointsTestService';
-import { pointsConfigService } from '@/services/pointsConfigService';
-import { weeklyVotingService } from '@/services/weeklyVotingService';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, CheckCircle, XCircle, Info } from "lucide-react";
+import { videoWatchService } from "@/services/videoWatchService";
+import pointsTestService from "@/services/pointsTestService";
+import AuthGuard from "@/components/AuthGuard";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function TestPointsPage() {
   const { user, profile } = useAuth();
@@ -57,17 +58,14 @@ export default function TestPointsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      console.log('🔍 Running video view test...');
+      setTestResult(null);
+      setIsLoading(true);
       
-      // Test recording a video view
-      const testArtistUuid = "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c"; // Laufey
-      const testWeekIdentifier = "2025-W33"; // Current week
-      
-      const result = await weeklyVotingService.recordVideoView({
-        userId: profile.id,
-        artistUuid: testArtistUuid,
-        weekIdentifier: testWeekIdentifier,
-        watchTimeSeconds: 20 // Above 15 second minimum
+      const result = await videoWatchService.recordVideoView({
+        userId: profile!.id,
+        artistUuid: "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c", // Laufey
+        weekIdentifier: "2025-W30",
+        watchTimeSeconds: 20
       });
       
       console.log('📊 Video view result:', result);
