@@ -1,4 +1,5 @@
 
+
 import { supabase } from "@/integrations/supabase/client";
 import { pointsConfigService } from "./pointsConfigService";
 import type { Tables } from "@/integrations/supabase/types";
@@ -234,20 +235,25 @@ export class VideoWatchService {
         throw bonusError;
       }
 
-      // Parse metadata to extract watched artist UUIDs
-      userEngagements?.forEach(engagement => {
+      // Parse metadata to extract statistics
+      const watchedVideos = new Set<string>();
+      const weeksWithProgress = new Set<string>();
+
+      videoViews?.forEach(engagement => {
         try {
           const metadata = typeof engagement.metadata === 'string' 
             ? JSON.parse(engagement.metadata) 
             : engagement.metadata || {};
-          if (metadata.artist_uuid && metadata.week_identifier === weekIdentifier && metadata.meets_watch_time) {
-            watchedVideos.add(String(metadata.artist_uuid));
+          if (metadata.artist_uuid && metadata.week_identifier && metadata.meets_watch_time) {
+            watchedVideos.add(`${metadata.week_identifier}-${metadata.artist_uuid}`);
+            weeksWithProgress.add(String(metadata.week_identifier));
           }
         } catch (e) {
           console.warn("Error parsing engagement metadata:", e);
         }
       });
 
+      const totalVideosWatched = watchedVideos.size;
       const totalCompletionBonusesEarned = completionBonuses?.length || 0;
       const averageCompletionRate = weeksWithProgress.size > 0 ? 
         (totalCompletionBonusesEarned / weeksWithProgress.size) * 100 : 0;
