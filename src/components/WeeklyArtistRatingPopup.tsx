@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users } from "lucide-react";
 import ArtistVideoPlayer from "./ArtistVideoPlayer";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
+import { userProfileService } from "@/services/userProfileService";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Artist } from "@/types/artists";
 
@@ -35,14 +36,35 @@ export function WeeklyArtistRatingPopup({
   const [ticketInterest, setTicketInterest] = useState([50]);
   const [shareInterest, setShareInterest] = useState([50]);
   const [showRatings, setShowRatings] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  // Get user profile on component mount
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (user?.id) {
+        try {
+          const profile = await userProfileService.getUserProfileByAuthId(user.id);
+          setUserProfile(profile);
+          console.log("User profile loaded:", profile);
+        } catch (error) {
+          console.error("Error loading user profile:", error);
+        }
+      }
+    };
+
+    if (user?.id) {
+      loadUserProfile();
+    }
+  }, [user?.id]);
 
   const awardWatchPoints = useCallback(async () => {
-    if (!pointsAwarded && artist && user && weekIdentifier) {
+    if (!pointsAwarded && artist && userProfile && weekIdentifier) {
       try {
         console.log("Recording video view for points...");
+        console.log("Using numeric user ID:", userProfile.id);
         
         const result = await weeklyVotingService.recordVideoView({
-          userId: user.id,
+          userId: userProfile.id, // Use numeric user profile ID
           artistUuid: artist.uuid,
           weekIdentifier: weekIdentifier,
           watchTimeSeconds: watchTimer
@@ -54,7 +76,7 @@ export function WeeklyArtistRatingPopup({
         
         // Check for completion bonus after this video view
         if (result.pointsEarned > 0) {
-          const completionBonus = await weeklyVotingService.checkVideoCompletionBonus(user.id, weekIdentifier);
+          const completionBonus = await weeklyVotingService.checkVideoCompletionBonus(userProfile.id, weekIdentifier);
           if (completionBonus.pointsEarned > 0) {
             console.log("Completion bonus earned:", completionBonus.pointsEarned);
             setPointsEarned(prev => prev + completionBonus.pointsEarned);
@@ -64,7 +86,7 @@ export function WeeklyArtistRatingPopup({
         console.error("Error awarding watch points:", error);
       }
     }
-  }, [pointsAwarded, artist, user, weekIdentifier, watchTimer]);
+  }, [pointsAwarded, artist, userProfile, weekIdentifier, watchTimer]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
