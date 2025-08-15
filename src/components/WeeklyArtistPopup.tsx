@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Timer, Trophy } from "lucide-react";
 import ArtistVideoPlayer from "./ArtistVideoPlayer";
-import { userProfileService } from "@/services/userProfileService";
+import userProfileService from "@/services/userProfileService";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Artist, VibeArtist } from "@/types/artists";
 

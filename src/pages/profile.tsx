@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, User, Trophy, Calendar, Star, TrendingUp, Award, Eye, Vote, Users, BarChart, Settings, RefreshCw } from "lucide-react";
-import { userProfileService } from "@/services/userProfileService";
+import userProfileService from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
 
 interface UserStats {
@@ -30,51 +30,30 @@ const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string
 );
 
 export default function ProfilePage() {
-  const { user, refreshUserProfile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      loadUserProfile(user.id);
-    } else {
-      // Handle case where user is not authenticated, though AuthGuard should prevent this.
-      setLoading(false);
-      setError("User not found. Please log in.");
+    if (profile) {
+      setUsername(profile.username);
+      setCity(profile.raw_city_input || "");
+      setTotalPoints(profile.total_points || 0);
     }
-  }, [user]);
+  }, [profile]);
 
-  const loadUserProfile = async (userId: number) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const history = await userProfileService.getUserEngagementHistory(userId);
-      setUserHistory(history);
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load profile";
-      console.error("Error loading profile:", errorMessage, err);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+  const handleUpdateProfile = async () => {
+    if (!profile) return;
   };
 
-  const handleRefreshProfile = async () => {
+  const handleSaveCity = async () => {
+    if (!profile || !selectedCityId) return;
+    
     try {
-      setRefreshing(true);
-      await refreshUserProfile();
-      // Also reload the user engagement history to get fresh data
-      if (user) {
-        await loadUserProfile(user.id);
-      }
+      await userProfileService.updateUserLocation(profile.id, parseInt(selectedCityId), city);
     } catch (error) {
-      console.error("Error refreshing profile:", error);
-    } finally {
-      setRefreshing(false);
+      console.error("Error updating city:", error);
     }
   };
 

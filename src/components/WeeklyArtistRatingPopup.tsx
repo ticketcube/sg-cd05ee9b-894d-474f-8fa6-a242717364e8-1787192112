@@ -8,9 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users } from "lucide-react";
 import ArtistVideoPlayer from "./ArtistVideoPlayer";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
-import { userProfileService } from "@/services/userProfileService";
+import userProfileService from "@/services/userProfileService";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Artist } from "@/types/artists";
+import { supabase } from "@/utils/supabase";
 
 interface WeeklyArtistRatingPopupProps {
   artist: Artist | null;
@@ -20,14 +21,8 @@ interface WeeklyArtistRatingPopupProps {
   weekIdentifier?: string;
 }
 
-export function WeeklyArtistRatingPopup({ 
-  artist, 
-  isOpen, 
-  onClose, 
-  onRatingComplete,
-  weekIdentifier
-}: WeeklyArtistRatingPopupProps) {
-  const { user } = useAuth();
+export default function WeeklyArtistRatingPopup({ artist, weekIdentifier, onClose, onVoteSuccess }: WeeklyArtistRatingPopupProps) {
+  const { user, profile } = useAuth();
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [watchTimer, setWatchTimer] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -37,6 +32,7 @@ export function WeeklyArtistRatingPopup({
   const [shareInterest, setShareInterest] = useState([50]);
   const [showRatings, setShowRatings] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [hasVoted, setHasVoted] = useState(false);
 
   // Get user profile on component mount
   useEffect(() => {
@@ -56,6 +52,25 @@ export function WeeklyArtistRatingPopup({
       loadUserProfile();
     }
   }, [user?.auth_id]);
+
+  useEffect(() => {
+    if (profile) {
+      // Check if user has already voted this week
+      const checkExistingVote = async () => {
+        const { data } = await supabase
+          .from("weekly_votes")
+          .select("*")
+          .eq("user_id", profile.id)
+          .eq("week_identifier", weekIdentifier)
+          .eq("vote_type", "quadrant");
+        
+        if (data && data.length > 0) {
+          setHasVoted(true);
+        }
+      };
+      checkExistingVote();
+    }
+  }, [profile, weekIdentifier]);
 
   const awardWatchPoints = useCallback(async () => {
     if (!pointsAwarded && artist && userProfile && weekIdentifier) {

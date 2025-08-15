@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { userProfileService } from "./userProfileService";
 import { pointsConfigService } from "./pointsConfigService";
+import userProfileService from "./userProfileService";
 import type { Tables } from "@/integrations/supabase/types";
 
 type WeeklyVote = Tables<"weekly_votes">;
