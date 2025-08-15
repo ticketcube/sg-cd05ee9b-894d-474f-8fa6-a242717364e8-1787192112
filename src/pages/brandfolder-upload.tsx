@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/router";
 import AuthGuard from "@/components/AuthGuard";
+import { toast } from "@/components/ui/use-toast";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
@@ -27,7 +28,7 @@ interface FilePreview {
 }
 
 export default function BrandfolderUploadPage() {
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const router = useRouter();
     const fileInputRef = useRef < HTMLInputElement > (null);
 
@@ -64,40 +65,33 @@ export default function BrandfolderUploadPage() {
     };
 
     const handleUpload = async () => {
-        if (!selectedFile || !user) return;
+        if (!selectedFile || !profile) {
+            toast({
+                title: "Authentication Error",
+                description: "You must be logged in to upload files.",
+                variant: "destructive",
+            });
+            return;
+        }
 
-        setUploadStatus("uploading");
-        setUploadProgress(0);
-        setErrorMessage("");
+        setUploadStatus(`Uploading ${selectedFile.file.name}...`);
+        setIsLoading(true);
 
         try {
-            const formData = new FormData();
-            formData.append("file", selectedFile.file);
-            formData.append("fileName", selectedFile.file.name);
-            formData.append("fileType", selectedFile.file.type);
-            formData.append("userName", user.username);
-            if (description.trim()) {
-                formData.append("description", description.trim());
-            }
-
-            // Simulate progress for better UX
-            const progressInterval = setInterval(() => {
-                setUploadProgress(prev => Math.min(prev + Math.random() * 20, 90));
-            }, 500);
-
             const response = await fetch("/api/brandfolder/upload", {
                 method: "POST",
-                body: formData,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    fileName: selectedFile.file.name,
+                    contentType: selectedFile.file.type,
+                    artistName: artistName || "General",
+                    uploader: profile.username || "Unknown Uploader", 
+                }),
             });
 
-            clearInterval(progressInterval);
-            setUploadProgress(100);
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log("Upload successful:", result);
-                setUploadStatus("success");
-            } else {
+            if (!response.ok) {
                 // Check if response is JSON before trying to parse
                 const contentType = response.headers.get("content-type");
                 let errorMessage = "Upload failed";
@@ -119,6 +113,10 @@ export default function BrandfolderUploadPage() {
 
                 throw new Error(errorMessage);
             }
+
+            const result = await response.json();
+            console.log("Upload successful:", result);
+            setUploadStatus("success");
         } catch (error) {
             console.error("Upload error:", error);
             setUploadStatus("error");

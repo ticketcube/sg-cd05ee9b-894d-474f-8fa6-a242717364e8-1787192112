@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -10,8 +10,7 @@ import type { WeeklyListWithArtists } from "@/services/weeklyListService";
 import type { Tables } from "@/integrations/supabase/types";
 import Image from "next/image";
 import AuthGuard from "@/components/AuthGuard";
-import { useAuth } from "@/contexts/AuthContext";
-import { WeeklyArtistRatingPopup } from "@/components/WeeklyArtistRatingPopup";
+import WeeklyArtistRatingPopup from "@/components/WeeklyArtistRatingPopup";
 import PointsNotification, { usePointsNotifications } from "@/components/points/PointsNotification";
 import HowPointsWorkModal from "@/components/points/HowPointsWorkModal";
 import Link from "next/link";
@@ -19,7 +18,7 @@ import Link from "next/link";
 type Artist = Tables<"artists">;
 type WeeklyList = Tables<"weekly_lists">;
 
-interface ArtistRating {
+interface QuadrantPosition {
   artistUuid: string;
   ticketInterest: number; // -1 to 1 (maps to quadrant_x)
   shareInterest: number; // -1 to 1 (maps to quadrant_y)

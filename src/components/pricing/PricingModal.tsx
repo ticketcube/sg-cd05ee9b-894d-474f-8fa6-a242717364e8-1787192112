@@ -63,9 +63,52 @@ const tiers = [
 ];
 
 export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
-  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [loadingPrice, setLoadingPrice] = useState<string | null>(null);
   const { user } = useAuth();
   const router = useRouter();
+
+  const handleCheckout = async (priceId: string) => {
+    if (!user || !cubeId) {
+      toast({
+        title: "Error",
+        description: "User or Cube ID is missing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingPrice(priceId);
+    try {
+      const response = await fetch("/api/stripe/checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          priceId: priceId,
+          cubeId: cubeId,
+          userId: user.id, // Use user.id (auth id)
+        }),
+      });
+
+      const { sessionId } = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Redirect to Stripe Checkout
+      window.location.href = sessionId;
+    } catch (error) {
+      console.error('Payment error:', error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      toast({
+        variant: "destructive",
+        title: "Payment Error",
+        description: `Failed to initiate payment. ${errorMessage}`,
+      });
+      setLoadingPrice(null);
+    }
+  };
 
   const handleSelectTier = async (tier: (typeof tiers)[0]) => {
     if (!cubeId || !user) {
@@ -77,9 +120,6 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
       return;
     }
 
-    setIsLoading(tier.name);
-
-    // Free Tier Logic
     if (!tier.priceId) {
       try {
         await ticketCubeService.secureTicketCube(cubeId, user.auth_id);
@@ -95,68 +135,11 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
           title: "Error",
           description: "Failed to secure your cube. Please try again.",
         });
-      } finally {
-        setIsLoading(null);
       }
       return;
     }
 
-    // Paid Tier Logic
-    try {
-      console.log('Attempting to create Stripe session:', {
-        priceId: tier.priceId,
-        cubeId: cubeId,
-        userId: user.auth_id
-      });
-
-      const response = await fetch('/api/stripe/checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          priceId: tier.priceId,
-          cubeId: cubeId,
-          userId: user.auth_id, // Use auth_id instead of numeric id
-        }),
-      });
-
-      console.log('Raw response:', { 
-        status: response.status, 
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-
-      // Check if response is actually JSON before trying to parse
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const textResponse = await response.text();
-        console.error('Non-JSON response received:', textResponse);
-        throw new Error(`Server returned ${response.status}: ${response.statusText}. Expected JSON but got ${contentType}`);
-      }
-
-      const data = await response.json();
-      console.log('Stripe API response:', { status: response.status, data });
-
-      if (!response.ok) {
-        console.error('Stripe checkout session failed:', data);
-        throw new Error(data.error || 'Something went wrong');
-      }
-      
-      console.log('Redirecting to Stripe checkout:', data.url);
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
-
-    } catch (error) {
-      console.error('Payment error:', error);
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-      toast({
-        variant: "destructive",
-        title: "Payment Error",
-        description: `Failed to initiate payment. ${errorMessage}`,
-      });
-      setIsLoading(null);
-    }
+    handleCheckout(tier.priceId);
   };
 
   return (
@@ -187,10 +170,10 @@ export function PricingModal({ isOpen, onClose, cubeId }: PricingModalProps) {
                 </ul>
                 <Button
                   onClick={() => handleSelectTier(tier)}
-                  disabled={!!isLoading}
+                  disabled={!!loadingPrice}
                   className="w-full"
                 >
-                  {isLoading === tier.name ? "Processing..." : `Select ${tier.name}`}
+                  {loadingPrice === tier.priceId ? "Processing..." : `Select ${tier.name}`}
                 </Button>
               </CardContent>
             </Card>

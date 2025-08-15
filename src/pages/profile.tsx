@@ -34,17 +34,37 @@ export default function ProfilePage() {
   const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [username, setUsername] = useState("");
+  const [city, setCity] = useState("");
+  const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+  const [totalPoints, setTotalPoints] = useState(0);
+
+  const fetchUserHistory = async () => {
+    if (!profile) return;
+    setRefreshing(true);
+    setError(null);
+    try {
+      const history = await userProfileService.getUserEngagementHistory(profile.id);
+      setUserHistory(history);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load profile history.");
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (profile) {
       setUsername(profile.username);
       setCity(profile.raw_city_input || "");
       setTotalPoints(profile.total_points || 0);
+      fetchUserHistory();
     }
   }, [profile]);
 
   const handleUpdateProfile = async () => {
     if (!profile) return;
+    // Implementation for updating profile details can be added here
   };
 
   const handleSaveCity = async () => {
@@ -52,10 +72,16 @@ export default function ProfilePage() {
     
     try {
       await userProfileService.updateUserLocation(profile.id, parseInt(selectedCityId), city);
+      alert("City updated!");
     } catch (error) {
       console.error("Error updating city:", error);
+      alert("Failed to update city.");
     }
   };
+
+  const handleRefreshProfile = () => {
+    fetchUserHistory();
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

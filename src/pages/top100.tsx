@@ -162,7 +162,7 @@ export default function Top100Page() {
         artist_uuid: artistUuid
       }));
 
-      await votingService.submitTop25Votes(voteData);
+      await votingService.submitVotes(voteData);
       alert("Votes submitted successfully!");
       setSelectedArtists([]);
     } catch (error) {

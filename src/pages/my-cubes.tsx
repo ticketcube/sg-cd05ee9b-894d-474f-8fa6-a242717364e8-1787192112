@@ -11,6 +11,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { DynamicCube } from "@/components/3d/DynamicCube";
 import { useCube } from "@/contexts/CubeContext";
+import { toast } from "@/components/ui/use-toast";
 
 const TierBadge = ({ tier }: { tier: string }) => {
     const getBadgeVariant = (tier: string) => {
@@ -160,27 +161,28 @@ export default function MyCubesPage() {
 
     useEffect(() => {
         if (user) {
-            loadUserCubes();
+            const fetchCubes = async () => {
+                setLoading(true);
+                try {
+                    const fetchedCubes = await ticketCubeService.getUserCubes(user.id);
+                    setUserCubes(fetchedCubes);
+                } catch (error) {
+                    console.error("Failed to fetch user cubes:", error);
+                    toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "Could not fetch your cubes.",
+                    });
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchCubes();
         }
     }, [user]);
 
-    const loadUserCubes = async () => {
-        if (!user) return;
-
-        try {
-            setLoading(true);
-            setError(null);
-
-            const result = await ticketCubeService.getUserTicketCubes(user.auth_id);
-            setCubes(result.cubes); // Extract cubes array from the result object
-
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to load cubes";
-            console.error("Error loading cubes:", errorMessage, err);
-            setError(errorMessage);
-        } finally {
-            setLoading(false);
-        }
+    const handleViewCube = (cubeId: string) => {
+        // Handle view cube action
     };
 
     const formatDate = (dateString: string | null) => {

@@ -14,6 +14,25 @@ const showDiscoveryCharts = false;
 
 export default function HomePage() {
   const { user, profile } = useAuth();
+  const router = useRouter();
+  const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
+  const [showPromotionAuthDialog, setShowPromotionAuthDialog] = useState(false);
+
+  const handleNavigation = (path: string) => {
+    if (!user) {
+      setAuthDialogOpen(true);
+    } else {
+      router.push(path);
+    }
+  };
+
+  const handleRegisterClick = () => {
+    setShowPromotionAuthDialog(true);
+  };
+  
+  const handleAuthClose = () => {
+    setShowPromotionAuthDialog(false);
+  };
   
   return (
     <div className="min-h-screen bg-black text-white">

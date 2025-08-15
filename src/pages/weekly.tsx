@@ -171,16 +171,16 @@ function WeeklyPageContent() {
 
     setSubmitting(true);
     try {
-      const voteData = {
-        userId: user.id,
+      const result = await weeklyVotingService.submitQuadrantVotes({
+        userId: user.id, // Use numeric profile ID
         weekIdentifier: weeklyList.week_identifier,
         artistPositions: artistPositions.map(pos => ({
           artistUuid: pos.artistUuid,
           quadrant_x: pos.x,
           quadrant_y: pos.y
         }))
-      };
-      const result = await weeklyVotingService.submitQuadrantVotes(voteData);
+      });
+
       setSubmitted(true);
       setSuccessMessage({ show: true, pointsEarned: result.pointsEarned, votesSubmitted: result.votesSubmitted });
     } catch (error) {
