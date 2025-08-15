@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CheckCircle, XCircle, Info } from "lucide-react";
 import { videoWatchService } from "@/services/videoWatchService";
+import { pointsConfigService } from "@/services/pointsConfigService";
 import pointsTestService from "@/services/pointsTestService";
 import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -58,13 +59,13 @@ export default function TestPointsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      setTestResult(null);
-      setIsLoading(true);
+      const testArtistUuid = "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c"; // Laufey
+      const testWeekIdentifier = "2025-W30";
       
       const result = await videoWatchService.recordVideoView({
-        userId: profile!.id,
-        artistUuid: "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c", // Laufey
-        weekIdentifier: "2025-W30",
+        userId: profile.id,
+        artistUuid: testArtistUuid,
+        weekIdentifier: testWeekIdentifier,
         watchTimeSeconds: 20
       });
       

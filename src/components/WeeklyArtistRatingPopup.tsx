@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users, X, Award, Timer,
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { useAuth } from "@/contexts/AuthContext";
 import { videoWatchService } from "@/services/videoWatchService";
+import { weeklyVotingService } from "@/services/weeklyVotingService";
 import { usePointsNotifications } from "@/components/points/PointsNotification";
 import type { Artist } from "@/types/artists";
 
@@ -53,7 +54,7 @@ export default function WeeklyArtistRatingPopup({ artist, isOpen, weekIdentifier
         
             // Check for completion bonus after this video view
             if (result.pointsEarned > 0) {
-              const completionBonus = await videoWatchService.checkVideoCompletionBonus(profile.id, weekIdentifier);
+              const completionBonus = await weeklyVotingService.checkVideoCompletionBonus(profile.id, weekIdentifier);
               if (completionBonus.pointsEarned > 0) {
                 console.log("Completion bonus earned:", completionBonus.pointsEarned);
                 setPointsEarned(prev => prev + completionBonus.pointsEarned);
