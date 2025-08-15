@@ -59,9 +59,12 @@ export class VideoWatchService {
       };
 
       // Parse engagement data if it exists
-      if (engagement) {
+      if (engagement && engagement.length > 0) {
         try {
-          const metadata = JSON.parse(engagement.metadata || "{}");
+          const engagementRecord = engagement[0]; // Get first record from array
+          const metadata = typeof engagementRecord.metadata === 'string' 
+            ? JSON.parse(engagementRecord.metadata) 
+            : engagementRecord.metadata || {};
           const watchTime = metadata.watch_time_seconds || 0;
           
           watchStatus = {
@@ -70,7 +73,7 @@ export class VideoWatchService {
             hasWatched: true,
             watchTimeSeconds: watchTime,
             meetsMinRequirement: watchTime >= minWatchTime,
-            earnedPoints: (engagement.points_earned || 0) > 0
+            earnedPoints: (engagementRecord.points_earned || 0) > 0
           };
         } catch (e) {
           console.warn("Error parsing engagement metadata:", e);

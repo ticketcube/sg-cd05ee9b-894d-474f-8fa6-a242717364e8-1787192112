@@ -7,6 +7,8 @@ import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users } from "lucide-react";
 import ArtistVideoPlayer from "./ArtistVideoPlayer";
+import { weeklyVotingService } from "@/services/weeklyVotingService";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Artist } from "@/types/artists";
 
 interface WeeklyArtistRatingPopupProps {
@@ -14,35 +16,55 @@ interface WeeklyArtistRatingPopupProps {
   isOpen: boolean;
   onClose: () => void;
   onRatingComplete: (artistUuid: string, ticketInterest: number, shareInterest: number) => void;
+  weekIdentifier?: string;
 }
 
 export function WeeklyArtistRatingPopup({ 
   artist, 
   isOpen, 
   onClose, 
-  onRatingComplete
+  onRatingComplete,
+  weekIdentifier
 }: WeeklyArtistRatingPopupProps) {
+  const { user } = useAuth();
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [watchTimer, setWatchTimer] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [pointsAwarded, setPointsAwarded] = useState(false);
+  const [pointsEarned, setPointsEarned] = useState(0);
   const [ticketInterest, setTicketInterest] = useState([50]);
   const [shareInterest, setShareInterest] = useState([50]);
   const [showRatings, setShowRatings] = useState(false);
 
   const awardWatchPoints = useCallback(async () => {
-    if (!pointsAwarded && artist) {
+    if (!pointsAwarded && artist && user && weekIdentifier) {
       try {
-        // Get current user profile to get userId - we need this since recordEngagement requires userId
-        // For now, let's create a simpler approach
-        console.log("Awarding 10 points for watching video");
+        console.log("Recording video view for points...");
+        
+        const result = await weeklyVotingService.recordVideoView({
+          userId: user.id,
+          artistUuid: artist.uuid,
+          weekIdentifier: weekIdentifier,
+          watchTimeSeconds: watchTimer
+        });
+        
+        console.log("Video view recorded:", result);
         setPointsAwarded(true);
-        // TODO: Implement proper point awarding through user profile service
+        setPointsEarned(result.pointsEarned);
+        
+        // Check for completion bonus after this video view
+        if (result.pointsEarned > 0) {
+          const completionBonus = await weeklyVotingService.checkVideoCompletionBonus(user.id, weekIdentifier);
+          if (completionBonus.pointsEarned > 0) {
+            console.log("Completion bonus earned:", completionBonus.pointsEarned);
+            setPointsEarned(prev => prev + completionBonus.pointsEarned);
+          }
+        }
       } catch (error) {
         console.error("Error awarding watch points:", error);
       }
     }
-  }, [pointsAwarded, artist]);
+  }, [pointsAwarded, artist, user, weekIdentifier, watchTimer]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -72,6 +94,7 @@ export function WeeklyArtistRatingPopup({
       setWatchTimer(0);
       setIsVideoPlaying(false);
       setPointsAwarded(false);
+      setPointsEarned(0);
       setTicketInterest([50]);
       setShareInterest([50]);
       setShowRatings(true); // Show sliders immediately when popup opens
@@ -228,8 +251,10 @@ export function WeeklyArtistRatingPopup({
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-center">Rate This Artist</h3>
                     <div className="text-sm text-center">
-                      {watchTimer >= 15 ? (
-                        <Badge className="bg-green-600 text-white">+10 Points Earned!</Badge>
+                      {pointsEarned > 0 ? (
+                        <Badge className="bg-green-600 text-white">+{pointsEarned} Points Earned!</Badge>
+                      ) : watchTimer >= 15 ? (
+                        <Badge className="bg-blue-600 text-white">Video Watched!</Badge>
                       ) : isVideoPlaying ? (
                         <div className="flex items-center justify-center gap-2">
                           <Clock className="w-3 h-3" />
