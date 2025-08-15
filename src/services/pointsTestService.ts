@@ -299,15 +299,14 @@ const pointsTestService = {
   async cleanup(userId: number) {
     console.log(`🧹 Cleaning up test data for user ${userId}...`);
     
-    // Delete test achievements
-    const { error: achievementError } = await supabase
-      .from("user_achievements")
+    // Delete test engagements
+    const { error: engagementError } = await supabase
+      .from("user_engagements")
       .delete()
-      .eq("user_id", userId)
-      .in("achievement_type", ["test_achievement", "video_view", "video_completion_bonus"]);
+      .eq("user_id", userId);
       
-    if (achievementError) console.error("Error cleaning up achievements:", achievementError.message);
-    else console.log("✅ Test achievements cleaned up.");
+    if (engagementError) console.error("Error cleaning up engagements:", engagementError.message);
+    else console.log("✅ Test engagements cleaned up.");
 
     // Reset user points
     const { error: pointsError } = await supabase

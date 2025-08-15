@@ -1,5 +1,4 @@
 
-
 import { supabase } from "@/integrations/supabase/client";
 import { pointsConfigService } from "./pointsConfigService";
 import type { Tables } from "@/integrations/supabase/types";
@@ -37,16 +36,16 @@ export class VideoWatchService {
       const minWatchTime = await pointsConfigService.getMinValue('video_view');
       
       // Check if user has any engagement record for this video
-      // Using like queries instead of contains to avoid type issues
       const { data: engagement, error } = await supabase
-        .from("user_achievements")
+        .from("user_engagements")
         .select("metadata, points_earned")
         .eq("user_id", userId)
-        .eq("achievement_type", "video_view")
-        .like("metadata::text", `%${artistUuid}%`)
-        .like("metadata::text", `%${weekIdentifier}%`);
+        .eq("engagement_type", "video_view")
+        .eq("artist_uuid", artistUuid)
+        .eq("week_identifier", weekIdentifier)
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") {
+      if (error) {
         console.error("Error checking video watch status:", error);
         throw error;
       }
@@ -62,12 +61,11 @@ export class VideoWatchService {
       };
 
       // Parse engagement data if it exists
-      if (engagement && engagement.length > 0) {
+      if (engagement) {
         try {
-          const engagementRecord = engagement[0]; // Get first record from array
-          const metadata = typeof engagementRecord.metadata === 'string' 
-            ? JSON.parse(engagementRecord.metadata) 
-            : engagementRecord.metadata || {};
+          const metadata = typeof engagement.metadata === 'string' 
+            ? JSON.parse(engagement.metadata) 
+            : engagement.metadata || {};
           const watchTime = metadata.watch_time_seconds || 0;
           
           watchStatus = {
@@ -76,7 +74,7 @@ export class VideoWatchService {
             hasWatched: true,
             watchTimeSeconds: watchTime,
             meetsMinRequirement: watchTime >= minWatchTime,
-            earnedPoints: (engagementRecord.points_earned || 0) > 0
+            earnedPoints: (engagement.points_earned || 0) > 0
           };
         } catch (e) {
           console.warn("Error parsing engagement metadata:", e);
@@ -136,14 +134,14 @@ export class VideoWatchService {
 
       // Check if user has earned completion bonus
       const { data: completionBonus, error: bonusError } = await supabase
-        .from("user_achievements")
+        .from("user_engagements")
         .select("id")
         .eq("user_id", userId)
-        .eq("achievement_type", "video_completion_bonus")
-        .like("metadata::text", `%${weekIdentifier}%`)
+        .eq("engagement_type", "video_completion_bonus")
+        .eq("week_identifier", weekIdentifier)
         .maybeSingle();
 
-      if (bonusError && bonusError.code !== "PGRST116") {
+      if (bonusError) {
         console.error("Error checking completion bonus:", bonusError);
       }
 
@@ -211,12 +209,12 @@ export class VideoWatchService {
     averageCompletionRate: number;
   }> {
     try {
-      // Get all video view achievements
+      // Get all video view engagements
       const { data: videoViews, error: viewsError } = await supabase
-        .from("user_achievements")
+        .from("user_engagements")
         .select("metadata")
         .eq("user_id", userId)
-        .eq("achievement_type", "video_view");
+        .eq("engagement_type", "video_view");
 
       if (viewsError) {
         console.error("Error fetching user video stats:", viewsError);
@@ -225,10 +223,10 @@ export class VideoWatchService {
 
       // Get all completion bonuses
       const { data: completionBonuses, error: bonusError } = await supabase
-        .from("user_achievements")
+        .from("user_engagements")
         .select("metadata")
         .eq("user_id", userId)
-        .eq("achievement_type", "video_completion_bonus");
+        .eq("engagement_type", "video_completion_bonus");
 
       if (bonusError) {
         console.error("Error fetching completion bonuses:", bonusError);
@@ -244,9 +242,11 @@ export class VideoWatchService {
           const metadata = typeof engagement.metadata === 'string' 
             ? JSON.parse(engagement.metadata) 
             : engagement.metadata || {};
-          if (metadata.artist_uuid && metadata.week_identifier && metadata.meets_watch_time) {
-            watchedVideos.add(`${metadata.week_identifier}-${metadata.artist_uuid}`);
-            weeksWithProgress.add(String(metadata.week_identifier));
+          const typedMetadata = metadata as { artist_uuid?: string, week_identifier?: string, meets_watch_time?: boolean };
+
+          if (typedMetadata.artist_uuid && typedMetadata.week_identifier && typedMetadata.meets_watch_time) {
+            watchedVideos.add(`${typedMetadata.week_identifier}-${typedMetadata.artist_uuid}`);
+            weeksWithProgress.add(String(typedMetadata.week_identifier));
           }
         } catch (e) {
           console.warn("Error parsing engagement metadata:", e);

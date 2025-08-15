@@ -101,11 +101,11 @@ export class WeeklyVotingService {
       const watchedVideos = new Set<string>();
       
       const { data: userEngagements, error: engagementError } = await supabase
-        .from("user_achievements")
+        .from("user_engagements")
         .select("metadata")
         .eq("user_id", userId)
-        .eq("achievement_type", "video_view")
-        .like("metadata::text", `%${weekIdentifier}%`);
+        .eq("engagement_type", "video_view")
+        .eq("week_identifier", weekIdentifier);
 
       if (engagementError) {
         console.error("Error checking user video engagements:", engagementError);
@@ -118,8 +118,9 @@ export class WeeklyVotingService {
           const metadata = typeof engagement.metadata === 'string' 
             ? JSON.parse(engagement.metadata) 
             : engagement.metadata || {};
-          if (metadata.artist_uuid && metadata.week_identifier === weekIdentifier && metadata.meets_watch_time) {
-            watchedVideos.add(String(metadata.artist_uuid));
+          const typedMetadata = metadata as { artist_uuid?: string, meets_watch_time?: boolean };
+          if (typedMetadata.artist_uuid && typedMetadata.meets_watch_time) {
+            watchedVideos.add(String(typedMetadata.artist_uuid));
           }
         } catch (e) {
           console.warn("Error parsing engagement metadata:", e);
