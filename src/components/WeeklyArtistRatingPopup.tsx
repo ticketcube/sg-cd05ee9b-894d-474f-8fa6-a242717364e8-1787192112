@@ -43,7 +43,7 @@ export function WeeklyArtistRatingPopup({
     const loadUserProfile = async () => {
       if (user?.id) {
         try {
-          const profile = await userProfileService.getUserProfileByAuthId(auth.id);
+          const profile = await userProfileService.getUserProfileByAuthId(id);
           setUserProfile(profile);
           console.log("User profile loaded:", profile);
         } catch (error) {
