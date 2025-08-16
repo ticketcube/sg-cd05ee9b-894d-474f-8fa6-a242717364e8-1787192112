@@ -97,41 +97,6 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                 }
             }
 
-            // Check if this is a magic link sign-in completion with temporary data
-            const tempAuthData = localStorage.getItem("temp_auth_data");
-            if (tempAuthData) {
-                try {
-                    const tempData = JSON.parse(tempAuthData);
-                    console.log("🔗 Magic link authentication detected, completing profile...");
-
-                    // Complete the profile creation with the stored temporary data
-                    const userProfile = await userProfileService.createOrUpdateUserProfile({
-                        username: tempData.username,
-                        email: tempData.email,
-                        city: tempData.city
-                    });
-
-                    const userData: User = {
-                        id: userProfile.id,
-                        auth_id: authUser.id,
-                        username: userProfile.username,
-                        email: userProfile.email,
-                        city: userProfile.raw_city_input || undefined,
-                        points: userProfile.total_points || 0
-                    };
-
-                    setUser(userData);
-                    localStorage.setItem("otwchart_user", JSON.stringify(userData));
-                    localStorage.removeItem("temp_auth_data"); // Clean up temporary data
-                    console.log("✅ Profile completed successfully from magic link");
-                    return;
-                } catch (error) {
-                    console.error("Error completing profile from magic link:", error);
-                    localStorage.removeItem("temp_auth_data");
-                    // Continue with normal flow below
-                }
-            }
-
             // Try to fetch user profile from database
             try {
                 const userProfile = await userProfileService.getUserProfile(authUser.id);
