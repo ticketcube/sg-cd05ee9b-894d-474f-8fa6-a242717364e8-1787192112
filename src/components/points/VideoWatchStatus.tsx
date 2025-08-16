@@ -1,58 +1,61 @@
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Check, Clock, Award } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { videoWatchService } from "@/services/videoWatchService";
-import type { VideoWatchStatus as VideoWatchStatusType } from "@/services/videoWatchService";
 
 interface VideoWatchStatusProps {
-  userId: number;
   artistUuid: string;
   weekIdentifier: string;
-  currentWatchTime?: number;
-  minWatchTime?: number;
   className?: string;
 }
 
+interface WatchStatusData {
+  hasWatched: boolean;
+  watchedAt?: string;
+}
+
 export default function VideoWatchStatus({
-  userId,
   artistUuid,
   weekIdentifier,
-  currentWatchTime = 0,
-  minWatchTime = 15,
-  className = ""
+  className = "",
 }: VideoWatchStatusProps) {
-  const [watchStatus, setWatchStatus] = useState<VideoWatchStatusType | null>(null);
+  const { user } = useAuth();
+  const [watchStatus, setWatchStatus] = useState<WatchStatusData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadWatchStatus = async () => {
-      try {
-        const status = await videoWatchService.getVideoWatchStatus(
-          userId,
-          artistUuid,
-          weekIdentifier
-        );
-        setWatchStatus(status);
-      } catch (error) {
-        console.error("Error loading watch status:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (userId && artistUuid && weekIdentifier) {
+    if (user) {
       loadWatchStatus();
     }
-  }, [userId, artistUuid, weekIdentifier]);
+  }, [user, artistUuid, weekIdentifier]);
+
+  const loadWatchStatus = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const watchData = await videoWatchService.getWatchStatus(user.id, artistUuid, weekIdentifier);
+      
+      setWatchStatus({
+        hasWatched: watchData.length > 0,
+        watchedAt: watchData[0]?.created_at
+      });
+    } catch (error) {
+      console.error("Error loading video watch status:", error);
+      setWatchStatus({ hasWatched: false });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
-      <div className={`flex items-center gap-2 ${className}`}>
-        <div className="w-4 h-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500" />
-        <span className="text-sm text-gray-500">Loading...</span>
-      </div>
+      <Badge variant="outline" className={`gap-1 ${className}`}>
+        <Loader2 className="w-3 h-3 animate-spin" />
+        Loading...
+      </Badge>
     );
   }
 
@@ -60,70 +63,22 @@ export default function VideoWatchStatus({
     return null;
   }
 
-  // Use current watch time if video is actively playing, otherwise use stored time
-  const displayWatchTime = currentWatchTime > 0 ? currentWatchTime : watchStatus.watchTimeSeconds;
-  const hasWatched = watchStatus.hasWatched || currentWatchTime >= minWatchTime;
-  const meetsMinimum = watchStatus.meetsMinRequirement || currentWatchTime >= minWatchTime;
-  const earnedPoints = watchStatus.earnedPoints;
-
-  // Calculate progress percentage
-  const progressPercent = Math.min((displayWatchTime / minWatchTime) * 100, 100);
-
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
-      {/* Watch Status Icon */}
-      <div className="flex items-center gap-2">
-        {meetsMinimum ? (
-          <div className="flex items-center gap-1">
-            <Check className="w-4 h-4 text-green-500" />
-            {earnedPoints && <Award className="w-4 h-4 text-yellow-500" />}
-          </div>
-        ) : (
-          <Clock className="w-4 h-4 text-gray-400" />
-        )}
-        
-        <span className="text-sm font-medium">
-          {displayWatchTime}s / {minWatchTime}s
-        </span>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="flex-1 min-w-[80px] max-w-[120px]">
-        <Progress 
-          value={progressPercent} 
-          className="h-2"
-        />
-      </div>
-
-      {/* Status Badges */}
-      <div className="flex gap-1">
-        {meetsMinimum && (
-          <Badge 
-            variant="secondary" 
-            className="text-xs bg-green-100 text-green-700 border-green-200"
-          >
-            Watched
-          </Badge>
-        )}
-        
-        {earnedPoints && (
-          <Badge 
-            variant="secondary"
-            className="text-xs bg-yellow-100 text-yellow-700 border-yellow-200"
-          >
-            +5pts
-          </Badge>
-        )}
-        
-        {hasWatched && !earnedPoints && (
-          <Badge 
-            variant="secondary"
-            className="text-xs bg-gray-100 text-gray-600 border-gray-200"
-          >
-            No points
-          </Badge>
-        )}
-      </div>
-    </div>
+    <Badge
+      variant={watchStatus.hasWatched ? "default" : "outline"}
+      className={`gap-1 ${className}`}
+    >
+      {watchStatus.hasWatched ? (
+        <>
+          <Eye className="w-3 h-3" />
+          Watched
+        </>
+      ) : (
+        <>
+          <EyeOff className="w-3 h-3" />
+          Not Watched
+        </>
+      )}
+    </Badge>
   );
 }
