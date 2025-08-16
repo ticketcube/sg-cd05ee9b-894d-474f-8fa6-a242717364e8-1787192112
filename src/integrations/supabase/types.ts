@@ -718,6 +718,13 @@ export type Database = {
         Args: { user_id: string }
         Returns: string
       }
+      get_weekly_list_for_user: {
+        Args: {
+          p_user_id: string
+          p_week_identifier: string
+        }
+        Returns: Json
+      }
       increment_user_points: {
         Args: { points_to_add: number; user_id_to_update: number }
         Returns: undefined

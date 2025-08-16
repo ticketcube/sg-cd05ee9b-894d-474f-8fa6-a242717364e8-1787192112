@@ -9,6 +9,18 @@ export interface WeeklyListWithArtists extends WeeklyList {
   artists: (WeeklyListArtist & { artist: Artist })[];
 }
 
+// New type for an artist with user-specific status
+export interface EnrichedWeeklyListArtist extends WeeklyListArtist {
+  artist: Artist;
+  user_has_voted: boolean;
+  user_has_watched_video: boolean;
+}
+
+// New type for the whole list object
+export interface WeeklyListWithEnrichedArtists extends WeeklyList {
+  artists: EnrichedWeeklyListArtist[];
+}
+
 export interface CreateWeeklyListData {
   week_identifier: string;
   title: string;
@@ -114,6 +126,38 @@ export class WeeklyListService {
       };
     } catch (error) {
       console.error("Error getting weekly list:", error);
+      throw error;
+    }
+  }
+
+  async getWeeklyListForUser(weekIdentifier: string, userId: string): Promise<WeeklyListWithEnrichedArtists | null> {
+    try {
+      console.log(`Getting weekly list for user: ${userId}, week: ${weekIdentifier}`);
+      const { data, error } = await supabase.rpc('get_weekly_list_for_user', {
+        p_week_identifier: weekIdentifier,
+        p_user_id: userId,
+      });
+
+      if (error) {
+        console.error("Error calling get_weekly_list_for_user RPC:", error);
+        throw error;
+      }
+
+      if (!data) {
+        console.log("No data returned from get_weekly_list_for_user RPC for week:", weekIdentifier);
+        return null;
+      }
+      
+      // The RPC returns a single JSONB object which is the enriched weekly list.
+      // We need to cast it to our defined type.
+      // The artist objects inside the 'artists' array need to be sorted by position
+      const list = data as unknown as WeeklyListWithEnrichedArtists;
+      list.artists.sort((a, b) => (a.position || 0) - (b.position || 0));
+
+      return list;
+
+    } catch (error) {
+      console.error("Error getting weekly list for user:", error);
       throw error;
     }
   }

@@ -32,6 +32,21 @@ export interface QuadrantVoteData {
   }>;
 }
 
+export interface SubmissionResult {
+  totalPointsEarned: number;
+  breakdown: {
+    ratings: {
+      count: number;
+      points: number;
+      pointsPerRating: number;
+    };
+    completionBonus: {
+      points: number;
+    };
+  };
+  votesSubmitted: number;
+}
+
 export class WeeklyVotingService {
   
   /**
@@ -130,6 +145,80 @@ export class WeeklyVotingService {
     }
   }
 
+  /**
+   * Check if user has rated all artists in a weekly list and award completion bonus
+   */
+  async checkRatingCompletionBonus(userId: number, weekIdentifier: string): Promise<{ pointsEarned: number; eligible: boolean }> {
+    try {
+      // Get all artists in this weekly list
+      const { data: weeklyListArtists, error: artistsError } = await supabase
+        .from("weekly_list_artists")
+        .select("artist_uuid")
+        .eq("week_identifier", weekIdentifier);
+
+      if (artistsError || !weeklyListArtists || weeklyListArtists.length === 0) {
+        console.error("Error fetching weekly list artists for bonus check:", artistsError);
+        return { pointsEarned: 0, eligible: false };
+      }
+
+      // Check how many unique artists the user has voted for this week
+      const { count, error: votesError } = await supabase
+        .from("weekly_votes")
+        .select("artist_uuid", { count: 'exact', head: true })
+        .eq("user_id", userId)
+        .eq("week_identifier", weekIdentifier);
+      
+      if (votesError) {
+        console.error("Error fetching user votes for bonus check:", votesError);
+        return { pointsEarned: 0, eligible: false };
+      }
+
+      const totalArtistsInList = weeklyListArtists.length;
+      const userVotedCount = count || 0;
+
+      // If user hasn't rated all artists, no bonus
+      if (userVotedCount < totalArtistsInList) {
+        return { pointsEarned: 0, eligible: false };
+      }
+
+      // Check if user is eligible for the rating completion bonus (once per week)
+      const eligible = await pointsConfigService.checkEligibility(
+        'rating_completion_bonus',
+        userId,
+        undefined,
+        weekIdentifier
+      );
+
+      if (!eligible) {
+        return { pointsEarned: 0, eligible: false };
+      }
+      
+      // Award the bonus
+      const bonusPoints = await pointsConfigService.getPoints('rating_completion_bonus');
+      
+      await userProfileService.recordEngagement(
+        userId,
+        "rating_completion_bonus",
+        bonusPoints,
+        weekIdentifier,
+        undefined,
+        {
+          artists_rated_count: userVotedCount,
+          total_artists_in_list: totalArtistsInList,
+          completion_week: weekIdentifier,
+        }
+      );
+
+      return {
+        pointsEarned: bonusPoints,
+        eligible: true
+      };
+    } catch (error) {
+      console.error("Error checking rating completion bonus:", error);
+      return { pointsEarned: 0, eligible: false };
+    }
+  }
+
   async submitRankingVotes(data: RankingVoteData): Promise<{ pointsEarned: number; votesSubmitted: number }> {
     try {
       // Get dynamic configuration
@@ -201,28 +290,14 @@ export class WeeklyVotingService {
     }
   }
 
-  async submitQuadrantVotes(data: QuadrantVoteData): Promise<{ pointsEarned: number; votesSubmitted: number }> {
+  async submitQuadrantVotes(data: QuadrantVoteData): Promise<SubmissionResult> {
     try {
-      // Get dynamic configuration
-      const voteSubmissionPoints = await pointsConfigService.getPoints('vote_submission');
+      // Get dynamic points configuration
+      const pointsPerRating = await pointsConfigService.getPoints('artist_rating');
+      let totalPointsFromRatings = 0;
       
-      // Check if user is eligible for vote submission points
-      const eligible = await pointsConfigService.checkEligibility(
-        'vote_submission',
-        data.userId,
-        undefined,
-        data.weekIdentifier
-      );
-
-      // Delete existing votes for this user and week
-      await supabase
-        .from("weekly_votes")
-        .delete()
-        .eq("user_id", data.userId)
-        .eq("week_identifier", data.weekIdentifier);
-
-      // Insert new quadrant votes
-      const voteInserts = data.artistPositions.map(position => ({
+      // Upsert votes
+      const voteUpserts = data.artistPositions.map(position => ({
         user_id: data.userId,
         week_identifier: data.weekIdentifier,
         artist_uuid: position.artistUuid,
@@ -234,38 +309,58 @@ export class WeeklyVotingService {
 
       const { error: voteError } = await supabase
         .from("weekly_votes")
-        .insert(voteInserts);
+        .upsert(voteUpserts, { onConflict: 'user_id, week_identifier, artist_uuid' });
 
       if (voteError) throw voteError;
 
-      // Calculate points
-      let pointsEarned = 0;
-      if (eligible) {
-        pointsEarned += voteSubmissionPoints;
+      // Record engagement and award points for each individual rating
+      for (const position of data.artistPositions) {
+        const eligible = await pointsConfigService.checkEligibility(
+          'artist_rating',
+          data.userId,
+          position.artistUuid,
+          data.weekIdentifier
+        );
+
+        if (eligible) {
+          totalPointsFromRatings += pointsPerRating;
+          await userProfileService.recordEngagement(
+            data.userId,
+            "artist_rating",
+            pointsPerRating,
+            data.weekIdentifier,
+            position.artistUuid,
+            {
+              vote_type: "quadrant",
+              quadrant_x: position.quadrant_x,
+              quadrant_y: position.quadrant_y
+            }
+          );
+        }
       }
 
-      // Record the engagement
-      await userProfileService.recordEngagement(
-        data.userId,
-        "vote_submission",
-        pointsEarned,
-        data.weekIdentifier,
-        undefined,
-        {
-          vote_type: "quadrant",
-          artists_voted: data.artistPositions.length,
-          quadrant_positions: data.artistPositions
-        }
-      );
+      // Check for rating completion bonus
+      const completionBonusResult = await this.checkRatingCompletionBonus(data.userId, data.weekIdentifier);
+      const bonusPoints = completionBonusResult.pointsEarned;
 
-      // Check for video completion bonus after voting
-      const completionBonus = await this.checkVideoCompletionBonus(data.userId, data.weekIdentifier);
-      pointsEarned += completionBonus.pointsEarned;
-
-      return {
-        pointsEarned,
+      // Prepare the detailed result
+      const result: SubmissionResult = {
+        totalPointsEarned: totalPointsFromRatings + bonusPoints,
+        breakdown: {
+          ratings: {
+            count: data.artistPositions.length,
+            points: totalPointsFromRatings,
+            pointsPerRating: pointsPerRating
+          },
+          completionBonus: {
+            points: bonusPoints
+          }
+        },
         votesSubmitted: data.artistPositions.length
       };
+
+      return result;
+
     } catch (error) {
       console.error("Error submitting quadrant votes:", error);
       throw error;

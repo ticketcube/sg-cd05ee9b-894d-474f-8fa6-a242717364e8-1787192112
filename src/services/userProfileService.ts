@@ -12,7 +12,9 @@ export type EngagementType =
   | "video_completion_bonus" 
   | "daily_login" 
   | "weekly_streak" 
-  | "referral_bonus";
+  | "referral_bonus"
+  | "artist_rating"
+  | "rating_completion_bonus";
 
 export interface UserEngagement {
   id: number;
