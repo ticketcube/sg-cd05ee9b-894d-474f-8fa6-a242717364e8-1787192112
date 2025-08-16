@@ -1,13 +1,14 @@
-<![CDATA[
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { weeklyListService, WeeklyListWithEnrichedArtists, EnrichedWeeklyListArtist } from "@/services/weeklyListService";
 import { weeklyVotingService, SubmissionResult } from "@/services/weeklyVotingService";
+import { videoWatchService } from "@/services/videoWatchService";
 import type { Tables } from "@/integrations/supabase/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, User, Play, CheckCircle } from "lucide-react";
+import { Loader2, User, Play, CheckCircle, Eye } from "lucide-react";
 import Image from "next/image";
 import AuthGuard from "@/components/AuthGuard";
 import WeeklyArtistRatingPopup from "@/components/WeeklyArtistRatingPopup";
@@ -24,6 +25,12 @@ interface ArtistRating {
   isRated: boolean;
 }
 
+interface VideoWatchStatus {
+  artistUuid: string;
+  hasWatched: boolean;
+  watchedAt?: string;
+}
+
 function WeeklyRatingsPageContent() {
   const { user } = useAuth();
   const [weeklyList, setWeeklyList] = useState<WeeklyListWithEnrichedArtists | null>(null);
@@ -33,6 +40,7 @@ function WeeklyRatingsPageContent() {
   const [loadingSpecificList, setLoadingSpecificList] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
   const [artistRatings, setArtistRatings] = useState<ArtistRating[]>([]);
+  const [videoWatchStatuses, setVideoWatchStatuses] = useState<VideoWatchStatus[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -85,7 +93,7 @@ function WeeklyRatingsPageContent() {
       }
       setWeeklyList(list);
 
-      // Populate ratings from existing user votes
+      // Load existing user votes
       const existingVotes = await weeklyVotingService.getUserVotes(user.id, weekIdentifier);
       const initialRatings = existingVotes.map(vote => ({
         artistUuid: vote.artist_uuid,
@@ -94,6 +102,26 @@ function WeeklyRatingsPageContent() {
         isRated: true
       }));
       setArtistRatings(initialRatings);
+
+      // Load video watch statuses for all artists in this week
+      const watchStatuses: VideoWatchStatus[] = [];
+      for (const artistData of list.artists) {
+        try {
+          const watchData = await videoWatchService.getWatchStatus(user.id, artistData.artist.uuid, weekIdentifier);
+          watchStatuses.push({
+            artistUuid: artistData.artist.uuid,
+            hasWatched: watchData.length > 0,
+            watchedAt: watchData[0]?.created_at
+          });
+        } catch (error) {
+          // If we can't get watch status, assume not watched
+          watchStatuses.push({
+            artistUuid: artistData.artist.uuid,
+            hasWatched: false
+          });
+        }
+      }
+      setVideoWatchStatuses(watchStatuses);
       
     } catch (err) {
       setListError(err instanceof Error ? err.message : "Failed to load weekly list");
@@ -154,17 +182,21 @@ function WeeklyRatingsPageContent() {
       const voteData = {
         userId: user.id,
         weekIdentifier: weeklyList.week_identifier!,
-        artistPositions: artistRatings.map(r => ({
+        artistPositions: artistRatings.filter(r => r.isRated).map(r => ({
           artistUuid: r.artistUuid,
           quadrant_x: r.ticketInterest,
           quadrant_y: r.shareInterest
         }))
       };
+      
       const result = await weeklyVotingService.submitQuadrantVotes(voteData);
       setSubmissionResult(result);
+      
       if (result.totalPointsEarned > 0) {
         showVoteSubmissionNotification(result.totalPointsEarned);
       }
+      
+      // Reload the list to get updated status
       await loadSpecificWeeklyList(weeklyList.week_identifier!);
     } catch (error) {
       console.error("Error submitting ratings:", error);
@@ -174,12 +206,16 @@ function WeeklyRatingsPageContent() {
     }
   };
 
+  const getArtistWatchStatus = (artistUuid: string) => {
+    return videoWatchStatuses.find(status => status.artistUuid === artistUuid);
+  };
+
   const ratedArtistsCount = useMemo(() => artistRatings.filter(r => r.isRated).length, [artistRatings]);
   
   const hasSubmittedAll = useMemo(() => {
     if (!weeklyList) return false;
     return weeklyList.artists.every(artist => 
-      artistRatings.some(r => r.artistUuid === artist.artist.uuid && r.isRated)
+      artist.user_has_voted || artistRatings.some(r => r.artistUuid === artist.artist.uuid && r.isRated)
     );
   }, [weeklyList, artistRatings]);
 
@@ -232,14 +268,25 @@ function WeeklyRatingsPageContent() {
                     {weeklyList.artists.slice(start, start + 5).map((artistData) => {
                       const artist = artistData.artist;
                       const hasVoted = artistData.user_has_voted;
+                      const watchStatus = getArtistWatchStatus(artist.uuid);
+                      const hasWatchedVideo = watchStatus?.hasWatched || false;
+                      
                       return (
                         <div key={artist.uuid} className="text-center cursor-pointer rounded-lg transition-all duration-200 hover:bg-blue-800 hover:scale-105 p-1" onClick={() => handleWatchArtist(artistData)}>
-                          <div className={`select-none transition-opacity ${hasVoted ? 'opacity-50' : ''}`}>
+                          <div className={`select-none transition-opacity ${hasVoted ? 'opacity-50' : ''} relative`}>
                             {artist.artist_image ? (
                               <Image src={artist.artist_image} alt={artist.artist_name} width={48} height={48} className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white" />
                             ) : (
                               <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center mx-auto"><User className="w-6 h-6" /></div>
                             )}
+                            
+                            {/* Video watched indicator */}
+                            {hasWatchedVideo && (
+                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center">
+                                <Eye className="w-2 h-2 text-white" />
+                              </div>
+                            )}
+                            
                             <div className="text-xs text-white mt-1 truncate">{artist.artist_name}</div>
                           </div>
                           <div className={`mt-1 inline-flex items-center justify-center h-5 px-1 text-xs rounded ${hasVoted ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}`}>
@@ -280,8 +327,18 @@ function WeeklyRatingsPageContent() {
                   </CardContent>
                 </Card>
                 <div className="mt-4">
-                  <Button onClick={handleSubmitRatings} disabled={submitting || hasSubmittedAll || ratedArtistsCount === 0} className="w-full text-lg py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-600">
-                    {submitting ? <><Loader2 className="animate-spin mr-2" />Submitting...</> : hasSubmittedAll ? "ALL RATINGS SUBMITTED!" : `SUBMIT RATINGS (${ratedArtistsCount})`}
+                  <Button 
+                    onClick={handleSubmitRatings} 
+                    disabled={submitting || hasSubmittedAll || ratedArtistsCount === 0} 
+                    className="w-full text-lg py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
+                  >
+                    {submitting ? (
+                      <><Loader2 className="animate-spin mr-2" />Submitting...</>
+                    ) : hasSubmittedAll ? (
+                      "ALL RATINGS SUBMITTED!"
+                    ) : (
+                      `SUBMIT RATINGS (${ratedArtistsCount})`
+                    )}
                   </Button>
                 </div>
               </div>
@@ -302,7 +359,11 @@ function WeeklyRatingsPageContent() {
           />
         )}
 
-        <SubmissionSuccessPopup isOpen={!!submissionResult} onClose={() => setSubmissionResult(null)} result={submissionResult} />
+        <SubmissionSuccessPopup 
+          isOpen={!!submissionResult} 
+          onClose={() => setSubmissionResult(null)} 
+          result={submissionResult} 
+        />
       </div>
     </>
   );
@@ -311,4 +372,3 @@ function WeeklyRatingsPageContent() {
 export default function WeeklyRatingsPage() {
   return <AuthGuard><WeeklyRatingsPageContent /></AuthGuard>;
 }
-]]>
