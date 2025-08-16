@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { weeklyListService } from "@/services/weeklyListService";
 import { videoWatchService } from "@/services/videoWatchService";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
-import { userProfileService } from "@/services/userProfileService";
+import userProfileService from "@/services/userProfileService";
 
 interface WeeklyProgressData {
   weekIdentifier: string;
