@@ -1,11 +1,12 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { User, LogOut, LogIn } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import AuthDialog from "@/components/AuthDialog";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -14,6 +15,7 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -21,7 +23,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
       router.push("/");
     } catch (error) {
       console.error("Error signing out:", error);
+      // On any error, redirect to index page
+      router.push("/");
     }
+  };
+
+  const handleLoginClick = () => {
+    setAuthDialogOpen(true);
+  };
+
+  const handleAuthClose = () => {
+    setAuthDialogOpen(false);
   };
 
   return (
@@ -63,12 +75,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 </Button>
               </div>
             ) : (
-              <Link href="/auth/login">
-                <Button variant="outline" size="sm" className="gap-2 text-white border-white hover:bg-white hover:text-black bg-transparent">
-                  <LogIn className="h-4 w-4" />
-                  Login
-                </Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleLoginClick}
+                className="gap-2 text-white border-white hover:bg-white hover:text-black bg-transparent"
+              >
+                <LogIn className="h-4 w-4" />
+                Login
+              </Button>
             )}
           </div>
         </div>
@@ -78,6 +93,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <main className="flex-grow flex flex-col overflow-x-hidden min-h-0">
         {children}
       </main>
+
+      {/* Auth Dialog for header login button */}
+      <AuthDialog 
+        isOpen={isAuthDialogOpen} 
+        onClose={handleAuthClose}
+        title="Join OnesToWatch"
+        description="Create your account to start earning rewards and voting on discoveries!"
+      />
     </div>
   );
 }

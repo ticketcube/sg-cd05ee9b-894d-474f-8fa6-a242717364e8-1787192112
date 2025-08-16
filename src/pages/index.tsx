@@ -1,28 +1,44 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Trophy, TrendingUp, Music, User, LogOut, UploadCloud } from "lucide-react";
+import { Trophy, TrendingUp, Music } from "lucide-react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthDialog from "@/components/AuthDialog";
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import PromotionPopup from "@/components/PromotionPopup";
 
 const showDiscoveryCharts = false;
 
 export default function HomePage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
   const [showPromotionAuthDialog, setShowPromotionAuthDialog] = useState(false);
 
-  const handleNavigation = (path: string) => {
+  // Handle any routing errors by staying on index
+  useEffect(() => {
+    const handleRouteChangeError = () => {
+      router.push("/");
+    };
+
+    router.events.on('routeChangeError', handleRouteChangeError);
+    return () => {
+      router.events.off('routeChangeError', handleRouteChangeError);
+    };
+  }, [router]);
+
+  const handleNavigation = async (path: string) => {
     if (!user) {
       setAuthDialogOpen(true);
-    } else {
-      router.push(path);
+      return;
+    }
+    
+    try {
+      await router.push(path);
+    } catch (error) {
+      console.error("Navigation error:", error);
+      // Stay on current page if navigation fails
     }
   };
 
@@ -31,8 +47,23 @@ export default function HomePage() {
   };
   
   const handleAuthClose = () => {
+    setAuthDialogOpen(false);
+  };
+
+  const handlePromotionAuthClose = () => {
     setShowPromotionAuthDialog(false);
   };
+
+  // If user just logged in, automatically navigate to weekly-ratings
+  useEffect(() => {
+    if (user && !loading && isAuthDialogOpen) {
+      setAuthDialogOpen(false);
+      // Small delay to ensure state is settled, then navigate
+      setTimeout(() => {
+        router.push("/weekly-ratings");
+      }, 300);
+    }
+  }, [user, loading, isAuthDialogOpen, router]);
   
   return (
     <div className="flex-grow bg-black text-white">
@@ -69,7 +100,7 @@ export default function HomePage() {
                 </p>
               </div>
               <Button className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg">
-                Start Earning Rewards
+                {user ? "Continue Earning" : "Start Earning Rewards"}
               </Button>
             </CardContent>
           </Card>
@@ -110,7 +141,12 @@ export default function HomePage() {
       </div>
       
       {/* Auth Dialog for protected navigation */}
-      <AuthDialog isOpen={isAuthDialogOpen} onClose={() => setAuthDialogOpen(false)} />
+      <AuthDialog 
+        isOpen={isAuthDialogOpen} 
+        onClose={handleAuthClose}
+        title="Join OnesToWatch"
+        description="Create your account to vote on discoveries and earn rewards!"
+      />
       
       {/* Promotional Popup for new users */}
       <PromotionPopup onRegisterClick={handleRegisterClick} />
@@ -118,7 +154,7 @@ export default function HomePage() {
       {/* Auth Dialog for the promotional popup */}
       <AuthDialog 
         isOpen={showPromotionAuthDialog} 
-        onClose={handleAuthClose}
+        onClose={handlePromotionAuthClose}
         title="Get Local Events & Rewards"
         description="Register to see events in your city and earn rewards!"
       />
