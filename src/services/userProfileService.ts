@@ -369,6 +369,32 @@ const userProfileService = {
       console.error("Error checking vote submission eligibility:", error);
       return false;
     }
+  },
+
+  /**
+   * Get weekly stats for a user
+   * @param userId The ID of the user
+   * @param weekIdentifier The week identifier
+   * @returns Weekly stats object with total points earned for that week
+   */
+  async getWeeklyStats(userId: number, weekIdentifier: string): Promise<{ total_points: number }> {
+    try {
+      const { data, error } = await supabase
+        .from("user_engagements")
+        .select("points_earned")
+        .eq("user_id", userId)
+        .eq("week_identifier", weekIdentifier);
+
+      if (error) throw error;
+
+      const total_points = data?.reduce((total, engagement) => 
+        total + (engagement.points_earned || 0), 0) || 0;
+
+      return { total_points };
+    } catch (error) {
+      console.error("Error getting weekly stats:", error);
+      throw error;
+    }
   }
 };
 
