@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -130,31 +131,70 @@ export class WeeklyListService {
     }
   }
 
-  async getWeeklyListForUser(weekIdentifier: string, userId: string): Promise<WeeklyListWithEnrichedArtists | null> {
+  async getWeeklyListForUser(weekIdentifier: string, userAuthId: string): Promise<WeeklyListWithEnrichedArtists | null> {
     try {
-      console.log(`Getting weekly list for user: ${userId}, week: ${weekIdentifier}`);
-      const { data, error } = await supabase.rpc('get_weekly_list_for_user', {
-        p_week_identifier: weekIdentifier,
-        p_user_id: userId,
-      });
+      console.log(`Getting weekly list for user auth_id: ${userAuthId}, week: ${weekIdentifier}`);
+      
+      // First, get the user's profile to get their numeric ID
+      const { data: userProfile, error: userError } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("auth_id", userAuthId)
+        .single();
 
-      if (error) {
-        console.error("Error calling get_weekly_list_for_user RPC:", error);
-        throw error;
+      if (userError) {
+        console.error("Error getting user profile:", userError);
+        throw new Error("User profile not found");
       }
 
-      if (!data) {
-        console.log("No data returned from get_weekly_list_for_user RPC for week:", weekIdentifier);
+      const userId = userProfile.id;
+
+      // Get the basic weekly list
+      const weeklyList = await this.getWeeklyList(weekIdentifier);
+      if (!weeklyList) {
         return null;
       }
-      
-      // The RPC returns a single JSONB object which is the enriched weekly list.
-      // We need to cast it to our defined type.
-      // The artist objects inside the 'artists' array need to be sorted by position
-      const list = data as unknown as WeeklyListWithEnrichedArtists;
-      list.artists.sort((a, b) => (a.position || 0) - (b.position || 0));
 
-      return list;
+      // Get user's votes for this week
+      const { data: userVotes, error: votesError } = await supabase
+        .from("weekly_votes")
+        .select("artist_uuid")
+        .eq("user_id", userId)
+        .eq("week_identifier", weekIdentifier);
+
+      if (votesError) {
+        console.error("Error fetching user votes:", votesError);
+      }
+
+      const votedArtistUuids = new Set(userVotes?.map(v => v.artist_uuid) || []);
+
+      // Get user's video watch status for this week
+      const { data: userEngagements, error: engagementsError } = await supabase
+        .from("user_engagements")
+        .select("artist_uuid")
+        .eq("user_id", userId)
+        .eq("week_identifier", weekIdentifier)
+        .eq("engagement_type", "video_view");
+
+      if (engagementsError) {
+        console.error("Error fetching user engagements:", engagementsError);
+      }
+
+      const watchedArtistUuids = new Set(userEngagements?.map(e => e.artist_uuid) || []);
+
+      // Create enriched artists with user status
+      const enrichedArtists: EnrichedWeeklyListArtist[] = weeklyList.artists.map(artistData => ({
+        ...artistData,
+        user_has_voted: votedArtistUuids.has(artistData.artist.uuid),
+        user_has_watched_video: watchedArtistUuids.has(artistData.artist.uuid)
+      }));
+
+      const enrichedList: WeeklyListWithEnrichedArtists = {
+        ...weeklyList,
+        artists: enrichedArtists
+      };
+
+      return enrichedList;
 
     } catch (error) {
       console.error("Error getting weekly list for user:", error);
@@ -164,51 +204,19 @@ export class WeeklyListService {
 
   async getAllWeeklyLists(): Promise<WeeklyList[]> {
     try {
-      console.log("=== DEBUGGING getAllWeeklyLists ===");
-      console.log("1. Starting getAllWeeklyLists method");
-      
-      console.log("2. About to call supabase.from('weekly_lists')");
-      const query = supabase.from("weekly_lists");
-      console.log("3. Created query object:", query);
-      
-      console.log("4. About to call .select('*')");
-      const selectQuery = query.select("*");
-      console.log("5. Created select query:", selectQuery);
-      
-      console.log("6. About to call .order('start_date', { ascending: false })");
-      const orderedQuery = selectQuery.order("start_date", { ascending: false });
-      console.log("7. Created ordered query:", orderedQuery);
-      
-      console.log("8. About to execute the query with await");
-      const result = await orderedQuery;
-      console.log("9. Query executed. Full result object:", result);
-      
-      const { data, error } = result;
-      console.log("10. Destructured result - data:", data);
-      console.log("11. Destructured result - error:", error);
+      const { data, error } = await supabase
+        .from("weekly_lists")
+        .select("*")
+        .order("start_date", { ascending: false });
 
       if (error) {
-        console.error("12. ERROR DETECTED:");
-        console.error("Error object:", error);
-        console.error("Error message:", error.message);
-        console.error("Error code:", error.code);
-        console.error("Error details:", error.details);
-        console.error("Error hint:", error.hint);
+        console.error("Error fetching weekly lists:", error);
         throw error;
       }
       
-      console.log("13. No error, returning data:", data?.length || 0, "items");
-      console.log("14. Actual data:", data);
       return data || [];
     } catch (error) {
-      console.error("=== CATCH BLOCK TRIGGERED ===");
-      console.error("Caught error:", error);
-      console.error("Error type:", typeof error);
-      console.error("Error constructor:", error?.constructor?.name);
-      if (error instanceof Error) {
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
-      }
+      console.error("Error getting all weekly lists:", error);
       throw error;
     }
   }
