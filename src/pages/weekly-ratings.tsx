@@ -1,8 +1,8 @@
-<![CDATA[import { useState, useEffect, useCallback } from "react";
+<![CDATA[
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { weeklyListService } from "@/services/weeklyListService";
+import { weeklyListService, WeeklyListWithEnrichedArtists, EnrichedWeeklyListArtist } from "@/services/weeklyListService";
 import { weeklyVotingService, SubmissionResult } from "@/services/weeklyVotingService";
-import type { WeeklyListWithEnrichedArtists, EnrichedWeeklyListArtist } from "@/services/weeklyListService";
 import type { Tables } from "@/integrations/supabase/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ import PointsNotification, { usePointsNotifications } from "@/components/points/
 import HowPointsWorkModal from "@/components/points/HowPointsWorkModal";
 import SubmissionSuccessPopup from "@/components/points/SubmissionSuccessPopup";
 
-type Artist = Tables<"artists">;
 type WeeklyList = Tables<"weekly_lists">;
 
 interface ArtistRating {
@@ -119,7 +118,6 @@ function WeeklyRatingsPageContent() {
   }, []);
 
   const handleRatingComplete = (artistUuid: string, ticketInterest: number, shareInterest: number) => {
-    // Update local artist ratings state
     setArtistRatings(prev => {
       const existingIndex = prev.findIndex(rating => rating.artistUuid === artistUuid);
       const newRating = { artistUuid, ticketInterest, shareInterest, isRated: true };
@@ -130,7 +128,6 @@ function WeeklyRatingsPageContent() {
       }
     });
 
-    // Update the main weekly list state to reflect the vote without a full refetch
     setWeeklyList(prev => {
       if (!prev) return null;
       return {
@@ -168,7 +165,6 @@ function WeeklyRatingsPageContent() {
       if (result.totalPointsEarned > 0) {
         showVoteSubmissionNotification(result.totalPointsEarned);
       }
-      // Re-fetch list data to get updated completion bonus status
       await loadSpecificWeeklyList(weeklyList.week_identifier!);
     } catch (error) {
       console.error("Error submitting ratings:", error);

@@ -39,6 +39,7 @@ export default function WeeklyArtistRatingPopup({
   const [shareInterest, setShareInterest] = useState(50);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
   const handleVideoPlay = () => {
     setIsVideoPlaying(true);
