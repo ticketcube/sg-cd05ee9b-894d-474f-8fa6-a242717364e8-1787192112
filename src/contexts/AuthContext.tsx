@@ -1,16 +1,17 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { userProfileService } from "@/services/userProfileService";
+import userProfileService from "@/services/userProfileService";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export interface User {
-    id: number;
-    auth_id: string; // The UUID from supabase.auth.users
-    username: string;
-    email: string;
-    city?: string;
-    points?: number;
+  id: number;
+  auth_id: string; // The UUID from supabase.auth.users
+  username: string;
+  email: string;
+  city?: string;
+  points?: number;
+  role?: string;
 }
 
 interface AuthContextType {
@@ -133,7 +134,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
             // Try to fetch user profile from database
             try {
-                const userProfile = await userProfileService.getUserProfileByAuthId(authUser.id);
+                const userProfile = await userProfileService.getUserProfile(authUser.id);
                 if (userProfile) {
                     const userData: User = {
                         id: userProfile.id,
@@ -203,11 +204,12 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
             console.log("Creating/updating user profile for authenticated user:", currentSupabaseUser.id);
 
-            const userProfile = await userProfileService.createOrUpdateUserProfile({
-                username: username.trim(),
-                email: email.trim(),
-                city: city?.trim()
-            });
+            const userProfile = await userProfileService.createUserProfile(
+                currentSupabaseUser.id,
+                username.trim(),
+                email.trim(),
+                city?.trim()
+            );
 
             const userData: User = {
                 id: userProfile.id,

@@ -36,7 +36,7 @@ interface QuadrantPosition {
 }
 
 function WeeklyRatingsPageContent() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [weeklyList, setWeeklyList] = useState<WeeklyListWithArtists | null>(null);
   const [allWeeklyLists, setAllWeeklyLists] = useState<WeeklyList[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>("");
@@ -142,7 +142,7 @@ function WeeklyRatingsPageContent() {
   };
 
   const handleSubmitRatings = async () => {
-    if (!user || !profile) {
+    if (!user) {
       alert("Please log in first to submit your ratings.");
       return;
     }
@@ -158,7 +158,7 @@ function WeeklyRatingsPageContent() {
     setSubmitting(true);
     try {
       const voteData = {
-        userId: profile.id,
+        userId: user.id,
         weekIdentifier: weeklyList.week_identifier,
         artistPositions: artistRatings.map(rating => ({
           artistUuid: rating.artistUuid,

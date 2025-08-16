@@ -18,7 +18,7 @@ const ARTISTS_PER_PAGE = 25;
 const REQUIRED_PASSCODE = "otw10";
 
 export default function Top100Page() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [artists, setArtists] = useState<ArtistWithVoteCount[]>([]);
   const [isPasscodeDialogOpen, setIsPasscodeDialogOpen] = useState(false);
   const [isSubmissionDialogOpen, setIsSubmissionDialogOpen] = useState(false);
@@ -116,7 +116,7 @@ export default function Top100Page() {
       setIsPasscodeDialogOpen(true);
       return;
     }
-
+    
     if (selectedArtists.length >= 25 && !selectedArtists.includes(artistId)) {
       alert("You can only select up to 25 artists!");
       return;
@@ -146,7 +146,7 @@ export default function Top100Page() {
   };
 
   const handleVoteSubmit = async () => {
-    if (!profile) {
+    if (!user) {
       alert("Please log in to vote");
       return;
     }
@@ -158,7 +158,7 @@ export default function Top100Page() {
 
     try {
       const voteData = selectedArtists.map(artistUuid => ({
-        user_id: profile.id,
+        user_id: user.id,
         artist_uuid: artistUuid
       }));
 
@@ -299,8 +299,8 @@ export default function Top100Page() {
               </div>
             </div>
             
-            {profile && (
-              <p className="text-center text-purple-200">Logged in as: {profile.username} ({profile.email})</p>
+            {user && (
+              <p className="text-center text-purple-200">Logged in as: {user.username} ({user.email})</p>
             )}
             
             <Button

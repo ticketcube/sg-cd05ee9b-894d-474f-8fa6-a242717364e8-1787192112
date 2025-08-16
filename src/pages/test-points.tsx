@@ -10,7 +10,7 @@ import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function TestPointsPage() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [testResults, setTestResults] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +51,7 @@ export default function TestPointsPage() {
   };
 
   const runVideoViewTest = async () => {
-    if (!user || !profile) {
+    if (!user) {
       setError('Please log in to run this test');
       return;
     }
@@ -63,7 +63,7 @@ export default function TestPointsPage() {
       const testWeekIdentifier = "2025-W30";
       
       const result = await videoWatchService.recordVideoView({
-        userId: profile.id,
+        userId: user.id,
         artistUuid: testArtistUuid,
         weekIdentifier: testWeekIdentifier,
         watchTimeSeconds: 20
@@ -74,7 +74,7 @@ export default function TestPointsPage() {
       setTestResults({
         success: true,
         videoViewResult: result,
-        userId: profile.id,
+        userId: user.id,
         artistUuid: testArtistUuid,
         weekIdentifier: testWeekIdentifier
       });
@@ -88,7 +88,7 @@ export default function TestPointsPage() {
   };
 
   const runFullTestSuite = async () => {
-    if (!user || !profile) {
+    if (!user) {
       setError('Please log in to run the full test suite');
       return;
     }
@@ -98,7 +98,7 @@ export default function TestPointsPage() {
     try {
       console.log('🚀 Running comprehensive test suite...');
       
-      const result = await pointsTestService.runComprehensiveTestSuite(profile.id);
+      const result = await pointsTestService.runComprehensiveTestSuite(user.id);
       console.log('🎉 Test suite completed:', result);
       
       setTestResults(result);
@@ -117,8 +117,8 @@ export default function TestPointsPage() {
         <Card className="bg-black/50 border-purple-500/20 text-white">
           <CardHeader>
             <CardTitle className="text-2xl text-center">Points System Diagnostic Tool</CardTitle>
-            {user && profile && (
-              <p className="text-center text-purple-200">Logged in as: {profile.username} ({user.email})</p>
+            {user && (
+              <p className="text-center text-purple-200">Logged in as: {user.username} ({user.email})</p>
             )}
           </CardHeader>
           
@@ -134,7 +134,7 @@ export default function TestPointsPage() {
               
               <Button 
                 onClick={runVideoViewTest} 
-                disabled={isLoading || !user || !profile}
+                disabled={isLoading || !user}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {isLoading ? 'Testing...' : 'Video View Test'}
@@ -142,7 +142,7 @@ export default function TestPointsPage() {
               
               <Button 
                 onClick={runFullTestSuite} 
-                disabled={isLoading || !user || !profile}
+                disabled={isLoading || !user}
                 className="bg-indigo-600 hover:bg-indigo-700"
               >
                 {isLoading ? 'Testing...' : 'Full Test Suite'}

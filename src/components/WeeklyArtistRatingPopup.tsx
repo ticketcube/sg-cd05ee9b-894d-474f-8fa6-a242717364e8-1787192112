@@ -23,7 +23,7 @@ interface WeeklyArtistRatingPopupProps {
 }
 
 export default function WeeklyArtistRatingPopup({ artist, isOpen, weekIdentifier, onClose, onRatingComplete }: WeeklyArtistRatingPopupProps) {
-  const { profile } = useAuth();
+  const { user } = useAuth();
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [watchTimer, setWatchTimer] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -34,14 +34,14 @@ export default function WeeklyArtistRatingPopup({ artist, isOpen, weekIdentifier
   const [showRatings, setShowRatings] = useState(false);
   
   const awardWatchPoints = useCallback(async () => {
-    if (!pointsAwarded && artist && profile && weekIdentifier) {
+    if (!pointsAwarded && artist && user && weekIdentifier) {
       try {
         console.log("Recording video view for points...");
-        console.log("Using numeric user ID:", profile.id);
+        console.log("Using numeric user ID:", user.id);
         
         // FIXED: Always pass 15 seconds when awarding points (minimum requirement met)
         const result = await videoWatchService.recordVideoView({
-          userId: profile.id,
+          userId: user.id,
           artistUuid: artist.uuid,
           weekIdentifier,
           watchTimeSeconds: 15 // Always 15 when this function is called
@@ -54,7 +54,7 @@ export default function WeeklyArtistRatingPopup({ artist, isOpen, weekIdentifier
         
             // Check for completion bonus after this video view
             if (result.pointsEarned > 0) {
-              const completionBonus = await weeklyVotingService.checkVideoCompletionBonus(profile.id, weekIdentifier);
+              const completionBonus = await weeklyVotingService.checkVideoCompletionBonus(user.id, weekIdentifier);
               if (completionBonus.pointsEarned > 0) {
                 console.log("Completion bonus earned:", completionBonus.pointsEarned);
                 setPointsEarned(prev => prev + completionBonus.pointsEarned);
@@ -65,7 +65,7 @@ export default function WeeklyArtistRatingPopup({ artist, isOpen, weekIdentifier
         console.error("Error awarding watch points:", error);
       }
     }
-  }, [pointsAwarded, artist, profile, weekIdentifier]);
+  }, [pointsAwarded, artist, user, weekIdentifier]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;

@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/router";
 import AuthGuard from "@/components/AuthGuard";
-import { toast } from "@/components/ui/use-toast";
 import { useToast } from "@/hooks/use-toast";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -29,12 +28,14 @@ interface FilePreview {
 }
 
 export default function BrandfolderUploadPage() {
-    const { user, profile } = useAuth();
+    const { user } = useAuth();
     const router = useRouter();
-    const fileInputRef = useRef < HTMLInputElement > (null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
 
-    const [selectedFile, setSelectedFile] = useState < FilePreview | null > (null);
-    const [uploadStatus, setUploadStatus] = useState < UploadStatus > ("idle");
+    const [selectedFile, setSelectedFile] = useState<FilePreview | null>(null);
+    const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
+    const [isLoading, setIsLoading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [description, setDescription] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -66,7 +67,7 @@ export default function BrandfolderUploadPage() {
     };
 
     const handleUpload = async () => {
-        if (!selectedFile || !profile) {
+        if (!selectedFile || !user) {
             toast({
                 title: "Authentication Error",
                 description: "You must be logged in to upload files.",
@@ -75,7 +76,7 @@ export default function BrandfolderUploadPage() {
             return;
         }
 
-        setUploadStatus(`Uploading ${selectedFile.file.name}...`);
+        setUploadStatus("uploading");
         setIsLoading(true);
 
         try {
@@ -87,8 +88,8 @@ export default function BrandfolderUploadPage() {
                 body: JSON.stringify({
                     fileName: selectedFile.file.name,
                     contentType: selectedFile.file.type,
-                    artistName: artistName || "General",
-                    uploader: profile.username || "Unknown Uploader", 
+                    artistName: "General", 
+                    uploader: user.username || "Unknown Uploader", 
                 }),
             });
 
@@ -123,6 +124,8 @@ export default function BrandfolderUploadPage() {
             setUploadStatus("error");
             setErrorMessage(error instanceof Error ? error.message : "Upload failed");
             setUploadProgress(0);
+        } finally {
+            setIsLoading(false);
         }
     };
 

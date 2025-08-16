@@ -37,7 +37,7 @@ export function WeeklyArtistPopup({
   showBio = true,
   showVibes = false
 }: WeeklyArtistPopupProps) {
-  const { profile } = useAuth();
+  const { user } = useAuth();
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [watchTimer, setWatchTimer] = useState(0);
   const [isWatching, setIsWatching] = useState(false);
@@ -50,11 +50,11 @@ export function WeeklyArtistPopup({
   const [hasRated, setHasRated] = useState(false);
 
   const awardWatchPoints = async () => {
-    if (!profile || pointsAwarded || !artist || !weekIdentifier) return;
+    if (!user || pointsAwarded || !artist || !weekIdentifier) return;
     
     try {
       await userProfileService.recordEngagement(
-        profile.id, // Use numeric profile ID
+        user.id, // Use user.id instead of profile.id
         "video_view", 
         10, 
         weekIdentifier,

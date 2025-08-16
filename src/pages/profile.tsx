@@ -30,7 +30,7 @@ const StatCard = ({ icon, title, value }: { icon: React.ReactNode; title: string
 );
 
 export default function ProfilePage() {
-  const { user, profile, loading } = useAuth();
+  const { user, loading } = useAuth();
   const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -40,11 +40,11 @@ export default function ProfilePage() {
   const [totalPoints, setTotalPoints] = useState(0);
 
   const fetchUserHistory = async () => {
-    if (!profile) return;
+    if (!user) return;
     setRefreshing(true);
     setError(null);
     try {
-      const history = await userProfileService.getUserEngagementHistory(profile.id);
+      const history = await userProfileService.getUserEngagementHistory(user.id);
       setUserHistory(history);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load profile history.");
@@ -54,24 +54,24 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    if (profile) {
-      setUsername(profile.username);
-      setCity(profile.raw_city_input || "");
-      setTotalPoints(profile.total_points || 0);
+    if (user) {
+      setUsername(user.username);
+      setCity(user.city || "");
+      setTotalPoints(user.points || 0);
       fetchUserHistory();
     }
-  }, [profile]);
+  }, [user]);
 
   const handleUpdateProfile = async () => {
-    if (!profile) return;
+    if (!user) return;
     // Implementation for updating profile details can be added here
   };
 
   const handleSaveCity = async () => {
-    if (!profile || !selectedCityId) return;
+    if (!user || !selectedCityId) return;
     
     try {
-      await userProfileService.updateUserLocation(profile.id, parseInt(selectedCityId), city);
+      await userProfileService.updateUserLocation(user.id, parseInt(selectedCityId), city);
       alert("City updated!");
     } catch (error) {
       console.error("Error updating city:", error);
@@ -179,7 +179,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-2xl font-bold text-white">{user_profile.username}</h2>
+                    <h2 className="text-2xl font-bold text-white">{userHistory ? userHistory.user_profile.username : user?.username}</h2>
                     <Button
                       onClick={handleRefreshProfile}
                       disabled={refreshing}
@@ -191,9 +191,9 @@ export default function ProfilePage() {
                       {refreshing ? 'Refreshing...' : 'Refresh Profile'}
                     </Button>
                   </div>
-                  <p className="text-gray-400">{user_profile.email}</p>
+                  <p className="text-gray-400">{userHistory ? userHistory.user_profile.email : user?.email}</p>
                   <p className="text-sm text-gray-500">
-                    Member since {formatDate(user_profile.created_at)}
+                    Member since {userHistory && formatDate(userHistory.user_profile.created_at)}
                   </p>
                   {user?.role && (
                     <div className="mt-1">
