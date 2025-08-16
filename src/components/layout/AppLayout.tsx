@@ -1,5 +1,5 @@
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { User, LogOut, LogIn } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,32 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
 
+  // Global error handler to redirect to home on any errors
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error("Global error caught:", event.error);
+      router.push("/").catch(() => {
+        // If even the redirect fails, reload the page
+        window.location.href = "/";
+      });
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error("Unhandled promise rejection:", event.reason);
+      router.push("/").catch(() => {
+        window.location.href = "/";
+      });
+    };
+
+    window.addEventListener("error", handleError);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener("error", handleError);
+      window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+    };
+  }, [router]);
+
   const handleSignOut = async () => {
     try {
       await logout();
@@ -24,7 +50,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
     } catch (error) {
       console.error("Error signing out:", error);
       // On any error, redirect to index page
-      router.push("/");
+      router.push("/").catch(() => {
+        window.location.href = "/";
+      });
     }
   };
 
@@ -35,6 +63,20 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const handleAuthClose = () => {
     setAuthDialogOpen(false);
   };
+
+  // Auto-navigate to weekly-ratings after successful authentication from header
+  useEffect(() => {
+    if (user && !loading && isAuthDialogOpen) {
+      setAuthDialogOpen(false);
+      // Navigate to weekly-ratings page immediately after login
+      setTimeout(() => {
+        router.push("/weekly-ratings").catch((error) => {
+          console.error("Navigation error after auth:", error);
+          router.push("/");
+        });
+      }, 300);
+    }
+  }, [user, loading, isAuthDialogOpen, router]);
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white">
@@ -49,13 +91,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
               width={120}
               height={40}
               className="h-8 md:h-10 w-auto"
+              priority
             />
           </Link>
 
           {/* Auth Buttons */}
           <div className="flex items-center gap-2">
             {loading ? (
-              <div className="w-8 h-8 animate-pulse bg-gray-200 rounded"></div>
+              <div className="w-8 h-8 animate-pulse bg-gray-600 rounded"></div>
             ) : user ? (
               <div className="flex items-center gap-2">
                 <Link href="/profile">
