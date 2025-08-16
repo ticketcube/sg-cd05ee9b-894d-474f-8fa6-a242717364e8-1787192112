@@ -1,6 +1,13 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { pointsConfigService } from "./pointsConfigService";
+import userProfileService from "./userProfileService";
+
+export interface VideoViewData {
+  userId: number;
+  artistUuid: string;
+  weekIdentifier: string;
+  watchTimeSeconds: number;
+}
 
 export const videoWatchService = {
   /**
@@ -53,14 +60,15 @@ export const videoWatchService = {
   /**
    * Checks if a user has watched all videos in a given week.
    */
-  async hasWatchedAllVideosInWeek(userId: string, weekIdentifier: string, artistUuidsInWeek: string[]): Promise<boolean> {
+  async hasWatchedAllVideosInWeek(userId: number, weekIdentifier: string, artistUuidsInWeek: string[]): Promise<boolean> {
     const uniqueArtistUuids = [...new Set(artistUuidsInWeek)];
 
     const { data, error } = await supabase
-      .from("video_watches")
-      .select("artist_uuid", { count: "exact", head: true })
+      .from("user_engagements")
+      .select("artist_uuid")
       .eq("user_id", userId)
       .eq("week_identifier", weekIdentifier)
+      .eq("engagement_type", "video_view")
       .in("artist_uuid", uniqueArtistUuids);
 
     if (error) {
@@ -69,19 +77,21 @@ export const videoWatchService = {
     }
     
     // Check if the count of distinct watched artists matches the total number of artists
-    return data.length === uniqueArtistUuids.length;
+    const uniqueWatchedArtists = [...new Set(data.map(item => item.artist_uuid))];
+    return uniqueWatchedArtists.length === uniqueArtistUuids.length;
   },
 
   /**
    * Gets the watch status for a user, artist, and week.
    */
-  async getWatchStatus(userId: string, artistUuid: string, weekIdentifier: string) {
+  async getWatchStatus(userId: number, artistUuid: string, weekIdentifier: string) {
     const { data, error } = await supabase
-      .from("video_watches")
+      .from("user_engagements")
       .select("created_at")
       .eq("user_id", userId)
       .eq("artist_uuid", artistUuid)
       .eq("week_identifier", weekIdentifier)
+      .eq("engagement_type", "video_view")
       .limit(1);
     
     if (error) {
