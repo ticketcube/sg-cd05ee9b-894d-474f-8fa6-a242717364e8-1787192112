@@ -10,7 +10,7 @@ import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users, X, Award, Timer,
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { useAuth } from "@/contexts/AuthContext";
 import { videoWatchService } from "@/services/videoWatchService";
-import { weeklyVotingService } from "@/services/weeklyVotingService";
+import { weeklyVotingService, SubmissionResult } from "@/services/weeklyVotingService";
 import { pointsConfigService } from "@/services/pointsConfigService";
 import { usePointsNotifications } from "@/components/points/PointsNotification";
 import type { Artist } from "@/types/artists";
@@ -27,6 +27,7 @@ interface WeeklyArtistRatingPopupProps {
   weekIdentifier: string;
   userHasVoted?: boolean;
   onVideoPointsAwarded?: (artistUuid: string, pointsEarned: number) => void;
+  onSubmissionSuccess?: (result: SubmissionResult) => void;
 }
 
 export default function WeeklyArtistRatingPopup({
@@ -37,6 +38,7 @@ export default function WeeklyArtistRatingPopup({
   weekIdentifier,
   userHasVoted,
   onVideoPointsAwarded,
+  onSubmissionSuccess,
 }: WeeklyArtistRatingPopupProps) {
   const { user } = useAuth();
   const [ticketInterest, setTicketInterest] = useState(50);
@@ -219,9 +221,9 @@ export default function WeeklyArtistRatingPopup({
         }]
       });
 
-      if (result.totalPointsEarned > 0) {
-        // Show points notification
-        showVoteSubmissionNotification(result.totalPointsEarned);
+      // Call the success callback to trigger the detailed popup
+      if (onSubmissionSuccess && result.totalPointsEarned > 0) {
+        onSubmissionSuccess(result);
       }
 
       // Update parent component
