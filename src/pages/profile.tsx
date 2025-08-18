@@ -263,10 +263,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Level and Points */}
-              <div className="bg-gray-800 rounded-lg p-4 mb-4">
-                              <SeptemberReward totalPoints={total_points} />
-                </div>
+             
                 
                
                
