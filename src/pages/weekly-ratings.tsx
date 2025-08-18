@@ -190,6 +190,10 @@ function WeeklyRatingsPageContent() {
     console.log(`Video points awarded: ${pointsEarned} for artist ${artistUuid}`);
   };
 
+  const handleSubmissionSuccess = (result: SubmissionResult) => {
+    setSubmissionResult(result);
+  };
+
   const getArtistWatchStatus = (artistUuid: string) => {
     return videoWatchStatuses.find(status => status.artistUuid === artistUuid);
   };
@@ -331,6 +335,7 @@ function WeeklyRatingsPageContent() {
             weekIdentifier={selectedListId}
             userHasVoted={selectedArtist.user_has_voted}
             onVideoPointsAwarded={handleVideoPointsAwarded}
+            onSubmissionSuccess={handleSubmissionSuccess}
           />
         )}
 
