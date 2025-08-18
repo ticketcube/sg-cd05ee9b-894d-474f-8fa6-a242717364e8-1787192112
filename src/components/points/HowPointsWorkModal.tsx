@@ -220,15 +220,7 @@ export default function HowPointsWorkModal({
                       </div>
                     </div>
 
-                    <div className="flex gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs font-bold text-green-600">2</span>
-                      </div>
-                      <div>
-                        <p className="font-medium">Aim for completion bonus</p>
-                        <p className="text-sm text-gray-600">Watching all 5 videos gives you 40 points total (25 + 15 bonus) vs just 25 from individual videos.</p>
-                      </div>
-                    </div>
+                   
 
                     <div className="flex gap-3">
                       <div className="w-6 h-6 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0 mt-0.5">
