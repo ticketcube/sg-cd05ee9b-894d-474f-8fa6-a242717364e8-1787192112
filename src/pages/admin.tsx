@@ -309,6 +309,6 @@ export default function AdminPage() {
       </Card>
       </div>
 
-   
+    );
     
 }
