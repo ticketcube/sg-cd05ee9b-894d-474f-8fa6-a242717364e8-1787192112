@@ -221,8 +221,8 @@ export default function WeeklyArtistRatingPopup({
         }]
       });
 
-      // Call the success callback to trigger the detailed popup
-      if (onSubmissionSuccess && result.totalPointsEarned > 0) {
+      // Always call the success callback to show popup, regardless of points earned
+      if (onSubmissionSuccess) {
         onSubmissionSuccess(result);
       }
 

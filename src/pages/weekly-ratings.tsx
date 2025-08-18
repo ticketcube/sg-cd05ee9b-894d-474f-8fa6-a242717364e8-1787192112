@@ -258,15 +258,19 @@ function WeeklyRatingsPageContent() {
           <>
             <div className="p-4 bg-gray-800 border-b border-gray-700">
               <div className="max-w-md mx-auto">
-                <div className="flex justify-center items-center gap-6 px-4" style={{ minHeight: '100px' }}>
-                  {weeklyList.artists.map((artistData) => {
+                <div className="flex justify-center items-center px-4" style={{ minHeight: '120px' }}>
+                  {weeklyList.artists.map((artistData, index) => {
                     const artist = artistData.artist;
                     const hasVoted = artistData.user_has_voted;
                     const watchStatus = getArtistWatchStatus(artist.uuid);
                     const hasWatchedVideo = watchStatus?.hasWatched || false;
                     
                     return (
-                      <div key={artist.uuid} className="text-center cursor-pointer rounded-lg transition-all duration-200 hover:bg-blue-800 hover:scale-105 p-2 flex-shrink-0" onClick={() => handleWatchArtist(artistData)}>
+                      <div 
+                        key={artist.uuid} 
+                        className="text-center cursor-pointer rounded-lg transition-all duration-200 hover:bg-blue-800 hover:scale-105 p-2 flex-1 max-w-[80px]" 
+                        onClick={() => handleWatchArtist(artistData)}
+                      >
                         <div className={`select-none transition-opacity ${hasVoted ? 'opacity-50' : ''} relative`}>
                           {artist.artist_image ? (
                             <Image src={artist.artist_image} alt={artist.artist_name} width={48} height={48} className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white" />
@@ -281,7 +285,11 @@ function WeeklyRatingsPageContent() {
                             </div>
                           )}
                           
-                          <div className="text-xs text-white mt-1 truncate w-16">{artist.artist_name}</div>
+                          <div className="text-xs text-white mt-1 leading-tight h-8 flex items-center justify-center">
+                            <span className="text-center break-words hyphens-auto" style={{ fontSize: '11px', lineHeight: '12px' }}>
+                              {artist.artist_name}
+                            </span>
+                          </div>
                         </div>
                         <div className={`mt-1 inline-flex items-center justify-center h-5 px-1 text-xs rounded ${hasVoted ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}`}>
                           {hasVoted ? <CheckCircle className="w-3 h-3 mr-1" /> : <Play className="w-2 h-2 mr-1" />}
