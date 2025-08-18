@@ -6,11 +6,12 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users, X, Award, Timer, CheckCircle, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users, X, Award, Timer, CheckCircle, Loader2, Eye } from "lucide-react";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { useAuth } from "@/contexts/AuthContext";
 import { videoWatchService } from "@/services/videoWatchService";
 import { weeklyVotingService } from "@/services/weeklyVotingService";
+import { pointsConfigService } from "@/services/pointsConfigService";
 import { usePointsNotifications } from "@/components/points/PointsNotification";
 import type { Artist } from "@/types/artists";
 
@@ -25,6 +26,7 @@ interface WeeklyArtistRatingPopupProps {
   ) => void;
   weekIdentifier: string;
   userHasVoted?: boolean;
+  onVideoPointsAwarded?: (artistUuid: string, pointsEarned: number) => void;
 }
 
 export default function WeeklyArtistRatingPopup({
@@ -34,12 +36,121 @@ export default function WeeklyArtistRatingPopup({
   onRatingComplete,
   weekIdentifier,
   userHasVoted,
+  onVideoPointsAwarded,
 }: WeeklyArtistRatingPopupProps) {
+  const { user } = useAuth();
   const [ticketInterest, setTicketInterest] = useState(50);
   const [shareInterest, setShareInterest] = useState(50);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+
+  // Timer system state
+  const [watchTime, setWatchTime] = useState(0);
+  const [hasEarnedPoints, setHasEarnedPoints] = useState(false);
+  const [isEligibleForPoints, setIsEligibleForPoints] = useState(false);
+  const [minWatchTime, setMinWatchTime] = useState(15);
+  const [videoPoints, setVideoPoints] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check eligibility when popup opens
+  useEffect(() => {
+    if (isOpen && user && artist) {
+      checkPointsEligibility();
+    }
+    return () => {
+      // Cleanup timer on unmount
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isOpen, user, artist]);
+
+  const checkPointsEligibility = async () => {
+    if (!user) return;
+    
+    try {
+      // Get points configuration
+      const minTime = await pointsConfigService.getMinValue('video_view');
+      const points = await pointsConfigService.getPoints('video_view');
+      setMinWatchTime(minTime);
+      setVideoPoints(points);
+
+      // Check if user is eligible for points
+      const eligible = await pointsConfigService.checkEligibility(
+        'video_view',
+        user.id,
+        artist.uuid,
+        weekIdentifier
+      );
+      setIsEligibleForPoints(eligible);
+    } catch (error) {
+      console.error('Error checking points eligibility:', error);
+      setIsEligibleForPoints(false);
+    }
+  };
+
+  const startTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
+    timerRef.current = setInterval(() => {
+      setWatchTime((prevTime) => {
+        const newTime = prevTime + 1;
+        
+        // Award points when reaching minimum watch time
+        if (newTime >= minWatchTime && !hasEarnedPoints && isEligibleForPoints && user) {
+          awardVideoPoints();
+        }
+        
+        return newTime;
+      });
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const awardVideoPoints = async () => {
+    if (!user || hasEarnedPoints || !isEligibleForPoints) return;
+
+    try {
+      const result = await videoWatchService.recordVideoView({
+        userId: user.id,
+        artistUuid: artist.uuid,
+        weekIdentifier: weekIdentifier,
+        watchTimeSeconds: watchTime
+      });
+
+      if (result.pointsEarned > 0) {
+        setHasEarnedPoints(true);
+        stopTimer(); // Stop timer after points are awarded
+        
+        // Notify parent component
+        if (onVideoPointsAwarded) {
+          onVideoPointsAwarded(artist.uuid, result.pointsEarned);
+        }
+      }
+    } catch (error) {
+      console.error('Error awarding video points:', error);
+    }
+  };
+
+  // Start timer automatically when popup opens (autoplay behavior)
+  useEffect(() => {
+    if (isOpen && isEligibleForPoints && !hasEarnedPoints) {
+      startTimer();
+    } else {
+      stopTimer();
+    }
+    
+    return () => stopTimer();
+  }, [isOpen, isEligibleForPoints, hasEarnedPoints]);
 
   const handleVideoPlay = () => {
     setIsVideoPlaying(true);
