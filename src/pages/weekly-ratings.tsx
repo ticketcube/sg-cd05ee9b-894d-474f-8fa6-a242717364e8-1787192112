@@ -228,7 +228,7 @@ function WeeklyRatingsPageContent() {
   return (
     <>
       <PointsNotification notification={notification} onClose={hideNotification} />
-      <HowPointsWorkModal isOpen={showOnboarding} onOpenChange={setShowOnboarding} />
+      
 
       <div className="min-h-screen bg-black text-white">
         <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
