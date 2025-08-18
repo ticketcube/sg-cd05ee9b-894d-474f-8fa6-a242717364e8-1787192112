@@ -231,45 +231,9 @@ export default function WeeklyArtistRatingPopup({
               onPause={() => setIsVideoPlaying(false)}
             />
             
-            {/* Timer Progress UI - Bottom Left Overlay */}
-            <div className="absolute bottom-4 left-4 z-50">
-              {!isEligibleForPoints ? (
-                <div className="bg-black/75 px-3 py-1 rounded-lg flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs text-gray-400">Already watched</span>
-                </div>
-              ) : hasEarnedPoints ? (
-                <div className="bg-green-600/90 px-3 py-1 rounded-lg flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-white" />
-                  <span className="text-xs text-white font-medium">{videoPoints} points earned!</span>
-                </div>
-              ) : watchTime < minWatchTime ? (
-                <div className="bg-black/75 px-3 py-1 rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Timer className="w-4 h-4 text-blue-400" />
-                    <span className="text-xs text-white">{watchTime}s / {minWatchTime}s</span>
-                  </div>
-                  <Progress 
-                    value={(watchTime / minWatchTime) * 100} 
-                    className="w-24 h-1 bg-gray-600"
-                  />
-                </div>
-              ) : null}
-            </div>
+            {/* Remove the timer from video overlay - moving it to below artist name */}
             
-            {/* Click-through overlay that covers the entire video area */}
-            {!isVideoPlaying && (
-              <div 
-                className="absolute inset-0 cursor-pointer bg-black bg-opacity-20 z-30 flex items-center justify-center" 
-                onClick={handleVideoClick}
-              >
-                <div className="bg-white bg-opacity-90 rounded-full p-4 hover:bg-opacity-100 transition-all">
-                  <svg className="w-8 h-8 text-black fill-black" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-              </div>
-            )}
+            {/* Remove the click-through play button overlay since video autoplays */}
             
             {hasMultipleVideos && (
               <>
@@ -305,6 +269,32 @@ export default function WeeklyArtistRatingPopup({
               {artist.artist_genre && (
                 <p className="text-gray-400 text-sm">{artist.artist_genre}</p>
               )}
+              
+              {/* Timer and Points Display - Centered below artist name */}
+              <div className="flex justify-center mt-3">
+                {!isEligibleForPoints ? (
+                  <div className="bg-gray-800 px-3 py-1 rounded-lg flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-gray-400" />
+                    <span className="text-xs text-gray-400">Already watched</span>
+                  </div>
+                ) : hasEarnedPoints ? (
+                  <div className="bg-green-600 px-3 py-1 rounded-lg flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-white" />
+                    <span className="text-xs text-white font-medium">{videoPoints} points earned!</span>
+                  </div>
+                ) : watchTime < minWatchTime ? (
+                  <div className="bg-gray-800 px-3 py-1 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Timer className="w-4 h-4 text-blue-400" />
+                      <span className="text-xs text-white">{watchTime}s / {minWatchTime}s</span>
+                    </div>
+                    <Progress 
+                      value={(watchTime / minWatchTime) * 100} 
+                      className="w-24 h-1 bg-gray-600"
+                    />
+                  </div>
+                ) : null}
+              </div>
             </DialogHeader>
 
             <div className="p-6 space-y-6">

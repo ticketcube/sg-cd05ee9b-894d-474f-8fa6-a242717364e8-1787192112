@@ -186,15 +186,6 @@ export default function ArtistVideoPlayer({
           onPlay={onPlay}
           onPause={onPause}
           onEnded={onEnded}
-          config={{
-            youtube: {
-              playerVars: {
-                autoplay: 1,
-                modestbranding: 1,
-                rel: 0,
-              },
-            },
-          }}
           style={{ position: 'absolute', top: 0, left: 0 }}
         />
       ): (
