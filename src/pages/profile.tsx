@@ -325,9 +325,9 @@ export default function ProfilePage() {
                         <Trophy className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-white">September {level} Leaderboard</h3>
+                        <h3 className="font-semibold text-white">September Zine Package</h3>
                         <p className="text-sm text-gray-400">
-                          Reached level {level} with {total_points} total points
+                          Earn 180 points or more during september and we'll send you a package with all 9 of our zines! You have {total_points} points so far!
                         </p>
                       </div>
                     </div>
