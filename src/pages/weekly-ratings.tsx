@@ -258,7 +258,7 @@ function WeeklyRatingsPageContent() {
           <>
             <div className="p-4 bg-gray-800 border-b border-gray-700">
               <div className="max-w-md mx-auto">
-                <div className="flex justify-center items-center px-4" style={{ minHeight: '120px' }}>
+                <div className="flex justify-center items-center px-2" style={{ minHeight: '120px' }}>
                   {weeklyList.artists.map((artistData, index) => {
                     const artist = artistData.artist;
                     const hasVoted = artistData.user_has_voted;
@@ -268,7 +268,8 @@ function WeeklyRatingsPageContent() {
                     return (
                       <div 
                         key={artist.uuid} 
-                        className="text-center cursor-pointer rounded-lg transition-all duration-200 hover:bg-blue-800 hover:scale-105 p-2 flex-1 max-w-[80px]" 
+                        className="text-center cursor-pointer rounded-lg transition-all duration-200 hover:bg-blue-800 hover:scale-105 p-2 flex-1" 
+                        style={{ minWidth: '70px', maxWidth: '90px' }}
                         onClick={() => handleWatchArtist(artistData)}
                       >
                         <div className={`select-none transition-opacity ${hasVoted ? 'opacity-50' : ''} relative`}>
@@ -285,13 +286,13 @@ function WeeklyRatingsPageContent() {
                             </div>
                           )}
                           
-                          <div className="text-xs text-white mt-1 leading-tight h-8 flex items-center justify-center">
-                            <span className="text-center break-words hyphens-auto" style={{ fontSize: '11px', lineHeight: '12px' }}>
+                          <div className="text-xs text-white mt-2 leading-tight px-1" style={{ minHeight: '32px' }}>
+                            <div className="text-center break-words overflow-wrap-anywhere flex items-center justify-center h-full" style={{ fontSize: '11px', lineHeight: '13px' }}>
                               {artist.artist_name}
-                            </span>
+                            </div>
                           </div>
                         </div>
-                        <div className={`mt-1 inline-flex items-center justify-center h-5 px-1 text-xs rounded ${hasVoted ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}`}>
+                        <div className={`mt-1 inline-flex items-center justify-center h-5 px-2 text-xs rounded ${hasVoted ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}`}>
                           {hasVoted ? <CheckCircle className="w-3 h-3 mr-1" /> : <Play className="w-2 h-2 mr-1" />}
                           {hasVoted ? 'Rated' : 'Rate'}
                         </div>
