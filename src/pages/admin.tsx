@@ -309,7 +309,6 @@ export default function AdminPage() {
       </Card>
       </div>
 
-    );
     export default function ArtistForm() {
         const [artist, setArtist] = useState("");
         const [youtube, setYoutube] = useState("");
