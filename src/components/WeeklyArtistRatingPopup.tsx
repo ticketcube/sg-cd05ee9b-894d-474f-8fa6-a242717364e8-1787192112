@@ -288,7 +288,20 @@ export default function WeeklyArtistRatingPopup({
                 <p className="text-gray-400 text-sm">{artist.artist_genre}</p>
               )}
               
-              {/* Timer and Points Display - Centered below artist name */}
+             
+              </div>
+            </DialogHeader>
+
+            <div className="flex flex-col flex-1">
+              <AnimatePresence>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-center">Rate This Artist</h3>
+                     {/* Timer and Points Display - Centered below artist name */}
               <div className="flex justify-center mt-3">
                 {!isEligibleForPoints ? (
                   <div className="bg-gray-800 px-3 py-1 rounded-lg flex items-center gap-2">
@@ -312,31 +325,6 @@ export default function WeeklyArtistRatingPopup({
                     />
                   </div>
                 )}
-              </div>
-            </DialogHeader>
-
-            <div className="flex flex-col flex-1">
-              <AnimatePresence>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-6"
-                >
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-center">Rate This Artist</h3>
-                    <div className="text-sm text-center">
-                      {!isEligibleForPoints ? (
-                        <Badge className="bg-gray-600 text-white">Already Watched</Badge>
-                      ) : hasEarnedPoints ? (
-                        <Badge className="bg-green-600 text-white">+{videoPoints} Points Earned!</Badge>
-                      ) : (
-                        <div className="flex items-center justify-center gap-2">
-                          <Clock className="w-3 h-3" />
-                          <span>Timer: {watchTime}/{minWatchTime} seconds</span>
-                          <Progress value={(watchTime / minWatchTime) * 100} className="w-16 h-2" />
-                        </div>
-                      )}
-                    </div>
                     
                     {/* Ticket Interest Slider */}
                     <div className="space-y-3">
