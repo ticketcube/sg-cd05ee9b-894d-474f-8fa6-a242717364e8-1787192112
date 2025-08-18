@@ -308,78 +308,7 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
             </TabsContent>
-
-                      function SeptemberReward({totalPoints}: {totalPoints: number }) {
-  const goal = 180;
-  const isComplete = totalPoints >= goal;
-
-                      return (
-                      <div
-                          className={`rounded-lg p-4 transition-all ${isComplete ? "bg-green-800 border border-green-600" : "bg-gray-800"
-                              }`}
-                      >
-                          <div className="flex items-center gap-3">
-                              {/* Trophy Icon */}
-                              <div
-                                  className={`w-16 h-16 rounded-full flex items-center justify-center text-center font-bold transition-all ${isComplete ? "bg-yellow-500 text-white" : "bg-gray-700 text-gray-300"
-                                      }`}
-                              >
-                                  <Trophy className="w-8 h-8" />
-                              </div>
-
-                              {/* Reward Info */}
-                              <div>
-                                  <h3 className="font-semibold text-white">September Zine Package</h3>
-                                  {!isComplete ? (
-                                      <p className="text-sm text-gray-400">
-                                          Earn {goal} points this month to win all 9 zines!
-                                      </p>
-                                  ) : (
-                                      <p className="text-sm text-green-300 font-semibold">🎉 Completed! Package on the way.</p>
-                                  )}
-
-                                  {/* Progress bar */}
-                                  {!isComplete && (
-                                      <div className="mt-2 w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-                                          <div
-                                              className="bg-yellow-500 h-2 transition-all"
-                                              style={{ width: `${Math.min((totalPoints / goal) * 100, 100)}%` }}
-                                          ></div>
-                                      </div>
-                                  )}
-
-                                  {/* Points Label */}
-                                  <p
-                                      className={`mt-1 text-xs ${isComplete ? "text-green-400 font-bold" : "text-gray-400"
-                                          }`}
-                                  >
-                                      {totalPoints} / {goal} points
-                                  </p>
-                              </div>
-                          </div>
-                      </div>
-                      );
-}
-
-            {/* Achievements Tab */}
-            <TabsContent value="achievements" className="space-y-4">
-              <Card className="bg-gray-900 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Award className="w-5 h-5" />
-                    Rewards & Leaderboard
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Level Achievement */}
-                  <div className="bg-gray-800 rounded-lg p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-yellow-600 flex items-center justify-center">
-                        <Trophy className="w-6 h-6 text-white" />
-                      </div>
-                     <SeptemberReward totalPoints={user_total_points} />
-                    </div>
-                  </div>
+{/* Achievements Tab */} <TabsContent value="achievements" className="space-y-4"> <Card className="bg-gray-900 border-gray-700"> <CardHeader> <CardTitle className="flex items-center gap-2 text-white"> <Award className="w-5 h-5" /> Rewards & Leaderboard </CardTitle> </CardHeader> <CardContent className="space-y-4"> {/* Level Achievement */} <div className="bg-gray-800 rounded-lg p-4"> <div className="flex items-center gap-3"> <div className="w-12 h-12 rounded-full bg-yellow-600 flex items-center justify-center"> <Trophy className="w-6 h-6 text-white" /> </div> <div> <h3 className="font-semibold text-white">September Zine Package</h3> <p className="text-sm text-gray-400"> Earn 180 points or more during september and we'll send you a package with all 9 of our zines! </p> </div> </div> </div>
 
                   {/* Voting Streak */}
                   {weekly_summaries.length >= 3 && (
