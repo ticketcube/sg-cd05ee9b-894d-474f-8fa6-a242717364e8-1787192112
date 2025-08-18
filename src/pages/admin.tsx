@@ -397,4 +397,5 @@ export default function AdminPage() {
                 {message && <p className="mt-3 text-sm">{message}</p>}
             </div>
         );
+     );
 }
