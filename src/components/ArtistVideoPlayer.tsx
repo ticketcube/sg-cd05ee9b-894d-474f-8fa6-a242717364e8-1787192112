@@ -3,12 +3,12 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Play, VideoOff } from "lucide-react";
 import { motion } from "framer-motion";
-import type { Artist } from "@/types/artists";
+import type { DisplayArtist } from "@/types/artists";
 import ReactPlayer from "react-player";
 import { cn } from "@/lib/utils";
 
 interface ArtistVideoPlayerProps {
-  artist: Artist;
+  artist: DisplayArtist;
   videoLinks?: string[];
   currentIndex?: number;
   onChangeIndex?: (index: number) => void;
@@ -17,6 +17,11 @@ interface ArtistVideoPlayerProps {
   onPlay?: () => void;
   onPause?: () => void;
   onEnded?: () => void;
+  className?: string;
+  videoOverrideId?: string;
+  onPlayerError?: () => void;
+  size?: string;
+  onClick?: (e: any) => void;
 }
 
 const extractYouTubeVideoId = (url: string): string | null => {
@@ -52,6 +57,10 @@ export default function ArtistVideoPlayer({
   onPlay,
   onPause,
   onEnded,
+  className,
+  videoOverrideId,
+  onPlayerError,
+  onClick,
 }: ArtistVideoPlayerProps) {
   const [videoError, setVideoError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,11 +74,17 @@ export default function ArtistVideoPlayer({
   }, [artist.artist_videolink, videoLinks]);
 
   const currentVideoUrl = useMemo(() => {
+    if (videoOverrideId) {
+        if (videoOverrideId.includes('youtube.com') || videoOverrideId.includes('youtu.be')) {
+            return videoOverrideId;
+        }
+        return `https://www.youtube.com/watch?v=${videoOverrideId}`;
+    }
     if (processedVideoLinks.length > 0) {
       return processedVideoLinks[currentIndex] || processedVideoLinks[0];
     }
     return artist.artist_videolink ? artist.artist_videolink.split(",")[0].trim() : null;
-  }, [processedVideoLinks, currentIndex, artist.artist_videolink]);
+  }, [processedVideoLinks, currentIndex, artist.artist_videolink, videoOverrideId]);
 
   const videoContent = useMemo(() => {
     let extractedVideoId: string | null = null;
@@ -108,10 +123,11 @@ export default function ArtistVideoPlayer({
 
   const handleVideoError = () => {
     setVideoError(true);
+    if(onPlayerError) onPlayerError();
   };
 
   const videoEmbed = (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" onClick={onClick}>
       {!videoError && videoContent.embedUrl ? (
         <iframe
           src={videoContent.embedUrl}
@@ -137,8 +153,24 @@ export default function ArtistVideoPlayer({
   }
 
   return (
-    <div className={cn("relative", "w-full aspect-video")}>
-      {currentVideoUrl && (
+    <div className={cn("relative", "w-full aspect-video", className)} onClick={onClick}>
+      {(isLoading || videoError) && (
+        <div className="absolute inset-0 bg-black flex items-center justify-center z-10">
+          {videoError ? (
+             <div className="text-center text-white">
+                <VideoOff className="w-12 h-12 mx-auto mb-2" />
+                <p className="text-lg">Video not available</p>
+            </div>
+          ) : (
+            isValidImageUrl(videoContent.thumbnailUrl) ? (
+              <Image src={videoContent.thumbnailUrl} alt={artist.artist_name || 'artist'} layout="fill" objectFit="cover" />
+            ) : (
+                <div className="w-full h-full bg-gray-800" />
+            )
+          )}
+        </div>
+      )}
+      {currentVideoUrl && !videoError ? (
         <ReactPlayer
           url={currentVideoUrl}
           width="100%"
@@ -163,7 +195,15 @@ export default function ArtistVideoPlayer({
               },
             },
           }}
+          style={{ position: 'absolute', top: 0, left: 0 }}
         />
+      ): (
+         <div className="w-full h-full bg-black flex items-center justify-center">
+             <div className="text-center text-white">
+                <VideoOff className="w-12 h-12 mx-auto mb-2" />
+                <p className="text-lg">Video not available</p>
+            </div>
+         </div>
       )}
     </div>
   );
