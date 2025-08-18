@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Loader2, Database, RefreshCw, Calendar, Users, ListPlus } from "lucide-react";
+import { Loader2, Database, RefreshCw, Calendar, Users, ListPlus, UserPlus, Search } from "lucide-react";
 import { eventCacheService } from "@/services/eventCacheService";
 import { weeklyListService } from "@/services/weeklyListService";
+import { adminArtistService, Artist } from "@/services/adminArtistService";
 
 // Mock admin check - in a real app, this would involve a secure check
 const checkAdminAccess = async (email: string): Promise<boolean> => {
@@ -22,6 +23,14 @@ export default function AdminPage() {
   const [refreshResult, setRefreshResult] = useState<string | null>(null);
   const [creatingList, setCreatingList] = useState(false);
   const [listCreationResult, setListCreationResult] = useState<string | null>(null);
+
+  // Artist management state
+  const [artistName, setArtistName] = useState("");
+  const [artistVideoLink, setArtistVideoLink] = useState("");
+  const [artistImage, setArtistImage] = useState("");
+  const [addingArtist, setAddingArtist] = useState(false);
+  const [artistResult, setArtistResult] = useState<string | null>(null);
+  const [existingArtist, setExistingArtist] = useState<Artist | null>(null);
 
   useEffect(() => {
     // In a real app, you might check a token from localStorage here
@@ -108,6 +117,74 @@ export default function AdminPage() {
     } finally {
       setCreatingList(false);
     }
+  };
+
+  const handleCheckArtist = async () => {
+    if (!artistName.trim()) {
+      setArtistResult("❌ Please enter an artist name.");
+      return;
+    }
+
+    setAddingArtist(true);
+    setArtistResult(null);
+    setExistingArtist(null);
+
+    try {
+      const existing = await adminArtistService.checkArtistExists(artistName);
+      if (existing) {
+        setExistingArtist(existing);
+        setArtistResult(`🔍 Artist "${existing.artist_name}" already exists in the database.`);
+      } else {
+        setArtistResult(`✅ Artist "${artistName}" is not in the database. Ready to add!`);
+      }
+    } catch (error) {
+      console.error("Error checking artist:", error);
+      setArtistResult(`❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setAddingArtist(false);
+    }
+  };
+
+  const handleAddArtist = async () => {
+    if (!artistName.trim()) {
+      setArtistResult("❌ Please enter an artist name.");
+      return;
+    }
+
+    setAddingArtist(true);
+    setArtistResult(null);
+
+    try {
+      const newArtist = await adminArtistService.addArtist({
+        artist_name: artistName,
+        artist_videolink: artistVideoLink || undefined,
+        artist_image: artistImage || undefined
+      });
+
+      setArtistResult(`✅ Success! Added "${newArtist.artist_name}" to the database with ID ${newArtist.uuid}.`);
+      
+      // Clear the form
+      setArtistName("");
+      setArtistVideoLink("");
+      setArtistImage("");
+      setExistingArtist(null);
+
+      // Reload stats to reflect the new artist count
+      await loadStats();
+    } catch (error) {
+      console.error("Error adding artist:", error);
+      setArtistResult(`❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setAddingArtist(false);
+    }
+  };
+
+  const clearArtistForm = () => {
+    setArtistName("");
+    setArtistVideoLink("");
+    setArtistImage("");
+    setArtistResult(null);
+    setExistingArtist(null);
   };
 
   if (loading) {
@@ -278,6 +355,148 @@ export default function AdminPage() {
               <p className="text-sm">{listCreationResult}</p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Artist Management */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserPlus className="w-5 h-5" />
+            Artist Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Add new artists to the database. The system will check if the artist already exists before adding.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Artist Name *</label>
+                <Input
+                  type="text"
+                  placeholder="Enter artist name"
+                  value={artistName}
+                  onChange={(e) => setArtistName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCheckArtist()}
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-2 block">Video Link</label>
+                <Input
+                  type="url"
+                  placeholder="https://youtube.com/watch?v=..."
+                  value={artistVideoLink}
+                  onChange={(e) => setArtistVideoLink(e.target.value)}
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-2 block">Artist Image URL</label>
+                <Input
+                  type="url"
+                  placeholder="https://example.com/image.jpg"
+                  value={artistImage}
+                  onChange={(e) => setArtistImage(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {artistImage && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Image Preview</label>
+                  <div className="border rounded-lg p-2 bg-gray-50 dark:bg-gray-900">
+                    <img
+                      src={artistImage}
+                      alt="Artist preview"
+                      className="w-full h-32 object-cover rounded"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {existingArtist && (
+                <div className="border rounded-lg p-4 bg-yellow-50 dark:bg-yellow-950">
+                  <h4 className="font-medium mb-2">Existing Artist Found:</h4>
+                  <p className="text-sm"><strong>Name:</strong> {existingArtist.artist_name}</p>
+                  <p className="text-sm"><strong>ID:</strong> {existingArtist.uuid}</p>
+                  {existingArtist.artist_videolink && (
+                    <p className="text-sm"><strong>Video:</strong> {existingArtist.artist_videolink}</p>
+                  )}
+                  {existingArtist.artist_image && (
+                    <p className="text-sm"><strong>Image:</strong> {existingArtist.artist_image}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              onClick={handleCheckArtist}
+              disabled={addingArtist || !artistName.trim()}
+              className="flex items-center gap-2"
+              variant="outline"
+            >
+              {addingArtist ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Search className="w-4 h-4" />
+              )}
+              Check if Artist Exists
+            </Button>
+
+            <Button
+              onClick={handleAddArtist}
+              disabled={addingArtist || !artistName.trim() || existingArtist !== null}
+              className="flex items-center gap-2"
+            >
+              {addingArtist ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <UserPlus className="w-4 h-4" />
+              )}
+              Add New Artist
+            </Button>
+
+            <Button
+              onClick={clearArtistForm}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              Clear Form
+            </Button>
+          </div>
+
+          {artistResult && (
+            <div className={`p-4 rounded-lg ${
+              artistResult.startsWith('✅') 
+                ? 'bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300'
+                : artistResult.startsWith('🔍')
+                ? 'bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300'
+                : 'bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300'
+            }`}>
+              <p className="text-sm">{artistResult}</p>
+            </div>
+          )}
+
+          <div className="text-sm text-muted-foreground">
+            <p><strong>How it works:</strong></p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>Enter the artist name (required) and optional video link and image URL</li>
+              <li>Click "Check if Artist Exists" to verify the artist isn't already in the database</li>
+              <li>If the artist doesn't exist, click "Add New Artist" to create the entry</li>
+              <li>The system performs case-insensitive duplicate checking</li>
+              <li>All new artists are added with today's date as creation date</li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
 

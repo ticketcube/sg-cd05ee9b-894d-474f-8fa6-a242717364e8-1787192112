@@ -1,0 +1,92 @@
+import { supabase } from "@/integrations/supabase/client";
+
+export interface Artist {
+  uuid: string;
+  artist_name: string;
+  artist_videolink?: string;
+  artist_image?: string;
+  artist_home?: string;
+  artist_otwcreateddate?: string;
+  artist_audiolink?: string;
+  artist_totallisteners?: number;
+  artist_totalwatchers?: number;
+  artist_otwcategory?: string;
+  artist_genre?: string;
+  artist_relatedartists?: string[];
+  artist_bio?: string;
+  attractionId?: string;
+  artist_tiktok_username?: string;
+  artist_tiktok_videoid?: string;
+  Top_List?: string;
+  artist_otwcoverage?: number;
+  primary_vibe?: string;
+  secondary_vibe?: string;
+  cityid?: number;
+}
+
+export interface NewArtistData {
+  artist_name: string;
+  artist_videolink?: string;
+  artist_image?: string;
+}
+
+export const adminArtistService = {
+  async checkArtistExists(artistName: string): Promise<Artist | null> {
+    const { data, error } = await supabase
+      .from('artists')
+      .select('*')
+      .ilike('artist_name', artistName.trim())
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+      throw error;
+    }
+
+    return data;
+  },
+
+  async addArtist(artistData: NewArtistData): Promise<Artist> {
+    // First check if artist already exists
+    const existingArtist = await this.checkArtistExists(artistData.artist_name);
+    if (existingArtist) {
+      throw new Error(`Artist "${artistData.artist_name}" already exists in the database.`);
+    }
+
+    // Add the new artist
+    const { data, error } = await supabase
+      .from('artists')
+      .insert([{
+        artist_name: artistData.artist_name.trim(),
+        artist_videolink: artistData.artist_videolink?.trim() || null,
+        artist_image: artistData.artist_image?.trim() || null,
+        artist_otwcreateddate: new Date().toISOString().split('T')[0], // Today's date
+        artist_totallisteners: 0,
+        artist_totalwatchers: 0
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
+
+  async searchArtists(searchTerm: string, limit = 10): Promise<Artist[]> {
+    const { data, error } = await supabase
+      .from('artists')
+      .select('*')
+      .ilike('artist_name', `%${searchTerm.trim()}%`)
+      .limit(limit)
+      .order('artist_name');
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  }
+};
+
+export default adminArtistService;
