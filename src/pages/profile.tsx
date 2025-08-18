@@ -277,14 +277,7 @@ export default function ProfilePage() {
                 
                 {/* Progress Bar */}
                 <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
-                  <div 
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${levelProgress.percentage}%` }}
-                  ></div>
-                </div>
-                <div className="text-xs text-gray-400 text-center">
-                  {levelProgress.progress} / {levelProgress.total} points to Level {level + 1}
-                </div>
+                     <SeptemberReward totalPoints={total_points} />
               </div>
 
               {/* Quick Stats */}
