@@ -141,7 +141,93 @@ export default function AdminPage() {
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-      <p className="text-muted-foreground mb-8">Welcome, Admin! Manage event cache and system operations.</p>
+          <p className="text-muted-foreground mb-8">Welcome, Admin! Manage event cache and system operations.</p>
+
+          import {useState} from "react";
+          import {createClient} from "@supabase/supabase-js";
+
+          // connect to supabase
+          const supabase = createClient(
+          "https://YOUR_PROJECT.supabase.co",   // replace with your Supabase URL
+          "YOUR_ANON_KEY"                       // replace with your anon/public key
+          );
+
+          export default function ArtistForm() {
+  const [artist, setArtist] = useState("");
+          const [youtube, setYoutube] = useState("");
+          const [image, setImage] = useState("");
+          const [message, setMessage] = useState("");
+
+  const handleSubmit = async (e) => {
+              e.preventDefault();
+
+          if (!artist) {
+              setMessage("Please enter an artist name.");
+          return;
+    }
+
+          // 1. Check if artist exists
+          const {data: existing, error: checkError } = await supabase
+          .from("artists")
+          .select("*")
+          .eq("artist_name", artist)
+          .single();
+
+          if (checkError && checkError.code !== "PGRST116") {
+              // error other than "no rows found"
+              console.error(checkError);
+          setMessage("Error checking artist.");
+          return;
+    }
+
+          if (existing) {
+              setMessage("Artist already exists in database.");
+          return;
+    }
+
+          // 2. Insert new artist
+          const {error: insertError } = await supabase.from("artists").insert([
+          {
+              artist_name: artist,
+          artist_videolink: youtube,
+          artist_image: image,
+      },
+          ]);
+
+          if (insertError) {
+              console.error(insertError);
+          setMessage("Error inserting artist.");
+    } else {
+              setMessage("Artist added successfully!");
+          setArtist("");
+          setYoutube("");
+          setImage("");
+    }
+  };
+
+          return (
+          <div className="p-4 max-w-md mx-auto">
+              <h1 className="text-xl font-bold mb-4">Add Artist</h1>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+                  <input
+                      type="text"
+                      placeholder="Artist Name"
+                      value={artist}
+                      onChange={(e) => setArtist(e.target.value)}
+                      className="border p-2 rounded"
+                  />
+                  <input
+                      type="text"
+                      placeholder="YouTube Video URL"
+                      value={youtube}
+                      onChange={(e) => setYoutube(e.target.value)}
+                      className="border p-2 rounded"
+                  />
+                  <input
+                      type="text"
+                      placeholder="Image URL"
+                      value={image}
+
       
       {/* Event Cache Stats */}
       <Card className="mb-6">
