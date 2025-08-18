@@ -263,7 +263,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-             
+                          <CardContent className="space-y-4"><SeptemberReward totalPoints={total_points} />
                 
                
             
