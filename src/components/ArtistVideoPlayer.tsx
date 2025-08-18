@@ -171,23 +171,31 @@ export default function ArtistVideoPlayer({
         </div>
       )}
       {currentVideoUrl && !videoError ? (
-        <ReactPlayer
-          url={currentVideoUrl}
-          width="100%"
-          height="100%"
-          playing={true}
-          controls={true}
-          onReady={() => setIsLoading(false)}
-          onError={(error) => {
-            console.error("Video error:", error);
-            setIsLoading(false);
-            handleVideoError();
-          }}
-          onPlay={onPlay}
-          onPause={onPause}
-          onEnded={onEnded}
-          style={{ position: 'absolute', top: 0, left: 0 }}
-        />
+        videoContent.embedUrl ? (
+          <iframe
+            src={videoContent.embedUrl}
+            className="absolute top-0 left-0 w-full h-full"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            onLoad={() => {
+              setIsLoading(false);
+              if (onPlay) onPlay();
+            }}
+            onError={(error) => {
+              console.error("Video error:", error);
+              setIsLoading(false);
+              handleVideoError();
+            }}
+          />
+        ) : (
+          <div className="w-full h-full bg-black flex items-center justify-center">
+            <div className="text-center text-white">
+              <VideoOff className="w-12 h-12 mx-auto mb-2" />
+              <p className="text-lg">Video not available</p>
+            </div>
+          </div>
+        )
       ): (
          <div className="w-full h-full bg-black flex items-center justify-center">
              <div className="text-center text-white">
