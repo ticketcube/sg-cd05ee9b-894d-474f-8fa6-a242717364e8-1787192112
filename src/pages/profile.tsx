@@ -156,11 +156,11 @@ export default function ProfilePage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => window.location.href = "/"}
+                onClick={() => window.location.href = "/weekly-ratings"}
                 className="text-white hover:bg-gray-800 flex-shrink-0"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
+                Weekly Rewards
               </Button>
               <h1 className="text-xl font-bold text-blue-500">
                 User Profile
