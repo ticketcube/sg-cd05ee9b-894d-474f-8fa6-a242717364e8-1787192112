@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, User, Play, CheckCircle, Eye } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import WeeklyArtistRatingPopup from "@/components/WeeklyArtistRatingPopup";
 import PointsNotification, { usePointsNotifications } from "@/components/points/PointsNotification";
@@ -218,7 +219,14 @@ function WeeklyRatingsPageContent() {
           <div className="max-w-md mx-auto">
             <div className="flex items-center justify-between gap-3 mb-4">
               <h1 className="text-xl font-bold text-blue-500 truncate">WE REWARD DISCOVERY</h1>
-              <HowPointsWorkModal trigger={<Button variant="outline" size="sm" className="text-black border-white-600 hover:bg-gray-800">How Points Work</Button>} />
+              <div className="flex gap-2">
+                <HowPointsWorkModal trigger={<Button variant="outline" size="sm" className="text-black border-white-600 hover:bg-gray-800">How Points Work</Button>} />
+                <Link href="/profile">
+                  <Button variant="outline" size="sm" className="text-black border-white-600 hover:bg-gray-800">
+                    View Your Points
+                  </Button>
+                </Link>
+              </div>
             </div>
             <div className="text-left mb-4">
               <h2 className="text-sm font-bold text-white mb-3">SELECT WEEK</h2>
