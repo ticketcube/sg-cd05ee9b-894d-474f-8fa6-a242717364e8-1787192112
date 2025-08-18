@@ -191,6 +191,8 @@ function WeeklyRatingsPageContent() {
   };
 
   const handleSubmissionSuccess = (result: SubmissionResult) => {
+    console.log("📥 handleSubmissionSuccess received result:", result);
+    console.log("📝 Setting submissionResult state with:", result);
     setSubmissionResult(result);
   };
 

@@ -211,6 +211,16 @@ export default function WeeklyArtistRatingPopup({
       const ticketValue = (ticketInterest - 50) / 50; // Convert 0-100 to -1 to 1
       const shareValue = (shareInterest - 50) / 50; // Convert 0-100 to -1 to 1
       
+      console.log("🔄 Submitting quadrant votes with data:", {
+        userId: user.id,
+        weekIdentifier: weekIdentifier,
+        artistPositions: [{
+          artistUuid: artist.uuid,
+          quadrant_x: ticketValue,
+          quadrant_y: shareValue
+        }]
+      });
+
       const result = await weeklyVotingService.submitQuadrantVotes({
         userId: user.id,
         weekIdentifier: weekIdentifier,
@@ -221,8 +231,11 @@ export default function WeeklyArtistRatingPopup({
         }]
       });
 
+      console.log("✅ Submission result received:", result);
+
       // Always call the success callback to show popup, regardless of points earned
       if (onSubmissionSuccess) {
+        console.log("📤 Calling onSubmissionSuccess with result:", result);
         onSubmissionSuccess(result);
       }
 
@@ -230,7 +243,7 @@ export default function WeeklyArtistRatingPopup({
       onRatingComplete(artist.uuid, ticketValue, shareValue);
       onClose();
     } catch (error) {
-      console.error("Error submitting rating:", error);
+      console.error("❌ Error submitting rating:", error);
     } finally {
       setIsSubmitting(false);
     }

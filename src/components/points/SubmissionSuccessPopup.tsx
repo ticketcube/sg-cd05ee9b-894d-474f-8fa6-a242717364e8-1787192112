@@ -20,9 +20,15 @@ export default function SubmissionSuccessPopup({
   onClose,
   result,
 }: SubmissionSuccessPopupProps) {
-  if (!result) return null;
+  console.log("🎭 SubmissionSuccessPopup render - isOpen:", isOpen, "result:", result);
+  
+  if (!result) {
+    console.log("⚠️ SubmissionSuccessPopup: No result provided, returning null");
+    return null;
+  }
 
   const { totalPointsEarned, breakdown } = result;
+  console.log("📊 SubmissionSuccessPopup: Using data - totalPointsEarned:", totalPointsEarned, "breakdown:", breakdown);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
