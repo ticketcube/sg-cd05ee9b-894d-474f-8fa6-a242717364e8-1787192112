@@ -174,6 +174,21 @@ function WeeklyRatingsPageContent() {
     setIsPopupOpen(true);
   };
 
+  const handleVideoPointsAwarded = (artistUuid: string, pointsEarned: number) => {
+    // Update video watch status for this artist
+    setVideoWatchStatuses(prev => 
+      prev.map(status => 
+        status.artistUuid === artistUuid 
+          ? { ...status, hasWatched: true, watchedAt: new Date().toISOString() }
+          : status
+      )
+    );
+
+    // Show notification for video watch points
+    // This will be implemented once we add the notification function
+    console.log(`Video points awarded: ${pointsEarned} for artist ${artistUuid}`);
+  };
+
   const handleSubmitRatings = async () => {
     if (!user || !weeklyList || artistRatings.length === 0) return;
 
@@ -356,6 +371,7 @@ function WeeklyRatingsPageContent() {
             onRatingComplete={handleRatingComplete}
             weekIdentifier={selectedListId}
             userHasVoted={selectedArtist.user_has_voted}
+            onVideoPointsAwarded={handleVideoPointsAwarded}
           />
         )}
 
