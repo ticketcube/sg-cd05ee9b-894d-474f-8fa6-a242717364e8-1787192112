@@ -107,7 +107,7 @@ export default function HowPointsWorkModal({
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                      <strong>10 points once per week</strong>
+                      <strong>10 points once per artist per week</strong>
                     </li>
                     <li className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
@@ -134,7 +134,7 @@ export default function HowPointsWorkModal({
                   <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                     <div>
                       <p className="font-medium text-blue-900">Video Points</p>
-                      <p className="text-sm text-blue-700">Once per artist per week</p>
+                      <p className="text-sm text-blue-700">Once per video per week</p>
                     </div>
                     <Badge className="bg-blue-100 text-blue-800">5pts</Badge>
                   </div>
@@ -142,7 +142,7 @@ export default function HowPointsWorkModal({
                   <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                     <div>
                       <p className="font-medium text-green-900">Voting Points</p>
-                      <p className="text-sm text-green-700">Once per week</p>
+                      <p className="text-sm text-green-700">Once per artist per week</p>
                     </div>
                     <Badge className="bg-green-100 text-green-800">10pts</Badge>
                   </div>
