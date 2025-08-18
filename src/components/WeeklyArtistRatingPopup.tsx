@@ -209,17 +209,19 @@ export default function WeeklyArtistRatingPopup({
       const ticketValue = (ticketInterest - 50) / 50; // Convert 0-100 to -1 to 1
       const shareValue = (shareInterest - 50) / 50; // Convert 0-100 to -1 to 1
       
-      const result = await weeklyVotingService.submitVote({
+      const result = await weeklyVotingService.submitQuadrantVotes({
         userId: user.id,
-        artistUuid: artist.uuid,
         weekIdentifier: weekIdentifier,
-        quadrantX: ticketValue,
-        quadrantY: shareValue
+        artistPositions: [{
+          artistUuid: artist.uuid,
+          quadrant_x: ticketValue,
+          quadrant_y: shareValue
+        }]
       });
 
-      if (result.pointsEarned > 0) {
+      if (result.totalPointsEarned > 0) {
         // Show points notification
-        showVoteSubmissionNotification(result.pointsEarned);
+        showVoteSubmissionNotification(result.totalPointsEarned);
       }
 
       // Update parent component

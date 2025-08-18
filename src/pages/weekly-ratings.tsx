@@ -254,7 +254,7 @@ function WeeklyRatingsPageContent() {
           <>
             <div className="p-4 bg-gray-800 border-b border-gray-700">
               <div className="max-w-md mx-auto">
-                <div className="flex flex-wrap justify-center gap-4">
+                <div className="flex justify-center items-center gap-6 px-4" style={{ minHeight: '100px' }}>
                   {weeklyList.artists.map((artistData) => {
                     const artist = artistData.artist;
                     const hasVoted = artistData.user_has_voted;
@@ -262,7 +262,7 @@ function WeeklyRatingsPageContent() {
                     const hasWatchedVideo = watchStatus?.hasWatched || false;
                     
                     return (
-                      <div key={artist.uuid} className="text-center cursor-pointer rounded-lg transition-all duration-200 hover:bg-blue-800 hover:scale-105 p-1 flex-shrink-0" onClick={() => handleWatchArtist(artistData)}>
+                      <div key={artist.uuid} className="text-center cursor-pointer rounded-lg transition-all duration-200 hover:bg-blue-800 hover:scale-105 p-2 flex-shrink-0" onClick={() => handleWatchArtist(artistData)}>
                         <div className={`select-none transition-opacity ${hasVoted ? 'opacity-50' : ''} relative`}>
                           {artist.artist_image ? (
                             <Image src={artist.artist_image} alt={artist.artist_name} width={48} height={48} className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white" />
