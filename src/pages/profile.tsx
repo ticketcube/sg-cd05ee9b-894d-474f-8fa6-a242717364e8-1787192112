@@ -159,7 +159,7 @@ export default function ProfilePage() {
                 onClick={() => window.location.href = "/"}
                 className="text-white hover:bg-gray-800 flex-shrink-0"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" /weekly-rewards>
+                <ArrowLeft className="w-4 h-4 mr-2" /weekly_participationseekly-ratings>
                 Earn Rewards
               </Button>
               <h1 className="text-xl font-bold text-blue-500">
