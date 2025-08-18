@@ -142,7 +142,7 @@ export default function HowPointsWorkModal({
                   <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                     <div>
                       <p className="font-medium text-green-900">Voting Points</p>
-                      <p className="text-sm text-green-700">Once per artist perweek</p>
+                      <p className="text-sm text-green-700">Once per artist per week</p>
                     </div>
                     <Badge className="bg-green-100 text-green-800">10pts</Badge>
                   </div>
@@ -174,8 +174,8 @@ export default function HowPointsWorkModal({
                     </div>
                     
                     <div className="flex items-center justify-between p-2 border rounded">
-                      <span>Rate all Artists</span>
-                      <Badge variant="outline" className="text-green-600">+20 pts</Badge>
+                      <span>Rate all 4 Artists</span>
+                      <Badge variant="outline" className="text-green-600">+40 pts</Badge>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-gray-50 rounded font-medium">
                       <span>Total possible points this week</span>
