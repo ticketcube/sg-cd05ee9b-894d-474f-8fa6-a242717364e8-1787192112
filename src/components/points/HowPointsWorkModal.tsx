@@ -117,37 +117,7 @@ export default function HowPointsWorkModal({
                 </CardContent>
               </Card>
 
-              {/* Completion Bonus */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Trophy className="w-5 h-5 text-yellow-500" />
-                    Completion Bonus
-                    <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
-                      15 points
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription>
-                    Watch all videos in a weekly list for bonus points
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-                      Watch <strong>ALL videos</strong> in a weekly list (15+ seconds each)
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-                      <strong>15 bonus points once per week</strong>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                      Available anytime - no voting required!
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+             
             </div>
           </TabsContent>
 
