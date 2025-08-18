@@ -246,41 +246,39 @@ function WeeklyRatingsPageContent() {
           <>
             <div className="p-4 bg-gray-800 border-b border-gray-700">
               <div className="max-w-md mx-auto">
-                {Array.from({ length: Math.ceil(weeklyList.artists.length / 5) }, (_, i) => i * 5).map(start => (
-                  <div key={start} className="grid grid-cols-5 gap-2 mb-2">
-                    {weeklyList.artists.slice(start, start + 5).map((artistData) => {
-                      const artist = artistData.artist;
-                      const hasVoted = artistData.user_has_voted;
-                      const watchStatus = getArtistWatchStatus(artist.uuid);
-                      const hasWatchedVideo = watchStatus?.hasWatched || false;
-                      
-                      return (
-                        <div key={artist.uuid} className="text-center cursor-pointer rounded-lg transition-all duration-200 hover:bg-blue-800 hover:scale-105 p-1" onClick={() => handleWatchArtist(artistData)}>
-                          <div className={`select-none transition-opacity ${hasVoted ? 'opacity-50' : ''} relative`}>
-                            {artist.artist_image ? (
-                              <Image src={artist.artist_image} alt={artist.artist_name} width={48} height={48} className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white" />
-                            ) : (
-                              <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center mx-auto"><User className="w-6 h-6" /></div>
-                            )}
-                            
-                            {/* Video watched indicator */}
-                            {hasWatchedVideo && (
-                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center">
-                                <Eye className="w-2 h-2 text-white" />
-                              </div>
-                            )}
-                            
-                            <div className="text-xs text-white mt-1 truncate">{artist.artist_name}</div>
-                          </div>
-                          <div className={`mt-1 inline-flex items-center justify-center h-5 px-1 text-xs rounded ${hasVoted ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}`}>
-                            {hasVoted ? <CheckCircle className="w-3 h-3 mr-1" /> : <Play className="w-2 h-2 mr-1" />}
-                            {hasVoted ? 'Rated' : 'Rate'}
-                          </div>
+                <div className="flex flex-wrap justify-center gap-4">
+                  {weeklyList.artists.map((artistData) => {
+                    const artist = artistData.artist;
+                    const hasVoted = artistData.user_has_voted;
+                    const watchStatus = getArtistWatchStatus(artist.uuid);
+                    const hasWatchedVideo = watchStatus?.hasWatched || false;
+                    
+                    return (
+                      <div key={artist.uuid} className="text-center cursor-pointer rounded-lg transition-all duration-200 hover:bg-blue-800 hover:scale-105 p-1 flex-shrink-0" onClick={() => handleWatchArtist(artistData)}>
+                        <div className={`select-none transition-opacity ${hasVoted ? 'opacity-50' : ''} relative`}>
+                          {artist.artist_image ? (
+                            <Image src={artist.artist_image} alt={artist.artist_name} width={48} height={48} className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center mx-auto"><User className="w-6 h-6" /></div>
+                          )}
+                          
+                          {/* Video watched indicator */}
+                          {hasWatchedVideo && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center">
+                              <Eye className="w-2 h-2 text-white" />
+                            </div>
+                          )}
+                          
+                          <div className="text-xs text-white mt-1 truncate w-16">{artist.artist_name}</div>
                         </div>
-                      );
-                    })}
-                  </div>
-                ))}
+                        <div className={`mt-1 inline-flex items-center justify-center h-5 px-1 text-xs rounded ${hasVoted ? 'bg-green-600 text-white' : 'bg-blue-600 text-white'}`}>
+                          {hasVoted ? <CheckCircle className="w-3 h-3 mr-1" /> : <Play className="w-2 h-2 mr-1" />}
+                          {hasVoted ? 'Rated' : 'Rate'}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
