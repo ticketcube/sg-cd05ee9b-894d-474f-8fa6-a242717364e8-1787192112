@@ -44,6 +44,8 @@ export default function WeeklyArtistRatingPopup({
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [slidersChanged, setSlidersChanged] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Timer system state
   const [watchTime, setWatchTime] = useState(0);
@@ -53,6 +55,8 @@ export default function WeeklyArtistRatingPopup({
   const [videoPoints, setVideoPoints] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const { showVoteSubmissionNotification } = usePointsNotifications();
+
   // Reset state when popup opens or artist changes
   useEffect(() => {
     if (isOpen && artist) {
@@ -60,6 +64,9 @@ export default function WeeklyArtistRatingPopup({
       setWatchTime(0);
       setHasEarnedPoints(false);
       setIsEligibleForPoints(false);
+      setSlidersChanged(false);
+      setTicketInterest(50);
+      setShareInterest(50);
       stopTimer(); // Clear any existing timer
       
       if (user) {
@@ -70,6 +77,7 @@ export default function WeeklyArtistRatingPopup({
       stopTimer();
       setWatchTime(0);
       setHasEarnedPoints(false);
+      setSlidersChanged(false);
     }
     
     return () => {
@@ -182,20 +190,45 @@ export default function WeeklyArtistRatingPopup({
     }
   };
 
+  const handleTicketInterestChange = (value: number[]) => {
+    setTicketInterest(value[0]);
+    setSlidersChanged(true);
+  };
+
+  const handleShareInterestChange = (value: number[]) => {
+    setShareInterest(value[0]);
+    setSlidersChanged(true);
+  };
+
   const handleSubmit = async () => {
-    if (artist) {
-      setIsLoading(true);
-      try {
-        // Convert 0-100 slider values to -1 to 1 coordinate system
-        const ticketValue = (ticketInterest - 50) / 50; // Convert 0-100 to -1 to 1
-        const shareValue = (shareInterest - 50) / 50; // Convert 0-100 to -1 to 1
-        onRatingComplete(artist.uuid, ticketValue, shareValue);
-        onClose();
-      } catch (error) {
-        console.error("Error submitting rating:", error);
-      } finally {
-        setIsLoading(false);
+    if (!artist || !user || !slidersChanged) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Submit the rating to the database
+      const ticketValue = (ticketInterest - 50) / 50; // Convert 0-100 to -1 to 1
+      const shareValue = (shareInterest - 50) / 50; // Convert 0-100 to -1 to 1
+      
+      const result = await weeklyVotingService.submitVote({
+        userId: user.id,
+        artistUuid: artist.uuid,
+        weekIdentifier: weekIdentifier,
+        quadrantX: ticketValue,
+        quadrantY: shareValue
+      });
+
+      if (result.pointsEarned > 0) {
+        // Show points notification
+        showVoteSubmissionNotification(result.pointsEarned);
       }
+
+      // Update parent component
+      onRatingComplete(artist.uuid, ticketValue, shareValue);
+      onClose();
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -343,7 +376,7 @@ export default function WeeklyArtistRatingPopup({
                           />
                           <Slider
                             value={[ticketInterest]} 
-                            onValueChange={(value) => setTicketInterest(value[0])}
+                            onValueChange={handleTicketInterestChange}
                             max={100}
                             step={1}
                             disabled={userHasVoted}
@@ -376,7 +409,7 @@ export default function WeeklyArtistRatingPopup({
                           />
                           <Slider
                             value={[shareInterest]}
-                            onValueChange={(value) => setShareInterest(value[0])}
+                            onValueChange={handleShareInterestChange}
                             max={100}
                             step={1}
                             disabled={userHasVoted}
@@ -398,13 +431,19 @@ export default function WeeklyArtistRatingPopup({
         <DialogFooter className="p-6 bg-gray-800">
           <Button
             onClick={handleSubmit}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-lg"
-            disabled={isLoading || userHasVoted}
+            className={`w-full text-lg ${
+              slidersChanged && !userHasVoted 
+                ? "bg-blue-600 hover:bg-blue-700" 
+                : "bg-gray-600 hover:bg-gray-600 cursor-not-allowed"
+            }`}
+            disabled={isSubmitting || userHasVoted || !slidersChanged}
           >
-            {isLoading ? (
+            {isSubmitting ? (
               <Loader2 className="animate-spin mr-2" />
             ) : userHasVoted ? (
               "You've Already Rated This Artist"
+            ) : !slidersChanged ? (
+              "Adjust Sliders to Submit Rating"
             ) : (
               "Submit Rating"
             )}
