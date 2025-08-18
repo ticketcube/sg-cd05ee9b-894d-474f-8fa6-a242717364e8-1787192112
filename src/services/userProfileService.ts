@@ -291,7 +291,7 @@ const userProfileService = {
 
           if (engagement.engagement_type === "video_view") {
             summary.video_views += 1;
-          } else if (engagement.engagement_type === "vote_submission" || engagement.engagement_type === "ranking_submission") {
+          } else if (engagement.engagement_type === "vote_submission" || engagement.engagement_type === "artist_rating"  ) {
             summary.votes_submitted += 1;
           }
         }
@@ -355,7 +355,7 @@ const userProfileService = {
         .select("id")
         .eq("user_id", userId)
         .eq("week_identifier", weekIdentifier)
-        .in("engagement_type", ["vote_submission", "ranking_submission"])
+        .in("engagement_type", ["vote_submission", "artist_rating"])
         .limit(1);
 
       if (error) {
