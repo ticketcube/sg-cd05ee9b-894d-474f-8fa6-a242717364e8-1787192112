@@ -189,38 +189,6 @@ function WeeklyRatingsPageContent() {
     console.log(`Video points awarded: ${pointsEarned} for artist ${artistUuid}`);
   };
 
-  const handleSubmitRatings = async () => {
-    if (!user || !weeklyList || artistRatings.length === 0) return;
-
-    setSubmitting(true);
-    try {
-      const voteData = {
-        userId: user.id,
-        weekIdentifier: weeklyList.week_identifier!,
-        artistPositions: artistRatings.filter(r => r.isRated).map(r => ({
-          artistUuid: r.artistUuid,
-          quadrant_x: r.ticketInterest,
-          quadrant_y: r.shareInterest
-        }))
-      };
-      
-      const result = await weeklyVotingService.submitQuadrantVotes(voteData);
-      setSubmissionResult(result);
-      
-      if (result.totalPointsEarned > 0) {
-        showVoteSubmissionNotification(result.totalPointsEarned);
-      }
-      
-      // Reload the list to get updated status
-      await loadSpecificWeeklyList(weeklyList.week_identifier!);
-    } catch (error) {
-      console.error("Error submitting ratings:", error);
-      alert("Error submitting ratings. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const getArtistWatchStatus = (artistUuid: string) => {
     return videoWatchStatuses.find(status => status.artistUuid === artistUuid);
   };
@@ -341,21 +309,6 @@ function WeeklyRatingsPageContent() {
                     </div>
                   </CardContent>
                 </Card>
-                <div className="mt-4">
-                  <Button 
-                    onClick={handleSubmitRatings} 
-                    disabled={submitting || hasSubmittedAll || ratedArtistsCount === 0} 
-                    className="w-full text-lg py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
-                  >
-                    {submitting ? (
-                      <><Loader2 className="animate-spin mr-2" />Submitting...</>
-                    ) : hasSubmittedAll ? (
-                      "ALL RATINGS SUBMITTED!"
-                    ) : (
-                      `SUBMIT RATINGS (${ratedArtistsCount})`
-                    )}
-                  </Button>
-                </div>
               </div>
             </div>
           </>

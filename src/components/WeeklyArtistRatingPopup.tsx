@@ -315,40 +315,96 @@ export default function WeeklyArtistRatingPopup({
               </div>
             </DialogHeader>
 
-            <div className="p-6 space-y-6">
-              <div>
-                <div className="flex justify-between text-sm text-gray-400 mb-2">
-                  <span>Would you buy a ticket?</span>
-                  <span className="font-bold text-white">{ticketInterest}%</span>
-                </div>
-                <Slider
-                  value={[ticketInterest]}
-                  onValueChange={(value) => setTicketInterest(value[0])}
-                  className="w-full"
-                  disabled={userHasVoted}
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Not for me</span>
-                  <span>Definitely!</span>
-                </div>
-              </div>
+            <div className="flex flex-col flex-1">
+              <AnimatePresence>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-center">Rate This Artist</h3>
+                    <div className="text-sm text-center">
+                      {!isEligibleForPoints ? (
+                        <Badge className="bg-gray-600 text-white">Already Watched</Badge>
+                      ) : hasEarnedPoints ? (
+                        <Badge className="bg-green-600 text-white">+{videoPoints} Points Earned!</Badge>
+                      ) : (
+                        <div className="flex items-center justify-center gap-2">
+                          <Clock className="w-3 h-3" />
+                          <span>Timer: {watchTime}/{minWatchTime} seconds</span>
+                          <Progress value={(watchTime / minWatchTime) * 100} className="w-16 h-2" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Ticket Interest Slider */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Ticket className="w-4 h-4 text-blue-400" />
+                        <span className="text-sm font-medium">Concert Interest</span>
+                      </div>
+                      <div className="px-3">
+                        <div className="relative mb-2">
+                          <div 
+                            className="absolute inset-0 h-3 rounded-full pointer-events-none z-0"
+                            style={{
+                              background: `linear-gradient(to right, #3b82f6 0%, #ef4444 100%)`,
+                              top: '50%',
+                              transform: 'translateY(-50%)'
+                            }}
+                          />
+                          <Slider
+                            value={[ticketInterest]} 
+                            onValueChange={(value) => setTicketInterest(value[0])}
+                            max={100}
+                            step={1}
+                            disabled={userHasVoted}
+                            className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-7 [&_[data-radix-slider-thumb]]:h-7 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-800 [&_[data-radix-slider-thumb]]:shadow-xl [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform [&_[data-radix-slider-thumb]]:z-20"
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-400 mt-1">
+                          <span>Not For Me</span>
+                          <span className="font-medium text-white">{getTicketLabel(ticketInterest)}</span>
+                          <span>I'd Buy Tickets</span>
+                        </div>
+                      </div>
+                    </div>
 
-              <div>
-                <div className="flex justify-between text-sm text-gray-400 mb-2">
-                  <span>Would you share with friends?</span>
-                  <span className="font-bold text-white">{shareInterest}%</span>
-                </div>
-                <Slider
-                  value={[shareInterest]}
-                  onValueChange={(value) => setShareInterest(value[0])}
-                  className="w-full"
-                  disabled={userHasVoted}
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Not my vibe</span>
-                  <span>Share it!</span>
-                </div>
-              </div>
+                    {/* Share Interest Slider */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-green-400" />
+                        <span className="text-sm font-medium">Sharing Interest</span>
+                      </div>
+                      <div className="px-3">
+                        <div className="relative mb-2">
+                          <div 
+                            className="absolute inset-0 h-3 rounded-full pointer-events-none z-0"
+                            style={{
+                              background: `linear-gradient(to right, #3b82f6 0%, #ef4444 100%)`,
+                              top: '50%',
+                              transform: 'translateY(-50%)'
+                            }}
+                          />
+                          <Slider
+                            value={[shareInterest]}
+                            onValueChange={(value) => setShareInterest(value[0])}
+                            max={100}
+                            step={1}
+                            disabled={userHasVoted}
+                            className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-7 [&_[data-radix-slider-thumb]]:h-7 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-800 [&_[data-radix-slider-thumb]]:shadow-xl [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform [&_[data-radix-slider-thumb]]:z-20"
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-400 mt-1">
+                          <span>Not For Them</span>
+                          <span>I'd Tell Friends</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
