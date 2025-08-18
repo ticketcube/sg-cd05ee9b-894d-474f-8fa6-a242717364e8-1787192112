@@ -266,8 +266,7 @@ export default function ProfilePage() {
              
                 
                
-               
-              </div>
+            
 
               {/* Quick Stats */}
               <div className="grid grid-cols-3 gap-4">
