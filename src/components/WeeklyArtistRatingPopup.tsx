@@ -53,18 +53,30 @@ export default function WeeklyArtistRatingPopup({
   const [videoPoints, setVideoPoints] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Check eligibility when popup opens
+  // Reset state when popup opens or artist changes
   useEffect(() => {
-    if (isOpen && user && artist) {
-      checkPointsEligibility();
-    }
-    return () => {
-      // Cleanup timer on unmount
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
+    if (isOpen && artist) {
+      // Reset all timer state for new artist
+      setWatchTime(0);
+      setHasEarnedPoints(false);
+      setIsEligibleForPoints(false);
+      stopTimer(); // Clear any existing timer
+      
+      if (user) {
+        checkPointsEligibility();
       }
+    } else if (!isOpen) {
+      // Clean up when popup closes
+      stopTimer();
+      setWatchTime(0);
+      setHasEarnedPoints(false);
+    }
+    
+    return () => {
+      // Cleanup timer on unmount or dependency change
+      stopTimer();
     };
-  }, [isOpen, user, artist]);
+  }, [isOpen, artist?.uuid, user]); // Include artist.uuid to reset on artist change
 
   const checkPointsEligibility = async () => {
     if (!user) return;
@@ -102,6 +114,12 @@ export default function WeeklyArtistRatingPopup({
         // Award points when reaching minimum watch time
         if (newTime >= minWatchTime && !hasEarnedPoints && isEligibleForPoints && user) {
           awardVideoPoints();
+          return minWatchTime; // Cap the time at minimum watch time
+        }
+        
+        // Stop timer if points already earned or time exceeded
+        if (hasEarnedPoints || newTime > minWatchTime) {
+          return prevTime; // Don't increment further
         }
         
         return newTime;
@@ -124,7 +142,7 @@ export default function WeeklyArtistRatingPopup({
         userId: user.id,
         artistUuid: artist.uuid,
         weekIdentifier: weekIdentifier,
-        watchTimeSeconds: watchTime
+        watchTimeSeconds: minWatchTime // Use minWatchTime instead of current watchTime
       });
 
       if (result.pointsEarned > 0) {
@@ -282,7 +300,7 @@ export default function WeeklyArtistRatingPopup({
                     <CheckCircle className="w-4 h-4 text-white" />
                     <span className="text-xs text-white font-medium">{videoPoints} points earned!</span>
                   </div>
-                ) : watchTime < minWatchTime ? (
+                ) : (
                   <div className="bg-gray-800 px-3 py-1 rounded-lg">
                     <div className="flex items-center gap-2 mb-1">
                       <Timer className="w-4 h-4 text-blue-400" />
@@ -293,7 +311,7 @@ export default function WeeklyArtistRatingPopup({
                       className="w-24 h-1 bg-gray-600"
                     />
                   </div>
-                ) : null}
+                )}
               </div>
             </DialogHeader>
 
