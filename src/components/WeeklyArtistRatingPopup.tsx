@@ -227,7 +227,35 @@ export default function WeeklyArtistRatingPopup({
               onChangeIndex={handleVideoIndexChange}
               isEmbed={true}
               showNavigationControls={false}
+              onPlay={handleVideoPlay}
+              onPause={() => setIsVideoPlaying(false)}
             />
+            
+            {/* Timer Progress UI - Bottom Left Overlay */}
+            <div className="absolute bottom-4 left-4 z-50">
+              {!isEligibleForPoints ? (
+                <div className="bg-black/75 px-3 py-1 rounded-lg flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs text-gray-400">Already watched</span>
+                </div>
+              ) : hasEarnedPoints ? (
+                <div className="bg-green-600/90 px-3 py-1 rounded-lg flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-white" />
+                  <span className="text-xs text-white font-medium">{videoPoints} points earned!</span>
+                </div>
+              ) : watchTime < minWatchTime ? (
+                <div className="bg-black/75 px-3 py-1 rounded-lg">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Timer className="w-4 h-4 text-blue-400" />
+                    <span className="text-xs text-white">{watchTime}s / {minWatchTime}s</span>
+                  </div>
+                  <Progress 
+                    value={(watchTime / minWatchTime) * 100} 
+                    className="w-24 h-1 bg-gray-600"
+                  />
+                </div>
+              ) : null}
+            </div>
             
             {/* Click-through overlay that covers the entire video area */}
             {!isVideoPlaying && (
