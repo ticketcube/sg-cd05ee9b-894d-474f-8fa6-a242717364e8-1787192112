@@ -1,29 +1,22 @@
+
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Play, VideoOff } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Artist } from "@/types/artists";
-
-interface ArtistForPlayer {
-  artist_name: string;
-  artist_tiktok_username?: string | null;
-  artist_tiktok_videoid?: string | null;
-  artist_videolink?: string | null;
-  artist_image?: string | null;
-}
+import ReactPlayer from "react-player";
+import { cn } from "@/lib/utils";
 
 interface ArtistVideoPlayerProps {
-  artist: Artist | ArtistForPlayer;
-  size?: "sm" | "md" | "lg";
-  className?: string;
-  onPlayerError?: () => void;
-  videoOverrideId?: string;
+  artist: Artist;
   videoLinks?: string[];
   currentIndex?: number;
-  onChangeIndex?: (newIndex: number) => void;
+  onChangeIndex?: (index: number) => void;
   isEmbed?: boolean;
   showNavigationControls?: boolean;
-  onClick?: (e: React.MouseEvent) => void;
+  onPlay?: () => void;
+  onPause?: () => void;
+  onEnded?: () => void;
 }
 
 const extractYouTubeVideoId = (url: string): string | null => {
@@ -51,16 +44,17 @@ const isValidImageUrl = (url: string | null | undefined): url is string => {
 
 export default function ArtistVideoPlayer({
   artist,
-  size = "lg",
-  className,
-  onPlayerError,
-  videoOverrideId,
   videoLinks = [],
   currentIndex = 0,
+  onChangeIndex,
   isEmbed = false,
-  onClick,
+  showNavigationControls = true,
+  onPlay,
+  onPause,
+  onEnded,
 }: ArtistVideoPlayerProps) {
   const [videoError, setVideoError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const processedVideoLinks = useMemo(() => {
     if (videoLinks.length > 0) return videoLinks;
@@ -70,11 +64,16 @@ export default function ArtistVideoPlayer({
     return [];
   }, [artist.artist_videolink, videoLinks]);
 
+  const currentVideoUrl = useMemo(() => {
+    if (processedVideoLinks.length > 0) {
+      return processedVideoLinks[currentIndex] || processedVideoLinks[0];
+    }
+    return artist.artist_videolink ? artist.artist_videolink.split(",")[0].trim() : null;
+  }, [processedVideoLinks, currentIndex, artist.artist_videolink]);
+
   const videoContent = useMemo(() => {
     let extractedVideoId: string | null = null;
-    const sourceUrl = videoOverrideId || 
-      (processedVideoLinks.length > 0 ? processedVideoLinks[currentIndex] : null) ||
-      (artist.artist_videolink ? artist.artist_videolink.split(",")[0].trim() : null);
+    const sourceUrl = currentVideoUrl;
     
     if (sourceUrl) {
       extractedVideoId = extractYouTubeVideoId(sourceUrl);
@@ -105,18 +104,11 @@ export default function ArtistVideoPlayer({
       embedUrl: null, 
       thumbnailUrl: isValidImageUrl(artist.artist_image) ? artist.artist_image : null 
     };
-  }, [artist, videoOverrideId, processedVideoLinks, currentIndex]);
+  }, [currentVideoUrl, artist]);
 
   const handleVideoError = () => {
     setVideoError(true);
-    if (onPlayerError) {
-      onPlayerError();
-    }
   };
-
-  const sizeClasses = { sm: "w-12 h-12", md: "w-24 h-24", lg: "w-full h-full" };
-  const playButtonSizes = { sm: "w-4 h-4", md: "w-8 h-8", lg: "w-12 h-12" };
-  const fallbackImage = videoContent.thumbnailUrl || artist.artist_image;
 
   const videoEmbed = (
     <div className="relative w-full h-full">
@@ -145,41 +137,33 @@ export default function ArtistVideoPlayer({
   }
 
   return (
-    <div 
-      className={`relative ${sizeClasses[size]} rounded-lg overflow-hidden cursor-pointer group ${className}`}
-      onClick={onClick}
-    >
-      <div className="w-full h-full bg-cover bg-center bg-gray-800 relative">
-        {isValidImageUrl(fallbackImage) ? (
-          <Image 
-            src={fallbackImage} 
-            alt={`${artist.artist_name} video thumbnail`}
-            fill
-            style={{ objectFit: "cover" }}
-            onError={() => setVideoError(true)}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600">
-            <span className="text-white text-xs font-bold text-center px-2">
-              {artist.artist_name}
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-60 transition-all duration-200" />
-      
-      {videoContent.type !== "none" && !videoError && (
-        <motion.div 
-          className="absolute inset-0 flex items-center justify-center"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="bg-white bg-opacity-90 rounded-full p-2 group-hover:bg-opacity-100 group-hover:scale-110 transition-all duration-200">
-            <Play className={`${playButtonSizes[size]} text-black fill-black`} />
-          </div>
-        </motion.div>
+    <div className={cn("relative", "w-full aspect-video")}>
+      {currentVideoUrl && (
+        <ReactPlayer
+          url={currentVideoUrl}
+          width="100%"
+          height="100%"
+          playing={true}
+          controls={true}
+          onReady={() => setIsLoading(false)}
+          onError={(error) => {
+            console.error("Video error:", error);
+            setIsLoading(false);
+            handleVideoError();
+          }}
+          onPlay={onPlay}
+          onPause={onPause}
+          onEnded={onEnded}
+          config={{
+            youtube: {
+              playerVars: {
+                autoplay: 1,
+                modestbranding: 1,
+                rel: 0,
+              },
+            },
+          }}
+        />
       )}
     </div>
   );

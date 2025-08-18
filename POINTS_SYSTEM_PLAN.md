@@ -324,3 +324,203 @@ This points system is designed to be:
 - **User-Friendly**: Clear rules + progress indicators
 
 The core foundation is solid and ready for immediate deployment, with a clear roadmap for enhanced features.
+
+---
+
+## Phase 1.6: Video Watch Points System Fix (Implementation Plan)
+
+**Objective**: Implement a reliable timer and point-awarding system for video views within the `WeeklyArtistRatingPopup`, providing clear user feedback.
+
+### 1. File Modifications Overview
+- **`src/components/WeeklyArtistRatingPopup.tsx`**: Will contain the core timer and point-awarding logic.
+- **`src/components/ArtistVideoPlayer.tsx`**: Will be updated to emit playback status events.
+- **`src/pages/weekly-ratings.tsx`**: Will handle UI updates (notifications, watch status icon) after points are awarded.
+- **`src/components/points/PointsNotification.tsx`**: Will be updated to handle a new video-specific notification.
+
+### 2. Step-by-Step Implementation Guide
+
+#### A. Update `ArtistVideoPlayer.tsx` for Event Emission
+
+1.  **Modify Props**: Add the following optional callback props to `ArtistVideoPlayerProps`:
+    ```typescript
+    onPlay?: () => void;
+    onPause?: () => void;
+    onEnded?: () => void;
+    onProgress?: (progress: { playedSeconds: number }) => void;
+    ```
+2.  **Wire Callbacks**: In the underlying video player component (e.g., `ReactPlayer`), wire up its native event handlers to these new props.
+    ```jsx
+    <ReactPlayer
+      onPlay={onPlay}
+      onPause={onPause}
+      onEnded={onEnded}
+      onProgress={onProgress}
+    />
+    ```
+
+#### B. Implement Core Logic in `WeeklyArtistRatingPopup.tsx`
+
+1.  **Add New State Variables**:
+    ```typescript
+    import { useAuth } from "@/contexts/AuthContext";
+    import { pointsConfigService } from "@/services/pointsConfigService";
+
+    const { user } = useAuth();
+    const [watchTime, setWatchTime] = useState(0);
+    const [minWatchTime, setMinWatchTime] = useState(15);
+    const [hasEarnedPoints, setHasEarnedPoints] = useState(false);
+    const [isEligibleForPoints, setIsEligibleForPoints] = useState(false);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    ```
+
+2.  **Fetch Configuration on Mount**:
+    ```typescript
+    useEffect(() => {
+      const fetchConfig = async () => {
+        if (!user || !artist) return;
+        
+        const time = await pointsConfigService.getMinValue('video_view');
+        setMinWatchTime(time);
+        
+        const eligibility = await pointsConfigService.checkEligibility(
+          'video_view',
+          user.id,
+          artist.uuid,
+          weekIdentifier
+        );
+        setIsEligibleForPoints(eligibility);
+      };
+      
+      if (isOpen) {
+        fetchConfig();
+      }
+    }, [isOpen, user, artist, weekIdentifier]);
+    ```
+
+3.  **Implement Timer Controls**: Create functions to handle the timer based on video playback state.
+    ```typescript
+    const startTimer = () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => {
+        setWatchTime(prev => prev + 1);
+      }, 1000);
+    };
+
+    const stopTimer = () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+
+    useEffect(() => {
+      return () => stopTimer();
+    }, []);
+    ```
+
+4.  **Handle Point Awarding Logic**: Use a `useEffect` to watch for `watchTime` changes.
+    ```typescript
+    useEffect(() => {
+      if (isEligibleForPoints && !hasEarnedPoints && watchTime >= minWatchTime) {
+        const awardPoints = async () => {
+          if (!user) return;
+          setHasEarnedPoints(true);
+          stopTimer();
+
+          const result = await videoWatchService.recordVideoView({
+            userId: user.id,
+            artistUuid: artist.uuid,
+            weekIdentifier: weekIdentifier,
+            watchTimeSeconds: watchTime,
+          });
+
+          if (result.pointsEarned > 0 && onVideoPointsAwarded) {
+            onVideoPointsAwarded(result.pointsEarned, artist.uuid);
+          }
+        };
+        awardPoints();
+      }
+    }, [watchTime, minWatchTime, isEligibleForPoints, hasEarnedPoints, user, artist, weekIdentifier]);
+    ```
+
+5.  **Update `WeeklyArtistRatingPopupProps`**: Add the new callback.
+    ```typescript
+    interface WeeklyArtistRatingPopupProps {
+      onVideoPointsAwarded?: (points: number, artistUuid: string) => void;
+    }
+    ```
+
+6.  **Connect Logic to `ArtistVideoPlayer`**:
+    ```jsx
+    <ArtistVideoPlayer
+      onPlay={startTimer}
+      onPause={stopTimer}
+      onEnded={stopTimer}
+    />
+    ```
+
+7.  **Add UI Feedback**: Create a visual element to show progress.
+    ```jsx
+    <div className="absolute bottom-4 left-4 bg-black/70 p-2 rounded-lg text-white">
+      {isEligibleForPoints && !hasEarnedPoints && (
+        <div className="flex items-center space-x-2">
+          <Timer className="w-5 h-5" />
+          <span>{watchTime}s / {minWatchTime}s</span>
+          <Progress value={(watchTime / minWatchTime) * 100} className="w-24" />
+        </div>
+      )}
+      {hasEarnedPoints && (
+        <div className="flex items-center space-x-2 text-green-400">
+          <CheckCircle className="w-5 h-5" />
+          <span>Points Earned!</span>
+        </div>
+      )}
+      {!isEligibleForPoints && (
+         <div className="flex items-center space-x-2 text-gray-400">
+          <CheckCircle className="w-5 h-5" />
+          <span>Already Watched</span>
+        </div>
+      )}
+    </div>
+    ```
+
+#### C. Update Parent Component `weekly-ratings.tsx`
+
+1.  **Create Handler Function**: Implement the function to be passed to `onVideoPointsAwarded`.
+    ```typescript
+    const { showVideoWatchNotification } = usePointsNotifications();
+
+    const handleVideoPointsAwarded = (points: number, artistUuid: string) => {
+      showVideoWatchNotification(points);
+      setVideoWatchStatuses(prev => {
+        const existing = prev.find(s => s.artistUuid === artistUuid);
+        if (existing) {
+          return prev.map(s => s.artistUuid === artistUuid ? { ...s, hasWatched: true } : s);
+        }
+        return [...prev, { artistUuid, hasWatched: true }];
+      });
+    };
+    ```
+
+2.  **Pass Prop to Popup**:
+    ```jsx
+    <WeeklyArtistRatingPopup
+      onVideoPointsAwarded={handleVideoPointsAwarded}
+    />
+    ```
+
+#### D. Update `PointsNotification.tsx`
+
+1.  **Add `showVideoWatchNotification`**: In the `usePointsNotifications` custom hook, add a new function to handle this specific notification type.
+    ```typescript
+    const showVideoWatchNotification = (points: number) => {
+      setNotification({
+        id: Date.now(),
+        type: "video_watch",
+        message: `You earned ${points} points for watching!`,
+        points,
+        icon: <Eye className="w-5 h-5" />,
+      });
+    };
+    ```
+2.  **Export the New Function**: Make sure it's returned from the hook.
