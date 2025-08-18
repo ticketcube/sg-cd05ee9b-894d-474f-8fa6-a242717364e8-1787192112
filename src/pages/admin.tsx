@@ -310,5 +310,92 @@ export default function AdminPage() {
       </div>
 
     );
-    
+    export default function ArtistForm() {
+        const [artist, setArtist] = useState("");
+        const [youtube, setYoutube] = useState("");
+        const [image, setImage] = useState("");
+        const [message, setMessage] = useState("");
+
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+
+            if (!artist) {
+                setMessage("Please enter an artist name.");
+                return;
+            }
+
+            // 1. Check if artist exists
+            const { data: existing, error: checkError } = await supabase
+                .from("artists")
+                .select("*")
+                .eq("artist_name", artist)
+                .single();
+
+            if (checkError && checkError.code !== "PGRST116") {
+                // error other than "no rows found"
+                console.error(checkError);
+                setMessage("Error checking artist.");
+                return;
+            }
+
+            if (existing) {
+                setMessage("Artist already exists in database.");
+                return;
+            }
+
+            // 2. Insert new artist
+            const { error: insertError } = await supabase.from("artists").insert([
+                {
+                    artist_name: artist,
+                    artist_videolink: youtube,
+                    artist_image: image,
+                },
+            ]);
+
+            if (insertError) {
+                console.error(insertError);
+                setMessage("Error inserting artist.");
+            } else {
+                setMessage("Artist added successfully!");
+                setArtist("");
+                setYoutube("");
+                setImage("");
+            }
+        };
+
+        return (
+            <div className="p-4 max-w-md mx-auto">
+                <h1 className="text-xl font-bold mb-4">Add Artist</h1>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+                    <input
+                        type="text"
+                        placeholder="Artist Name"
+                        value={artist}
+                        onChange={(e) => setArtist(e.target.value)}
+                        className="border p-2 rounded"
+                    />
+                    <input
+                        type="text"
+                        placeholder="YouTube Video URL"
+                        value={youtube}
+                        onChange={(e) => setYoutube(e.target.value)}
+                        className="border p-2 rounded"
+                    />
+                    <input
+                        type="text"
+                        placeholder="Image URL"
+                        value={image}
+                        onChange={(e) => setImage(e.target.value)}
+                        className="border p-2 rounded"
+                    />
+                    <button
+                        type="submit"
+                        className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                    >
+                        Save Artist
+                    </button>
+                </form>
+                {message && <p className="mt-3 text-sm">{message}</p>}
+            </div>
+        );
 }
