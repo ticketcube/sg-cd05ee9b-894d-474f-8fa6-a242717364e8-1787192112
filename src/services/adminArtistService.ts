@@ -39,7 +39,8 @@ export const adminArtistService = {
       .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-      throw error;
+      console.error('Database error in checkArtistExists:', error);
+      throw new Error(`Database error: ${error.message} (Code: ${error.code || 'unknown'})`);
     }
 
     return data;
@@ -51,6 +52,12 @@ export const adminArtistService = {
     if (existingArtist) {
       throw new Error(`Artist "${artistData.artist_name}" already exists in the database.`);
     }
+
+    console.log('Attempting to add artist:', {
+      artist_name: artistData.artist_name.trim(),
+      artist_videolink: artistData.artist_videolink?.trim() || null,
+      artist_image: artistData.artist_image?.trim() || null,
+    });
 
     // Add the new artist
     const { data, error } = await supabase
@@ -67,7 +74,18 @@ export const adminArtistService = {
       .single();
 
     if (error) {
-      throw error;
+      console.error('Database error in addArtist:', error);
+      
+      // Provide more specific error messages based on common error codes
+      if (error.code === '42501') {
+        throw new Error('Permission denied: Admin authentication required to add artists. Please ensure you are logged in as an admin user.');
+      } else if (error.code === '23505') {
+        throw new Error('Artist already exists in the database.');
+      } else if (error.message.includes('RLS')) {
+        throw new Error('Database permission error: Row Level Security policy rejected the insert. Admin authentication may be required.');
+      } else {
+        throw new Error(`Database error: ${error.message} (Code: ${error.code || 'unknown'})`);
+      }
     }
 
     return data;
