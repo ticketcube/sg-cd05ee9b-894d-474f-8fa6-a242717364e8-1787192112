@@ -142,7 +142,7 @@ export default function HowPointsWorkModal({
                   <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                     <div>
                       <p className="font-medium text-green-900">Voting Points</p>
-                      <p className="text-sm text-green-700">Once per artist per week</p>
+                      <p className="text-sm text-green-700">Once per artist perweek</p>
                     </div>
                     <Badge className="bg-green-100 text-green-800">10pts</Badge>
                   </div>
@@ -155,7 +155,7 @@ export default function HowPointsWorkModal({
                 <CardHeader>
                   <CardTitle className="text-lg">Example Week</CardTitle>
                   <CardDescription>
-                    How you could earn points in Week 30
+                    How you could earn points in Week with 4 Artists
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -169,20 +169,17 @@ export default function HowPointsWorkModal({
                       <Badge variant="outline" className="text-blue-600">+5 pts</Badge>
                     </div>
                     <div className="flex items-center justify-between p-2 border rounded">
-                      <span>Watch remaining 3 videos (15+ seconds)</span>
-                      <Badge variant="outline" className="text-blue-600">+15 pts</Badge>
+                      <span>Watch remaining 2 videos (15+ seconds)</span>
+                      <Badge variant="outline" className="text-blue-600">+10 pts</Badge>
                     </div>
+                    
                     <div className="flex items-center justify-between p-2 border rounded">
-                      <span>Complete all videos bonus</span>
-                      <Badge variant="outline" className="text-yellow-600">+15 pts</Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-2 border rounded">
-                      <span>Submit weekly votes</span>
-                      <Badge variant="outline" className="text-green-600">+10 pts</Badge>
+                      <span>Rate all Artists</span>
+                      <Badge variant="outline" className="text-green-600">+20 pts</Badge>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-gray-50 rounded font-medium">
                       <span>Total possible points this week</span>
-                      <Badge className="bg-purple-100 text-purple-800">+50 pts</Badge>
+                      <Badge className="bg-purple-100 text-purple-800">+60 pts</Badge>
                     </div>
                   </div>
                 </CardContent>
