@@ -104,7 +104,7 @@ export default function ProfilePage() {
         }
     }, [user]);
 
-    const loadUserProfile = async (userId: number) => {
+    const loadUserProfile = async (userId: string) => {
         try {
             setLoading(true);
             setError(null);
