@@ -313,36 +313,13 @@ export default function ProfilePage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    {weekly_summaries.length === 0 ? (
+                            
                                         <div className="text-center py-8 text-gray-400">
                                             <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
                                             <p>No activity yet. Start voting to see your history!</p>
                                         </div>
-                                    ) : (
-                                        weekly_summaries.map((week) => (
-                                            <div key={week.week_identifier} className="bg-gray-800 rounded-lg p-4">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <h3 className="font-semibold text-white">
-                                                        {getWeekDisplayName(week.week_identifier)}
-                                                    </h3>
-                                                    <Badge variant="secondary" className="bg-blue-600 text-white">
-                                                        +{week.total_points} pts
-                                                    </Badge>
-                                                </div>
-
-                                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                                    <div className="flex items-center gap-2 text-gray-300">
-                                                        <Vote className="w-4 h-4 text-green-500" />
-                                                        <span>{week.votes_submitted} votes submitted</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 text-gray-300">
-                                                        <Eye className="w-4 h-4 text-purple-500" />
-                                                        <span>{week.video_views} videos watched</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))
-                                    )}
+                                    
+                                    
                                 </CardContent>
                             </Card>
                         </TabsContent>
