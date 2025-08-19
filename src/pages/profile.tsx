@@ -89,15 +89,14 @@ function SeptemberReward({ totalPoints }: { totalPoints: number }) {
 }
 
 export default function ProfilePage() {
-    const { user, refreshUserProfile } = useAuth();
+    const { user } = useAuth();
     const [userHistory, setUserHistory] = useState<UserEngagementHistory | null > (null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null > (null);
-    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         if (user) {
-            loadUserProfile(user.id);
+            loadUserProfile(user.auth_id);
         } else {
             // Handle case where user is not authenticated, though AuthGuard should prevent this.
             setLoading(false);
@@ -124,15 +123,12 @@ export default function ProfilePage() {
 
     const handleRefreshProfile = async () => {
         try {
-            setRefreshing(true);
             // Also reload the user engagement history to get fresh data
             if (user) {
-                await loadUserProfile(user.id);
+                await loadUserProfile(user.auth_id);
             }
         } catch (error) {
             console.error("Error refreshing profile:", error);
-        } finally {
-            setRefreshing(false);
         }
     };
 
