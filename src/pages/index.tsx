@@ -8,9 +8,7 @@ import AuthDialog from "@/components/AuthDialog";
 import { useState, useEffect } from "react";
 import PromotionPopup from "@/components/PromotionPopup";
 
-const showDiscoveryCharts = false; <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center">
-    <User className="w-8 h-8 text-white" />
-</div>continue
+const showDiscoveryCharts = false;
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -102,7 +100,7 @@ export default function HomePage() {
                 </p>
               </div>
               <Button className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg">
-                {user ? "Earn More Rewards!" : "Start Earning Rewards"}
+                {user ? "Earn More Rewards!" : "Start Earning Rewards!"}
               </Button>
             </CardContent>
           </Card>
