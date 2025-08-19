@@ -228,38 +228,40 @@ export default function ProfilePage() {
         </div>
 
         <div className="p-4 max-w-2xl mx-auto space-y-6">
-          {/* Profile Header Card */}
-          <Card className="bg-gray-900 border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4 mb-4">
-              
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-2xl font-bold text-white">{userHistory ? userHistory.user_profile.username : user?.username}</h2>
-                    <Button
-                      onClick={handleRefreshProfile}
-                      disabled={refreshing}
-                      variant="outline"
-                      size="sm"
-                    className="text-white bg-transparent hover:bg-gray-800 border-gray-600"
-                    >
-                      <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                      {refreshing ? 'Refreshing...' : 'Refresh Profile'}
-                    </Button>
-                  </div>
-                  <p className="text-gray-400">{userHistory ? userHistory.user_profile.email : user?.email}</p>
-                  <p className="text-sm text-gray-500">
-                    Member since {userHistory && formatDate(userHistory.user_profile.created_at)}
-                  </p>
-                  {user?.role && (
-                    <div className="mt-1">
-                      <Badge variant="secondary" className="bg-blue-600 text-white text-xs">
-                        {user.role}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              </div>
+                  {/* Profile Header Card */}
+                  <Card className="bg-gray-900 border-gray-700">
+                      <CardContent className="p-6">
+                          <div className="flex items-center gap-4 mb-4">
+                              <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center">
+                                  <User className="w-8 h-8 text-white" />
+                              </div>
+                              <div className="flex-1">
+                                  <div className="flex items-center justify-between mb-2">
+                                      <h2 className="text-2xl font-bold text-white">{userHistory ? userHistory.user_profile.username : user?.username}</h2>
+                                      <Button
+                                          onClick={handleRefreshProfile}
+                                          disabled={refreshing}
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-white bg-transparent hover:bg-gray-800 border-gray-600"
+                                      >
+                                          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                                          {refreshing ? 'Refreshing...' : 'Refresh Profile'}
+                                      </Button>
+                                  </div>
+                                  <p className="text-gray-400">{userHistory ? userHistory.user_profile.email : user?.email}</p>
+                                  <p className="text-sm text-gray-500">
+                                      Member since {userHistory && formatDate(userHistory.user_profile.created_at)}
+                                  </p>
+                                  {user?.role && (
+                                      <div className="mt-1">
+                                          <Badge variant="secondary" className="bg-blue-600 text-white text-xs">
+                                              {user.role}
+                                          </Badge>
+                                      </div>
+                                  )}
+                              </div>
+                          </div>
 
                           <Card className="bg-gray-900 border-gray-700"> 
 
