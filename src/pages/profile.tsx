@@ -273,15 +273,7 @@ export default function ProfilePage() {
                 <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
                     <div className="max-w-2xl mx-auto">
                         <div className="flex items-center gap-3 mb-4">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => window.location.href = "/weekly-ratings"}
-                                className="text-white hover:bg-gray-800 flex-shrink-0"
-                            >
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Weekly Rewards
-                            </Button>
+                            
                             <h1 className="text-xl font-bold text-blue-500">
                                 <User className="w-8 h-8 text-white" />
                             </h1>
@@ -295,7 +287,7 @@ export default function ProfilePage() {
                         <CardContent className="p-6">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center">
-                                    <User className="w-8 h-8 text-white" />
+                                    <h2 className="text-2xl font-bold text-white">{userHistory ? userHistory.user_profile.username : user?.username}</h2>
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between mb-2">
