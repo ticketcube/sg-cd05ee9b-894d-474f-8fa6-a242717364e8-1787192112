@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, User, Trophy, Calendar, Star, TrendingUp, Award, Eye, Check, Users, BarChart, Settings, RefreshCw } from "lucide-react";
+import { ArrowLeft, User, Trophy, Calendar, Star, TrendingUp, Award, Eye, Vote, Users, BarChart, Settings, RefreshCw } from "lucide-react";
 import userProfileService from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
 
