@@ -384,17 +384,15 @@ export default function ProfilePage() {
                                      <div className="space-y-4"><WeeklyRatingsCard  />
                                     </div>
                                 </CardContent>
-
                                 <CardContent className="space-y-3">
                                     <div className="space-y-4"><Top100Card />
                                     </div>
                                 </CardContent>
-
                                 <CardContent className="space-y-3">
-                                    <div className="space-y-4">Discovery Charts<DiscoveryChartsCard />
+                                    <div
+                                        className="space-y-4"><DiscoveryChartsCard />
                                     </div>
                                 </CardContent>
-
                             </Card>
                         </TabsContent>
                         {/* Achievements Tab */}
