@@ -378,20 +378,22 @@ export default function ProfilePage() {
                                         Current Activities
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-3">
-                            
-                                    <div className="space-y-4"><WeeklyRatingsCard  />
-                                    </div>
-                                    
-                                    
-                                </CardContent>
-                                <CardContent className="space-y-3">
 
+                                <CardContent className="space-y-3">
+                                     <div className="space-y-4"><WeeklyRatingsCard  />
+                                    </div>
+                                </CardContent>
+
+                                <CardContent className="space-y-3">
                                     <div className="space-y-4"><Top100Card />
                                     </div>
-
-
                                 </CardContent>
+
+                                <CardContent className="space-y-3">
+                                    <div className="space-y-4"><discoveryCard />
+                                    </div>
+                                </CardContent>
+
                             </Card>
                         </TabsContent>
                         {/* Achievements Tab */}
