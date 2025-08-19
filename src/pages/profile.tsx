@@ -287,12 +287,7 @@ export default function ProfilePage() {
                     {/* Profile Header Card */}
                     <Card className="bg-gray-900 border-gray-700">
                         <CardContent className="p-6">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center">
-                                    <User className="w-8 h-8 text-white" />
-                                </div>
-                               
-                            </div>
+                            
 
                             <div className="mt-4">
                                 <SeptemberReward totalPoints={total_points} />
