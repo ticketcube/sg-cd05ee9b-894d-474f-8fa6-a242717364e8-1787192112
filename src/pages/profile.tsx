@@ -89,9 +89,9 @@ function SeptemberReward({ totalPoints }: { totalPoints: number }) {
 
 export default function ProfilePage() {
     const { user, refreshUserProfile } = useAuth();
-    const [userHistory, setUserHistory] = useState < UserEngagementHistory | null > (null);
+    const [userHistory, setUserHistory] = useState<UserEngagementHistory | null > (null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState < string | null > (null);
+    const [error, setError] = useState<string | null > (null);
     const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
@@ -347,8 +347,14 @@ export default function ProfilePage() {
                                 </CardContent>
                             </Card>
                         </TabsContent>
-                        {/* Achievements Tab */} <TabsContent value="achievements" className="space-y-4"> <Card className="bg-gray-900 border-gray-700"> <CardHeader> <CardTitle className="flex items-center gap-2 text-white"> <Award className="w-5 h-5" /> Rewards & Leaderboard </CardTitle> </CardHeader>
-
+                        {/* Achievements Tab */}
+                        <TabsContent value="achievements" className="space-y-4"> <Card className="bg-gray-900 border-gray-700">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-white">
+                                    <Award className="w-5 h-5" /> Rewards & Leaderboard
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
                             <div className="space-y-4"><SeptemberReward totalPoints={total_points} />
                             </div>
 
