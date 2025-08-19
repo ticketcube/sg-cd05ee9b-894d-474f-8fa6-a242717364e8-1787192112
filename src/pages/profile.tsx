@@ -311,7 +311,7 @@ export default function ProfilePage() {
                 <div className="p-4 max-w-2xl mx-auto space-y-6">
                   
                     {/* Profile Header Card */}
-                    <Card className="bg-gray-900 border-gray-700">
+                    <Card className="p-6">
                         <CardContent className="space-y-3">
                             <div className="space-y-4"><WeeklyRatingsCTACard />
                             </div>
