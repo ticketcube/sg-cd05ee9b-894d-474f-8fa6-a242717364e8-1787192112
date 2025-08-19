@@ -280,7 +280,7 @@ export default function ProfilePage() {
                             <div className="text-xl font-bold text-blue-500">
                                 {total_points}
                             </div>
-                            <div className="text-xs text-blue-500">Total Points</div>
+                            <div className="text-l text-blue-500">Total Points</div>
                         </div>
                     </div>
                 </div>
