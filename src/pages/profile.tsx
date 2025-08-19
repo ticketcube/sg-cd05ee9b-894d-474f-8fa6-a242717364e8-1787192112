@@ -243,7 +243,7 @@ export default function ProfilePage() {
         );
     }
 
-    function discoverychartsCard() {
+    function DiscoveryChartsCard() {
         return (
             <Link href="/discovery-charts" className="block">
                 <div className="bg-gray-800 rounded-lg p-4 cursor-pointer 
@@ -255,7 +255,7 @@ export default function ProfilePage() {
                         </div>
                         <div>
                             <h3 className="font-semibold text-white group-hover:text-green-400 transition-colors">
-                               Discovery Charts
+                                Disovery Charts
                             </h3>
                             <p className="text-sm text-gray-400">OnesToWatch is constantly creating fun and engaging lists and charts to help you discover new artists and earn rewards!</p>
                         </div>
@@ -264,6 +264,8 @@ export default function ProfilePage() {
             </Link>
         );
     }
+
+   
 
     return (
         <AuthGuard>
@@ -390,7 +392,7 @@ export default function ProfilePage() {
                                 </CardContent>
 
                                 <CardContent className="space-y-3">
-                                    <div className="space-y-4">Discovery Charts<discoveryCard />
+                                    <div className="space-y-4">Discovery Charts<DiscoveryChartsCard />
                                     </div>
                                 </CardContent>
 
