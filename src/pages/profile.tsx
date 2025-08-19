@@ -259,10 +259,9 @@ export default function ProfilePage() {
                                 </div>
                             </div>
 
-                            <Card className="bg-gray-900 border-gray-700">
-
-                                <CardContent className="space-y-4"><SeptemberReward totalPoints={total_points} />
-                                </CardContent>
+                            <div className="mt-4">
+                                <SeptemberReward totalPoints={total_points} />
+                              
                             </Card>
 
 
