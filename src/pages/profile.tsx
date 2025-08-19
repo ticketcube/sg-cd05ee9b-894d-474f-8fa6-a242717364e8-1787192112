@@ -498,8 +498,9 @@ export default function ProfilePage() {
                         </TabsContent>
                         {/* Achievements Tab */} <TabsContent value="achievements" className="space-y-4"> <Card className="bg-gray-900 border-gray-700"> <CardHeader> <CardTitle className="flex items-center gap-2 text-white"> <Award className="w-5 h-5" /> Rewards & Leaderboard </CardTitle> </CardHeader>
 
-                <div className="space-y-4"><SeptemberReward totalPoints={total_points} />
-                            </div>
+                <div className="space-y-4">
+                  <SeptemberReward totalPoints={total_points} />
+                  </div>
 
                                 {/* Voting Streak */}
                                 {weekly_summaries.length >= 3 && (
