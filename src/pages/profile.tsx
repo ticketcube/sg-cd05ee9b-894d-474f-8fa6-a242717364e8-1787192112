@@ -198,6 +198,24 @@ export default function ProfilePage() {
         top_genre: "Electronic", // Mock data since top_genre doesn't exist in the API
     };
 
+    export default function WeeklyRatingsCard() {
+        return (
+            <Link href="/weekly-ratings" className="block">
+                <div className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:shadow-lg transition">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center">
+                            <Star className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-white">Weekly OTW Artist Ratings</h3>
+                            <p className="text-sm text-gray-400">New Prizes Every Month!</p>
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        );
+    }
+
 
     return (
         <AuthGuard>
@@ -314,10 +332,8 @@ export default function ProfilePage() {
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                             
-                                        <div className="text-center py-8 text-gray-400">
-                                            <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                            <p>No activity yet. Start voting to see your history!</p>
-                                        </div>
+                                    <div className="space-y-4"><WeeklyRatingsCard totalPoints={total_points} />
+                                    </div>
                                     
                                     
                                 </CardContent>
