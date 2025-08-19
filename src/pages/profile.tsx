@@ -88,58 +88,53 @@ function SeptemberReward({ totalPoints }: { totalPoints: number }) {
 }
 
 export default function ProfilePage() {
-    const { user, loading } = useAuth();
+    const { user, refreshUserProfile } = useAuth();
     const [userHistory, setUserHistory] = useState < UserEngagementHistory | null > (null);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState < string | null > (null);
     const [refreshing, setRefreshing] = useState(false);
-    const [username, setUsername] = useState("");
-    const [city, setCity] = useState("");
-    const [selectedCityId, setSelectedCityId] = useState < string | null > (null);
-    const [totalPoints, setTotalPoints] = useState(0);
 
-    const fetchUserHistory = async () => {
-        if (!user) return;
-        setRefreshing(true);
-        setError(null);
+    useEffect(() => {
+        if (user) {
+            loadUserProfile(user.id);
+        } else {
+            // Handle case where user is not authenticated, though AuthGuard should prevent this.
+            setLoading(false);
+            setError("User not found. Please log in.");
+        }
+    }, [user]);
+
+    const loadUserProfile = async (userId: number) => {
         try {
-            const history = await userProfileService.getUserEngagementHistory(user.id);
+            setLoading(true);
+            setError(null);
+
+            const history = await userProfileService.getUserEngagementHistory(userId);
             setUserHistory(history);
+
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to load profile history.");
+            const errorMessage = err instanceof Error ? err.message : "Failed to load profile";
+            console.error("Error loading profile:", errorMessage, err);
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRefreshProfile = async () => {
+        try {
+            setRefreshing(true);
+            await refreshUserProfile();
+            // Also reload the user engagement history to get fresh data
+            if (user) {
+                await loadUserProfile(user.id);
+            }
+        } catch (error) {
+            console.error("Error refreshing profile:", error);
         } finally {
             setRefreshing(false);
         }
     };
-
-    useEffect(() => {
-        if (user) {
-            setUsername(user.username);
-            setCity(user.city || "");
-            setTotalPoints(user.points || 0);
-            fetchUserHistory();
-        }
-    }, [user]);
-
-    const handleUpdateProfile = async () => {
-        if (!user) return;
-        // Implementation for updating profile details can be added here
-    };
-
-    const handleSaveCity = async () => {
-        if (!user || !selectedCityId) return;
-
-        try {
-            await userProfileService.updateUserLocation(user.id, parseInt(selectedCityId), city);
-            alert("City updated!");
-        } catch (error) {
-            console.error("Error updating city:", error);
-            alert("Failed to update city.");
-        }
-    };
-
-    const handleRefreshProfile = () => {
-        fetchUserHistory();
-    }
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -203,6 +198,7 @@ export default function ProfilePage() {
         weekly_participations: weekly_summaries.length,
         top_genre: "Electronic", // Mock data since top_genre doesn't exist in the API
     };
+
 
     return (
         <AuthGuard>
