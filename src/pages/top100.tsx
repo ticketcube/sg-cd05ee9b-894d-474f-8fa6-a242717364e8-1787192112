@@ -284,12 +284,12 @@ export default function Top100Page() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => window.location.href = "/discovery-charts"}
+                onClick={() => window.location.href = "/profile"}
                 className="text-white hover:bg-gray-800 flex-shrink-0"
               >
                 <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Back to Charts</span>
-                <span className="sm:hidden">Back</span>
+                <span className="hidden sm:inline">More Activities</span>
+                <span className="sm:hidden"><More Activites</span>
               </Button>
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 truncate">Top 100 OTW Artists</h1>
