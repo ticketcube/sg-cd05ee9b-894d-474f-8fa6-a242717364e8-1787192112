@@ -56,7 +56,7 @@ function SeptemberReward({ totalPoints }: { totalPoints: number }) {
                 <div>
                     <h3 className="font-semibold text-white">September Reward Challenge</h3>
                     {!isComplete ? (
-                        <p className="text-m text-gray-400">
+                        <p className="text-sm text-gray-400">
                             Earn {goal} points this month and we'll send you all 9 OnesToWatch zines! 
                         </p>
                     ) : (
