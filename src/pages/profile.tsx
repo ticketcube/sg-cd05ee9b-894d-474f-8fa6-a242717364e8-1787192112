@@ -8,8 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, User, Trophy, Calendar, Star, TrendingUp, Award, Eye, Vote, Users, BarChart, Settings, RefreshCw } from "lucide-react";
 import userProfileService from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
-import Link from "next/link";
-
 
 interface UserStats {
     total_votes: number;
@@ -348,7 +346,7 @@ export default function ProfilePage() {
                                             <div>
                                                 <h3 className="font-semibold text-white">OTW Ten Year Top100 </h3>
                                                 <p className="text-sm text-gray-400">
-                                                    Vote on your favorite Top 25 Artists from OTW Staff's favorite 100 artists from the last decade.  
+                                                    Vote on your favorite Top 25 Artists from OTW Staff's favorite 100 artists from the last decade. {weekly_summaries.reduce((sum, week) => sum + week.video_views, 0)} artist videos
                                                 </p>
                                             </div>
                                         </div>
