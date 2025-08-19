@@ -254,8 +254,7 @@ export default function ProfilePage() {
                             <BarChart className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h3 className="font-semibold text-white group-hover:text-green-400 transition-colors">
-                                Disovery Charts
+                            <h3 className="font-semibold text-white group-hover:text-green-400 transition-colors">Discovery Charts
                             </h3>
                             <p className="text-sm text-gray-400">OnesToWatch is constantly creating fun and engaging lists and charts to help you discover new artists and earn rewards!</p>
                         </div>
