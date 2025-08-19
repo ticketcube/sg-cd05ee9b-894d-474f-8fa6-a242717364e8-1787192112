@@ -27,7 +27,7 @@ export default function AuthDialog({
     isOpen,
     onClose,
     title = "Sign In or Register",
-    description = "Disover Artists, Earn Rewards!"
+    description = "Earn discovery rewards!"
 }: AuthDialogProps) {
     const [isSignUp, setIsSignUp] = useState(true);
     const [username, setUsername] = useState("");
@@ -36,38 +36,130 @@ export default function AuthDialog({
     const [selectedCity, setSelectedCity] = useState < City | null > (null);
     const [customCity, setCustomCity] = useState("");
     const [loading, setLoading] = useState(false);
-    const { sendOtp } = useAuth(); // Changed from login to sendOtp for magic link
+    const { login } = useAuth();
 
     const handleCityChange = (city: City | null, customInput?: string) => {
         setSelectedCity(city);
         setCustomCity(customInput || "");
     };
 
-    const handleAuthAction = async () => {
-        if (!email.trim()) {
-            alert("Please enter your email");
+    const handleSignUp = async () => {
+        if (!username.trim() || !email.trim() || !password.trim()) {
+            alert("Please fill in all required fields");
+            return;
+        }
+
+        if (!selectedCity && !customCity.trim()) {
+            alert("Please select or enter your city");
+            return;
+        }
+
+        if (password.length < 6) {
+            alert("Password must be at least 6 characters");
             return;
         }
 
         setLoading(true);
         try {
-            // For both sign-up and sign-in, we use a magic link (OTP)
-            await sendOtp(email.trim());
-            alert("Check your email for a magic link to sign in!");
-            if (onClose) {
-                onClose();
+            const cityName = selectedCity ? selectedCity.normalized_name : customCity.trim();
+
+            // Create account with Supabase
+            const { data: authData, error: signUpError } = await supabase.auth.signUp({
+                email: email.trim(),
+                password: password.trim()
+            });
+
+            if (signUpError) {
+                console.error("Supabase sign-up error:", signUpError);
+                throw new Error(signUpError.message || "Failed to create account. Please try again.");
             }
+
+            if (authData.user && authData.session) {
+                console.log("✅ Account created successfully with session");
+
+                // Wait a moment to ensure auth state is consistent
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                try {
+                    // Create user profile - login function will get session directly if needed
+                    await login(username.trim(), email.trim(), cityName);
+                    console.log("✅ Profile created successfully");
+
+                    if (onClose) {
+                        onClose();
+                    }
+                } catch (profileError) {
+                    console.error("Profile creation error:", profileError);
+                    // Still close dialog since account was created
+                    alert("Account created but there was an issue setting up your profile. Please try signing in.");
+                    if (onClose) {
+                        onClose();
+                    }
+                }
+            } else if (authData.user && !authData.session) {
+                // Handle case where email confirmation might be required
+                console.log("Account created but no session - email confirmation may be required");
+                alert("Account created! Please check your email to confirm your account.");
+                if (onClose) {
+                    onClose();
+                }
+            } else {
+                throw new Error("Account creation failed. Please try again.");
+            }
+
         } catch (error) {
-            console.error("Authentication error:", error);
-            alert(error instanceof Error ? error.message : "Failed to send magic link. Please try again.");
+            console.error("Sign-up error:", error);
+            alert(error instanceof Error ? error.message : "Failed to create account. Please try again.");
         } finally {
             setLoading(false);
         }
     };
 
+    const handleSignIn = async () => {
+        if (!email.trim() || !password.trim()) {
+            alert("Please enter email and password");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // Sign in with Supabase
+            const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+                email: email.trim(),
+                password: password.trim()
+            });
+
+            if (signInError) {
+                console.error("Supabase sign-in error:", signInError);
+                throw new Error(signInError.message || "Failed to sign in. Please check your credentials.");
+            }
+
+            if (authData.user) {
+                // The AuthContext will handle loading the user profile
+                if (onClose) {
+                    onClose();
+                }
+            }
+
+        } catch (error) {
+            console.error("Sign-in error:", error);
+            alert(error instanceof Error ? error.message : "Failed to sign in. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmit = () => {
+        if (isSignUp) {
+            handleSignUp();
+        } else {
+            handleSignIn();
+        }
+    };
+
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
-            handleAuthAction();
+            handleSubmit();
         }
     };
 
@@ -90,7 +182,7 @@ export default function AuthDialog({
             >
                 <DialogHeader>
                     <DialogTitle className="text-center text-blue-600">
-                        {title}
+                        {isSignUp ? "Create Account" : "Sign In"}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -101,21 +193,36 @@ export default function AuthDialog({
                         </div>
                     )}
 
-                    <div className="text-center">
-                        <div className="text-sm text-gray-500 space-y-2 mb-4">
-                            <div>• Earn points for watching videos</div>
-                            <div>• Vote on your favorite artists</div>
-                            <div>• Unlock exclusive features</div>
-                            <div>• Exchange points for Tickets & Access</div>
+                    {isSignUp && (
+                        <div className="text-center">
+                            <div className="text-sm text-gray-500 space-y-2 mb-4">
+                                <div>• Earn points for watching videos</div>
+                                <div>• Vote on your favorite artists</div>
+                                <div>• Unlock exclusive features</div>
+                                <div>• Exchange points for Tickets & Access</div>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Authentication Form */}
                     <div className="space-y-3">
+                        {isSignUp && (
+                            <div>
+                                <Input
+                                    placeholder="Username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    className="w-full text-black placeholder:text-gray-500"
+                                    disabled={loading}
+                                />
+                            </div>
+                        )}
+
                         <div>
                             <Input
                                 type="email"
-                                placeholder="Enter your email"
+                                placeholder="Email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 onKeyPress={handleKeyPress}
@@ -123,28 +230,76 @@ export default function AuthDialog({
                                 disabled={loading}
                             />
                         </div>
+
+                        <div>
+                            <Input
+                                type="password"
+                                placeholder="Password (min 6 characters)"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                className="w-full text-black placeholder:text-gray-500"
+                                disabled={loading}
+                            />
+                        </div>
+
+                        {isSignUp && (
+                            <div>
+                                <SimpleCityInput
+                                    value={selectedCity}
+                                    onValueChange={handleCityChange}
+                                    placeholder="Enter your city..."
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <Button
-                        onClick={handleAuthAction}
+                        onClick={handleSubmit}
                         disabled={loading}
                         className="w-full bg-blue-600 hover:bg-blue-700"
                     >
                         {loading ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Sending Link...
+                                {isSignUp ? "Creating Account..." : "Signing In..."}
                             </>
                         ) : (
                             <>
-                                <Mail className="w-4 h-4 mr-2" />
-                                Continue with Email
+                                {isSignUp ? (
+                                    <>
+                                        <User className="w-4 h-4 mr-2" />
+                                        Create Account
+                                    </>
+                                ) : (
+                                    <>
+                                        <Lock className="w-4 h-4 mr-2" />
+                                        Sign In
+                                    </>
+                                )}
                             </>
                         )}
                     </Button>
 
+                    <div className="text-center">
+                        <button
+                            type="button"
+                            onClick={() => setIsSignUp(!isSignUp)}
+                            className="text-sm text-blue-600 hover:text-blue-700 underline"
+                            disabled={loading}
+                        >
+                            {isSignUp
+                                ? "Already have an account? Sign In"
+                                : "Need an account? Create Account"
+                            }
+                        </button>
+                    </div>
+
                     <div className="text-xs text-center text-gray-500">
-                        We'll send you a magic link to sign in. No password required.
+                        {isSignUp
+                            ? "Your account will be created instantly - no email confirmation needed!"
+                            : "Sign in with your email and password"
+                        }
                     </div>
                 </div>
             </DialogContent>
