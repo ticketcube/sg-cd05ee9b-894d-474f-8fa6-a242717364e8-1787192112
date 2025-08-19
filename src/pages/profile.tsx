@@ -110,7 +110,12 @@ export default function ProfilePage() {
             setLoading(true);
             setError(null);
 
-            const history = await userProfileService.getUserEngagementHistory(userId);
+            // Convert auth_id (string) to numeric user ID for the service call
+            if (!user?.id) {
+                throw new Error("User ID not available");
+            }
+            
+            const history = await userProfileService.getUserEngagementHistory(user.id);
             setUserHistory(history);
 
         } catch (err) {
