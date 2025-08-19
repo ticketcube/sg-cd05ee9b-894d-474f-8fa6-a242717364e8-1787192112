@@ -96,7 +96,7 @@ export default function ProfilePage() {
 
     useEffect(() => {
         if (user) {
-            loadUserProfile(user.auth_id);
+            loadUserProfile(user.id);
         } else {
             // Handle case where user is not authenticated, though AuthGuard should prevent this.
             setLoading(false);
@@ -104,7 +104,7 @@ export default function ProfilePage() {
         }
     }, [user]);
 
-    const loadUserProfile = async (userId: string) => {
+    const loadUserProfile = async (userId: number) => {
         try {
             setLoading(true);
             setError(null);
@@ -125,7 +125,7 @@ export default function ProfilePage() {
         try {
             // Also reload the user engagement history to get fresh data
             if (user) {
-                await loadUserProfile(user.auth_id);
+                await loadUserProfile(user.id);
             }
         } catch (error) {
             console.error("Error refreshing profile:", error);
