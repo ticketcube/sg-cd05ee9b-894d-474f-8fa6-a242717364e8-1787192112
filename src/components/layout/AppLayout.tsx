@@ -93,7 +93,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               className="h-8 md:h-10 w-auto"
               priority
                       />
-                      {user?.role === "otwstaff" && (
+                      <h2 className="text-white font-bold">{user?.role === "otwstaff" && (
                           <Badge variant="secondary" className="bg-blue-600 text-white text-xs ml-2">
                               OTW Staff
                           </Badge>
