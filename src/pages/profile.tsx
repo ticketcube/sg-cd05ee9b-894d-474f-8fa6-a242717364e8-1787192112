@@ -309,8 +309,7 @@ export default function ProfilePage() {
                     {/* Profile Header Card */}
                     <Card className="bg-gray-900 border-gray-700">
                         <CardContent className="space-y-3">
-                            <div className="space-y-4"><WeeklyRatingsCTACard />
-                            </div>
+                         
                        
                             
 
