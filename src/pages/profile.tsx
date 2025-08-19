@@ -202,13 +202,17 @@ export default function ProfilePage() {
     function WeeklyRatingsCard() {
         return (
             <Link href="/weekly-ratings" className="block">
-                <div className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:shadow-lg transition">
+                <div className="bg-gray-800 rounded-lg p-4 cursor-pointer 
+                      transition-transform transform hover:scale-105 hover:bg-gray-700 hover:shadow-xl">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center 
+                          transition-colors hover:bg-green-500">
                             <Star className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h3 className="font-semibold text-white">Weekly OTW Artist Ratings</h3>
+                            <h3 className="font-semibold text-white group-hover:text-green-400 transition-colors">
+                                Weekly OTW Artist Ratings
+                            </h3>
                             <p className="text-sm text-gray-400">New Prizes Every Month!</p>
                         </div>
                     </div>
