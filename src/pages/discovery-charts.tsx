@@ -23,11 +23,11 @@ export default function DiscoveryChartsPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/profile")}
               className="text-white hover:bg-gray-800"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              Return to Profile
             </Button>
           </div>
 
