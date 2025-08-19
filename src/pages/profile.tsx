@@ -356,20 +356,19 @@ export default function ProfilePage() {
                                 )}
 
                                 {/* Coming Soon */}
-                                <Link href="/weekly-ratings" className="block">
-      <div className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:shadow-lg transition">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center">
-            <Star className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-white">Weekly OTW Artist Ratings</h3>
-            <p className="text-sm text-gray-400">New Prizes Every Month!</p>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
+                                <div className="bg-gray-800 rounded-lg p-4 opacity-50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center">
+                                            <Award className="w-6 h-6 text-gray-400" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-gray-400">More achievements coming soon...</h3>
+                                            <p className="text-sm text-gray-500">
+                                                Keep voting and exploring to unlock new badges!
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </CardContent>
                                         <div className="text-center py-8 text-gray-400">
                                             <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
