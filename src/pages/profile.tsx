@@ -292,19 +292,16 @@ export default function ProfilePage() {
                         </CardContent>
                     </Card>
 
-
-
                     {/* Tabs for detailed information */}
                     <Tabs defaultValue="activity" className="w-full">
                         <TabsList className="grid w-full grid-cols-2 bg-gray-800">
                             <TabsTrigger value="activity" className="text-white data-[state=active]:bg-blue-600">
-                                Discovery Activities
+                                Weekly Activity
                             </TabsTrigger>
                             <TabsTrigger value="achievements" className="text-white data-[state=active]:bg-blue-600">
                                 Rewards
                             </TabsTrigger>
                         </TabsList>
-
 
                         {/* Weekly Activity Tab */}
                         <TabsContent value="activity" className="space-y-4">
@@ -312,62 +309,11 @@ export default function ProfilePage() {
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2 text-white">
                                         <Calendar className="w-5 h-5" />
-                                       Current Activities
+                                        Weekly Activity History
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                     {weekly_summaries.length === 0 ? (
-                                         <CardContent>
-                            
-                                {/* Weekly Discovery */}
-                                {weekly_summaries.length >= 0 && (
-                                    <div className="bg-gray-800 rounded-lg p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center">
-                                                <Star className="w-6 h-6 text-white" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold text-white">Weekly OTW Artist Ratings</h3>
-                                                <p className="text-sm text-gray-400">
-                                                    New Prizes Ever Month!
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* OTw Top 100 */}
-                                {weekly_summaries.reduce((sum, week) => sum + week.video_views, 0) >= 0 && (
-                                    <div className="bg-gray-800 rounded-lg p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center">
-                                                <Eye className="w-6 h-6 text-white" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold text-white">OTW Ten Year Top100 </h3>
-                                                <p className="text-sm text-gray-400">
-                                                    Vote on your favorite Top 25 Artists from OTW Staff's favorite 100 artists from the last decade. {weekly_summaries.reduce((sum, week) => sum + week.video_views, 0)} artist videos
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Coming Soon */}
-                                <div className="bg-gray-800 rounded-lg p-4 opacity-50">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center">
-                                            <Award className="w-6 h-6 text-gray-400" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-gray-400">More achievements coming soon...</h3>
-                                            <p className="text-sm text-gray-500">
-                                                Keep voting and exploring to unlock new badges!
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
                                         <div className="text-center py-8 text-gray-400">
                                             <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
                                             <p>No activity yet. Start voting to see your history!</p>
