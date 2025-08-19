@@ -308,7 +308,26 @@ export default function ProfilePage() {
                             <div className="text-xl font-bold text-blue-600">
                                 {total_points}
                             </div>
-                           
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="text-center">
+                                    <div className="text-xl font-bold text-green-500">
+                                        {weekly_summaries.reduce((sum, week) => sum + week.votes_submitted, 0)}
+                                    </div>
+                                    <div className="text-xs text-gray-400">Total Votes</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-xl font-bold text-purple-500">
+                                        {weekly_summaries.reduce((sum, week) => sum + week.video_views, 0)}
+                                    </div>
+                                    <div className="text-xs text-gray-400">Videos Watched</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-xl font-bold text-orange-500">
+                                        {weekly_summaries.length}
+                                    </div>
+                                    <div className="text-xs text-gray-400">Weeks Active</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -331,26 +350,7 @@ export default function ProfilePage() {
 
 
                             {/* Quick Stats */}
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="text-center">
-                                    <div className="text-xl font-bold text-green-500">
-                                        {weekly_summaries.reduce((sum, week) => sum + week.votes_submitted, 0)}
-                                    </div>
-                                    <div className="text-xs text-gray-400">Total Votes</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-xl font-bold text-purple-500">
-                                        {weekly_summaries.reduce((sum, week) => sum + week.video_views, 0)}
-                                    </div>
-                                    <div className="text-xs text-gray-400">Videos Watched</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-xl font-bold text-orange-500">
-                                        {weekly_summaries.length}
-                                    </div>
-                                    <div className="text-xs text-gray-400">Weeks Active</div>
-                                </div>
-                            </div>
+                            
                         </CardContent>
                     </Card>
 
