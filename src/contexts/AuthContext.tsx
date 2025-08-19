@@ -223,4 +223,22 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             {children}
         </AuthContext.Provider>
     );
+
+
+    // in AuthContext.tsx
+    const refreshUserProfile = async () => {
+        if (!user) return null;
+        const updatedUser = await fetchUserFromAPI(user.id); // your API call
+        setUser(updatedUser); // update context
+        return updatedUser;
+    };
+
+    export const value = {
+        user,
+        loading,
+        login,
+        logout,
+        refreshUserProfile, // <-- make sure to export it
+    };
+
 }
