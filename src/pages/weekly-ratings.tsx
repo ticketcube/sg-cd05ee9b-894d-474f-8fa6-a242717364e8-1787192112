@@ -224,7 +224,7 @@ function WeeklyRatingsPageContent() {
         <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
           <div className="max-w-md mx-auto">
             <div className="flex items-center justify-between gap-3 mb-4">
-              <h1 className="text-xl font-bold text-blue-500 truncate">WE REWARD DISCOVERY</h1>
+              <h1 className="text-xl font-bold text-blue-500 truncate">WEEKLY REWARDS</h1>
               <div className="flex gap-2">
                 <HowPointsWorkModal trigger={<Button variant="outline" size="sm" className="text-black border-white-600 hover:bg-gray-800">How Points Work</Button>} />
                 <Link href="/profile">
