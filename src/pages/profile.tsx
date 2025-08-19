@@ -390,7 +390,7 @@ export default function ProfilePage() {
                                 </CardContent>
 
                                 <CardContent className="space-y-3">
-                                    <div className="space-y-4"><discoveryCard />
+                                    <div className="space-y-4">Discovery Charts<discoveryCard />
                                     </div>
                                 </CardContent>
 
