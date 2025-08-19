@@ -313,19 +313,27 @@ export default function ProfilePage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                     <Link href="/weekly-ratings" className="block">
-      <div className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:shadow-lg transition">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center">
-            <Star className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-white">Weekly OTW Artist Ratings</h3>
-            <p className="text-sm text-gray-400">New Prizes Every Month!</p>
-          </div>
-        </div>
-      </div>
-    </Link>
+                                    import Link from "next/link";
+                                    import {Star} from "lucide-react";
+
+                                    export default function WeeklyRatingsCard() {
+  return (
+                                    <Link href="/weekly-ratings" className="block">
+                                        <div className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:shadow-lg transition">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center">
+                                                    <Star className="w-6 h-6 text-white" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-semibold text-white">Weekly OTW Artist Ratings</h3>
+                                                    <p className="text-sm text-gray-400">New Prizes Every Month!</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                    );
+}
+
                                 </CardContent>
                             </Card>
                         </TabsContent>
