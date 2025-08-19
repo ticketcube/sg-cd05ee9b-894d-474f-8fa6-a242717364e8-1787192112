@@ -198,7 +198,7 @@ export default function ProfilePage() {
         top_genre: "Electronic", // Mock data since top_genre doesn't exist in the API
     };
 
-    export default function WeeklyRatingsCard() {
+    function WeeklyRatingsCard() {
         return (
             <Link href="/weekly-ratings" className="block">
                 <div className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:shadow-lg transition">
