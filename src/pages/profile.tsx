@@ -199,6 +199,28 @@ export default function ProfilePage() {
         top_genre: "Electronic", // Mock data since top_genre doesn't exist in the API
     };
 
+    function WeeklyRatingsCTACard() {
+        return (
+            <Link href="/weekly-ratings" className="block">
+                <div className="bg-gray-800 rounded-lg p-4 cursor-pointer 
+                      transition-transform transform hover:scale-105 hover:bg-gray-700 hover:shadow-xl">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center 
+                          transition-colors hover:bg-green-500">
+                            <Star className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-white group-hover:text-green-400 transition-colors">
+                                Earn Points Every Week By Rating OTW Artists!
+                            </h3>
+                            <p className="text-sm text-gray-400">New Prizes Every Month!</p>
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        );
+    }
+
     function WeeklyRatingsCard() {
         return (
             <Link href="/weekly-ratings" className="block">
@@ -287,12 +309,14 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="p-4 max-w-2xl mx-auto space-y-6">
+                    <CardContent className="space-y-3">
+                        <div className="space-y-4"><WeeklyRatingsCTA
+                        Card />
+                        </div>
+                    </CardContent>
                     {/* Profile Header Card */}
                     <Card className="bg-gray-900 border-gray-700">
-                        <CardContent className="space-y-3">
-                            <div className="space-y-4"><WeeklyRatingsCard />
-                            </div>
-                        </CardContent>
+                       
                         <CardContent className="p-6">
                             
 
