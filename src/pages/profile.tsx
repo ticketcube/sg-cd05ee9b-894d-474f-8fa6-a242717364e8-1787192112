@@ -283,7 +283,7 @@ export default function ProfilePage() {
                                 Weekly Rewards
                             </Button>
                             <h1 className="text-xl font-bold text-blue-500">
-                                User Profile
+                                <User className="w-8 h-8 text-white" />
                             </h1>
                         </div>
                     </div>
