@@ -139,6 +139,40 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+          {/* OTW STAFF ONLY Section - Only visible to otwstaff users */}
+          {user?.role === 'otwstaff' && (
+              <Card className="bg-gray-900 border-gray-700 border-l-4 border-l-blue-500">
+                  <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-white">
+                          <Settings className="w-5 h-5 text-blue-500" />
+                          OTW Staff Portal
+                      </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                      <p className="text-gray-400 text-sm">
+                          Access exclusive staff tools and content management features.
+                      </p>
+                      <div className="flex flex-col gap-3">
+                          <Button
+                              onClick={() => window.location.href = "/brandfolder-upload"}
+                              className="w-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2"
+                          >
+                              <BarChart className="w-4 h-4" />
+                              Submit Content
+                          </Button>
+                          <Button
+                              variant="outline"
+                              onClick={() => window.location.href = "/discovery-charts"}
+                              className="w-full bg-transparent text-white hover:bg-gray-800 flex items-center justify-center gap-2"
+                          >
+                              <TrendingUp className="w-4 h-4" />
+                              Engagement Pipeline
+                          </Button>
+                      </div>
+                  </CardContent>
+              </Card>
+          )}
       
       {/* Auth Dialog for protected navigation */}
       <AuthDialog 
