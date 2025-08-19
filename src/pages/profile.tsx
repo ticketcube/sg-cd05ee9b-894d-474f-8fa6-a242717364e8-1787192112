@@ -54,10 +54,10 @@ function SeptemberReward({ totalPoints }: { totalPoints: number }) {
                 </div>
 
                 <div>
-                    <h3 className="font-semibold text-white">September Reward Challenge</h3>
+                    <h3 className="font-semibold text-white">September Reward Package: OnesToWatch Zine Package</h3>
                     {!isComplete ? (
-                        <p className="text-sm text-gray-400">
-                            Earn {goal} points this month and we'll send you all 9 OnesToWatch zines! 
+                        <p className="text-m text-gray-400">
+                            Earn {goal} points this month to win all 9 zines!
                         </p>
                     ) : (
                         <p className="text-sm text-green-300 font-semibold">
@@ -89,7 +89,7 @@ function SeptemberReward({ totalPoints }: { totalPoints: number }) {
 }
 
 export default function ProfilePage() {
-    const { user } = useAuth();
+    const { user, refreshUserProfile } = useAuth();
     const [userHistory, setUserHistory] = useState<UserEngagementHistory | null > (null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null > (null);
@@ -97,7 +97,7 @@ export default function ProfilePage() {
 
     useEffect(() => {
         if (user) {
-            loadUserProfile(user.auth_id);
+            loadUserProfile(user.id);
         } else {
             // Handle case where user is not authenticated, though AuthGuard should prevent this.
             setLoading(false);
@@ -110,12 +110,7 @@ export default function ProfilePage() {
             setLoading(true);
             setError(null);
 
-            // Convert auth_id (string) to numeric user ID for the service call
-            if (!user?.id) {
-                throw new Error("User ID not available");
-            }
-            
-            const history = await userProfileService.getUserEngagementHistory(user.id);
+            const history = await userProfileService.getUserEngagementHistory(userId);
             setUserHistory(history);
 
         } catch (err) {
@@ -132,7 +127,7 @@ export default function ProfilePage() {
             setRefreshing(true);
             // Also reload the user engagement history to get fresh data
             if (user) {
-                await loadUserProfile(user.auth_id);
+                await loadUserProfile(user.id);
             }
         } catch (error) {
             console.error("Error refreshing profile:", error);
@@ -308,26 +303,7 @@ export default function ProfilePage() {
                             <div className="text-xl font-bold text-blue-600">
                                 {total_points}
                             </div>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="text-center">
-                                <div className="text-xl font-bold text-green-500">
-                                    {weekly_summaries.reduce((sum, week) => sum + week.votes_submitted, 0)}
-                                </div>
-                                <div className="text-xs text-gray-400">Total Votes</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-xl font-bold text-purple-500">
-                                    {weekly_summaries.reduce((sum, week) => sum + week.video_views, 0)}
-                                </div>
-                                <div className="text-xs text-gray-400">Videos Watched</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-xl font-bold text-orange-500">
-                                    {weekly_summaries.length}
-                                </div>
-                                <div className="text-xs text-gray-400">Weeks Active</div>
-                            </div>
+                           
                         </div>
                     </div>
                 </div>
@@ -337,21 +313,40 @@ export default function ProfilePage() {
                     {/* Profile Header Card */}
                     <Card className="bg-gray-900 border-gray-700">
                         <CardContent className="space-y-3">
-                           
+                            <div className="space-y-4"><WeeklyRatingsCTACard />
+                            </div>
                        
                             
-                            <Link href="/weekly-ratings" className="block">
+
                             <div className="mt-4">
                                 <SeptemberReward totalPoints={total_points} />
                               
-                                </div>
-                            </Link>
+                            </div>
 
 
 
 
                             {/* Quick Stats */}
-                            
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="text-center">
+                                    <div className="text-xl font-bold text-green-500">
+                                        {weekly_summaries.reduce((sum, week) => sum + week.votes_submitted, 0)}
+                                    </div>
+                                    <div className="text-xs text-gray-400">Total Votes</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-xl font-bold text-purple-500">
+                                        {weekly_summaries.reduce((sum, week) => sum + week.video_views, 0)}
+                                    </div>
+                                    <div className="text-xs text-gray-400">Videos Watched</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-xl font-bold text-orange-500">
+                                        {weekly_summaries.length}
+                                    </div>
+                                    <div className="text-xs text-gray-400">Weeks Active</div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
