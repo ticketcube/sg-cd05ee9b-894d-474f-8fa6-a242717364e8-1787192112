@@ -277,7 +277,7 @@ export default function ProfilePage() {
                             <h1 className="text-xl font-bold text-blue-500">
                                 <h2 className="text-2xl font-bold text-white">{userHistory ? userHistory.user_profile.username : user?.username}</h2>
                             </h1>
-                            <div className="text-xl font-bold text-blue-500">Total Points</div>
+                            <div className="text-xl font-bold text-blue-500">Total Points Earned: </div>
                             <div className="text-xl font-bold text-blue-600">
                                 {total_points}
                             </div>
