@@ -275,7 +275,7 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-3 mb-4">
                             
                             <h1 className="text-xl font-bold text-blue-500">
-                                <User className="w-8 h-8 text-white" />
+                                <h2 className="text-2xl font-bold text-white">{userHistory ? userHistory.user_profile.username : user?.username}</h2>
                             </h1>
                         </div>
                     </div>
@@ -287,7 +287,7 @@ export default function ProfilePage() {
                         <CardContent className="p-6">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center">
-                                    <h2 className="text-2xl font-bold text-white">{userHistory ? userHistory.user_profile.username : user?.username}</h2>
+                                    <User className="w-8 h-8 text-white" />
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between mb-2">
