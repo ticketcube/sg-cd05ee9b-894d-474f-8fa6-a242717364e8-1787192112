@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import AuthDialog from "@/components/AuthDialog";
+import { Badge } from "@/components/ui/badge";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -93,7 +94,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               className="h-8 md:h-10 w-auto"
               priority
                       />
-                      <h2 className="text-white font-bold">{user?.role === "otwstaff" && (
+                      {user?.role === "otwstaff" && (
                           <Badge variant="secondary" className="bg-blue-600 text-white text-xs ml-2">
                               OTW Staff
                           </Badge>
