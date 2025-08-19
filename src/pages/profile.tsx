@@ -243,7 +243,7 @@ export default function ProfilePage() {
         );
     }
 
-    function discoveryCard() {
+    function discoverychartsCard() {
         return (
             <Link href="/discovery-charts" className="block">
                 <div className="bg-gray-800 rounded-lg p-4 cursor-pointer 
