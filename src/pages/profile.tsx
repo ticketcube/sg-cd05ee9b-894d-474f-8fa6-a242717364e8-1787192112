@@ -124,7 +124,6 @@ export default function ProfilePage() {
     const handleRefreshProfile = async () => {
         try {
             setRefreshing(true);
-            await refreshUserProfile();
             // Also reload the user engagement history to get fresh data
             if (user) {
                 await loadUserProfile(user.id);
