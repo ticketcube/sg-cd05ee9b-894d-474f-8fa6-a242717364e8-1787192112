@@ -35,7 +35,7 @@ export default function VibesPage() {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-black text-white p-4">
-        <h1 className="text-4xl font-bold text-center mb-8 text-blue-500">Artist Vibe Chart</h1>
+        <h1 className="text-4xl font-bold text-center mb-8 text-blue-500">Groover Artists Vibe Chart</h1>
         {loading ? (
           <div className="flex justify-center items-center h-96">
             <Loader2 className="w-12 h-12 animate-spin" />
