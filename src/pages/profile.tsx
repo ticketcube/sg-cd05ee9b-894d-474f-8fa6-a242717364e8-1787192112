@@ -333,7 +333,7 @@ export default function ProfilePage() {
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                             
-                                    <div className="space-y-4"><WeeklyRatingsCard totalPoints={total_points} />
+                                    <div className="space-y-4"><WeeklyRatingsCard  />
                                     </div>
                                     
                                     
