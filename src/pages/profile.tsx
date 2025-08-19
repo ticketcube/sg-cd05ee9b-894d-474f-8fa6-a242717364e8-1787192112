@@ -89,7 +89,7 @@ function SeptemberReward({ totalPoints }: { totalPoints: number }) {
 }
 
 export default function ProfilePage() {
-    const { user, refreshUserProfile } = useAuth();
+    const { user } = useAuth();
     const [userHistory, setUserHistory] = useState<UserEngagementHistory | null > (null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null > (null);
