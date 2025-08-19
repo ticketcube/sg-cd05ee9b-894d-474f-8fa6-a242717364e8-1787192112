@@ -340,11 +340,12 @@ export default function ProfilePage() {
                            
                        
                             
-
+                            <Link href="/weekly-ratings" className="block">
                             <div className="mt-4">
                                 <SeptemberReward totalPoints={total_points} />
                               
-                            </div>
+                                </div>
+                            </Link>
 
 
 
