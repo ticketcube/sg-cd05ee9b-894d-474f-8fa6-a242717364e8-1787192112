@@ -281,6 +281,11 @@ export default function ProfilePage() {
                                 <h2 className="text-2xl font-bold text-white">{userHistory ? userHistory.user_profile.username : user?.username}</h2>
                             </h1>
                         </div>
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="text-xl font-bold text-green-500">
+                                {total_points}
+                            </div>
+                            <div className="text-xs text-gray-400">Total Points</div>
                     </div>
                 </div>
 
