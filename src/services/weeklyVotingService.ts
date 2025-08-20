@@ -159,114 +159,97 @@ export class WeeklyVotingService {
   /**
    * Check if user has rated all artists in a weekly list and award completion bonus
    */
-  async checkRatingCompletionBonus(userId: number, weekIdentifier: string): Promise<{ pointsEarned: number; eligible: boolean }> {
-      try {
+    async checkRatingCompletionBonus(
+        userId: number,
+        weekIdentifier: string
+    ): Promise<{ pointsEarned: number; eligible: boolean }> {
+        try {
+            // ✅ Get the weekly list once
+            const { data: weeklyList, error: weeklyListError } = await supabase
+                .from("weekly_lists")
+                .select("id")
+                .eq("week_identifier", weekIdentifier)
+                .single();
 
-          const { data: weeklyList, error: weeklyListError } = await supabase
-              .from("weekly_lists")
-              .select("id")
-              .eq("week_identifier", weekIdentifier)
-              .single();
+            if (!weeklyList || weeklyListError) throw weeklyListError;
+            const weeklyListId = weeklyList.id;
 
-          if (!weeklyList || weeklyListError) throw weeklyListError;
-          const weeklyListId = weeklyList.id;
+            // ✅ Get all artists in this weekly list
+            const { data: weeklyListArtists, error: artistsError } = await supabase
+                .from("weekly_list_artists")
+                .select("artist_uuid")
+                .eq("week_identifier", weekIdentifier);
 
-      // Get all artists in this weekly list
-          const { data: weeklyListArtists, error: artistsError } = await supabase
-              .from("weekly_list_artists")
-              .select("artist_uuid")
-              .eq("week_identifier", weekIdentifier);
+            if (artistsError) {
+                console.error("Error fetching weekly list artists:", artistsError);
+                return { pointsEarned: 0, eligible: false };
+            }
 
-          if (artistsError) {
-              console.error("Error fetching weekly list artists:", artistsError);
-              return { pointsEarned: 0, eligible: false };
-          }
+            if (!weeklyListArtists || weeklyListArtists.length === 0) {
+                return { pointsEarned: 0, eligible: false };
+            }
 
-          if (!weeklyListArtists || weeklyListArtists.length === 0) {
-              return { pointsEarned: 0, eligible: false };
-          }
+            // ✅ Count how many unique artists the user has voted for
+            const { count, error: votesError } = await supabase
+                .from("weekly_votes")
+                .select("artist_uuid", { count: "exact", head: true })
+                .eq("user_id", userId)
+                .eq("week_identifier", weekIdentifier);
 
-          // ✅ weeklyListArtists is safe to use here
+            if (votesError) {
+                console.error("Error fetching user votes for bonus check:", votesError);
+                return { pointsEarned: 0, eligible: false };
+            }
 
+            const totalArtistsInList = weeklyListArtists.length;
+            const userVotedCount = count || 0;
 
-      // Check how many unique artists the user has voted for this week
-      const { count, error: votesError } = await supabase
-        .from("weekly_votes")
-        .select("artist_uuid", { count: 'exact', head: true })
-        .eq("user_id", userId)
-        .eq("week_identifier", weekIdentifier);
-      
-      if (votesError) {
-        console.error("Error fetching user votes for bonus check:", votesError);
-        return { pointsEarned: 0, eligible: false };
-      }
+            // ❌ Not all rated → no bonus
+            if (userVotedCount < totalArtistsInList) {
+                return { pointsEarned: 0, eligible: false };
+            }
 
-      const totalArtistsInList = weeklyListArtists.length;
-      const userVotedCount = count || 0;
+            // ✅ Check eligibility (once per week)
+            const eligible = await pointsConfigService.checkEligibility(
+                "rating_completion_bonus",
+                userId,
+                undefined,
+                weekIdentifier
+            );
 
-      // If user hasn't rated all artists, no bonus
-      if (userVotedCount < totalArtistsInList) {
-        return { pointsEarned: 0, eligible: false };
-      }
+            if (!eligible) {
+                return { pointsEarned: 0, eligible: false };
+            }
 
-          // Check if user is eligible for the rating completion bonus (once per week)
+            // ✅ Award points
+            const bonusPoints = await pointsConfigService.getPoints(
+                "rating_completion_bonus"
+            );
 
-          const { data: weeklyList } = await supabase
-              .from("weekly_lists")
-              .select("id")
-              .eq("week_identifier", data.weekIdentifier)
-              .single();
-          const weeklyListId = weeklyList?.id;
-      
-      const eligible = await pointsConfigService.checkEligibility(
-        'rating_completion_bonus',
-        userId,
-        undefined,
-        weekIdentifier
-      );
+            await userProfileService.recordEngagement(
+                userId,
+                "rating_completion_bonus",
+                bonusPoints,
+                weekIdentifier,
+                undefined,
+                weeklyListId,
+                {
+                    artists_rated_count: userVotedCount,
+                    total_artists_in_list: totalArtistsInList,
+                    completion_week: weekIdentifier,
+                }
+            );
 
-          const { data: weeklyList, error: weeklyListError } = await supabase
-              .from("weekly_lists")
-              .select("id")
-              .eq("week_identifier", weekIdentifier)
-              .single();
-
-          if (!weeklyList || weeklyListError) throw weeklyListError;
-          const weeklyListId = weeklyList.id;
-
-
-      if (!eligible) {
-        return { pointsEarned: 0, eligible: false };
-      }
-      
-      // Award the bonus
-          const bonusPoints = await pointsConfigService.getPoints('rating_completion_bonus');
-
-      
-      
-      await userProfileService.recordEngagement(
-        userId,
-        "rating_completion_bonus",
-        bonusPoints,
-        weekIdentifier,
-        undefined,
-        weeklyListId,
-        {
-          artists_rated_count: userVotedCount,
-          total_artists_in_list: totalArtistsInList,
-          completion_week: weekIdentifier,
+            return {
+                pointsEarned: bonusPoints,
+                eligible: true,
+            };
+        } catch (error) {
+            console.error("Error checking rating completion bonus:", error);
+            return { pointsEarned: 0, eligible: false };
         }
-      );
-
-      return {
-        pointsEarned: bonusPoints,
-        eligible: true
-      };
-    } catch (error) {
-      console.error("Error checking rating completion bonus:", error);
-      return { pointsEarned: 0, eligible: false };
     }
-  }
+
 
   async submitRankingVotes(data: RankingVoteData): Promise<{ pointsEarned: number; votesSubmitted: number }> {
     try {
