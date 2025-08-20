@@ -209,7 +209,15 @@ export class WeeklyVotingService {
         return { pointsEarned: 0, eligible: false };
       }
 
-      // Check if user is eligible for the rating completion bonus (once per week)
+          // Check if user is eligible for the rating completion bonus (once per week)
+
+          const { data: weeklyList } = await supabase
+              .from("weekly_lists")
+              .select("id")
+              .eq("week_identifier", data.weekIdentifier)
+              .single();
+          const weeklyListId = weeklyList?.id;
+      
       const eligible = await pointsConfigService.checkEligibility(
         'rating_completion_bonus',
         userId,
