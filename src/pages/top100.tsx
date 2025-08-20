@@ -299,9 +299,7 @@ export default function Top100Page() {
               </div>
             </div>
             
-            {user && (
-              <p className="text-center text-purple-200">Logged in as: {user.username} ({user.email})</p>
-            )}
+           
             
             <Button
               className="w-full text-base sm:text-lg md:text-xl py-3 sm:py-4 md:py-6 bg-white text-black hover:bg-gray-100"
