@@ -34,6 +34,7 @@ export default function Top100Page() {
   const [isPopupOpen, setPopupOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+  const [isUnlocked, setIsUnlocked] = useState(false); // New state for access control
 
   const page = useRef(1);
   const observer = useRef<IntersectionObserver>();
@@ -240,6 +241,23 @@ export default function Top100Page() {
     setPopupOpen(false);
     setSelectedArtist(null);
   };
+
+  const handleUnlockAccess = () => {
+    if (passcode.trim() !== REQUIRED_PASSCODE) {
+      alert("Invalid passcode. Please enter the correct passcode to view the Top 100 list.");
+      return;
+    }
+    setIsUnlocked(true);
+    setIsPasscodeDialogOpen(false);
+    setPasscode("");
+  };
+
+  // Show initial passcode dialog if not unlocked
+  useEffect(() => {
+    if (!loading && !isUnlocked && !error) {
+      setIsPasscodeDialogOpen(true);
+    }
+  }, [loading, isUnlocked, error]);
 
   if (showThankYou) {
     return (
