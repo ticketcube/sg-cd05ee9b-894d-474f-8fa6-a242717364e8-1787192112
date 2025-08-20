@@ -54,10 +54,10 @@ function SeptemberReward({ totalPoints }: { totalPoints: number }) {
                 </div>
 
                 <div>
-                    <h3 className="font-semibold text-white">September Reward Package: OnesToWatch Zine Package</h3>
+                    <h3 className="font-semibold text-white">September Discovery Reward</h3>
                     {!isComplete ? (
                         <p className="text-m text-gray-400">
-                            Earn {goal} points this month to win all 9 zines!
+                            Earn {goal} points this month and we'll mail you all 9 OnesToWatch zines!
                         </p>
                     ) : (
                         <p className="text-sm text-green-300 font-semibold">
