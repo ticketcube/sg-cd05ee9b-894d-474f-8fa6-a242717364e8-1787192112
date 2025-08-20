@@ -269,20 +269,20 @@ export default function GrooverMap() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-blue-900/20 rounded-lg border border-blue-800/30">
-              <div className="text-2xl font-bold text-blue-400">{artists.length}</div>
-              <div className="text-sm text-gray-400">Total Artists</div>
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            <div className="text-center p-2 sm:p-4 bg-blue-900/20 rounded-lg border border-blue-800/30">
+              <div className="text-lg sm:text-2xl font-bold text-blue-400">{artists.length}</div>
+              <div className="text-xs sm:text-sm text-gray-400">Total Artists</div>
             </div>
-            <div className="text-center p-4 bg-green-900/20 rounded-lg border border-green-800/30">
-              <div className="text-2xl font-bold text-green-400">{mapMarkers.length}</div>
-              <div className="text-sm text-gray-400">Cities</div>
+            <div className="text-center p-2 sm:p-4 bg-green-900/20 rounded-lg border border-green-800/30">
+              <div className="text-lg sm:text-2xl font-bold text-green-400">{mapMarkers.length}</div>
+              <div className="text-xs sm:text-sm text-gray-400">Cities</div>
             </div>
-            <div className="text-center p-4 bg-purple-900/20 rounded-lg border border-purple-800/30">
-              <div className="text-2xl font-bold text-purple-400">
+            <div className="text-center p-2 sm:p-4 bg-purple-900/20 rounded-lg border border-purple-800/30">
+              <div className="text-lg sm:text-2xl font-bold text-purple-400">
                 {new Set(artists.map(a => a.artist_genre).filter(Boolean)).size}
               </div>
-              <div className="text-sm text-gray-400">Genres</div>
+              <div className="text-xs sm:text-sm text-gray-400">Genres</div>
             </div>
           </div>
         </CardContent>
