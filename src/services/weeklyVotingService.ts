@@ -210,6 +210,16 @@ export class WeeklyVotingService {
         weekIdentifier
       );
 
+          const { data: weeklyList, error: weeklyListError } = await supabase
+              .from("weekly_lists")
+              .select("id")
+              .eq("week_identifier", weekIdentifier)
+              .single();
+
+          if (!weeklyList || weeklyListError) throw weeklyListError;
+          const weeklyListId = weeklyList.id;
+
+
       if (!eligible) {
         return { pointsEarned: 0, eligible: false };
       }
