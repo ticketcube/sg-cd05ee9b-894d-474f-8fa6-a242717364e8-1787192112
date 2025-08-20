@@ -59,7 +59,7 @@ export class WeeklyVotingService {
           const { data: weeklyList, error: weeklyListError } = await supabase
               .from("weekly_lists")
               .select("id")
-              .eq("week_identifier", weekIdentifier)
+              .eq("week_identifier", data:weekIdentifier)
               .single();
 
           if (!weeklyList || weeklyListError) throw weeklyListError;
@@ -68,7 +68,7 @@ export class WeeklyVotingService {
       const { data: weeklyListArtists, error: artistsError } = await supabase
         .from("weekly_list_artists")
         .select("artist_uuid")
-        .eq("week_identifier", weekIdentifier);
+        .eq("week_identifier", data:weekIdentifier);
 
       if (artistsError) {
         console.error("Error fetching weekly list artists:", artistsError);
@@ -87,7 +87,7 @@ export class WeeklyVotingService {
         .select("metadata")
         .eq("user_id", userId)
         .eq("engagement_type", "video_view")
-        .eq("week_identifier", weekIdentifier);
+        .eq("week_identifier", data:weekIdentifier);
 
       if (engagementError) {
         console.error("Error checking user video engagements:", engagementError);
@@ -319,7 +319,7 @@ export class WeeklyVotingService {
           const { data: weeklyList, error: weeklyListError } = await supabase
               .from("weekly_lists")
               .select("id")
-              .eq("week_identifier", weekIdentifier)
+              .eq("week_identifier", data.weekIdentifier)
               .single();
 
           if (!weeklyList || weeklyListError) throw weeklyListError;
@@ -429,7 +429,7 @@ export class WeeklyVotingService {
       const { data: votes, error } = await supabase
         .from("weekly_votes")
         .select("user_id")
-        .eq("week_identifier", weekIdentifier);
+        .eq("week_identifier", data:weekIdentifier);
 
       if (error) throw error;
 
@@ -468,7 +468,7 @@ export class WeeklyVotingService {
       const { data: weeklyList, error } = await supabase
         .from("weekly_lists")
         .select("start_date, end_date, status")
-        .eq("week_identifier", weekIdentifier)
+        .eq("week_identifier", data:weekIdentifier)
         .single();
 
       if (error || !weeklyList) {
