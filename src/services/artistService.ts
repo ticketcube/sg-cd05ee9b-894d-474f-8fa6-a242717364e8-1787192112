@@ -195,7 +195,7 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
         .select("*")
-        .eq("Top_List", "100")
+        .eq("Top_List", "Groover")
 
       if (error) {
         console.error(`Error fetching artists for vibe ${vibe}:`, error);
