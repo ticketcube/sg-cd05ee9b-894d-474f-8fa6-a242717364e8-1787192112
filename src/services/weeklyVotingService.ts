@@ -329,7 +329,7 @@ export class WeeklyVotingService {
             "artist_rating",
             pointsPerRating,
             data.weekIdentifier,
-            position.artistUuid,
+            position.artistUuid
             {
               vote_type: "quadrant",
               quadrant_x: position.quadrant_x,
