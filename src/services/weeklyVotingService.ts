@@ -127,7 +127,7 @@ export class WeeklyVotingService {
         "video_completion_bonus",
         bonusPoints,
         weekIdentifier,
-        undefined,
+        weeklyListId,
         {
           videos_watched: requiredVideos.length,
           completion_week: weekIdentifier,
@@ -201,7 +201,7 @@ export class WeeklyVotingService {
         "rating_completion_bonus",
         bonusPoints,
         weekIdentifier,
-        undefined,
+        weeklyListId,
         {
           artists_rated_count: userVotedCount,
           total_artists_in_list: totalArtistsInList,
@@ -269,6 +269,7 @@ export class WeeklyVotingService {
         pointsEarned,
         data.weekIdentifier,
         position.artistUuid,
+        weeklyListId,
         {
           vote_type: "ranking",
           artists_voted: data.artistRankings.length,
@@ -329,7 +330,8 @@ export class WeeklyVotingService {
             "artist_rating",
             pointsPerRating,
             data.weekIdentifier,
-            position.artistUuid,
+              position.artistUuid,
+              weeklyListId,
             {
               vote_type: "quadrant",
               quadrant_x: position.quadrant_x,
