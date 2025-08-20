@@ -247,7 +247,7 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center 
                           transition-colors hover:bg-green-500">
-                            <BarChart className="w-6 h-6 text-white" />
+                            <TrendingUp className="w-6 h-6 text-white" />
                         </div>
                         <div>
                             <h3 className="font-semibold text-white group-hover:text-green-400 transition-colors">
