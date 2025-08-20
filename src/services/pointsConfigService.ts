@@ -155,7 +155,7 @@ export class PointsConfigService {
     actionName: keyof PointsConfigCache,
     userId: number,
     artistUuid?: string,
-      weekIdentifier?: string
+      weekIdentifier?: string,
       weeklyListId?: number
   ): Promise<boolean> {
     try {
