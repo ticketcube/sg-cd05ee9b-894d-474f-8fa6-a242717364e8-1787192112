@@ -268,7 +268,7 @@ export class WeeklyVotingService {
         "vote_submission",
         pointsEarned,
         data.weekIdentifier,
-        undefined,
+        position.artistUuid, ,
         {
           vote_type: "ranking",
           artists_voted: data.artistRankings.length,
