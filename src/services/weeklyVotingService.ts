@@ -201,7 +201,8 @@ export class WeeklyVotingService {
         userId,
         "rating_completion_bonus",
         bonusPoints,
-        weekIdentifier,
+          weekIdentifier,
+        undefined,
         weeklyListId,
         {
           artists_rated_count: userVotedCount,
