@@ -251,9 +251,9 @@ export default function ProfilePage() {
                         </div>
                         <div>
                             <h3 className="font-semibold text-white group-hover:text-green-400 transition-colors">
-                                Groover Global Chart
+                                Groover Global Vibes Chart
                             </h3>
-                            <p className="text-sm text-gray-400">Discover emerging Artists from around the world!</p>
+                            <p className="text-sm text-gray-400">Experience the vibes of emerging Artists from around the world!</p>
                         </div>
                     </div>
                 </div>
