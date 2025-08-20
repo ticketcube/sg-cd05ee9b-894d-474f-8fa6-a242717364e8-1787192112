@@ -274,7 +274,7 @@ export default function ProfilePage() {
                         <div>
                             <h3 className="font-semibold text-white group-hover:text-green-400 transition-colors">Discovery Charts
                             </h3>
-                            <p className="text-sm text-gray-400">OnesToWatch is constantly creating fun and engaging lists and charts to help you discover new artists and earn rewards!</p>
+                            <p className="text-sm text-gray-400">Interactive lists and charts to help you discover new artists and earn rewards!</p>
                         </div>
                     </div>
                 </div>
