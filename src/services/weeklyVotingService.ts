@@ -172,7 +172,22 @@ export class WeeklyVotingService {
           const weeklyListId = weeklyList.id;
 
       // Get all artists in this weekly list
-          const { data: weeklyListArtists, error: artistsError } = await supabase.from("weekly_list_artists").select("artist_uuid").eq("week_identifier", weekIdentifier); if (artistsError) { console.error("Error fetching weekly list artists:", artistsError); return { pointsEarned: 0, eligible: false }; } if (!weeklyListArtists || weeklyListArtists.length === 0) { return { pointsEarned: 0, eligible: false }; }
+          const { data: weeklyListArtists, error: artistsError } = await supabase
+              .from("weekly_list_artists")
+              .select("artist_uuid")
+              .eq("week_identifier", weekIdentifier);
+
+          if (artistsError) {
+              console.error("Error fetching weekly list artists:", artistsError);
+              return { pointsEarned: 0, eligible: false };
+          }
+
+          if (!weeklyListArtists || weeklyListArtists.length === 0) {
+              return { pointsEarned: 0, eligible: false };
+          }
+
+          // ✅ weeklyListArtists is safe to use here
+
 
       // Check how many unique artists the user has voted for this week
       const { count, error: votesError } = await supabase
