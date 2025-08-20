@@ -155,7 +155,8 @@ export class PointsConfigService {
     actionName: keyof PointsConfigCache,
     userId: number,
     artistUuid?: string,
-    weekIdentifier?: string
+      weekIdentifier?: string
+      weeklyListId?: number
   ): Promise<boolean> {
     try {
       const frequency = await this.getFrequency(actionName);
@@ -192,6 +193,7 @@ export class PointsConfigService {
             .eq("engagement_type", actionName)
             .eq("artist_uuid", artistUuid)
             .eq("week_identifier", weekIdentifier)
+            .eq("weekly_list_id", weeklyListId) 
             .gt("points_earned", 0)
             .limit(1);
 
