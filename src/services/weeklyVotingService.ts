@@ -122,18 +122,19 @@ export class WeeklyVotingService {
       // Award the bonus
       const bonusPoints = await pointsConfigService.getPoints('video_completion_bonus');
       
-      await userProfileService.recordEngagement(
-        userId,
-        "video_completion_bonus",
-        bonusPoints,
-        weekIdentifier,
-        weeklyListId,
-        {
-          videos_watched: requiredVideos.length,
-          completion_week: weekIdentifier,
-          artist_uuids: requiredVideos
-        }
-      );
+        await userProfileService.recordEngagement(
+            userId,
+            "video_completion_bonus",
+            bonusPoints,
+            weekIdentifier,
+            undefined,       // artistUuid is not applicable here
+            weeklyListId,    // weeklyListId
+            {
+                videos_watched: requiredVideos.length,
+                completion_week: weekIdentifier,
+                artist_uuids: requiredVideos
+            }
+        );
 
       return {
         pointsEarned: bonusPoints,
