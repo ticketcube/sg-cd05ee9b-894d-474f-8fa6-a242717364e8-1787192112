@@ -53,7 +53,16 @@ export class WeeklyVotingService {
    * Check if user has watched all videos in a weekly list and award completion bonus
    */
   async checkVideoCompletionBonus(userId: number, weekIdentifier: string): Promise<{ pointsEarned: number; eligible: boolean }> {
-    try {
+      try {
+
+          const { data: weeklyList, error: weeklyListError } = await supabase
+              .from("weekly_lists")
+              .select("id")
+              .eq("week_identifier", weekIdentifier)
+              .single();
+
+          if (!weeklyList || weeklyListError) throw weeklyListError;
+          const weeklyListId = weeklyList.id;
       // Get all artists in this weekly list
       const { data: weeklyListArtists, error: artistsError } = await supabase
         .from("weekly_list_artists")
@@ -150,7 +159,17 @@ export class WeeklyVotingService {
    * Check if user has rated all artists in a weekly list and award completion bonus
    */
   async checkRatingCompletionBonus(userId: number, weekIdentifier: string): Promise<{ pointsEarned: number; eligible: boolean }> {
-    try {
+      try {
+
+          const { data: weeklyList, error: weeklyListError } = await supabase
+              .from("weekly_lists")
+              .select("id")
+              .eq("week_identifier", weekIdentifier)
+              .single();
+
+          if (!weeklyList || weeklyListError) throw weeklyListError;
+          const weeklyListId = weeklyList.id;
+
       // Get all artists in this weekly list
       const { data: weeklyListArtists, error: artistsError } = await supabase
         .from("weekly_list_artists")
@@ -294,7 +313,18 @@ export class WeeklyVotingService {
   }
 
   async submitQuadrantVotes(data: QuadrantVoteData): Promise<SubmissionResult> {
-    try {
+      try {
+
+          const { data: weeklyList, error: weeklyListError } = await supabase
+              .from("weekly_lists")
+              .select("id")
+              .eq("week_identifier", weekIdentifier)
+              .single();
+
+          if (!weeklyList || weeklyListError) throw weeklyListError;
+          const weeklyListId = weeklyList.id;
+
+
       // Get dynamic points configuration
       const pointsPerRating = await pointsConfigService.getPoints('artist_rating');
       let totalPointsFromRatings = 0;
