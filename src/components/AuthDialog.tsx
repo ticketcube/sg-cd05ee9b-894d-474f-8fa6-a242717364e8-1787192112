@@ -24,7 +24,7 @@ interface AuthDialogProps {
     description?: string;
 }
 
-const router = useRouter();
+
 
 
 export default function AuthDialog({
@@ -41,6 +41,7 @@ export default function AuthDialog({
     const [customCity, setCustomCity] = useState("");
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
+    const router = useRouter();
 
     const handleCityChange = (city: City | null, customInput?: string) => {
         setSelectedCity(city);
