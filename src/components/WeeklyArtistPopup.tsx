@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Timer, Trophy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Timer, Trophy, X } from "lucide-react";
 import ArtistVideoPlayer from "./ArtistVideoPlayer";
 import userProfileService from "@/services/userProfileService";
 import { useAuth } from "@/contexts/AuthContext";
@@ -169,6 +169,16 @@ export function WeeklyArtistPopup({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full p-0 bg-black text-white border-gray-800">
+        {/* Large Mobile-Friendly Close Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="absolute top-2 right-2 z-30 w-10 h-10 rounded-full bg-black/75 hover:bg-black/90 text-white border-0"
+        >
+          <X className="w-6 h-6" />
+        </Button>
+        
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Video Section */}
           <div className="relative aspect-video bg-gray-900">
