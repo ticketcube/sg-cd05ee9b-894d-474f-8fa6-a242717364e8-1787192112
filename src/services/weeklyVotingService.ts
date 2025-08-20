@@ -68,7 +68,7 @@ export class WeeklyVotingService {
       const { data: weeklyListArtists, error: artistsError } = await supabase
         .from("weekly_list_artists")
         .select("artist_uuid")
-        .eq("week_identifier", data.weekIdentifier);
+        .eq("week_identifier", weekIdentifier);
 
       if (artistsError) {
         console.error("Error fetching weekly list artists:", artistsError);
@@ -480,7 +480,7 @@ export class WeeklyVotingService {
       const { data: weeklyList, error } = await supabase
         .from("weekly_lists")
         .select("start_date, end_date, status")
-        .eq("week_identifier", data.weekIdentifier)
+        .eq("week_identifier", weekIdentifier)
         .single();
 
       if (error || !weeklyList) {
