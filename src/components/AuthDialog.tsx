@@ -7,6 +7,7 @@ import { User, Loader2, Mail, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import SimpleCityInput from "@/components/SimpleCityInput";
+import { useRouter } from "next/router";
 
 interface City {
     id: number;
@@ -22,6 +23,9 @@ interface AuthDialogProps {
     title?: string;
     description?: string;
 }
+
+const router = useRouter();
+
 
 export default function AuthDialog({
     isOpen,
@@ -88,6 +92,9 @@ export default function AuthDialog({
                     if (onClose) {
                         onClose();
                     }
+
+                  await router.push("/profile");
+
                 } catch (profileError) {
                     console.error("Profile creation error:", profileError);
                     // Still close dialog since account was created
@@ -139,6 +146,7 @@ export default function AuthDialog({
                 if (onClose) {
                     onClose();
                 }
+              await router.push("/profile");
             }
 
         } catch (error) {
