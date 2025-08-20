@@ -201,7 +201,7 @@ export class WeeklyVotingService {
         userId,
         "rating_completion_bonus",
         bonusPoints,
-          weekIdentifier,
+        weekIdentifier,
         undefined,
         weeklyListId,
         {
