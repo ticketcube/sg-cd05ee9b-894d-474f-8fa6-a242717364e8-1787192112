@@ -317,8 +317,8 @@ export class WeeklyVotingService {
         "vote_submission",
         pointsEarned,
         data.weekIdentifier,
-        undefined
-        weeklyListId,
+        undefined,
+        weeklyListId
         {
           vote_type: "ranking",
           artists_voted: data.artistRankings.length,
