@@ -342,9 +342,10 @@ export default function Top100Page() {
                     ref={isLast ? lastArtistElementRef : null}
                     className={cn(
                       "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
-                      isSelected && "ring-2 ring-green-500 bg-gray-800"
+                      isSelected && "ring-2 ring-green-500 bg-gray-800",
+                      !isUnlocked && "opacity-50 pointer-events-none"
                     )}
-                    onClick={() => handleRowClick(artist)}
+                    onClick={isUnlocked ? () => handleRowClick(artist) : undefined}
                   >
                     <div className="flex items-center gap-2">
                       <div className="text-lg sm:text-xl font-bold text-gray-500 w-5 sm:w-6 flex-shrink-0">
@@ -352,43 +353,51 @@ export default function Top100Page() {
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm sm:text-base truncate">{artist.artist_name}</h3>
+                        <h3 className="font-semibold text-sm sm:text-base truncate">
+                          {isUnlocked ? artist.artist_name : "••••••••••"}
+                        </h3>
                         <div className="text-xs text-gray-400">
-                          <p>Class of {new Date(artist.artist_otwcreateddate || "").getFullYear()}</p>
-                          {artist.vote_count > 0 && (
+                          <p>Class of {isUnlocked ? new Date(artist.artist_otwcreateddate || "").getFullYear() : "••••"}</p>
+                          {isUnlocked && artist.vote_count > 0 && (
                             <p className="text-blue-400">{artist.vote_count} votes</p>
                           )}
                         </div>
                       </div>
                       
                       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                        <ArtistVideoPlayer 
-                          artist={artist}
-                          size="sm"
-                          className="hover:scale-105 transition-transform duration-200"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRowClick(artist);
-                          }}
-                        />
-                        
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevent row click
-                            handleVote(artist.uuid);
-                          }}
-                          className={cn(
-                            "px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm font-semibold transition-all duration-200 hover:scale-105",
-                            isSelected 
-                              ? "bg-green-500 hover:bg-green-600 text-white" 
-                              : "bg-purple-500 hover:bg-purple-600 text-white"
-                          )}
-                        >
-                          {isSelected ? "✓" : "VOTE"}
-                        </Button>
-                        
-                        {isSelected && (
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+                        {isUnlocked ? (
+                          <>
+                            <ArtistVideoPlayer 
+                              artist={artist}
+                              size="sm"
+                              className="hover:scale-105 transition-transform duration-200"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRowClick(artist);
+                              }}
+                            />
+                            
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent row click
+                                handleVote(artist.uuid);
+                              }}
+                              className={cn(
+                                "px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm font-semibold transition-all duration-200 hover:scale-105",
+                                isSelected 
+                                  ? "bg-green-500 hover:bg-green-600 text-white" 
+                                  : "bg-purple-500 hover:bg-purple-600 text-white"
+                              )}
+                            >
+                              {isSelected ? "✓" : "VOTE"}
+                            </Button>
+                            
+                            {isSelected && (
+                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="w-16 h-8 bg-gray-700 rounded animate-pulse"></div>
                         )}
                       </div>
                     </div>
@@ -442,11 +451,16 @@ export default function Top100Page() {
         <Dialog open={isPasscodeDialogOpen} onOpenChange={setIsPasscodeDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Enter Voting Passcode</DialogTitle>
+              <DialogTitle>
+                {!isUnlocked ? "Enter Access Passcode" : "Enter Voting Passcode"}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                Enter the special passcode to unlock voting on the Top 100 artists.
+                {!isUnlocked 
+                  ? "Enter the passcode to view the Top 100 artists list."
+                  : "Enter the special passcode to unlock voting on the Top 100 artists."
+                }
               </p>
               <Input
                 placeholder="Enter passcode"
@@ -454,11 +468,16 @@ export default function Top100Page() {
                 onChange={(e) => setPasscode(e.target.value)}
                 type="password"
               />
-              <p className="text-sm text-gray-500">
-                Selected: {selectedArtists.length}/25 artists
-              </p>
-              <Button onClick={handleStartVoting} className="w-full">
-                Start Voting
+              {isUnlocked && (
+                <p className="text-sm text-gray-500">
+                  Selected: {selectedArtists.length}/25 artists
+                </p>
+              )}
+              <Button 
+                onClick={!isUnlocked ? handleUnlockAccess : handleStartVoting} 
+                className="w-full"
+              >
+                {!isUnlocked ? "Unlock List" : "Start Voting"}
               </Button>
             </div>
           </DialogContent>
