@@ -210,13 +210,6 @@ export class WeeklyVotingService {
         weekIdentifier
       );
 
-      if (!eligible) {
-        return { pointsEarned: 0, eligible: false };
-      }
-      
-      // Award the bonus
-          const bonusPoints = await pointsConfigService.getPoints('rating_completion_bonus');
-
           const { data: weeklyList, error: weeklyListError } = await supabase
               .from("weekly_lists")
               .select("id")
@@ -226,6 +219,15 @@ export class WeeklyVotingService {
           if (!weeklyList || weeklyListError) throw weeklyListError;
           const weeklyListId = weeklyList.id;
 
+
+      if (!eligible) {
+        return { pointsEarned: 0, eligible: false };
+      }
+      
+      // Award the bonus
+          const bonusPoints = await pointsConfigService.getPoints('rating_completion_bonus');
+
+      
       
       await userProfileService.recordEngagement(
         userId,
