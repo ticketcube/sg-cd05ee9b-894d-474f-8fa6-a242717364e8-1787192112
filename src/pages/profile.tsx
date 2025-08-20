@@ -241,7 +241,7 @@ export default function ProfilePage() {
 
     function GrooverCard() {
         return (
-            <Link href="/groover" className="block">
+            <Link href="/vibes" className="block">
                 <div className="bg-gray-800 rounded-lg p-4 cursor-pointer 
                       transition-transform transform hover:scale-105 hover:bg-gray-700 hover:shadow-xl">
                     <div className="flex items-center gap-3">
