@@ -17,7 +17,8 @@ export default function VibesPage() {
         
         const vibeArtists = fetchedArtists.map(artist => ({
           ...artist,
-          primary_vibe: artist.primary_vibe || "Unknown",
+            primary_vibe: artist.TopList || "Groover",
+            primary_vibe: artist.primary_vibe || "Unknown",
           secondary_vibe: artist.secondary_vibe || null,
         }));
         
