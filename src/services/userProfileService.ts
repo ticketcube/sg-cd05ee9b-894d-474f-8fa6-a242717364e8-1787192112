@@ -5,13 +5,13 @@ import type { Tables } from "@/integrations/supabase/types";
 // Define the UserProfile type, extending the Supabase table definition
 export type UserProfile = Tables<"user_profiles">;
 
-export type EngagementType = 
-  | "video_view" 
-  | "vote_submission" 
-  | "ranking_submission" 
-  | "video_completion_bonus" 
-  | "daily_login" 
-  | "weekly_streak" 
+export type EngagementType =
+  | "video_view"
+  | "vote_submission"
+  | "ranking_submission"
+  | "video_completion_bonus"
+  | "daily_login"
+  | "weekly_streak"
   | "referral_bonus"
   | "artist_rating"
   | "rating_completion_bonus";
@@ -150,7 +150,7 @@ const userProfileService = {
     }
     return data;
   },
-  
+
   /**
    * Adds points to a user's profile.
    * This should only be called from trusted server-side logic or Supabase functions
@@ -178,7 +178,7 @@ const userProfileService = {
     // Since RPC doesn't return the updated profile, we fetch it manually.
     return this.getUserProfileById(userId);
   },
-  
+
   /**
    * Updates the last active timestamp for a user.
    * @param userId The numeric profile ID of the user.
@@ -211,7 +211,6 @@ const userProfileService = {
     pointsEarned: number,
     weekIdentifier: string,
     artistUuid?: string,
-    weekly_list_id?: number,  
     metadata?: Record<string, any>
   ): Promise<UserEngagement> {
     try {
@@ -224,7 +223,6 @@ const userProfileService = {
           points_earned: pointsEarned,
           week_identifier: weekIdentifier,
           artist_uuid: artistUuid || null,
-          weekly_list_id: weeklyListId || null, 
           metadata: metadata || null
         }])
         .select()
@@ -271,11 +269,11 @@ const userProfileService = {
       if (error) throw error;
 
       // Group engagements by week and calculate summaries
-      const weeklyMap = new Map<string, UserEngagementSummary>();
-      
+      const weeklyMap = new Map < string, UserEngagementSummary> ();
+
       engagements?.forEach(engagement => {
         const weekId = engagement.week_identifier || "unknown";
-        
+
         if (!weeklyMap.has(weekId)) {
           weeklyMap.set(weekId, {
             week_identifier: weekId,
@@ -293,7 +291,7 @@ const userProfileService = {
 
           if (engagement.engagement_type === "video_view") {
             summary.video_views += 1;
-          } else if (engagement.engagement_type === "vote_submission" || engagement.engagement_type === "artist_rating"  ) {
+          } else if (engagement.engagement_type === "vote_submission" || engagement.engagement_type === "artist_rating") {
             summary.votes_submitted += 1;
           }
         }
@@ -335,7 +333,7 @@ const userProfileService = {
         console.error("Error checking video view eligibility:", error);
         return false;
       }
-      
+
       // Return true if no existing video view found (eligible for points)
       return !data || data.length === 0;
     } catch (error) {
@@ -364,7 +362,7 @@ const userProfileService = {
         console.error("Error checking vote submission eligibility:", error);
         return false;
       }
-      
+
       // Return true if no existing vote submission found (eligible for points)
       return !data || data.length === 0;
     } catch (error) {
@@ -389,7 +387,7 @@ const userProfileService = {
 
       if (error) throw error;
 
-      const total_points = data?.reduce((total, engagement) => 
+      const total_points = data?.reduce((total, engagement) =>
         total + (engagement.points_earned || 0), 0) || 0;
 
       return { total_points };
