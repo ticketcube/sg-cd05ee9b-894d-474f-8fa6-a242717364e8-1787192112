@@ -290,91 +290,69 @@ export class WeeklyVotingService {
     }
   }
 
-  async submitQuadrantVotes(data: QuadrantVoteData): Promise<SubmissionResult> {
-      try {
+    async submitQuadrantVotes(
+        data: QuadrantVoteData
+    ): Promise<SubmissionResult | null> {
+        try {
+            const { data: weeklyList, error: listError } = await supabase
+                .from("weekly_lists")
+                .select("id")
+                .eq("week_identifier", data.weekIdentifier)
+                .single();
+            if (!weeklyList || listError) throw listError;
+            const weeklyListId = weeklyList.id;
 
-        const { data: weeklyList, error: listError } = await supabase
-              .from("weekly_lists")
-              .select("id")
-              .eq("week_identifier", data.weekIdentifier)
-              .single();
-          if (!weeklyList || listError) throw listError;
-          const weeklyListId = weeklyList.id;
-          
-      // Get dynamic points configuration
-      const pointsPerRating = await pointsConfigService.getPoints('artist_rating');
-      let totalPointsFromRatings = 0;
+            const pointsPerRating = await pointsConfigService.getPoints("quadrant");
+            let totalPointsEarned = 0;
 
-      // Upsert votes
-      const voteUpserts = data.artistPositions.map(position => ({
-        user_id: data.userId,
-        week_identifier: data.weekIdentifier,
-        artist_uuid: position.artistUuid,
-        vote_type: "quadrant" as const,
-        ranking_position: null,
-        quadrant_x: position.quadrant_x,
-        quadrant_y: position.quadrant_y
-      }));
+            for (const pos of data.artistPositions) {
+                const vote: Partial<WeeklyVote> = {
+                    user_id: data.userId,
+                    artist_uuid: pos.artistUuid,
+                    week_identifier: data.weekIdentifier,
+                    vote_type: "quadrant",
+                    quadrant_x: pos.quadrant_x,
+                    quadrant_y: pos.quadrant_y,
+                };
 
-      const { error: voteError } = await supabase
-        .from("weekly_votes")
-        .upsert(voteUpserts, { onConflict: 'user_id, week_identifier, artist_uuid' });
+                const { error: insertError } = await supabase
+                    .from("weekly_votes")
+                    .upsert(vote, { onConflict: "user_id,artist_uuid,week_identifier" });
+                if (insertError) throw insertError;
 
-      if (voteError) throw voteError;
+                totalPointsEarned += pointsPerRating;
 
-      // Record engagement and award points for each individual rating
-      for (const position of data.artistPositions) {
-        const eligible = await pointsConfigService.checkEligibility(
-          'artist_rating',
-          data.userId,
-          position.artistUuid,
-          data.weekIdentifier
-        );
-
-        if (eligible) {
-          totalPointsFromRatings += pointsPerRating;
-          await userProfileService.recordEngagement(
-            data.userId,
-            "artist_rating",
-            pointsPerRating,
-            data.weekIdentifier,
-            position.artistUuid,
-            {
-              vote_type: "quadrant",
-              quadrant_x: position.quadrant_x,
-              quadrant_y: position.quadrant_y
+                await userProfileService.recordEngagement(
+                    data.userId,
+                    "quadrant",
+                    pointsPerRating,
+                    data.weekIdentifier,
+                    pos.artistUuid,
+                    weeklyListId,
+                    {
+                        quadrant_x: pos.quadrant_x,
+                        quadrant_y: pos.quadrant_y,
+                    }
+                );
             }
-          );
+
+            return {
+                totalPointsEarned,
+                breakdown: {
+                    ratings: {
+                        count: data.artistPositions.length,
+                        points: totalPointsEarned,
+                        pointsPerRating,
+                    },
+                    completionBonus: { points: 0 },
+                },
+                votesSubmitted: data.artistPositions.length,
+            };
+        } catch (err) {
+            console.error("submitQuadrantVotes error:", err);
+            return null;
         }
-      }
-
-      // Check for rating completion bonus
-      const completionBonusResult = await this.checkRatingCompletionBonus(data.userId, data.weekIdentifier);
-      const bonusPoints = completionBonusResult.pointsEarned;
-
-      // Prepare the detailed result
-      const result: SubmissionResult = {
-        totalPointsEarned: totalPointsFromRatings + bonusPoints,
-        breakdown: {
-          ratings: {
-            count: data.artistPositions.length,
-            points: totalPointsFromRatings,
-            pointsPerRating: pointsPerRating
-          },
-          completionBonus: {
-            points: bonusPoints
-          }
-        },
-        votesSubmitted: data.artistPositions.length
-      };
-
-      return result;
-
-    } catch (error) {
-      console.error("Error submitting quadrant votes:", error);
-      throw error;
     }
-  }
 
   async getUserVotes(userId: number, weekIdentifier: string): Promise<WeeklyVote[]> {
     try {
