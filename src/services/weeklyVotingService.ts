@@ -1,6 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Tables } from "@/integrations/supabase/types";
 import userProfileService from "./userProfileService";
+import { pointsConfigService } from "./pointsConfigService";
+
 
 // Use user_engagements table since weekly_artist_rankings doesn't exist
 export interface ArtistVote {
