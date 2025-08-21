@@ -134,7 +134,7 @@ export default function Top100Page() {
 
     // We don't award points for Top 100 votes, so we just manage the local state for submission.
     // The actual vote submission happens in `handleSubmitVotes`.
-  };
+  
 
   
 
