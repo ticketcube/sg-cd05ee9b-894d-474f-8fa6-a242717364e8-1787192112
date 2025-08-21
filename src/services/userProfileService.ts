@@ -224,7 +224,7 @@ const userProfileService = {
                 const weekId = engagement.week_identifier || "unknown";
 
                 if (!weeklyMap.has(weekId)) {
-                    weeklyMap.set(weekId), {
+                    weeklyMap.set(weekId, {
                         week_identifier: weekId,
                         total_points: 0,
                         engagement_count: 0,
