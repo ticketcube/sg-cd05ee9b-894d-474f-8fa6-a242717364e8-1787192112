@@ -223,7 +223,7 @@ const userProfileService = {
                     points_earned: pointsEarned,
                     week_identifier: weekIdentifier,
                     artist_uuid: artistUuid || null,
-                    metadata: metadata || null
+                    metadata: metadata || null,
                 }])
                 .select()
                 .single();
