@@ -6,7 +6,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { BadgeCheck, Star, Trophy } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import type { SubmissionResult } from "@/services/weeklyVotingService";
 
 interface SubmissionSuccessPopupProps {
@@ -27,7 +27,7 @@ export default function SubmissionSuccessPopup({
     return null;
   }
 
-  const { totalPointsEarned, breakdown } = result;
+  const { totalPointsEarned, breakdown, completionBonus } = result;
   console.log("📊 SubmissionSuccessPopup: Using data - totalPointsEarned:", totalPointsEarned, "breakdown:", breakdown);
 
   return (
@@ -35,7 +35,7 @@ export default function SubmissionSuccessPopup({
       <DialogContent className="bg-gray-900 border-gray-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold text-green-400 flex items-center justify-center gap-2">
-            <BadgeCheck className="h-8 w-8" />
+            <CheckCircle className="h-8 w-8" />
             Ratings Submitted!
           </DialogTitle>
         </DialogHeader>
@@ -48,31 +48,26 @@ export default function SubmissionSuccessPopup({
           <p className="text-gray-400">points!</p>
         </div>
 
-        <div className="space-y-4 my-6">
-          <div className="flex justify-between items-center bg-gray-800 p-3 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Star className="h-5 w-5 text-yellow-400" />
-              <p>Artists Rated</p>
-            </div>
-            <p className="font-bold text-white">
-              {breakdown.ratings.points > 0 ? `+${breakdown.ratings.points} pts` : '0 pts'}
-            </p>
-          </div>
-          {breakdown.ratings.count > 0 && (
-             <p className="text-xs text-gray-500 text-right -mt-2 pr-3">
-                {breakdown.ratings.count} artist{breakdown.ratings.count > 1 ? 's' : ''} x {breakdown.ratings.pointsPerRating} pts
-            </p>
-          )}
+        <div className="my-6 text-center">
+          <p className="text-gray-400 text-center mb-6">{result.message}</p>
 
-          {breakdown.completionBonus.points > 0 && (
-            <div className="flex justify-between items-center bg-gray-800 p-3 rounded-lg">
-              <div className="flex items-center gap-3">
-                <Trophy className="h-5 w-5 text-purple-400" />
-                <p>Completion Bonus</p>
-              </div>
-              <p className="font-bold text-white">
-                +{breakdown.completionBonus.points} pts
-              </p>
+          {breakdown && breakdown.length > 0 && (
+            <div className="bg-gray-800 p-4 rounded-lg mb-6">
+              <h3 className="font-semibold text-white mb-2">Points Breakdown:</h3>
+              <ul className="space-y-2">
+                {breakdown.map((item, index) => (
+                  <li key={index} className="flex justify-between items-center text-sm">
+                    <span className="text-gray-300">{item.artistName}</span>
+                    <span className="font-medium text-green-400">+{item.points} PTS</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {completionBonus > 0 && (
+            <div className="text-center bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-6">
+              <p className="font-semibold text-yellow-400">Completion Bonus: +{completionBonus} PTS!</p>
             </div>
           )}
         </div>

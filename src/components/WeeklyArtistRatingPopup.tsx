@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRight, Timer, CheckCircle, Loader2, Eye, Ticket, Us
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { useAuth } from "@/contexts/AuthContext";
 import { videoWatchService } from "@/services/videoWatchService";
-import { weeklyVotingService, SubmissionResult } from "@/services/weeklyVotingService";
+import weeklyVotingService, { SubmissionResult } from "@/services/weeklyVotingService";
 import { pointsConfigService } from "@/services/pointsConfigService";
 import { usePointsNotifications } from "@/components/points/PointsNotification";
 import type { Artist } from "@/types/artists";
