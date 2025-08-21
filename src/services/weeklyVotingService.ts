@@ -87,15 +87,30 @@ const weeklyVotingService = {
     }
 
     // Transform user_engagements data to ArtistVote format
-    return (data || []).map(engagement => ({
-      id: engagement.id,
-      user_id: engagement.user_id,
-      artist_uuid: engagement.artist_uuid || '',
-      week_identifier: engagement.week_identifier || '',
-      quadrant_x: engagement.metadata?.quadrant_x || null,
-      quadrant_y: engagement.metadata?.quadrant_y || null,
-      created_at: engagement.created_at
-    })) as ArtistVote[];
+    return (data || []).map(engagement => {
+      // Safely parse metadata which could be string, null, or object
+      let metadata: any = null;
+      try {
+        if (engagement.metadata && typeof engagement.metadata === 'object') {
+          metadata = engagement.metadata;
+        } else if (typeof engagement.metadata === 'string') {
+          metadata = JSON.parse(engagement.metadata);
+        }
+      } catch (error) {
+        console.warn('Failed to parse metadata:', engagement.metadata);
+        metadata = {};
+      }
+
+      return {
+        id: engagement.id,
+        user_id: engagement.user_id,
+        artist_uuid: engagement.artist_uuid || '',
+        week_identifier: engagement.week_identifier || '',
+        quadrant_x: metadata?.quadrant_x || null,
+        quadrant_y: metadata?.quadrant_y || null,
+        created_at: engagement.created_at
+      };
+    }) as ArtistVote[];
   },
 
   // Legacy method name for backward compatibility
