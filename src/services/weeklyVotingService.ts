@@ -3,7 +3,7 @@ import { pointsConfigService } from "./pointsConfigService";
 import userProfileService from "./userProfileService";
 import type { Tables } from "@/integrations/supabase/types";
 
-type WeeklyVote = Tables<"weekly_votes">;
+type WeeklyVote = Tables<"user_engagements">;
 
 export interface VideoViewData {
   userId: number;
