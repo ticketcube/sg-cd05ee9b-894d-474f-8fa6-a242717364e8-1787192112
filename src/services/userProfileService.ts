@@ -291,7 +291,7 @@ const userProfileService = {
 
           if (engagement.engagement_type === "video_view") {
             summary.video_views += 1;
-          } else if (engagement.engagement_type === "vote_submission" || engagement.engagement_type === "artist_rating"  ) {
+          } else if (engagement.engagement_type === "vote_submission" || engagement.engagement_type === "artist_rating" || engagement.engagement_type === "quadrant" ) {
             summary.votes_submitted += 1;
           }
         }
