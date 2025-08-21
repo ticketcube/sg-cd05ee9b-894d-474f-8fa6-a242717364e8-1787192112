@@ -54,16 +54,7 @@ export default function HomePage() {
     setShowPromotionAuthDialog(false);
   };
 
-  // If user just logged in, automatically navigate to weekly-ratings
-  useEffect(() => {
-    if (user && !loading && isAuthDialogOpen) {
-      setAuthDialogOpen(false);
-      // Small delay to ensure state is settled, then navigate
-      setTimeout(() => {
-        router.push("/profile");
-      }, 300);
-    }
-  }, [user, loading, isAuthDialogOpen, router]);
+ 
   
   return (
     <div className="flex-grow bg-black text-white">
