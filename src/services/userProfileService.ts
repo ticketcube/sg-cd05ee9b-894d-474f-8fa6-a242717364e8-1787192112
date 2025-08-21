@@ -23,6 +23,7 @@ export interface UserEngagement {
     points_earned?: number | null;
     week_identifier?: string | null;
     artist_uuid?: string | null;
+    weeklyListId?: number | null;
     metadata?: Record<string, any> | null;
     created_at: string;
 }
