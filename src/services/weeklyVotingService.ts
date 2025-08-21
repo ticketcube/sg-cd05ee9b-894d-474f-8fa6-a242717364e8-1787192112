@@ -25,7 +25,8 @@ export interface QuadrantVoteData {
   userId: number;
   weekIdentifier: string;
   artistPositions: Array<{
-    artistUuid: string;
+      artistUuid: string;
+      weeklyListId: number;
     quadrant_x: number; // -1 to 1 (ticket interest axis)
     quadrant_y: number; // -1 to 1 (sharing interest axis)
   }>;
