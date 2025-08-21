@@ -212,6 +212,7 @@ const userProfileService = {
         pointsEarned: number,
         weekIdentifier: string,
         artistUuid?: string,
+        weeklyListId?: number, 
         metadata?: Record<string, any>
     ): Promise<UserEngagement> {
         try {
@@ -224,7 +225,8 @@ const userProfileService = {
                     points_earned: pointsEarned,
                     week_identifier: weekIdentifier,
                     artist_uuid: artistUuid || null,
-                    metadata: metadata || null,
+                    weekly_list_id: weeklyListId || null,
+                    metadata: metadata || null
                 }])
                 .select()
                 .single();
