@@ -54,7 +54,8 @@ export class PointsConfigService {
       // Validate that all required configs exist
       const requiredConfigs = [
         'video_view', 
-        'artist_rating',
+          'artist_rating',
+        'quardrant',
         'vote_submission', 
         'video_completion_bonus', 
         'rating_completion_bonus',
