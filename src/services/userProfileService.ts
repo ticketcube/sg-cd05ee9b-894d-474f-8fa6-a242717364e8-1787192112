@@ -350,13 +350,10 @@ const userProfileService = {
      * @param userId The ID of the user
      * @param weekIdentifier The current week identifier
      * @returns Whether the user is eligible
-     */
-    import { supabase } from "@/lib/supabaseClient";
+     *
 
-    export const userProfileService = {
-        /**
-         * Check if user already recorded engagement for this artist + list + type
-         */
+     * Check if user already recorded engagement for this artist + list + type
+     */
         async checkEligibility(userId: number, engagementType: string, weeklyListId: number, artistUuid?: string) {
             const { data, error } = await supabase
                 .from("user_engagements")
