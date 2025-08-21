@@ -351,38 +351,65 @@ const userProfileService = {
      * @param weekIdentifier The current week identifier
      * @returns Whether the user is eligible
      */
-    async checkEligibility(
-        userId: number,
-        engagementType: string,
-        weeklyListId: number,
-        artistUuid?: string
-    ): Promise<boolean> {
-        try {
-            let query = supabase
+    import { supabase } from "@/lib/supabaseClient";
+
+    export const userProfileService = {
+        /**
+         * Check if user already recorded engagement for this artist + list + type
+         */
+        async checkEligibility(userId: number, engagementType: string, weeklyListId: number, artistUuid?: string) {
+            const { data, error } = await supabase
                 .from("user_engagements")
                 .select("id")
                 .eq("user_id", userId)
                 .eq("engagement_type", engagementType)
-                .eq("weekly_list_id", weeklyListId);
-
-            if (artistUuid) {
-                query = query.eq("artist_uuid", artistUuid);
-            }
-
-            const { data, error } = await query.maybeSingle();
+                .eq("weekly_list_id", weeklyListId)
+                .eq("artist_uuid", artistUuid || null)
+                .maybeSingle();
 
             if (error) {
-                console.error("Error checking eligibility:", error);
+                console.error("Eligibility check error:", error);
                 return false;
             }
 
-            // Eligible if no row exists
+            // ✅ If no row, they are eligible
             return !data;
-        } catch (error) {
-            console.error("Unexpected error checking eligibility:", error);
-            return false;
-        }
-    },
+        },
+
+        /**
+         * Record a new engagement (awards points)
+         */
+        async recordEngagement(
+            userId: number,
+            engagementType: string,
+            points: number,
+            weeklyListId: number,
+            artistUuid?: string,
+            metadata?: Record<string, any>
+        ) {
+            const { data, error } = await supabase
+                .from("user_engagements")
+                .insert([
+                    {
+                        user_id: userId,
+                        engagement_type: engagementType,
+                        points_earned: points,
+                        weekly_list_id: weeklyListId,
+                        artist_uuid: artistUuid || null,
+                        metadata: metadata || {},
+                    },
+                ])
+                .select()
+                .single();
+
+            if (error) {
+                console.error("Error recording engagement:", error);
+                throw error;
+            }
+
+            return data;
+        },
+
 
     /**
      * Get weekly stats for a user
