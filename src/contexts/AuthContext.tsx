@@ -61,21 +61,18 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         initializeAuth();
 
         // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                console.log("Auth state changed:", event, session?.user?.id);
-
-                if (session?.user) {
-                    setSupabaseUser(session.user);
-                    await loadUserProfile(session.user);
-                } else {
-                    setSupabaseUser(null);
-                    setUser(null);
-                    localStorage.removeItem("otwchart_user");
-                }
-                setLoading(false);
+        supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (session?.user) {
+                // only set the user + profile on refresh / token refresh
+                setSupabaseUser(session.user);
+                await loadUserProfile(session.user);
+            } else {
+                // clear state if logged out
+                setSupabaseUser(null);
+                setUser(null);
+                localStorage.removeItem("otwchart_user");
             }
-        );
+        });
 
         return () => subscription.unsubscribe();
     }, []);
