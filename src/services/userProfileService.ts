@@ -305,7 +305,7 @@ const userProfileService = {
                 .from("user_engagements")
                 .select("id")
                 .eq("user_id", userId)
-                .eq("engagement_type", engagementType)
+                .eq("engagement_type", "artist_rating")
                 .eq("weekly_list_id", weeklyListId)
                 .eq("artist_uuid", artistUuid || null)
                 .maybeSingle();
