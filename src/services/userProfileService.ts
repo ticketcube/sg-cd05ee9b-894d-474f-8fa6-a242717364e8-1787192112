@@ -357,24 +357,29 @@ const userProfileService = {
         weeklyListId: number,
         artistUuid?: string
     ): Promise<boolean> {
-        const { data } = await supabase
-            .from("user_engagements")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("engagement_type", engagementType)
-            .eq("weekly_list_id", weeklyListId)
-            .eq("artist_uuid", artistUuid || null)
-            .maybeSingle();
+        try {
+            let query = supabase
+                .from("user_engagements")
+                .select("id")
+                .eq("user_id", userId)
+                .eq("engagement_type", engagementType)
+                .eq("weekly_list_id", weeklyListId);
+
+            if (artistUuid) {
+                query = query.eq("artist_uuid", artistUuid);
+            }
+
+            const { data, error } = await query.maybeSingle();
 
             if (error) {
-                console.error("Error checking vote submission eligibility:", error);
+                console.error("Error checking eligibility:", error);
                 return false;
             }
 
-            // Return true if no existing vote submission found (eligible for points)
+            // Eligible if no row exists
             return !data;
         } catch (error) {
-            console.error("Error checking vote submission eligibility:", error);
+            console.error("Unexpected error checking eligibility:", error);
             return false;
         }
     },
