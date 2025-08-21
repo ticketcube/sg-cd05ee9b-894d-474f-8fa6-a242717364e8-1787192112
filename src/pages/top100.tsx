@@ -136,15 +136,7 @@ export default function Top100Page() {
     // The actual vote submission happens in `handleSubmitVotes`.
   };
 
-  const handleStartVoting = () => {
-    if (passcode.trim() !== REQUIRED_PASSCODE) {
-      alert("Invalid passcode. Please enter the correct passcode to vote.");
-      return;
-    }
-    setVotingState("voting");
-    setIsPasscodeDialogOpen(false);
-    setPasscode("");
-  };
+  
 
   const handleVoteSubmit = async () => {
     if (!user) {
@@ -474,7 +466,7 @@ export default function Top100Page() {
                 </p>
               )}
               <Button 
-                onClick={!isUnlocked ? handleUnlockAccess : handleStartVoting} 
+                onClick={!isUnlocked ? handleUnlockAccess } 
                 className="w-full"
               >
                 {!isUnlocked ? "Unlock List" : "Start Voting"}
