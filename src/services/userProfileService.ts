@@ -366,9 +366,18 @@ const userProfileService = {
             .eq("artist_uuid", artistUuid || null)
             .maybeSingle();
 
-        // ✅ Eligible if no engagement yet for THIS artist + list + type
-        return !data;
-    }
+            if (error) {
+                console.error("Error checking vote submission eligibility:", error);
+                return false;
+            }
+
+            // Return true if no existing vote submission found (eligible for points)
+            return !data;
+        } catch (error) {
+            console.error("Error checking vote submission eligibility:", error);
+            return false;
+        }
+    },
 
     /**
      * Get weekly stats for a user
