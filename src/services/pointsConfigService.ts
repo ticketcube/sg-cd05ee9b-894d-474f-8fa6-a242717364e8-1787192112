@@ -6,7 +6,8 @@ type PointsConfig = Tables<"points_config">;
 
 export interface PointsConfigCache {
   video_view: PointsConfig;
-  artist_rating: PointsConfig; // Points for rating one artist
+    artist_rating: PointsConfig; // Points for rating one artist
+    quadrant: PointsConfig; // Points for rating one artist
   vote_submission: PointsConfig;
   video_completion_bonus: PointsConfig;
   rating_completion_bonus: PointsConfig; // Points for rating all artists in a week
