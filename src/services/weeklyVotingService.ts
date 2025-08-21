@@ -38,12 +38,14 @@ const weeklyVotingService = {
     if (!userId) throw new Error("User ID is required to record a vote.");
 
     let pointsFromVote = 0;
-    try {
+        try {
+            // Get points from pointsConfigService instead of hardcoding
+        const ratingPoints = await pointsConfigService.getPoints('quadrant');
         // Record engagement with quadrant metadata
         const engagement = await userProfileService.recordEngagement(
             userId,
-            "artist_rating",
-            5, // Points for rating
+            "quadrant",
+            ratingPoints,
             weekIdentifier,
             artistUuid,
             { 
