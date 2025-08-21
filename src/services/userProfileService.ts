@@ -196,60 +196,6 @@ const userProfileService = {
         }
     },
 
-    /**
-     * Record a user engagement (e.g., video view, vote submission)
-     * @param userId The ID of the user who engaged
-     * @param engagementType The type of engagement
-     * @param pointsEarned The points earned from this engagement
-     * @param weekIdentifier The week identifier for this engagement
-     * @param artistUuid The UUID of the artist involved (optional)
-     * @param metadata Additional metadata for the engagement (optional)
-     * @returns The recorded engagement
-     */
-    async recordEngagement(
-        userId: number,
-        engagementType: EngagementType,
-        pointsEarned: number,
-        weekIdentifier: string,
-        artistUuid?: string,
-        weeklyListId?: number, 
-        metadata?: Record<string, any>
-    ): Promise<UserEngagement> {
-        try {
-            // Record the engagement
-            const { data: engagement, error: engagementError } = await supabase
-                .from("user_engagements")
-                .insert([{
-                    user_id: userId,
-                    engagement_type: engagementType,
-                    points_earned: pointsEarned,
-                    week_identifier: weekIdentifier,
-                    artist_uuid: artistUuid || null,
-                    weekly_list_id: weeklyListId || null,
-                    metadata: metadata || null
-                }])
-                .select()
-                .single();
-
-            if (engagementError) throw engagementError;
-
-            // Update user's total points and last_active timestamp atomically
-            const { error: rpcError } = await supabase.rpc("increment_user_points", {
-                user_id_to_update: userId,
-                points_to_add: pointsEarned,
-            });
-
-            if (rpcError) {
-                console.error("Error calling increment_user_points RPC:", rpcError);
-                throw rpcError;
-            }
-
-            return engagement as UserEngagement;
-        } catch (error) {
-            console.error("Error recording engagement:", error);
-            throw error;
-        }
-    },
 
     /**
      * Get a user's engagement history with weekly summaries
