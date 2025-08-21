@@ -55,7 +55,7 @@ export class PointsConfigService {
       const requiredConfigs = [
         'video_view', 
           'artist_rating',
-        'quardrant',
+        'quadrant',
         'vote_submission', 
         'video_completion_bonus', 
         'rating_completion_bonus',
