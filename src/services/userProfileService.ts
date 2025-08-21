@@ -7,7 +7,7 @@ export type UserProfile = Tables<"user_profiles">;
 
 export type EngagementType = 
   | "video_view" 
-  | "vote_submission" 
+  | "quadrant" 
   | "ranking_submission" 
   | "video_completion_bonus" 
   | "daily_login" 
