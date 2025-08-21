@@ -351,28 +351,24 @@ const userProfileService = {
      * @param weekIdentifier The current week identifier
      * @returns Whether the user is eligible
      */
-    async checkVoteSubmissionEligibility(userId: number, weekIdentifier: string): Promise<boolean> {
-        try {
-            const { data, error } = await supabase
-                .from("user_engagements")
-                .select("id")
-                .eq("user_id", userId)
-                .eq("week_identifier", weekIdentifier)
-                .in("engagement_type", ["vote_submission", "artist_rating"])
-                .limit(1);
+    async checkEligibility(
+        userId: number,
+        engagementType: string,
+        weeklyListId: number,
+        artistUuid?: string
+    ): Promise<boolean> {
+        const { data } = await supabase
+            .from("user_engagements")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("engagement_type", engagementType)
+            .eq("weekly_list_id", weeklyListId)
+            .eq("artist_uuid", artistUuid || null)
+            .maybeSingle();
 
-            if (error) {
-                console.error("Error checking vote submission eligibility:", error);
-                return false;
-            }
-
-            // Return true if no existing vote submission found (eligible for points)
-            return !data || data.length === 0;
-        } catch (error) {
-            console.error("Error checking vote submission eligibility:", error);
-            return false;
-        }
-    },
+        // ✅ Eligible if no engagement yet for THIS artist + list + type
+        return !data;
+    }
 
     /**
      * Get weekly stats for a user
