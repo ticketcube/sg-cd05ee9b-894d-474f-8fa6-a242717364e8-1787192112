@@ -291,7 +291,16 @@ export class WeeklyVotingService {
   }
 
   async submitQuadrantVotes(data: QuadrantVoteData): Promise<SubmissionResult> {
-    try {
+      try {
+
+        const { data: weeklyList, error: listError } = await supabase
+              .from("weekly_lists")
+              .select("id")
+              .eq("week_identifier", data.weekIdentifier)
+              .single();
+          if (!weeklyList || listError) throw listError;
+          const weeklyListId = weeklyList.id;
+          
       // Get dynamic points configuration
       const pointsPerRating = await pointsConfigService.getPoints('artist_rating');
       let totalPointsFromRatings = 0;
