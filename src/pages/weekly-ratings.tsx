@@ -1,8 +1,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { weeklyListService, WeeklyListWithEnrichedArtists, EnrichedWeeklyListArtist } from "@/services/weeklyListService";
-import { weeklyVotingService, SubmissionResult } from "@/services/weeklyVotingService";
+import { weeklyListService, EnrichedWeeklyListArtist, WeeklyListWithEnrichedArtists } from "@/services/weeklyListService";
+import weeklyVotingService, { SubmissionResult } from "@/services/weeklyVotingService";
 import { videoWatchService } from "@/services/videoWatchService";
 import type { Tables } from "@/integrations/supabase/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, User, Play, CheckCircle, Eye } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
 import WeeklyArtistRatingPopup from "@/components/WeeklyArtistRatingPopup";
 import PointsNotification, { usePointsNotifications } from "@/components/points/PointsNotification";
@@ -33,7 +32,7 @@ interface VideoWatchStatus {
 }
 
 function WeeklyRatingsPageContent() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [weeklyList, setWeeklyList] = useState<WeeklyListWithEnrichedArtists | null>(null);
   const [allWeeklyLists, setAllWeeklyLists] = useState<WeeklyList[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>("");
@@ -95,7 +94,7 @@ function WeeklyRatingsPageContent() {
       setWeeklyList(list);
 
       // Load existing user votes
-      const existingVotes = await weeklyVotingService.getUserVotes(user.id, weekIdentifier);
+      const existingVotes = await weeklyVotingService.getVotesForWeek(user.id, weekIdentifier);
       const initialRatings = existingVotes.map(vote => ({
         artistUuid: vote.artist_uuid,
         ticketInterest: vote.quadrant_x || 0,
@@ -144,7 +143,7 @@ function WeeklyRatingsPageContent() {
       setShowOnboarding(true);
       localStorage.setItem('hasSeenPointsOnboarding', 'true');
     }
-  }, []);
+  }, [showOnboarding]);
 
   const handleRatingComplete = (artistUuid: string, ticketInterest: number, shareInterest: number) => {
     setArtistRatings(prev => {
@@ -209,7 +208,7 @@ function WeeklyRatingsPageContent() {
     );
   }, [weeklyList, artistRatings]);
 
-  if (loading) return (
+  if (authLoading || loading) return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin" />
     </div>
@@ -257,7 +256,7 @@ function WeeklyRatingsPageContent() {
             <div className="p-4 bg-gray-800 border-b border-gray-700">
               <div className="max-w-md mx-auto">
                 <div className="flex justify-center items-center px-2" style={{ minHeight: '120px' }}>
-                  {weeklyList.artists.map((artistData, index) => {
+                  {weeklyList.artists.map((artistData) => {
                     const artist = artistData.artist;
                     const hasVoted = artistData.user_has_voted;
                     const watchStatus = getArtistWatchStatus(artist.uuid);
@@ -340,6 +339,7 @@ function WeeklyRatingsPageContent() {
             onClose={() => setIsPopupOpen(false)}
             onRatingComplete={handleRatingComplete}
             weekIdentifier={selectedListId}
+            weeklyListId={1}
             userHasVoted={selectedArtist.user_has_voted}
             onVideoPointsAwarded={handleVideoPointsAwarded}
             onSubmissionSuccess={handleSubmissionSuccess}

@@ -1,448 +1,123 @@
 import { supabase } from "@/integrations/supabase/client";
-import { pointsConfigService } from "./pointsConfigService";
+import type { Database, Tables, Enums } from "@/integrations/supabase/types";
 import userProfileService from "./userProfileService";
-import type { Tables } from "@/integrations/supabase/types";
 
-type WeeklyVote = Tables<"user_engagements">;
+export type VoteType = Enums<"vote_type">;
 
-export interface VideoViewData {
-  userId: number;
+// Define ArtistVote to match the weekly_artist_rankings table structure
+export interface ArtistVote {
+    id: number;
+    user_id: number;
+    artist_uuid: string;
+    week_identifier: string;
+    vote_type: VoteType;
+    quadrant_x: number | null;
+    quadrant_y: number | null;
+    created_at: string;
+    updated_at: string;
+    ranking_position: number | null;
+}
+
+export interface ArtistVotePosition {
   artistUuid: string;
-  weekIdentifier: string;
-  watchTimeSeconds: number;
+  weeklyListId: number;
+  quadrant_x: number;
+  quadrant_y: number;
 }
 
-export interface RankingVoteData {
-  userId: number;
-  weekIdentifier: string;
-  artistRankings: Array<{
-    artistUuid: string;
-    position: number;
-  }>;
-}
-
-export interface QuadrantVoteData {
-  userId: number;
-  weekIdentifier: string;
-  artistPositions: Array<{
-      artistUuid: string;
-      weeklyListId: number;
-    quadrant_x: number; // -1 to 1 (ticket interest axis)
-    quadrant_y: number; // -1 to 1 (sharing interest axis)
-  }>;
+export interface SubmissionBreakdown {
+    artistName: string;
+    points: number;
 }
 
 export interface SubmissionResult {
-  totalPointsEarned: number;
-  breakdown: {
-    ratings: {
-      count: number;
-      points: number;
-      pointsPerRating: number;
-    };
-    completionBonus: {
-      points: number;
-    };
-  };
-  votesSubmitted: number;
+    totalPointsEarned: number;
+    completionBonus: number;
+    ratedArtists: number;
+    message: string;
+    breakdown?: SubmissionBreakdown[];
 }
 
-export class WeeklyVotingService {
+const weeklyVotingService = {
+  async submitQuadrantVote(
+    userId: number,
+    weekIdentifier: string,
+    weeklyListId: number,
+    artistUuid: string,
+    quadrantX: number,
+    quadrantY: number,
+  ): Promise<SubmissionResult> {
+    if (!userId) throw new Error("User ID is required to record a vote.");
 
-  /**
-   * Check if user has watched all videos in a weekly list and award completion bonus
-   */
-  async checkVideoCompletionBonus(userId: number, weekIdentifier: string): Promise<{ pointsEarned: number; eligible: boolean }> {
-    try {
-      // Get all artists in this weekly list
-      const { data: weeklyListArtists, error: artistsError } = await supabase
-        .from("weekly_list_artists")
-        .select("artist_uuid")
-        .eq("week_identifier", weekIdentifier);
+    const voteToUpsert = {
+        user_id: userId,
+        artist_uuid: artistUuid,
+        week_identifier: weekIdentifier,
+        vote_type: 'neutral' as VoteType,
+        quadrant_x: quadrantX,
+        quadrant_y: quadrantY,
+    };
 
-      if (artistsError) {
-        console.error("Error fetching weekly list artists:", artistsError);
-        return { pointsEarned: 0, eligible: false };
-      }
-
-      if (!weeklyListArtists || weeklyListArtists.length === 0) {
-        return { pointsEarned: 0, eligible: false };
-      }
-
-      // Check if user has watched ALL videos in this week
-      const watchedVideos = new Set < string > ();
-
-      const { data: userEngagements, error: engagementError } = await supabase
-        .from("user_engagements")
-        .select("metadata")
-        .eq("user_id", userId)
-        .eq("engagement_type", "video_view")
-        .eq("week_identifier", weekIdentifier);
-
-      if (engagementError) {
-        console.error("Error checking user video engagements:", engagementError);
-        return { pointsEarned: 0, eligible: false };
-      }
-
-      // Parse metadata to extract watched artist UUIDs
-      userEngagements?.forEach(engagement => {
-        try {
-          const metadata = typeof engagement.metadata === 'string'
-            ? JSON.parse(engagement.metadata)
-            : engagement.metadata || {};
-          const typedMetadata = metadata as { artist_uuid?: string, meets_watch_time?: boolean };
-          if (typedMetadata.artist_uuid && typedMetadata.meets_watch_time) {
-            watchedVideos.add(String(typedMetadata.artist_uuid));
-          }
-        } catch (e) {
-          console.warn("Error parsing engagement metadata:", e);
-        }
-      });
-
-      // Check if user has watched all required videos
-      const requiredVideos = weeklyListArtists.map(artist => artist.artist_uuid);
-      const hasWatchedAll = requiredVideos.every(artistUuid => watchedVideos.has(artistUuid));
-
-      if (!hasWatchedAll) {
-        return { pointsEarned: 0, eligible: false };
-      }
-
-      // Check if user is eligible for video completion bonus (once per week)
-      const eligible = await pointsConfigService.checkEligibility(
-        'video_completion_bonus',
-        userId,
-        undefined,
-        weekIdentifier
-      );
-
-      if (!eligible) {
-        return { pointsEarned: 0, eligible: false };
-      }
-
-      // Award the bonus
-      const bonusPoints = await pointsConfigService.getPoints('video_completion_bonus');
-
-      await userProfileService.recordEngagement(
-        userId,
-        "video_completion_bonus",
-        bonusPoints,
-        weekIdentifier,
-        undefined,
-        {
-          videos_watched: requiredVideos.length,
-          completion_week: weekIdentifier,
-          artist_uuids: requiredVideos
-        }
-      );
-
-      return {
-        pointsEarned: bonusPoints,
-        eligible: true
-      };
-    } catch (error) {
-      console.error("Error checking video completion bonus:", error);
-      return { pointsEarned: 0, eligible: false };
+    const { data: voteResult, error: voteError } = await supabase
+      .from("weekly_artist_rankings")
+      .upsert(voteToUpsert, { onConflict: "user_id, artist_uuid, week_identifier" })
+      .select()
+      .single();
+    
+    if (voteError) {
+      console.error("Error saving vote to weekly_artist_rankings:", voteError);
+      throw voteError;
     }
-  }
 
-  /**
-   * Check if user has rated all artists in a weekly list and award completion bonus
-   */
-  async checkRatingCompletionBonus(userId: number, weekIdentifier: string): Promise<{ pointsEarned: number; eligible: boolean }> {
+    let pointsFromVote = 0;
     try {
-      // Get all artists in this weekly list
-      const { data: weeklyListArtists, error: artistsError } = await supabase
-        .from("weekly_list_artists")
-        .select("artist_uuid")
-        .eq("week_identifier", weekIdentifier);
-
-      if (artistsError || !weeklyListArtists || weeklyListArtists.length === 0) {
-        console.error("Error fetching weekly list artists for bonus check:", artistsError);
-        return { pointsEarned: 0, eligible: false };
-      }
-
-      // Check how many unique artists the user has voted for this week
-      const { count, error: votesError } = await supabase
-        .from("weekly_votes")
-        .select("artist_uuid", { count: 'exact', head: true })
-        .eq("user_id", userId)
-        .eq("week_identifier", weekIdentifier);
-
-      if (votesError) {
-        console.error("Error fetching user votes for bonus check:", votesError);
-        return { pointsEarned: 0, eligible: false };
-      }
-
-      const totalArtistsInList = weeklyListArtists.length;
-      const userVotedCount = count || 0;
-
-      // If user hasn't rated all artists, no bonus
-      if (userVotedCount < totalArtistsInList) {
-        return { pointsEarned: 0, eligible: false };
-      }
-
-      // Check if user is eligible for the rating completion bonus (once per week)
-      const eligible = await pointsConfigService.checkEligibility(
-        'rating_completion_bonus',
-        userId,
-        undefined,
-        weekIdentifier
-      );
-
-      if (!eligible) {
-        return { pointsEarned: 0, eligible: false };
-      }
-
-      // Award the bonus
-      const bonusPoints = await pointsConfigService.getPoints('rating_completion_bonus');
-
-      await userProfileService.recordEngagement(
-        userId,
-        "rating_completion_bonus",
-        bonusPoints,
-        weekIdentifier,
-        undefined,
-        {
-          artists_rated_count: userVotedCount,
-          total_artists_in_list: totalArtistsInList,
-          completion_week: weekIdentifier,
-        }
-      );
-
-      return {
-        pointsEarned: bonusPoints,
-        eligible: true
-      };
-    } catch (error) {
-      console.error("Error checking rating completion bonus:", error);
-      return { pointsEarned: 0, eligible: false };
+        const engagement = await userProfileService.recordEngagement(
+            userId,
+            "artist_rating",
+            5, // Points are calculated by the service, hardcoding to 5 for now
+            weekIdentifier,
+            voteResult.artist_uuid,
+            { quadrant_x: voteResult.quadrant_x, quadrant_y: voteResult.quadrant_y }
+        );
+        pointsFromVote = engagement.points_earned || 0;
+    } catch (e) {
+        console.error(`Failed to record engagement for artist ${voteResult.artist_uuid}`, e);
     }
-  }
 
-  async submitRankingVotes(data: RankingVoteData): Promise<{ pointsEarned: number; votesSubmitted: number }> {
-    try {
-      // Get dynamic configuration
-      const voteSubmissionPoints = await pointsConfigService.getPoints('vote_submission');
+    const submissionResult: SubmissionResult = {
+        totalPointsEarned: pointsFromVote,
+        completionBonus: 0,
+        ratedArtists: 1,
+        message: "Your rating has been submitted successfully!",
+    };
 
-      // Check if user is eligible for vote submission points
-      const eligible = await pointsConfigService.checkEligibility(
-        'vote_submission',
-        data.userId,
-        undefined,
-        data.weekIdentifier
-      );
+    return submissionResult;
+  },
 
-      // Delete existing votes for this user and week
-      await supabase
-        .from("weekly_votes")
-        .delete()
-        .eq("user_id", data.userId)
-        .eq("week_identifier", data.weekIdentifier);
+  async getVotesForWeek(userId: number, weekIdentifier: string): Promise<ArtistVote[]> {
+    if (!userId) {
+      console.warn("No user ID provided to getVotesForWeek, returning empty array.");
+      return [];
+    }
 
-      // Insert new ranking votes
-      const voteInserts = data.artistRankings.map(ranking => ({
-        user_id: data.userId,
-        week_identifier: data.weekIdentifier,
-        artist_uuid: ranking.artistUuid,
-        vote_type: "ranking" as const,
-        ranking_position: ranking.position,
-        quadrant_x: null,
-        quadrant_y: null
-      }));
+    const { data, error } = await supabase
+      .from("weekly_artist_rankings")
+      .select(`*`)
+      .eq("user_id", userId)
+      .eq("week_identifier", weekIdentifier);
 
-      const { error: voteError } = await supabase
-        .from("weekly_votes")
-        .insert(voteInserts);
-
-      if (voteError) throw voteError;
-
-      // Calculate points
-      let pointsEarned = 0;
-      if (eligible) {
-        pointsEarned += voteSubmissionPoints;
-      }
-
-      // Record the engagement
-      await userProfileService.recordEngagement(
-        data.userId,
-        "vote_submission",
-        pointsEarned,
-        data.weekIdentifier,
-        undefined,
-        {
-          vote_type: "ranking",
-          artists_voted: data.artistRankings.length,
-          rankings: data.artistRankings
-        }
-      );
-
-      // Check for video completion bonus after voting
-      const completionBonus = await this.checkVideoCompletionBonus(data.userId, data.weekIdentifier);
-      pointsEarned += completionBonus.pointsEarned;
-
-      return {
-        pointsEarned,
-        votesSubmitted: data.artistRankings.length
-      };
-    } catch (error) {
-      console.error("Error submitting ranking votes:", error);
+    if (error) {
+      console.error(`Error fetching votes for user ${userId} and week ${weekIdentifier}:`, error);
       throw error;
     }
-  }
 
-    async submitQuadrantVotes(
-        data: QuadrantVoteData
-    ): Promise<SubmissionResult | null> {
-        try {
-            const { data: weeklyList, error: listError } = await supabase
-                .from("weekly_lists")
-                .select("id")
-                .eq("week_identifier", data.weekIdentifier)
-                .single();
-            if (!weeklyList || listError) throw listError;
-            const weeklyListId = weeklyList.id;
+    return (data || []) as ArtistVote[];
+  },
 
-            const pointsPerRating = await pointsConfigService.getPoints("quadrant");
-            let totalPointsEarned = 0;
+  // Legacy method name for backward compatibility
+  async getUserVotes(userId: number, weekIdentifier: string): Promise<ArtistVote[]> {
+    return this.getVotesForWeek(userId, weekIdentifier);
+  },
+};
 
-            for (const pos of data.artistPositions) {
-                const vote: Partial<WeeklyVote> = {
-                    user_id: data.userId,
-                    artist_uuid: pos.artistUuid,
-                    week_identifier: data.weekIdentifier,
-                    vote_type: "quadrant",
-                    quadrant_x: pos.quadrant_x,
-                    quadrant_y: pos.quadrant_y,
-                };
-
-                const { error: insertError } = await supabase
-                    .from("weekly_votes")
-                    .upsert(vote, { onConflict: "user_id,artist_uuid,week_identifier" });
-                if (insertError) throw insertError;
-
-                totalPointsEarned += pointsPerRating;
-
-                await userProfileService.recordEngagement(
-                    data.userId,
-                    "quadrant",
-                    pointsPerRating,
-                    data.weekIdentifier,
-                    pos.artistUuid,
-                    weeklyListId,
-                    {
-                        quadrant_x: pos.quadrant_x,
-                        quadrant_y: pos.quadrant_y,
-                    }
-                );
-            }
-
-            return {
-                totalPointsEarned,
-                breakdown: {
-                    ratings: {
-                        count: data.artistPositions.length,
-                        points: totalPointsEarned,
-                        pointsPerRating,
-                    },
-                    completionBonus: { points: 0 },
-                },
-                votesSubmitted: data.artistPositions.length,
-            };
-        } catch (err) {
-            console.error("submitQuadrantVotes error:", err);
-            return null;
-        }
-    }
-
-  async getUserVotes(userId: number, weekIdentifier: string): Promise<WeeklyVote[]> {
-    try {
-      const { data, error } = await supabase
-        .from("weekly_votes")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("week_identifier", weekIdentifier)
-        .order("ranking_position", { ascending: true, nullsFirst: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error("Error getting user votes:", error);
-      throw error;
-    }
-  }
-
-  async getWeeklyVotingStats(weekIdentifier: string): Promise<{
-    totalVoters: number;
-    totalVotes: number;
-    averageVotesPerUser: number;
-    completionRate: number;
-  }> {
-    try {
-      const { data: votes, error } = await supabase
-        .from("weekly_votes")
-        .select("user_id")
-        .eq("week_identifier", weekIdentifier);
-
-      if (error) throw error;
-
-      const userVoteCounts = new Map < number, number> ();
-      votes?.forEach(vote => {
-        const count = userVoteCounts.get(vote.user_id) || 0;
-        userVoteCounts.set(vote.user_id, count + 1);
-      });
-
-      const totalVoters = userVoteCounts.size;
-      const totalVotes = votes?.length || 0;
-      const averageVotesPerUser = totalVoters > 0 ? totalVotes / totalVoters : 0;
-
-      // Calculate completion rate (users who voted on all 5 artists)
-      const completedUsers = Array.from(userVoteCounts.values()).filter(count => count === 5).length;
-      const completionRate = totalVoters > 0 ? (completedUsers / totalVoters) * 100 : 0;
-
-      return {
-        totalVoters,
-        totalVotes,
-        averageVotesPerUser,
-        completionRate
-      };
-    } catch (error) {
-      console.error("Error getting weekly voting stats:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Check if voting is currently open for a weekly list
-   * Video viewing points are ALWAYS available regardless of voting window
-   */
-  async isVotingOpen(weekIdentifier: string): Promise<boolean> {
-    try {
-      const { data: weeklyList, error } = await supabase
-        .from("weekly_lists")
-        .select("start_date, end_date, status")
-        .eq("week_identifier", weekIdentifier)
-        .single();
-
-      if (error || !weeklyList) {
-        console.error("Error fetching weekly list for voting check:", error);
-        return false;
-      }
-
-      const now = new Date();
-      const startDate = new Date(weeklyList.start_date);
-      const endDate = new Date(weeklyList.end_date);
-
-      // Voting is open if:
-      // 1. List status is 'active'
-      // 2. Current time is between start_date and end_date
-      return weeklyList.status === 'active' &&
-        now >= startDate &&
-        now <= endDate;
-    } catch (error) {
-      console.error("Error checking voting window:", error);
-      return false;
-    }
-  }
-}
-
-export const weeklyVotingService = new WeeklyVotingService();
+export default weeklyVotingService;

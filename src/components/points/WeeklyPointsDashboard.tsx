@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,7 @@ import { Eye, Star, Trophy, TrendingUp, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { weeklyListService } from "@/services/weeklyListService";
 import { videoWatchService } from "@/services/videoWatchService";
-import { weeklyVotingService } from "@/services/weeklyVotingService";
+import weeklyVotingService from "@/services/weeklyVotingService";
 import userProfileService from "@/services/userProfileService";
 
 interface WeeklyProgressData {
@@ -34,13 +34,7 @@ export default function WeeklyPointsDashboard({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user && weekIdentifier) {
-      loadWeeklyProgress();
-    }
-  }, [user, weekIdentifier]);
-
-  const loadWeeklyProgress = async () => {
+  const loadWeeklyProgress = useCallback(async () => {
     if (!user || !weekIdentifier) return;
 
     try {
@@ -96,7 +90,13 @@ export default function WeeklyPointsDashboard({
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, weekIdentifier]);
+
+  useEffect(() => {
+    if (user && weekIdentifier) {
+      loadWeeklyProgress();
+    }
+  }, [user, weekIdentifier, loadWeeklyProgress]);
 
   if (loading) {
     return (

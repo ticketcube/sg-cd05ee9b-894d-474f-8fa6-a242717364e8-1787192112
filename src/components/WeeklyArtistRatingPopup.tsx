@@ -1,12 +1,11 @@
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Clock, Star, Ticket, Users, X, Award, Timer, CheckCircle, Loader2, Eye } from "lucide-react";
+import { ChevronLeft, ChevronRight, Timer, CheckCircle, Loader2, Eye, Ticket, Users } from "lucide-react";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { useAuth } from "@/contexts/AuthContext";
 import { videoWatchService } from "@/services/videoWatchService";
@@ -25,6 +24,7 @@ interface WeeklyArtistRatingPopupProps {
     shareInterest: number
   ) => void;
   weekIdentifier: string;
+  weeklyListId?: number;
   userHasVoted?: boolean;
   onVideoPointsAwarded?: (artistUuid: string, pointsEarned: number) => void;
   onSubmissionSuccess?: (result: SubmissionResult) => void;
@@ -36,6 +36,7 @@ export default function WeeklyArtistRatingPopup({
   onClose,
   onRatingComplete,
   weekIdentifier,
+  weeklyListId = 1,
   userHasVoted,
   onVideoPointsAwarded,
   onSubmissionSuccess,
@@ -44,7 +45,6 @@ export default function WeeklyArtistRatingPopup({
   const [ticketInterest, setTicketInterest] = useState(50);
   const [shareInterest, setShareInterest] = useState(50);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [slidersChanged, setSlidersChanged] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,8 +56,6 @@ export default function WeeklyArtistRatingPopup({
   const [minWatchTime, setMinWatchTime] = useState(15);
   const [videoPoints, setVideoPoints] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const { showVoteSubmissionNotification } = usePointsNotifications();
 
   // Reset state when popup opens or artist changes
   useEffect(() => {
@@ -86,7 +84,7 @@ export default function WeeklyArtistRatingPopup({
       // Cleanup timer on unmount or dependency change
       stopTimer();
     };
-  }, [isOpen, artist?.uuid, user]); // Include artist.uuid to reset on artist change
+  }, [isOpen, artist, user]);
 
   const checkPointsEligibility = async () => {
     if (!user) return;
@@ -207,35 +205,19 @@ export default function WeeklyArtistRatingPopup({
     
     setIsSubmitting(true);
     try {
-      // Submit the rating to the database
-      const ticketValue = (ticketInterest - 50) / 50; // Convert 0-100 to -1 to 1
-      const shareValue = (shareInterest - 50) / 50; // Convert 0-100 to -1 to 1
+      const ticketValue = (ticketInterest - 50) / 50;
+      const shareValue = (shareInterest - 50) / 50;
       
-      console.log("🔄 Submitting quadrant votes with data:", {
-        userId: user.id,
-        weekIdentifier: weekIdentifier,
-        artistPositions: [{
-          artistUuid: artist.uuid,
-          quadrant_x: ticketValue,
-          quadrant_y: shareValue
-        }]
-      });
+      const result = await weeklyVotingService.submitQuadrantVote(
+        user.id,
+        weekIdentifier,
+        weeklyListId,
+        artist.uuid,
+        ticketValue,
+        shareValue
+      );
 
-      const result = await weeklyVotingService.submitQuadrantVotes({
-        userId: user.id,
-        weekIdentifier: weekIdentifier,
-        artistPositions: [{
-          artistUuid: artist.uuid,
-          quadrant_x: ticketValue,
-          quadrant_y: shareValue
-        }]
-      });
-
-      console.log("✅ Submission result received:", result);
-
-      // Always call the success callback to show popup, regardless of points earned
       if (onSubmissionSuccess) {
-        console.log("📤 Calling onSubmissionSuccess with result:", result);
         onSubmissionSuccess(result);
       }
 

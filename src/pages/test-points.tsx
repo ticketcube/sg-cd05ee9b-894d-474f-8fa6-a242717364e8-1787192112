@@ -2,11 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, XCircle, Info } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { videoWatchService } from "@/services/videoWatchService";
 import { pointsConfigService } from "@/services/pointsConfigService";
 import pointsTestService from "@/services/pointsTestService";
-import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function TestPointsPage() {

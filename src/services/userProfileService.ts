@@ -353,8 +353,7 @@ const userProfileService = {
       const { data, error } = await supabase
         .from("user_engagements")
         .select("id")
-          .eq("user_id", userId)
-          .eq("artist_uuid", artistUuid)
+        .eq("user_id", userId)
         .eq("week_identifier", weekIdentifier)
         .in("engagement_type", ["vote_submission", "artist_rating"])
         .limit(1);
