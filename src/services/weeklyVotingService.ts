@@ -39,34 +39,42 @@ const weeklyVotingService = {
   ): Promise<SubmissionResult> {
     if (!userId) throw new Error("User ID is required to record a vote.");
 
+    // ✅ CHECK FOR EXISTING VOTE FIRST
+    const existingVotes = await this.getVotesForWeek(userId, weekIdentifier);
+    const hasVotedForArtist = existingVotes.some(vote => vote.artist_uuid === artistUuid);
+    
+    if (hasVotedForArtist) {
+      throw new Error("You have already voted for this artist this week.");
+    }
+
     let pointsFromVote = 0;
-        try {
-            // Get points from pointsConfigService instead of hardcoding
-        const ratingPoints = await pointsConfigService.getPoints('quadrant');
-        // Record engagement with quadrant metadata
-        const engagement = await userProfileService.recordEngagement(
-            userId,
-            "quadrant",
-            ratingPoints,
-            weekIdentifier,
-            artistUuid,
-            { 
-              quadrant_x: quadrantX, 
-              quadrant_y: quadrantY,
-              weekly_list_id: weeklyListId 
-            }
-        );
-        pointsFromVote = engagement.points_earned || 0;
+    try {
+      // Get points from pointsConfigService instead of hardcoding
+      const ratingPoints = await pointsConfigService.getPoints('quadrant');
+      // Record engagement with quadrant metadata
+      const engagement = await userProfileService.recordEngagement(
+        userId,
+        "quadrant",
+        ratingPoints,
+        weekIdentifier,
+        artistUuid,
+        { 
+          quadrant_x: quadrantX, 
+          quadrant_y: quadrantY,
+          weekly_list_id: weeklyListId 
+        }
+      );
+      pointsFromVote = engagement.points_earned || 0;
     } catch (e) {
-        console.error(`Failed to record engagement for artist ${artistUuid}`, e);
-        throw e;
+      console.error(`Failed to record engagement for artist ${artistUuid}`, e);
+      throw e;
     }
 
     const submissionResult: SubmissionResult = {
-        totalPointsEarned: pointsFromVote,
-        completionBonus: 0,
-        ratedArtists: 1,
-        message: "Your rating has been submitted successfully!",
+      totalPointsEarned: pointsFromVote,
+      completionBonus: 0,
+      ratedArtists: 1,
+      message: "Your rating has been submitted successfully!",
     };
 
     return submissionResult;
@@ -83,7 +91,7 @@ const weeklyVotingService = {
       .select(`*`)
       .eq("user_id", userId)
       .eq("week_identifier", weekIdentifier)
-      .eq("engagement_type", "artist_rating");
+      .eq("engagement_type", "quadrant");  // ✅ Use "quadrant" to match recording type
 
     if (error) {
       console.error(`Error fetching votes for user ${userId} and week ${weekIdentifier}:`, error);

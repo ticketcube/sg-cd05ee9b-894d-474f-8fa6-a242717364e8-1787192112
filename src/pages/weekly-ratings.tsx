@@ -97,8 +97,8 @@ function WeeklyRatingsPageContent() {
       const existingVotes = await weeklyVotingService.getVotesForWeek(user.id, weekIdentifier);
       const initialRatings = existingVotes.map(vote => ({
         artistUuid: vote.artist_uuid,
-        ticketInterest: vote.quadrant_x || 0,
-        shareInterest: vote.quadrant_y || 0,
+        ticketInterest: (vote.quadrant_x || 0) * 50 + 50, // ✅ Convert back from -1,1 to 0,100 scale
+        shareInterest: (vote.quadrant_y || 0) * 50 + 50, // ✅ Convert back from -1,1 to 0,100 scale  
         isRated: true
       }));
       setArtistRatings(initialRatings);
@@ -339,7 +339,7 @@ function WeeklyRatingsPageContent() {
             onClose={() => setIsPopupOpen(false)}
             onRatingComplete={handleRatingComplete}
             weekIdentifier={selectedListId}
-            weeklyListId={1}
+            weeklyListId={weeklyList?.id || 1}  {/* ✅ Use actual weekly list ID */}
             userHasVoted={selectedArtist.user_has_voted}
             onVideoPointsAwarded={handleVideoPointsAwarded}
             onSubmissionSuccess={handleSubmissionSuccess}

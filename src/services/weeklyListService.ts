@@ -155,12 +155,13 @@ export class WeeklyListService {
         return null;
       }
 
-      // Get user's votes for this week
+      // Get user's votes for this week - ✅ Fix to use correct table and engagement type
       const { data: userVotes, error: votesError } = await supabase
-        .from("weekly_votes")
+        .from("user_engagements")  // ✅ Use correct table
         .select("artist_uuid")
         .eq("user_id", userId)
-        .eq("week_identifier", weekIdentifier);
+        .eq("week_identifier", weekIdentifier)
+        .eq("engagement_type", "quadrant");  // ✅ Use "quadrant" engagement type
 
       if (votesError) {
         console.error("Error fetching user votes:", votesError);

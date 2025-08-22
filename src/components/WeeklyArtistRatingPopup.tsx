@@ -203,6 +203,12 @@ export default function WeeklyArtistRatingPopup({
   const handleSubmit = async () => {
     if (!artist || !user || !slidersChanged) return;
     
+    // ✅ Additional client-side check
+    if (userHasVoted) {
+      alert("You have already rated this artist this week.");
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       const ticketValue = (ticketInterest - 50) / 50;
@@ -225,7 +231,13 @@ export default function WeeklyArtistRatingPopup({
       onRatingComplete(artist.uuid, ticketValue, shareValue);
       onClose();
     } catch (error) {
-      console.error("❌ Error submitting rating:", error);
+      // ✅ Handle duplicate vote error gracefully
+      if (error instanceof Error && error.message.includes("already voted")) {
+        alert("You have already voted for this artist this week.");
+      } else {
+        console.error("❌ Error submitting rating:", error);
+        alert("Failed to submit rating. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
