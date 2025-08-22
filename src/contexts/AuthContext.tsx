@@ -3,7 +3,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import userProfileService from "@/services/userProfileService";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { useRouter } from "next/router";
 
 export interface User {
   id: number;
@@ -38,36 +37,6 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState < User | null > (null);
     const [supabaseUser, setSupabaseUser] = useState < SupabaseUser | null > (null);
     const [loading, setLoading] = useState(true);
-    const router = useRouter();
-
-    // Simplified post-authentication routing - only redirect when absolutely necessary
-    const handlePostAuthNavigation = (userData: User) => {
-        try {
-            const currentPath = router.asPath;
-            console.log("Post-auth navigation - current path:", currentPath);
-
-            // Only redirect new users who need to complete their profile
-            // New user: no profile ID (id: 0) - they must complete profile setup
-            if (!userData.id || userData.id === 0) {
-                console.log("New user detected, needs profile completion - navigating to profile");
-                router.push("/profile").catch(console.error);
-                return;
-            }
-
-            // For all other cases - let users stay where they are
-            // This includes:
-            // - Returning users already on appropriate pages
-            // - Users who were navigating somewhere specific
-            // - Users on any functional page
-            console.log("Authenticated user - staying on current page:", currentPath);
-            
-            // No automatic redirects for returning users - they can navigate themselves
-            
-        } catch (error) {
-            console.error("Error in post-auth navigation:", error);
-            // On any error, just stay where we are - no forced redirects
-        }
-    };
 
     useEffect(() => {
         // Get initial session and set up auth state listener
@@ -220,8 +189,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.setItem("otwchart_user", JSON.stringify(userData));
             console.log("✅ User profile created/updated successfully:", userData.id);
             
-            // After successful profile creation/update, users can stay on current page
-            // No automatic redirect - let them continue with their intended workflow
+            // Profile created successfully - let users continue their workflow
+            // No automatic redirects - they can navigate themselves
             
         } catch (error) {
             console.error("Login error:", error);
