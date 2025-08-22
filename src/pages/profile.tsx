@@ -298,7 +298,7 @@ export default function ProfilePage() {
                                                     <h3 className="font-bold text-white text-lg group-hover:text-green-300 transition-colors">
                                                         Weekly Artist Ratings
                                                     </h3>
-                                                    <p className="text-sm text-gray-300 mb-2">Rate emerging artists and earn 5 points each</p>
+                                                    <p className="text-sm text-gray-300 mb-2">Watch & Rate emerging artists and earn points for each</p>
                                                     <div className="flex items-center gap-2">
                                                         <Badge className="bg-green-600 text-white">5 pts per rating</Badge>
                                                         <Badge variant="outline" className="border-green-500 text-green-400">Most Active</Badge>
