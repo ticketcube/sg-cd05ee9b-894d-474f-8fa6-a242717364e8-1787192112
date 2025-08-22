@@ -41,7 +41,6 @@ function WeeklyRatingsPageContent() {
   const [listError, setListError] = useState<string | null>(null);
   const [artistRatings, setArtistRatings] = useState<ArtistRating[]>([]);
   const [videoWatchStatuses, setVideoWatchStatuses] = useState<VideoWatchStatus[]>([]);
-  const [submitting, setSubmitting] = useState(false);
   const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -50,7 +49,6 @@ function WeeklyRatingsPageContent() {
   const {
     notification,
     hideNotification,
-    showVoteSubmissionNotification
   } = usePointsNotifications();
 
   useEffect(() => {
@@ -97,8 +95,8 @@ function WeeklyRatingsPageContent() {
       const existingVotes = await weeklyVotingService.getVotesForWeek(user.id, weekIdentifier);
       const initialRatings = existingVotes.map(vote => ({
         artistUuid: vote.artist_uuid,
-        ticketInterest: (vote.quadrant_x || 0) * 50 + 50, // ✅ Convert back from -1,1 to 0,100 scale
-        shareInterest: (vote.quadrant_y || 0) * 50 + 50, // ✅ Convert back from -1,1 to 0,100 scale  
+        ticketInterest: (vote.quadrant_x || 0) * 50 + 50,
+        shareInterest: (vote.quadrant_y || 0) * 50 + 50,
         isRated: true
       }));
       setArtistRatings(initialRatings);
@@ -114,7 +112,6 @@ function WeeklyRatingsPageContent() {
             watchedAt: watchData[0]?.created_at
           });
         } catch (error) {
-          // If we can't get watch status, assume not watched
           watchStatuses.push({
             artistUuid: artistData.artist.uuid,
             hasWatched: false
@@ -175,7 +172,6 @@ function WeeklyRatingsPageContent() {
   };
 
   const handleVideoPointsAwarded = (artistUuid: string, pointsEarned: number) => {
-    // Update video watch status for this artist
     setVideoWatchStatuses(prev => 
       prev.map(status => 
         status.artistUuid === artistUuid 
@@ -183,30 +179,16 @@ function WeeklyRatingsPageContent() {
           : status
       )
     );
-
-    // Show notification for video watch points
-    // This will be implemented once we add the notification function
     console.log(`Video points awarded: ${pointsEarned} for artist ${artistUuid}`);
   };
 
   const handleSubmissionSuccess = (result: SubmissionResult) => {
-    console.log("📥 handleSubmissionSuccess received result:", result);
-    console.log("📝 Setting submissionResult state with:", result);
     setSubmissionResult(result);
   };
 
   const getArtistWatchStatus = (artistUuid: string) => {
     return videoWatchStatuses.find(status => status.artistUuid === artistUuid);
   };
-
-  const ratedArtistsCount = useMemo(() => artistRatings.filter(r => r.isRated).length, [artistRatings]);
-  
-  const hasSubmittedAll = useMemo(() => {
-    if (!weeklyList) return false;
-    return weeklyList.artists.every(artist => 
-      artist.user_has_voted || artistRatings.some(r => r.artistUuid === artist.artist.uuid && r.isRated)
-    );
-  }, [weeklyList, artistRatings]);
 
   if (authLoading || loading) return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -218,7 +200,6 @@ function WeeklyRatingsPageContent() {
     <>
       <PointsNotification notification={notification} onClose={hideNotification} />
       
-
       <div className="min-h-screen bg-black text-white">
         <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
           <div className="max-w-md mx-auto">
@@ -226,7 +207,6 @@ function WeeklyRatingsPageContent() {
               <h1 className="text-xl font-bold text-blue-500 truncate">WEEKLY REWARDS</h1>
               <div className="flex gap-2">
                 <HowPointsWorkModal trigger={<Button variant="outline" size="sm" className="text-black border-white-600 hover:bg-gray-800">How Points Work</Button>} />
-                
               </div>
             </div>
             <div className="text-left mb-4">
@@ -276,7 +256,6 @@ function WeeklyRatingsPageContent() {
                             <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center mx-auto"><User className="w-6 h-6" /></div>
                           )}
                           
-                          {/* Video watched indicator */}
                           {hasWatchedVideo && (
                             <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center">
                               <Eye className="w-2 h-2 text-white" />
@@ -339,7 +318,7 @@ function WeeklyRatingsPageContent() {
             onClose={() => setIsPopupOpen(false)}
             onRatingComplete={handleRatingComplete}
             weekIdentifier={selectedListId}
-            weeklyListId={weeklyList?.id || 1}  {/* ✅ Use actual weekly list ID */}
+            weeklyListId={weeklyList?.id}
             userHasVoted={selectedArtist.user_has_voted}
             onVideoPointsAwarded={handleVideoPointsAwarded}
             onSubmissionSuccess={handleSubmissionSuccess}
