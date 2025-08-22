@@ -57,7 +57,7 @@ function FeaturedActivityModule({ isNewUser = false }: { isNewUser?: boolean }) 
                   </p>
                   <Link href="/weekly-ratings">
                     <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold">
-                      Start Rating Artists → 5 pts each
+                      Start Rating Artists
                     </Button>
                   </Link>
                 </div>
