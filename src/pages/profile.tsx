@@ -64,31 +64,7 @@ function FeaturedActivityModule({ isNewUser = false }: { isNewUser?: boolean }) 
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3">
-              <Link href="/vibes" className="block">
-                <div className="bg-black/20 rounded-lg p-3 border border-purple-500/20 hover:border-purple-400/40 transition-all hover:bg-purple-900/20">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="w-6 h-6 text-purple-400" />
-                    <div>
-                      <h4 className="font-medium text-white">Global Vibes Chart</h4>
-                      <p className="text-xs text-gray-300">Explore artists by mood & genre</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-
-              <Link href="/discovery-charts" className="block">
-                <div className="bg-black/20 rounded-lg p-3 border border-orange-500/20 hover:border-orange-400/40 transition-all hover:bg-orange-900/20">
-                  <div className="flex items-center gap-3">
-                    <BarChart className="w-6 h-6 text-orange-400" />
-                    <div>
-                      <h4 className="font-medium text-white">Discovery Charts</h4>
-                      <p className="text-xs text-gray-300">Interactive lists & rankings</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
+           
           </div>
         )}
       </CardContent>
