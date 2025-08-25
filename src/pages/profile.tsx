@@ -58,7 +58,7 @@ export default function ProfilePage() {
             console.log("✅ Complete profile detected - loading engagement history for user ID:", user.id);
             setShowProfileSetup(false);
             setError(null);
-            setLoading(false); // ✅ FIXED: Set loading to false before calling loadUserProfile
+            // ✅ REMOVED: setLoading(false) - let loadUserProfile manage loading state
             loadUserProfile(user.id);
             return;
         }
