@@ -11,6 +11,7 @@ import userProfileService from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
 import Link from "next/link";
 import ProfileSetupModal from "@/components/ProfileSetupModal";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ProfilePage() {
     const { user, loading: authLoading } = useAuth();
