@@ -67,6 +67,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
                 if (session?.user) {
                     setSupabaseUser(session.user);
+                    // Wait a moment for Supabase client to fully sync auth context
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     await loadUserProfile(session.user);
                 } else {
                     setSupabaseUser(null);
@@ -84,71 +86,75 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         try {
             console.log("🔍 Loading user profile for auth user:", authUser.id, authUser.email);
             
-            // Direct database query approach - bypass API issues
+            // Ensure the client has the proper auth context before direct queries
+            // We'll skip direct database approach and go straight to the secure API
+            console.log("🔄 Using secure API approach for profile loading...");
+            
             try {
-                console.log("🔍 Querying database directly for user profile...");
+                const userProfile = await userProfileService.getUserProfile(authUser.id);
                 
-                const { data: profile, error } = await supabase
-                    .from('user_profiles')
-                    .select('*')
-                    .eq('auth_id', authUser.id)
-                    .single();
-
-                if (error) {
-                    if (error.code === 'PGRST116') {
-                        console.log("⚠️ No profile found in database for auth ID:", authUser.id);
-                        throw new Error('Profile not found');
-                    } else {
-                        console.error("❌ Database query error:", error);
-                        throw error;
-                    }
-                }
-
-                if (profile && profile.id) {
-                    console.log("✅ Successfully found user profile in database:", profile);
+                if (userProfile && userProfile.id) {
+                    console.log("✅ Successfully fetched user profile from API:", userProfile);
                     const userData: User = {
-                        id: profile.id,
+                        id: userProfile.id,
                         auth_id: authUser.id,
-                        username: profile.username,
-                        email: profile.email,
-                        city: profile.raw_city_input || undefined,
-                        points: profile.total_points || 0,
-                        role: profile.role || undefined
+                        username: userProfile.username,
+                        email: userProfile.email,
+                        city: userProfile.raw_city_input || undefined,
+                        points: userProfile.total_points || 0,
+                        role: userProfile.role || undefined
                     };
-                    
                     setUser(userData);
                     localStorage.setItem("otwchart_user", JSON.stringify(userData));
-                    console.log("🎉 User profile loaded successfully with ID:", userData.id);
+                    console.log("🎉 User profile loaded successfully via API with ID:", userData.id);
                     return;
                 }
-            } catch (directError) {
-                console.error("❌ Direct database query failed:", directError);
+            } catch (apiError) {
+                console.error("❌ Secure API approach failed:", apiError);
                 
-                // If direct query fails, fall back to API approach
-                console.log("🔄 Falling back to secure API approach...");
-                
-                try {
-                    const userProfile = await userProfileService.getUserProfile(authUser.id);
+                // If the API says profile not found, that's definitive
+                if (apiError instanceof Error && apiError.message.includes('Profile not found')) {
+                    console.log("⚠️ Profile confirmed not found - setting up incomplete profile");
+                } else {
+                    // For other API errors, try the direct database approach as fallback
+                    console.log("🔄 Falling back to direct database query...");
                     
-                    if (userProfile && userProfile.id) {
-                        console.log("✅ Successfully fetched user profile from API:", userProfile);
-                        const userData: User = {
-                            id: userProfile.id,
-                            auth_id: authUser.id,
-                            username: userProfile.username,
-                            email: userProfile.email,
-                            city: userProfile.raw_city_input || undefined,
-                            points: userProfile.total_points || 0,
-                            role: userProfile.role || undefined
-                        };
-                        setUser(userData);
-                        localStorage.setItem("otwchart_user", JSON.stringify(userData));
-                        console.log("🎉 User profile loaded successfully via API with ID:", userData.id);
-                        return;
+                    try {
+                        // Wait for Supabase auth context to be fully ready
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        const { data: profile, error } = await supabase
+                            .from('user_profiles')
+                            .select('*')
+                            .eq('auth_id', authUser.id)
+                            .single();
+
+                        if (error) {
+                            if (error.code === 'PGRST116') {
+                                console.log("⚠️ No profile found in database for auth ID:", authUser.id);
+                            } else {
+                                console.error("❌ Database query error:", error);
+                            }
+                        } else if (profile && profile.id) {
+                            console.log("✅ Successfully found user profile in database:", profile);
+                            const userData: User = {
+                                id: profile.id,
+                                auth_id: authUser.id,
+                                username: profile.username,
+                                email: profile.email,
+                                city: profile.raw_city_input || undefined,
+                                points: profile.total_points || 0,
+                                role: profile.role || undefined
+                            };
+                            
+                            setUser(userData);
+                            localStorage.setItem("otwchart_user", JSON.stringify(userData));
+                            console.log("🎉 User profile loaded successfully from database with ID:", userData.id);
+                            return;
+                        }
+                    } catch (directError) {
+                        console.error("❌ Direct database query also failed:", directError);
                     }
-                } catch (apiError) {
-                    console.error("❌ API fallback also failed:", apiError);
-                    // Continue to incomplete profile setup below
                 }
             }
 
