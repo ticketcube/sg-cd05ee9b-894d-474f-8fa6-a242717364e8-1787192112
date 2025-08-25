@@ -52,20 +52,50 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
         try {
           console.log("🔄 Refreshing user profile after creation...");
           await refreshUserProfile();
+          console.log("✅ Profile refresh call completed");
           
-          // Give AuthContext a moment to update
-          setTimeout(() => {
-            console.log("✅ Profile refresh completed, triggering success callback");
-            if (onSuccess) {
-              onSuccess();
-            } else {
-              onClose();
-            }
-          }, 500);
+          // Poll the auth context to ensure profileExists becomes true
+          let attempts = 0;
+          const maxAttempts = 10; // 5 seconds total
+          
+          const checkAuthState = () => {
+            attempts++;
+            console.log(`🔍 Checking auth state (attempt ${attempts}/10)...`);
+            
+            // Get fresh auth state via a small delay to let context update
+            setTimeout(() => {
+              console.log("Current auth state:", { 
+                hasUser: !!user, 
+                userId: user?.id,
+                profileExists: !!user && user.id > 0 
+              });
+              
+              if (user && user.id > 0) {
+                console.log("✅ Profile state confirmed - triggering success callback");
+                if (onSuccess) {
+                  onSuccess();
+                } else {
+                  onClose();
+                }
+              } else if (attempts < maxAttempts) {
+                console.log(`⏳ Profile state not ready, retrying... (${attempts}/${maxAttempts})`);
+                setTimeout(checkAuthState, 500);
+              } else {
+                console.warn("⚠️ Max attempts reached, falling back to page reload");
+                if (onSuccess) {
+                  onSuccess();
+                } else {
+                  window.location.reload();
+                }
+              }
+            }, 100);
+          };
+          
+          // Start checking auth state
+          checkAuthState();
           
         } catch (refreshError) {
           console.error("❌ Profile refresh failed, falling back to page reload:", refreshError);
-          // Fallback: close modal and refresh page
           if (onSuccess) {
             onSuccess();
           } else {
@@ -73,7 +103,7 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
             window.location.reload();
           }
         }
-      }, 2000); // 2 second delay to ensure DB consistency
+      }, 1500); // Reduced from 2000ms to 1500ms
       
     } catch (error) {
       console.error("❌ Profile setup failed:", error);
