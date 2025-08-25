@@ -25,6 +25,7 @@ export default function ProfilePage() {
         console.log("  - supabaseUser:", supabaseUser ? `ID:${supabaseUser.id}` : "null");
         console.log("  - profileExists:", profileExists);
         console.log("  - authLoading:", authLoading);
+        console.log("  - userHistory:", userHistory ? "loaded" : "null");
         
         // Wait for auth to finish loading
         if (authLoading) {
@@ -32,63 +33,37 @@ export default function ProfilePage() {
             return;
         }
         
-        // Handle different authentication states
+        // Handle unauthenticated users
         if (!supabaseUser) {
-            // User is not authenticated at all
             console.log("❌ User not authenticated - needs to sign in");
-            setLoading(false);
             setError("Please sign in to view your profile.");
-            setShowProfileSetup(false);
-            return;
-        }
-        
-        if (supabaseUser && !profileExists) {
-            // User is authenticated but profile doesn't exist - show setup modal
-            console.log("⚠️ User authenticated but no profile exists - showing setup modal");
             setLoading(false);
-            setShowProfileSetup(true);
-            setError(null);
-            setUserHistory(null);
             return;
         }
-        
-        // FIXED: Only load engagement history if we have a complete profile AND haven't loaded yet
-        if (supabaseUser && profileExists && user?.id && !userHistory) {
-            // Complete user data is ready, load engagement history ONCE
-            console.log("✅ Complete profile detected - loading engagement history for user ID:", user.id);
-            setShowProfileSetup(false);
-            setError(null);
-            // ✅ REMOVED: setLoading(false) - let loadUserProfile manage loading state
+
+        // Handle authenticated users without profiles - show setup
+        if (supabaseUser && !profileExists) {
+            console.log("⚠️ User authenticated but no profile exists - showing setup modal");
+            setShowProfileSetup(true);
+            setLoading(false);
+            return;
+        }
+
+        // Only fetch history if profile exists and userHistory is null AND we have user ID
+        if (supabaseUser && profileExists && !userHistory && user?.id) {
+            console.log("✅ Profile ready - loading engagement history for user ID:", user.id);
             loadUserProfile(user.id);
             return;
         }
-        
-        if (supabaseUser && profileExists && !user?.id) {
-            // Profile exists but user data not loaded yet - trigger ONE refresh
-            console.log("🔄 Profile exists but user data not loaded - triggering refresh");
-            setLoading(true);
-            setError(null);
-            setShowProfileSetup(false);
-            
-            // Call refreshUserProfile directly - this should populate the user object
-            if (refreshUserProfile) {
-                refreshUserProfile().catch((error) => {
-                    console.error("❌ Profile refresh failed:", error);
-                    setError("Failed to load your profile. Please refresh the page.");
-                    setLoading(false);
-                });
-            }
-            return;
-        }
-        
+
         // If we have everything loaded, ensure loading is false
         if (supabaseUser && profileExists && user?.id && userHistory) {
             console.log("✅ Everything loaded successfully");
             setLoading(false);
             setError(null);
         }
-        
-    }, [supabaseUser, profileExists, authLoading]); // FIXED: Removed user and user.id from dependencies to prevent loops
+
+    }, [supabaseUser, profileExists, authLoading, user?.id, userHistory]); // ✅ FIXED: Added user?.id and userHistory to dependencies
 
     const loadUserProfile = async (profileId: number) => {
         try {
