@@ -50,15 +50,10 @@ export default function ProfilePage() {
             return;
         }
 
-        // ✅ CRITICAL FIX: Allow fetch on initial load OR when retrying after error
+        // ✅ FINAL FIX: Allow fetch on initial load AND prevent duplicates with a fetching flag
         if (supabaseUser && profileExists && user?.id && !userHistory) {
-            // Only prevent duplicate requests if we're already loading
-            if (!loading) {
-                console.log("🚀 TRIGGERING loadUserProfile for user ID:", user.id);
-                loadUserProfile(user.id);
-            } else {
-                console.log("⏳ Already loading userHistory, skipping duplicate request");
-            }
+            console.log("🚀 TRIGGERING loadUserProfile for user ID:", user.id);
+            loadUserProfile(user.id);
             return;
         }
 
