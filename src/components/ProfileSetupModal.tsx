@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, User, Mail, MapPin, CheckCircle } from "lucide-react";
 
 interface ProfileSetupModalProps {
@@ -58,52 +59,82 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
           let attempts = 0;
           const maxAttempts = 10; // 5 seconds total
           
-          const checkAuthState = () => {
+          const checkAuthState = async () => {
             attempts++;
             console.log(`🔍 Checking auth state (attempt ${attempts}/10)...`);
             
-            // Get fresh auth state via a small delay to let context update
-            setTimeout(() => {
-              console.log("Current auth state:", { 
-                hasUser: !!user, 
-                userId: user?.id,
-                profileExists: !!user && user.id > 0 
+            // Get fresh auth state by re-checking the auth context
+            // We need to check the actual auth context, not the closure variables
+            try {
+              // Get current session to verify auth state
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session?.user) {
+                console.error("❌ No valid session found during polling");
+                if (onSuccess) onSuccess();
+                return;
+              }
+
+              // Make a quick API call to check if profile exists
+              const response = await fetch('/api/user/profile', {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${session.access_token}`,
+                  'Content-Type': 'application/json',
+                },
               });
-              
-              if (user && user.id > 0) {
-                console.log("✅ Profile state confirmed - triggering success callback");
+
+              if (response.ok) {
+                const result = await response.json();
+                if (result.profile?.id) {
+                  console.log("✅ Profile confirmed to exist in database - triggering success callback");
+                  if (onSuccess) {
+                    onSuccess();
+                  } else {
+                    onClose();
+                  }
+                  return;
+                }
+              }
+
+              // Profile not ready yet
+              if (attempts < maxAttempts) {
+                console.log(`⏳ Profile state not ready, retrying... (${attempts}/${maxAttempts})`);
+                setTimeout(checkAuthState, 500);
+              } else {
+                console.warn("⚠️ Max attempts reached, profile should be ready - triggering success");
                 if (onSuccess) {
                   onSuccess();
                 } else {
                   onClose();
                 }
-              } else if (attempts < maxAttempts) {
-                console.log(`⏳ Profile state not ready, retrying... (${attempts}/${maxAttempts})`);
+              }
+
+            } catch (pollingError) {
+              console.error("❌ Error during auth state polling:", pollingError);
+              if (attempts < maxAttempts) {
                 setTimeout(checkAuthState, 500);
               } else {
-                console.warn("⚠️ Max attempts reached, falling back to page reload");
                 if (onSuccess) {
                   onSuccess();
                 } else {
-                  window.location.reload();
+                  onClose();
                 }
               }
-            }, 100);
+            }
           };
           
           // Start checking auth state
-          checkAuthState();
+          await checkAuthState();
           
         } catch (refreshError) {
-          console.error("❌ Profile refresh failed, falling back to page reload:", refreshError);
+          console.error("❌ Profile refresh failed, falling back to success callback:", refreshError);
           if (onSuccess) {
             onSuccess();
           } else {
             onClose();
-            window.location.reload();
           }
         }
-      }, 1500); // Reduced from 2000ms to 1500ms
+      }, 1500);
       
     } catch (error) {
       console.error("❌ Profile setup failed:", error);
