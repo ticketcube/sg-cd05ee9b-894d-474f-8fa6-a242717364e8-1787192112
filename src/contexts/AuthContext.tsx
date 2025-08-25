@@ -82,14 +82,20 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
     const loadUserProfile = async (authUser: SupabaseUser) => {
         try {
+            console.log("Loading user profile for auth user:", authUser.id);
+            
             // Check if we have cached user data first
             const storedUser = localStorage.getItem("otwchart_user");
             if (storedUser) {
                 try {
                     const userData = JSON.parse(storedUser);
-                    if (userData.auth_id === authUser.id) {
+                    if (userData.auth_id === authUser.id && userData.id > 0) {
+                        console.log("Found valid cached user data:", userData);
                         setUser(userData);
                         return;
+                    } else {
+                        console.log("Cached user data is invalid or incomplete, removing from cache");
+                        localStorage.removeItem("otwchart_user");
                     }
                 } catch (error) {
                     console.error("Error parsing stored user data:", error);
@@ -100,24 +106,31 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             // Try to fetch user profile from database
             try {
                 const userProfile = await userProfileService.getUserProfile(authUser.id);
-                if (userProfile) {
+                if (userProfile && userProfile.id) {
+                    console.log("Successfully fetched user profile from database:", userProfile);
                     const userData: User = {
                         id: userProfile.id,
                         auth_id: authUser.id,
                         username: userProfile.username,
                         email: userProfile.email,
                         city: userProfile.raw_city_input || undefined,
-                        points: userProfile.total_points || 0
+                        points: userProfile.total_points || 0,
+                        role: userProfile.role || undefined
                     };
                     setUser(userData);
                     localStorage.setItem("otwchart_user", JSON.stringify(userData));
+                    console.log("✅ User profile loaded successfully with ID:", userData.id);
                     return;
+                } else {
+                    console.log("No complete user profile found in database for auth ID:", authUser.id);
                 }
             } catch (error) {
                 console.error("Error fetching user profile:", error);
             }
 
             // If no profile exists, create a minimal user object to allow authentication
+            // but mark it as incomplete with id = 0
+            console.log("Setting up incomplete user profile - user needs to complete profile setup");
             const minimalUser: User = {
                 id: 0, // Will be set when they complete profile
                 auth_id: authUser.id,
@@ -129,6 +142,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
             setUser(minimalUser);
             localStorage.setItem("otwchart_user", JSON.stringify(minimalUser));
+            console.log("⚠️ User profile incomplete - needs to complete setup");
         } catch (error) {
             console.error("Error loading user profile:", error);
             // Still set a minimal user to allow authentication to work
@@ -141,6 +155,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                 points: 0
             };
             setUser(fallbackUser);
+            console.log("🚨 Fallback user profile set due to error");
         }
     };
 

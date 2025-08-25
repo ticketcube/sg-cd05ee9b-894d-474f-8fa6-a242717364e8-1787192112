@@ -141,16 +141,25 @@ export default function ProfilePage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        console.log("Profile page useEffect - user state:", user);
+        
         if (user && user.id > 0) {
             // Use the numeric profile ID, not the auth UUID
+            console.log("Loading profile for numeric user ID:", user.id);
             loadUserProfile(user.id);
         } else if (user && user.id === 0) {
             // User is authenticated but doesn't have a complete profile yet
+            console.log("User authenticated but profile incomplete:", user);
             setLoading(false);
             setError("Profile setup incomplete. Please complete your profile setup.");
-        } else {
+        } else if (user === null) {
+            console.log("No user found in auth context");
             setLoading(false);
             setError("User not found. Please log in.");
+        } else {
+            console.log("User state unclear:", user);
+            setLoading(false);
+            setError("Authentication status unclear. Please try refreshing the page.");
         }
     }, [user]);
 
@@ -159,12 +168,14 @@ export default function ProfilePage() {
             setLoading(true);
             setError(null);
             console.log("Loading profile for user ID:", profileId);
+            
             const history = await userProfileService.getUserEngagementHistory(profileId);
+            console.log("✅ Successfully loaded user engagement history:", history);
             setUserHistory(history);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Failed to load profile";
-            console.error("Error loading profile:", errorMessage, err);
-            setError(errorMessage);
+            console.error("❌ Error loading profile:", errorMessage, err);
+            setError(`Failed to load your profile: ${errorMessage}`);
         } finally {
             setLoading(false);
         }
