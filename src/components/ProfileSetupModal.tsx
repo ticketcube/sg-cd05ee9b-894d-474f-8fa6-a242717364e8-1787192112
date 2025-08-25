@@ -9,9 +9,10 @@ import { Loader2, User, Mail, MapPin } from "lucide-react";
 interface ProfileSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export default function ProfileSetupModal({ isOpen, onClose }: ProfileSetupModalProps) {
+export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: ProfileSetupModalProps) {
   const { user, supabaseUser, login } = useAuth();
   const [formData, setFormData] = useState({
     username: user?.username || supabaseUser?.email?.split('@')[0] || '',
@@ -42,14 +43,32 @@ export default function ProfileSetupModal({ isOpen, onClose }: ProfileSetupModal
       );
       
       console.log("✅ Profile setup completed successfully");
-      onClose();
       
-      // Refresh the page to ensure the user sees their updated profile
-      window.location.reload();
+      // Call the success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        // Fallback: close modal and refresh page
+        onClose();
+        window.location.reload();
+      }
       
     } catch (error) {
       console.error("❌ Profile setup failed:", error);
-      setError(error instanceof Error ? error.message : "Failed to complete profile setup");
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to complete profile setup";
+      if (error instanceof Error) {
+        if (error.message.includes('Profile not found')) {
+          errorMessage = "There was an issue creating your profile. Please try again.";
+        } else if (error.message.includes('authentication')) {
+          errorMessage = "Authentication error. Please sign in again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

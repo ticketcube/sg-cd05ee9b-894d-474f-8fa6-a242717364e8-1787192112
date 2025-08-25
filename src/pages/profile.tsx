@@ -18,7 +18,6 @@ export default function ProfilePage() {
     const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [profileCreationAttempted, setProfileCreationAttempted] = useState(false);
     const [showProfileSetup, setShowProfileSetup] = useState(false);
 
     useEffect(() => {
@@ -35,18 +34,11 @@ export default function ProfilePage() {
             console.log("Loading engagement history for complete profile, user ID:", user.id);
             loadUserProfile(user.id);
         } else if (user && user.id === 0) {
-            // User is authenticated but profile is incomplete
-            console.log("User authenticated but profile incomplete - attempting to complete setup:", user);
-            
-            // Try to create/complete the profile if we haven't already attempted
-            if (!profileCreationAttempted) {
-                setProfileCreationAttempted(true);
-                attemptProfileCompletion();
-            } else {
-                // Profile creation was already attempted, show setup incomplete message
-                setLoading(false);
-                setError("Profile setup is incomplete. Please complete your profile setup.");
-            }
+            // User is authenticated but profile is incomplete - show setup modal immediately
+            console.log("User authenticated but profile incomplete - showing setup modal");
+            setLoading(false);
+            setShowProfileSetup(true);
+            setError("Profile setup is incomplete. Please complete your profile setup.");
         } else if (user === null) {
             console.log("No user found in auth context");
             setLoading(false);
@@ -56,62 +48,7 @@ export default function ProfilePage() {
             setLoading(false);
             setError("Authentication status unclear. Please try refreshing the page.");
         }
-    }, [user, authLoading, profileCreationAttempted]);
-
-    const attemptProfileCompletion = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-            console.log("🔧 Attempting to complete profile setup for user:", user);
-            
-            if (!user) {
-                throw new Error("No user found");
-            }
-
-            // The AuthContext should have already attempted profile creation
-            // Let's wait a moment and then check if we need to show the manual setup modal
-            console.log("⏳ Waiting for profile creation to complete...");
-            
-            // Wait 3 seconds for any ongoing profile creation to complete
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            
-            // Check if the profile was created during the wait
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.access_token) {
-                try {
-                    const response = await fetch('/api/user/profile', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${session.access_token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.profile && result.profile.id > 0) {
-                            console.log("✅ Profile was created successfully, reloading page");
-                            window.location.reload();
-                            return;
-                        }
-                    }
-                } catch (apiError) {
-                    console.error("Error checking profile status:", apiError);
-                }
-            }
-            
-            // If we get here, profile creation failed or didn't complete
-            console.log("⚠️ Automatic profile creation failed, showing manual setup modal");
-            setLoading(false);
-            setShowProfileSetup(true);
-            
-        } catch (error) {
-            console.error("❌ Error during profile completion attempt:", error);
-            setError("Failed to complete profile setup. Please try the manual setup.");
-            setLoading(false);
-            setShowProfileSetup(true);
-        }
-    };
+    }, [user, authLoading]);
 
     const loadUserProfile = async (profileId: number) => {
         try {
@@ -131,18 +68,22 @@ export default function ProfilePage() {
         }
     };
 
-    // Show loading while auth is initializing or while we're attempting profile completion
+    // Handle successful profile setup
+    const handleProfileSetupComplete = () => {
+        console.log("Profile setup completed, reloading page to get updated user data");
+        setShowProfileSetup(false);
+        window.location.reload();
+    };
+
+    // Show loading while auth is initializing
     if (authLoading || loading) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold mb-4">
-                        {authLoading ? "Loading..." : "Setting up your profile..."}
+                        {authLoading ? "Loading..." : "Loading your profile..."}
                     </h1>
                     <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    {!authLoading && (
-                        <p className="text-gray-400 mt-4">This should only take a moment</p>
-                    )}
                 </div>
             </div>
         );
@@ -153,30 +94,25 @@ export default function ProfilePage() {
             <>
                 <div className="min-h-screen bg-black text-white flex items-center justify-center">
                     <div className="text-center max-w-md mx-auto p-6">
-                        <h1 className="text-2xl font-bold mb-4">Profile Issue</h1>
-                        <p className="text-xl text-red-500 mb-4">{error || "Profile not found"}</p>
+                        <h1 className="text-2xl font-bold mb-4">Profile Setup Needed</h1>
+                        <p className="text-xl text-yellow-500 mb-4">{error || "Profile not found"}</p>
                         <p className="text-gray-400 mb-6">
                             {user?.id === 0 ? 
-                                "It looks like your profile setup wasn't completed. Please complete the setup to continue." :
+                                "Complete your profile setup to start earning points and accessing features!" :
                                 "There was an issue loading your profile data."
                             }
                         </p>
                         <div className="flex gap-3 justify-center">
-                            <Button onClick={() => window.location.href = "/"} className="bg-blue-600 hover:bg-blue-700">
+                            <Button onClick={() => window.location.href = "/"} variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
                                 Go Home
                             </Button>
                             {user?.id === 0 && (
-                                <>
-                                    <Button 
-                                        onClick={() => setShowProfileSetup(true)} 
-                                        className="bg-green-600 hover:bg-green-700"
-                                    >
-                                        Complete Setup
-                                    </Button>
-                                    <Button onClick={() => window.location.reload()} variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
-                                        Retry
-                                    </Button>
-                                </>
+                                <Button 
+                                    onClick={() => setShowProfileSetup(true)} 
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                    Complete Setup
+                                </Button>
                             )}
                         </div>
                     </div>
@@ -186,6 +122,7 @@ export default function ProfilePage() {
                 <ProfileSetupModal 
                     isOpen={showProfileSetup} 
                     onClose={() => setShowProfileSetup(false)}
+                    onSuccess={handleProfileSetupComplete}
                 />
             </>
         );
