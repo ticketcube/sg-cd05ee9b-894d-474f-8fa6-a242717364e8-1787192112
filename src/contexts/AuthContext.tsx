@@ -192,18 +192,52 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const logout = async () => {
         try {
             console.log("👋 [AuthContext] Signing out...");
-            await supabase.auth.signOut();
-            setUser(null);
-            setSupabaseUser(null);
-            setProfileExists(false);
-            localStorage.removeItem("otwchart_user");
+            
+            // Try normal logout first
+            const { error } = await supabase.auth.signOut();
+            
+            if (error) {
+                console.warn("⚠️ [AuthContext] Logout API error (likely invalid session):", error.message);
+                
+                // If session is invalid, try local-only logout
+                if (error.message.includes("session") || error.message.includes("JWT") || error.status === 403) {
+                    console.log("🔧 [AuthContext] Attempting local session cleanup...");
+                    
+                    // Force local session cleanup
+                    await supabase.auth.signOut({ scope: 'local' });
+                }
+            } else {
+                console.log("✅ [AuthContext] Successfully signed out from server");
+            }
+            
         } catch (error) {
             console.error("❌ [AuthContext] Logout error:", error);
-            // Clear local state even if signOut fails
+            
+            // For any error, try local cleanup
+            try {
+                await supabase.auth.signOut({ scope: 'local' });
+                console.log("🔧 [AuthContext] Forced local session cleanup completed");
+            } catch (localError) {
+                console.warn("⚠️ [AuthContext] Local cleanup also failed, manually clearing state");
+            }
+        } finally {
+            // ALWAYS clear local state regardless of API success/failure
+            console.log("🧹 [AuthContext] Clearing local auth state...");
             setUser(null);
             setSupabaseUser(null);
             setProfileExists(false);
             localStorage.removeItem("otwchart_user");
+            
+            // Also clear any Supabase localStorage entries
+            try {
+                Object.keys(localStorage).forEach(key => {
+                    if (key.includes('supabase') || key.includes('sb-')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+            } catch (clearError) {
+                console.warn("⚠️ [AuthContext] Error clearing Supabase localStorage:", clearError);
+            }
         }
     };
 
