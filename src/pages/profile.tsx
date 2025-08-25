@@ -54,34 +54,32 @@ export default function ProfilePage() {
             return;
         }
         
-        // FIXED: Check if profile exists, then try to load the user data
-        if (supabaseUser && profileExists) {
-            // Profile exists - either user data is ready or we need to wait for it
+        // FIXED: Check if profile exists and user data is ready
+        if (supabaseUser && profileExists && user && user.id > 0) {
+            // Complete user data is ready, load engagement history
+            console.log("✅ Complete profile detected - loading engagement history for user ID:", user.id);
             setShowProfileSetup(false);
             setError(null);
+            loadUserProfile(user.id);
+            return;
+        }
+        
+        if (supabaseUser && profileExists && (!user || user.id <= 0)) {
+            // Profile exists but user data not loaded yet - trigger ONE refresh
+            console.log("🔄 Profile exists but user data not loaded - triggering refresh");
+            setLoading(true);
+            setError(null);
+            setShowProfileSetup(false);
             
-            if (user && user.id > 0) {
-                // User data is ready, load engagement history
-                console.log("✅ Complete profile detected - loading engagement history for user ID:", user.id);
-                loadUserProfile(user.id);
-                return;
-            } else {
-                // Profile exists but user data not loaded yet - trigger a refresh
-                console.log("🔄 Profile exists but user data not loaded - triggering refresh");
-                setLoading(true);
-                
-                // Call refreshUserProfile directly without dependency 
-                if (refreshUserProfile) {
-                    refreshUserProfile().then(() => {
-                        console.log("✅ Profile refresh completed, useEffect should retrigger");
-                    }).catch((error) => {
-                        console.error("❌ Profile refresh failed:", error);
-                        setError("Failed to load your profile. Please refresh the page.");
-                        setLoading(false);
-                    });
-                }
-                return;
+            // Call refreshUserProfile directly - this should populate the user object
+            if (refreshUserProfile) {
+                refreshUserProfile().catch((error) => {
+                    console.error("❌ Profile refresh failed:", error);
+                    setError("Failed to load your profile. Please refresh the page.");
+                    setLoading(false);
+                });
             }
+            return;
         }
         
         // Fallback case - something unexpected happened
@@ -92,7 +90,7 @@ export default function ProfilePage() {
         setLoading(false);
         setError("Authentication status unclear. Please try refreshing the page.");
         
-    }, [user, supabaseUser, profileExists, authLoading, user?.id]); // FIXED: Removed refreshUserProfile from dependencies
+    }, [user, supabaseUser, profileExists, authLoading]); // FIXED: Removed user?.id from dependencies
 
     const loadUserProfile = async (profileId: number) => {
         try {
