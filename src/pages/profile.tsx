@@ -34,6 +34,7 @@ export default function ProfilePage() {
             console.log("User not authenticated - needs to sign in");
             setLoading(false);
             setError("Please sign in to view your profile.");
+            setShowProfileSetup(false); // Clear setup modal
             return;
         }
         
@@ -43,12 +44,14 @@ export default function ProfilePage() {
             setLoading(false);
             setShowProfileSetup(true);
             setError(null); // Clear any existing errors
+            setUserHistory(null); // Clear any existing history
             return;
         }
         
         if (user && user.id > 0 && profileExists) {
             // User has complete profile, load engagement history
             console.log("Loading engagement history for complete profile, user ID:", user.id);
+            setShowProfileSetup(false); // Ensure setup modal is closed
             loadUserProfile(user.id);
             return;
         }
@@ -58,7 +61,7 @@ export default function ProfilePage() {
         setLoading(false);
         setError("Authentication status unclear. Please try refreshing the page.");
         
-    }, [user, supabaseUser, profileExists, authLoading]);
+    }, [user, supabaseUser, profileExists, authLoading, user?.id]); // Added user?.id to dependencies
 
     const loadUserProfile = async (profileId: number) => {
         try {
