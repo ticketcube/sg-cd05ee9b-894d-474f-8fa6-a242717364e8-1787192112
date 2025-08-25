@@ -11,17 +11,16 @@ import userProfileService from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
 import Link from "next/link";
 import ProfileSetupModal from "@/components/ProfileSetupModal";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function ProfilePage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, supabaseUser, profileExists, loading: authLoading } = useAuth();
     const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showProfileSetup, setShowProfileSetup] = useState(false);
 
     useEffect(() => {
-        console.log("Profile page useEffect - user state:", user, "authLoading:", authLoading);
+        console.log("Profile page useEffect - user:", user, "supabaseUser:", !!supabaseUser, "profileExists:", profileExists, "authLoading:", authLoading);
         
         // Wait for auth to finish loading
         if (authLoading) {
@@ -29,26 +28,37 @@ export default function ProfilePage() {
             return;
         }
         
-        if (user && user.id > 0) {
+        // Handle different authentication states using the new AuthContext flags
+        if (!supabaseUser) {
+            // User is not authenticated at all
+            console.log("User not authenticated - needs to sign in");
+            setLoading(false);
+            setError("Please sign in to view your profile.");
+            return;
+        }
+        
+        if (supabaseUser && !profileExists) {
+            // User is authenticated but profile doesn't exist - show setup modal
+            console.log("User authenticated but no profile exists - showing setup modal");
+            setLoading(false);
+            setShowProfileSetup(true);
+            setError(null); // Clear any existing errors
+            return;
+        }
+        
+        if (user && user.id > 0 && profileExists) {
             // User has complete profile, load engagement history
             console.log("Loading engagement history for complete profile, user ID:", user.id);
             loadUserProfile(user.id);
-        } else if (user && user.id === 0) {
-            // User is authenticated but profile is incomplete - show setup modal immediately
-            console.log("User authenticated but profile incomplete - showing setup modal");
-            setLoading(false);
-            setShowProfileSetup(true);
-            setError("Profile setup is incomplete. Please complete your profile setup.");
-        } else if (user === null) {
-            console.log("No user found in auth context");
-            setLoading(false);
-            setError("User not found. Please log in.");
-        } else {
-            console.log("User state unclear:", user);
-            setLoading(false);
-            setError("Authentication status unclear. Please try refreshing the page.");
+            return;
         }
-    }, [user, authLoading]);
+        
+        // Fallback case - something unexpected happened
+        console.log("Unexpected auth state - user:", user, "supabaseUser:", !!supabaseUser, "profileExists:", profileExists);
+        setLoading(false);
+        setError("Authentication status unclear. Please try refreshing the page.");
+        
+    }, [user, supabaseUser, profileExists, authLoading]);
 
     const loadUserProfile = async (profileId: number) => {
         try {
@@ -72,6 +82,7 @@ export default function ProfilePage() {
     const handleProfileSetupComplete = () => {
         console.log("Profile setup completed, reloading page to get updated user data");
         setShowProfileSetup(false);
+        // Force a page reload to get the updated auth state
         window.location.reload();
     };
 
@@ -89,31 +100,27 @@ export default function ProfilePage() {
         );
     }
 
-    if (error || !userHistory) {
+    // Show profile setup modal for authenticated users without profiles
+    if (supabaseUser && !profileExists) {
         return (
             <>
                 <div className="min-h-screen bg-black text-white flex items-center justify-center">
                     <div className="text-center max-w-md mx-auto p-6">
-                        <h1 className="text-2xl font-bold mb-4">Profile Setup Needed</h1>
-                        <p className="text-xl text-yellow-500 mb-4">{error || "Profile not found"}</p>
+                        <h1 className="text-2xl font-bold mb-4">Welcome to OnesToWatch!</h1>
+                        <p className="text-xl text-green-400 mb-4">Let's set up your profile</p>
                         <p className="text-gray-400 mb-6">
-                            {user?.id === 0 ? 
-                                "Complete your profile setup to start earning points and accessing features!" :
-                                "There was an issue loading your profile data."
-                            }
+                            Complete your profile setup to start earning points and accessing all features!
                         </p>
                         <div className="flex gap-3 justify-center">
                             <Button onClick={() => window.location.href = "/"} variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
                                 Go Home
                             </Button>
-                            {user?.id === 0 && (
-                                <Button 
-                                    onClick={() => setShowProfileSetup(true)} 
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                >
-                                    Complete Setup
-                                </Button>
-                            )}
+                            <Button 
+                                onClick={() => setShowProfileSetup(true)} 
+                                className="bg-blue-600 hover:bg-blue-700"
+                            >
+                                Set Up Profile
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -125,6 +132,51 @@ export default function ProfilePage() {
                     onSuccess={handleProfileSetupComplete}
                 />
             </>
+        );
+    }
+
+    // Show error state for authentication issues or loading errors
+    if (!supabaseUser || error) {
+        return (
+            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+                <div className="text-center max-w-md mx-auto p-6">
+                    <h1 className="text-2xl font-bold mb-4">
+                        {!supabaseUser ? "Authentication Required" : "Profile Error"}
+                    </h1>
+                    <p className="text-xl text-red-400 mb-4">{error || "Authentication required"}</p>
+                    <p className="text-gray-400 mb-6">
+                        {!supabaseUser ? 
+                            "Please sign in to view your profile." :
+                            "There was an issue loading your profile data."
+                        }
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                        <Button onClick={() => window.location.href = "/"} variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
+                            Go Home
+                        </Button>
+                        {!supabaseUser && (
+                            <Button 
+                                onClick={() => window.location.href = "/"} 
+                                className="bg-blue-600 hover:bg-blue-700"
+                            >
+                                Sign In
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // If we get here, user should have a complete profile and userHistory should be loaded
+    if (!userHistory) {
+        return (
+            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold mb-4">Loading your profile...</h1>
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                </div>
+            </div>
         );
     }
 
