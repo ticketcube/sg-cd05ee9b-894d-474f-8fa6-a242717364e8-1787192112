@@ -18,6 +18,7 @@ interface AuthContextType {
     user: User | null;
     supabaseUser: SupabaseUser | null;
     isAuthenticated: boolean;
+    profileExists: boolean; // New flag to track profile status
     login: (username: string, email: string, city?: string) => Promise<void>;
     logout: () => Promise<void>;
     loading: boolean;
@@ -36,6 +37,7 @@ export const useAuth = () => {
 export default function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState < User | null > (null);
     const [supabaseUser, setSupabaseUser] = useState < SupabaseUser | null > (null);
+    const [profileExists, setProfileExists] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -73,6 +75,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                 } else {
                     setSupabaseUser(null);
                     setUser(null);
+                    setProfileExists(false);
                     localStorage.removeItem("otwchart_user");
                 }
                 setLoading(false);
@@ -86,8 +89,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         try {
             console.log("🔍 Loading user profile for auth user:", authUser.id, authUser.email);
             
-            // Ensure the client has the proper auth context before direct queries
-            // We'll skip direct database approach and go straight to the secure API
+            // Try to load profile via secure API
             console.log("🔄 Using secure API approach for profile loading...");
             
             try {
@@ -105,6 +107,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                         role: userProfile.role || undefined
                     };
                     setUser(userData);
+                    setProfileExists(true);
                     localStorage.setItem("otwchart_user", JSON.stringify(userData));
                     console.log("🎉 User profile loaded successfully via API with ID:", userData.id);
                     return;
@@ -114,7 +117,11 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                 
                 // If the API says profile not found, that's definitive
                 if (apiError instanceof Error && apiError.message.includes('Profile not found')) {
-                    console.log("⚠️ Profile confirmed not found - setting up incomplete profile");
+                    console.log("⚠️ Profile confirmed not found - user needs profile creation");
+                    setProfileExists(false);
+                    // Don't set user yet - let the profile creation flow handle it
+                    setUser(null);
+                    return;
                 } else {
                     // For other API errors, try the direct database approach as fallback
                     console.log("🔄 Falling back to direct database query...");
@@ -132,6 +139,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                         if (error) {
                             if (error.code === 'PGRST116') {
                                 console.log("⚠️ No profile found in database for auth ID:", authUser.id);
+                                setProfileExists(false);
+                                setUser(null);
+                                return;
                             } else {
                                 console.error("❌ Database query error:", error);
                             }
@@ -148,6 +158,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                             };
                             
                             setUser(userData);
+                            setProfileExists(true);
                             localStorage.setItem("otwchart_user", JSON.stringify(userData));
                             console.log("🎉 User profile loaded successfully from database with ID:", userData.id);
                             return;
@@ -158,35 +169,17 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                 }
             }
 
-            // If no profile exists or loading failed, create a minimal user object to allow authentication
-            // but mark it as incomplete with id = 0
-            console.log("⚙️ Setting up incomplete user profile - user needs to complete profile setup");
-            const minimalUser: User = {
-                id: 0, // Will be set when they complete profile
-                auth_id: authUser.id,
-                username: authUser.email?.split('@')[0] || `user_${authUser.id.substring(0, 8)}`,
-                email: authUser.email || '',
-                city: undefined,
-                points: 0
-            };
-
-            setUser(minimalUser);
-            localStorage.setItem("otwchart_user", JSON.stringify(minimalUser));
-            console.log("⚠️ User profile incomplete - needs to complete setup. User data:", minimalUser);
+            // If we get here, profile doesn't exist - clear any existing user data
+            console.log("⚙️ No profile found - user will need to complete profile setup");
+            setProfileExists(false);
+            setUser(null);
+            localStorage.removeItem("otwchart_user");
 
         } catch (error) {
             console.error("🚨 Error loading user profile:", error);
-            // Still set a minimal user to allow authentication to work
-            const fallbackUser: User = {
-                id: 0,
-                auth_id: authUser.id,
-                username: authUser.email?.split('@')[0] || `user_${authUser.id.substring(0, 8)}`,
-                email: authUser.email || '',
-                city: undefined,
-                points: 0
-            };
-            setUser(fallbackUser);
-            console.log("🚨 Fallback user profile set due to error:", fallbackUser);
+            setProfileExists(false);
+            setUser(null);
+            localStorage.removeItem("otwchart_user");
         }
     };
 
@@ -232,11 +225,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             };
 
             setUser(userData);
+            setProfileExists(true);
             localStorage.setItem("otwchart_user", JSON.stringify(userData));
             console.log("✅ User profile created/updated successfully:", userData.id);
-            
-            // Profile created successfully - let users continue their workflow
-            // No automatic redirects - they can navigate themselves
             
         } catch (error) {
             console.error("Login error:", error);
@@ -249,12 +240,14 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             await supabase.auth.signOut();
             setUser(null);
             setSupabaseUser(null);
+            setProfileExists(false);
             localStorage.removeItem("otwchart_user");
         } catch (error) {
             console.error("Logout error:", error);
             // Even if signOut fails, clear local state
             setUser(null);
             setSupabaseUser(null);
+            setProfileExists(false);
             localStorage.removeItem("otwchart_user");
         }
     };
@@ -262,7 +255,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const value: AuthContextType = {
         user,
         supabaseUser,
-        isAuthenticated: !!supabaseUser, // Simplify to rely on Supabase auth primarily
+        isAuthenticated: !!supabaseUser,
+        profileExists,
         login,
         logout,
         loading
