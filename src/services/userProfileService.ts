@@ -55,40 +55,92 @@ const userProfileService = {
    */
   async getUserProfile(authId: string): Promise<UserProfile | null> {
     try {
-      console.log(`Fetching profile for auth ID: ${authId}`);
+      console.log(`🔍 Fetching profile for auth ID: ${authId}`);
       
-      // Get the current user's JWT token for authentication
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        console.error('No valid session found');
-        return null;
+      // Get fresh session with retry logic
+      let session = null;
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      while (!session && retryCount < maxRetries) {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error(`Session error (attempt ${retryCount + 1}):`, sessionError);
+          retryCount++;
+          if (retryCount < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+            continue;
+          } else {
+            throw new Error('Failed to get valid session after retries');
+          }
+        }
+        
+        session = sessionData.session;
+        
+        if (!session?.access_token) {
+          console.warn(`No valid session found (attempt ${retryCount + 1})`);
+          retryCount++;
+          if (retryCount < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          } else {
+            throw new Error('No valid session available');
+          }
+        }
+        
+        break;
       }
 
-      // Call the secure API endpoint
+      if (!session?.access_token) {
+        throw new Error('Unable to obtain valid authentication token');
+      }
+
+      console.log('✅ Valid session obtained, making API call');
+
+      // Call the secure API endpoint with proper headers and timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch('/api/user/profile', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (response.status === 404) {
-        console.warn(`No profile found for auth_id: ${authId}`);
-        return null;
+        console.warn(`❌ No profile found for auth_id: ${authId}`);
+        throw new Error('Profile not found');
       }
 
       if (!response.ok) {
-        const error = await response.json();
-        console.error('API error:', error);
-        throw new Error(error.error || 'Failed to fetch profile');
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText };
+        }
+        console.error('❌ API error response:', response.status, errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to fetch profile`);
       }
 
       const result = await response.json();
-      console.log("Found profile via API:", result.profile);
+      console.log("✅ Successfully fetched profile via secure API:", result.profile);
       return result.profile;
+
     } catch (error) {
-      console.error("Error fetching user profile via API:", error);
+      if (error.name === 'AbortError') {
+        console.error("❌ Profile API request timed out");
+        throw new Error('Profile request timed out - please try again');
+      }
+      
+      console.error("❌ Error fetching user profile via API:", error);
       throw error;
     }
   },
@@ -125,15 +177,53 @@ const userProfileService = {
    */
   async createUserProfile(authId: string, username: string, email: string, city?: string): Promise<UserProfile> {
     try {
-      console.log(`Creating profile for auth ID: ${authId}`);
+      console.log(`🔧 Creating/updating profile for auth ID: ${authId}`);
       
-      // Get the current user's JWT token for authentication
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('No valid session found');
+      // Get fresh session with retry logic  
+      let session = null;
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      while (!session && retryCount < maxRetries) {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error(`Session error (attempt ${retryCount + 1}):`, sessionError);
+          retryCount++;
+          if (retryCount < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          } else {
+            throw new Error('Failed to get valid session after retries');
+          }
+        }
+        
+        session = sessionData.session;
+        
+        if (!session?.access_token) {
+          console.warn(`No valid session found (attempt ${retryCount + 1})`);
+          retryCount++;
+          if (retryCount < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          } else {
+            throw new Error('No valid session available');
+          }
+        }
+        
+        break;
       }
 
+      if (!session?.access_token) {
+        throw new Error('Unable to obtain valid authentication token');
+      }
+
+      console.log('✅ Valid session obtained for profile creation, making API call');
+
       // Call the secure API endpoint
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for creation
+
       const response = await fetch('/api/user/profile', {
         method: 'POST',
         headers: {
@@ -141,23 +231,38 @@ const userProfileService = {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          username,
-          email,
-          city
-        })
+          username: username.trim(),
+          email: email.trim(),
+          city: city?.trim()
+        }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        const error = await response.json();
-        console.error('API error:', error);
-        throw new Error(error.error || 'Failed to create profile');
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText };
+        }
+        console.error('❌ Profile creation API error:', response.status, errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to create profile`);
       }
 
       const result = await response.json();
-      console.log("Profile created successfully via API:", result.profile);
+      console.log("✅ Profile created/updated successfully via secure API:", result.profile);
       return result.profile;
+
     } catch (error) {
-      console.error("Error creating user profile via API:", error);
+      if (error.name === 'AbortError') {
+        console.error("❌ Profile creation API request timed out");
+        throw new Error('Profile creation timed out - please try again');
+      }
+      
+      console.error("❌ Error creating user profile via API:", error);
       throw error;
     }
   },
