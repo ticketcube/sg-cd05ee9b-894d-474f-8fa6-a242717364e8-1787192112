@@ -25,8 +25,6 @@ export default function ProfilePage() {
         console.log("  - supabaseUser:", supabaseUser ? `ID:${supabaseUser.id}` : "null");
         console.log("  - profileExists:", profileExists);
         console.log("  - authLoading:", authLoading);
-        console.log("  - loading:", loading);
-        console.log("  - showProfileSetup:", showProfileSetup);
         
         // Wait for auth to finish loading
         if (authLoading) {
@@ -34,7 +32,7 @@ export default function ProfilePage() {
             return;
         }
         
-        // Handle different authentication states using the new AuthContext flags
+        // Handle different authentication states
         if (!supabaseUser) {
             // User is not authenticated at all
             console.log("❌ User not authenticated - needs to sign in");
@@ -54,9 +52,9 @@ export default function ProfilePage() {
             return;
         }
         
-        // FIXED: Check if profile exists and user data is ready
-        if (supabaseUser && profileExists && user && user.id > 0) {
-            // Complete user data is ready, load engagement history
+        // FIXED: Only load engagement history if we have a complete profile AND haven't loaded yet
+        if (supabaseUser && profileExists && user?.id && !userHistory && !loading) {
+            // Complete user data is ready, load engagement history ONCE
             console.log("✅ Complete profile detected - loading engagement history for user ID:", user.id);
             setShowProfileSetup(false);
             setError(null);
@@ -64,7 +62,7 @@ export default function ProfilePage() {
             return;
         }
         
-        if (supabaseUser && profileExists && (!user || user.id <= 0)) {
+        if (supabaseUser && profileExists && !user?.id) {
             // Profile exists but user data not loaded yet - trigger ONE refresh
             console.log("🔄 Profile exists but user data not loaded - triggering refresh");
             setLoading(true);
@@ -82,15 +80,14 @@ export default function ProfilePage() {
             return;
         }
         
-        // Fallback case - something unexpected happened
-        console.log("🤔 Unexpected auth state combination:");
-        console.log("  - user ID:", user?.id || "none");
-        console.log("  - profileExists:", profileExists);
-        console.log("  - supabaseUser:", !!supabaseUser);
-        setLoading(false);
-        setError("Authentication status unclear. Please try refreshing the page.");
+        // If we have everything loaded, ensure loading is false
+        if (supabaseUser && profileExists && user?.id && userHistory) {
+            console.log("✅ Everything loaded successfully");
+            setLoading(false);
+            setError(null);
+        }
         
-    }, [user, supabaseUser, profileExists, authLoading]); // FIXED: Removed user?.id from dependencies
+    }, [supabaseUser, profileExists, authLoading]); // FIXED: Removed user and user.id from dependencies to prevent loops
 
     const loadUserProfile = async (profileId: number) => {
         try {
