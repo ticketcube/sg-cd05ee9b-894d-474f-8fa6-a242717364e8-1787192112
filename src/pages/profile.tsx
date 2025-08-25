@@ -54,13 +54,30 @@ export default function ProfilePage() {
             return;
         }
         
-        if (user && user.id > 0 && profileExists) {
-            // User has complete profile, load engagement history
-            console.log("✅ Complete profile detected - loading engagement history for user ID:", user.id);
+        // FIXED: Check if profile exists, then try to load the user data
+        if (supabaseUser && profileExists) {
+            // Profile exists - either user data is ready or we need to wait for it
             setShowProfileSetup(false);
-            setError(null); // Clear any previous errors
-            loadUserProfile(user.id);
-            return;
+            setError(null);
+            
+            if (user && user.id > 0) {
+                // User data is ready, load engagement history
+                console.log("✅ Complete profile detected - loading engagement history for user ID:", user.id);
+                loadUserProfile(user.id);
+                return;
+            } else {
+                // Profile exists but user data not loaded yet - trigger a refresh
+                console.log("🔄 Profile exists but user data not loaded - triggering refresh");
+                setLoading(true);
+                refreshUserProfile().then(() => {
+                    console.log("✅ Profile refresh completed, useEffect should retrigger");
+                }).catch((error) => {
+                    console.error("❌ Profile refresh failed:", error);
+                    setError("Failed to load your profile. Please refresh the page.");
+                    setLoading(false);
+                });
+                return;
+            }
         }
         
         // Fallback case - something unexpected happened
@@ -71,7 +88,7 @@ export default function ProfilePage() {
         setLoading(false);
         setError("Authentication status unclear. Please try refreshing the page.");
         
-    }, [user, supabaseUser, profileExists, authLoading, user?.id]);
+    }, [user, supabaseUser, profileExists, authLoading, user?.id, refreshUserProfile]);
 
     const loadUserProfile = async (profileId: number) => {
         try {
