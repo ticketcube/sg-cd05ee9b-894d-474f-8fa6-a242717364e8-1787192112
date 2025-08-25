@@ -53,11 +53,12 @@ export default function ProfilePage() {
         }
         
         // FIXED: Only load engagement history if we have a complete profile AND haven't loaded yet
-        if (supabaseUser && profileExists && user?.id && !userHistory && !loading) {
+        if (supabaseUser && profileExists && user?.id && !userHistory) {
             // Complete user data is ready, load engagement history ONCE
             console.log("✅ Complete profile detected - loading engagement history for user ID:", user.id);
             setShowProfileSetup(false);
             setError(null);
+            setLoading(false); // ✅ FIXED: Set loading to false before calling loadUserProfile
             loadUserProfile(user.id);
             return;
         }
