@@ -50,10 +50,15 @@ export default function ProfilePage() {
             return;
         }
 
-        // ✅ CRITICAL FIX: Only fetch history if all conditions are met AND we haven't started loading yet
-        if (supabaseUser && profileExists && user?.id && !userHistory && !loading) {
-            console.log("🚀 TRIGGERING loadUserProfile for user ID:", user.id);
-            loadUserProfile(user.id);
+        // ✅ CRITICAL FIX: Allow fetch on initial load OR when retrying after error
+        if (supabaseUser && profileExists && user?.id && !userHistory) {
+            // Only prevent duplicate requests if we're already loading
+            if (!loading) {
+                console.log("🚀 TRIGGERING loadUserProfile for user ID:", user.id);
+                loadUserProfile(user.id);
+            } else {
+                console.log("⏳ Already loading userHistory, skipping duplicate request");
+            }
             return;
         }
 
