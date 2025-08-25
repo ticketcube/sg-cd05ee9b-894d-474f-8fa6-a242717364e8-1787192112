@@ -141,19 +141,25 @@ export default function ProfilePage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (user) {
+        if (user && user.id > 0) {
+            // Use the numeric profile ID, not the auth UUID
             loadUserProfile(user.id);
+        } else if (user && user.id === 0) {
+            // User is authenticated but doesn't have a complete profile yet
+            setLoading(false);
+            setError("Profile setup incomplete. Please complete your profile setup.");
         } else {
             setLoading(false);
             setError("User not found. Please log in.");
         }
     }, [user]);
 
-    const loadUserProfile = async (userId: number) => {
+    const loadUserProfile = async (profileId: number) => {
         try {
             setLoading(true);
             setError(null);
-            const history = await userProfileService.getUserEngagementHistory(userId);
+            console.log("Loading profile for user ID:", profileId);
+            const history = await userProfileService.getUserEngagementHistory(profileId);
             setUserHistory(history);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Failed to load profile";
@@ -178,12 +184,25 @@ export default function ProfilePage() {
     if (error || !userHistory) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Error Loading Profile</h1>
-                    <p className="text-xl text-red-500">{error || "Profile not found"}</p>
-                    <Button onClick={() => window.location.href = "/"} className="mt-4 bg-blue-600 hover:bg-blue-700">
-                        Go Home
-                    </Button>
+                <div className="text-center max-w-md mx-auto p-6">
+                    <h1 className="text-2xl font-bold mb-4">Profile Issue</h1>
+                    <p className="text-xl text-red-500 mb-4">{error || "Profile not found"}</p>
+                    <p className="text-gray-400 mb-6">
+                        {user?.id === 0 ? 
+                            "It looks like your profile setup wasn't completed. Please sign in again to complete the setup." :
+                            "There was an issue loading your profile data."
+                        }
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                        <Button onClick={() => window.location.href = "/"} className="bg-blue-600 hover:bg-blue-700">
+                            Go Home
+                        </Button>
+                        {user?.id === 0 && (
+                            <Button onClick={() => window.location.reload()} variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
+                                Retry Setup
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
         );
