@@ -1,0 +1,159 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { Loader2, User, Mail, MapPin } from "lucide-react";
+
+interface ProfileSetupModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function ProfileSetupModal({ isOpen, onClose }: ProfileSetupModalProps) {
+  const { user, supabaseUser, login } = useAuth();
+  const [formData, setFormData] = useState({
+    username: user?.username || supabaseUser?.email?.split('@')[0] || '',
+    email: user?.email || supabaseUser?.email || '',
+    city: user?.city || ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.username.trim() || !formData.email.trim()) {
+      setError("Username and email are required");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log("🔧 Manually completing profile setup with form data:", formData);
+      
+      await login(
+        formData.username.trim(),
+        formData.email.trim(),
+        formData.city.trim() || undefined
+      );
+      
+      console.log("✅ Profile setup completed successfully");
+      onClose();
+      
+      // Refresh the page to ensure the user sees their updated profile
+      window.location.reload();
+      
+    } catch (error) {
+      console.error("❌ Profile setup failed:", error);
+      setError(error instanceof Error ? error.message : "Failed to complete profile setup");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (error) setError(null); // Clear error when user starts typing
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={() => !loading && onClose()}>
+      <DialogContent className="sm:max-w-md bg-gray-900 text-white border-gray-700">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">Complete Your Profile</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            We need a few details to set up your OnesToWatch profile and start earning points.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-900/50 border border-red-500/50 rounded-lg p-3">
+              <p className="text-red-200 text-sm">{error}</p>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="username" className="text-white flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Username
+            </Label>
+            <Input
+              id="username"
+              type="text"
+              value={formData.username}
+              onChange={(e) => handleInputChange('username', e.target.value)}
+              placeholder="Enter your username"
+              className="bg-gray-800 border-gray-600 text-white"
+              required
+              disabled={loading}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-white flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              placeholder="Enter your email"
+              className="bg-gray-800 border-gray-600 text-white"
+              required
+              disabled={loading}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="city" className="text-white flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              City (Optional)
+            </Label>
+            <Input
+              id="city"
+              type="text"
+              value={formData.city}
+              onChange={(e) => handleInputChange('city', e.target.value)}
+              placeholder="Enter your city"
+              className="bg-gray-800 border-gray-600 text-white"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-blue-600 hover:bg-blue-700"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Setting up...
+                </>
+              ) : (
+                "Complete Setup"
+              )}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

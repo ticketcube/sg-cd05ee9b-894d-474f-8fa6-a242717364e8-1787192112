@@ -10,136 +10,15 @@ import { Trophy, Calendar, Star, TrendingUp, Award, Eye, BarChart, Settings, Che
 import userProfileService from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
 import Link from "next/link";
+import ProfileSetupModal from "@/components/ProfileSetupModal";
 
-interface UserStats {
-    total_votes: number;
-    weekly_participations: number;
-    top_genre: string | null;
-}
-
-// Featured Activity Module Component
-function FeaturedActivityModule({ isNewUser = false }: { isNewUser?: boolean }) {
-  const [isExpanded, setIsExpanded] = useState(isNewUser);
-
-  return (
-    <Card className="bg-gradient-to-br from-blue-900/50 to-purple-900/50 border-blue-500/30 overflow-hidden">
-      <CardContent className="p-0">
-        <div 
-          className="p-4 cursor-pointer flex items-center justify-between hover:bg-blue-900/20 transition-colors"
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">
-                {isNewUser ? "🎉 Welcome to OnesToWatch!" : "⭐ Featured Activity"}
-              </h3>
-              <p className="text-sm text-blue-200">
-                {isNewUser ? "Let's get you started on your discovery journey" : "Discover new artists and earn rewards"}
-              </p>
-            </div>
-          </div>
-          {isExpanded ? <ChevronUp className="w-5 h-5 text-blue-300" /> : <ChevronDown className="w-5 h-5 text-blue-300" />}
-        </div>
-
-        {isExpanded && (
-          <div className="px-4 pb-4 space-y-4 animate-in slide-in-from-top-2 duration-300">
-            <div className="bg-black/20 rounded-lg p-4 border border-blue-500/20">
-              <div className="flex items-start gap-3">
-                <Target className="w-8 h-8 text-green-400 mt-1 flex-shrink-0" />
-                <div className="flex-1">
-                  <h4 className="font-semibold text-white mb-2">Start Your Discovery Journey</h4>
-                  <p className="text-sm text-gray-300 mb-3">
-                    Rate emerging artists weekly, watch their videos, and earn points toward exclusive rewards. 
-                    Each activity gets you closer to amazing prizes!
-                  </p>
-                  <Link href="/weekly-ratings">
-                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold">
-                      Watch & Rate This Week's Artists
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-           
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// September Reward Component
-function SeptemberReward({ totalPoints }: { totalPoints: number }) {
-    const goal = 180;
-    const isComplete = totalPoints >= goal;
-    const progress = Math.min((totalPoints / goal) * 100, 100);
-
-    return (
-        <div
-            className={`rounded-lg p-4 transition-all ${
-                isComplete
-                    ? "bg-gradient-to-r from-green-800/80 to-emerald-800/80 border border-green-500/50"
-                    : "bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border border-yellow-500/30"
-            }`}
-        >
-            <div className="flex items-center gap-4">
-                <div
-                    className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
-                        isComplete
-                            ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 shadow-lg shadow-yellow-500/20"
-                            : "bg-gradient-to-r from-gray-600 to-gray-700 text-gray-300"
-                    }`}
-                >
-                    {isComplete ? <Gift className="w-8 h-8" /> : <Trophy className="w-8 h-8" />}
-                </div>
-
-                <div className="flex-1">
-                    <h3 className="font-bold text-white text-lg mb-1">September Discovery Reward</h3>
-                    {!isComplete ? (
-                        <>
-                            <p className="text-sm text-gray-200 mb-3">
-                                Earn {goal} points this month and we'll mail you all 9 OnesToWatch zines!
-                            </p>
-                            <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden mb-2">
-                                <div
-                                    className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 transition-all duration-500 ease-out"
-                                    style={{ width: `${progress}%` }}
-                                />
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-xs text-gray-300">
-                                    {totalPoints} / {goal} points
-                                </span>
-                                <span className="text-xs font-medium text-yellow-400">
-                                    {Math.round(progress)}% complete
-                                </span>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <p className="text-sm text-green-200 font-semibold">
-                                🎉 Completed! Package on the way.
-                            </p>
-                            <Badge className="bg-green-500 text-white">Complete!</Badge>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// Main Profile Page Component
 export default function ProfilePage() {
     const { user, loading: authLoading } = useAuth();
     const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [profileCreationAttempted, setProfileCreationAttempted] = useState(false);
+    const [showProfileSetup, setShowProfileSetup] = useState(false);
 
     useEffect(() => {
         console.log("Profile page useEffect - user state:", user, "authLoading:", authLoading);
@@ -189,20 +68,47 @@ export default function ProfilePage() {
             }
 
             // The AuthContext should have already attempted profile creation
-            // Let's wait a moment and then reload the page to get the updated state
+            // Let's wait a moment and then check if we need to show the manual setup modal
             console.log("⏳ Waiting for profile creation to complete...");
             
-            // Wait 2 seconds for any ongoing profile creation to complete
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Wait 3 seconds for any ongoing profile creation to complete
+            await new Promise(resolve => setTimeout(resolve, 3000));
             
-            // Try to reload the page to get the updated user state
-            console.log("🔄 Reloading page to check for updated profile...");
-            window.location.reload();
+            // Check if the profile was created during the wait
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.access_token) {
+                try {
+                    const response = await fetch('/api/user/profile', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${session.access_token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.profile && result.profile.id > 0) {
+                            console.log("✅ Profile was created successfully, reloading page");
+                            window.location.reload();
+                            return;
+                        }
+                    }
+                } catch (apiError) {
+                    console.error("Error checking profile status:", apiError);
+                }
+            }
+            
+            // If we get here, profile creation failed or didn't complete
+            console.log("⚠️ Automatic profile creation failed, showing manual setup modal");
+            setLoading(false);
+            setShowProfileSetup(true);
             
         } catch (error) {
             console.error("❌ Error during profile completion attempt:", error);
-            setError("Failed to complete profile setup. Please try signing in again.");
+            setError("Failed to complete profile setup. Please try the manual setup.");
             setLoading(false);
+            setShowProfileSetup(true);
         }
     };
 
@@ -243,28 +149,44 @@ export default function ProfilePage() {
 
     if (error || !userHistory) {
         return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center">
-                <div className="text-center max-w-md mx-auto p-6">
-                    <h1 className="text-2xl font-bold mb-4">Profile Issue</h1>
-                    <p className="text-xl text-red-500 mb-4">{error || "Profile not found"}</p>
-                    <p className="text-gray-400 mb-6">
-                        {user?.id === 0 ? 
-                            "It looks like your profile setup wasn't completed. Please sign in again to complete the setup." :
-                            "There was an issue loading your profile data."
-                        }
-                    </p>
-                    <div className="flex gap-3 justify-center">
-                        <Button onClick={() => window.location.href = "/"} className="bg-blue-600 hover:bg-blue-700">
-                            Go Home
-                        </Button>
-                        {user?.id === 0 && (
-                            <Button onClick={() => window.location.reload()} variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
-                                Retry Setup
+            <>
+                <div className="min-h-screen bg-black text-white flex items-center justify-center">
+                    <div className="text-center max-w-md mx-auto p-6">
+                        <h1 className="text-2xl font-bold mb-4">Profile Issue</h1>
+                        <p className="text-xl text-red-500 mb-4">{error || "Profile not found"}</p>
+                        <p className="text-gray-400 mb-6">
+                            {user?.id === 0 ? 
+                                "It looks like your profile setup wasn't completed. Please complete the setup to continue." :
+                                "There was an issue loading your profile data."
+                            }
+                        </p>
+                        <div className="flex gap-3 justify-center">
+                            <Button onClick={() => window.location.href = "/"} className="bg-blue-600 hover:bg-blue-700">
+                                Go Home
                             </Button>
-                        )}
+                            {user?.id === 0 && (
+                                <>
+                                    <Button 
+                                        onClick={() => setShowProfileSetup(true)} 
+                                        className="bg-green-600 hover:bg-green-700"
+                                    >
+                                        Complete Setup
+                                    </Button>
+                                    <Button onClick={() => window.location.reload()} variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
+                                        Retry
+                                    </Button>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                {/* Profile Setup Modal */}
+                <ProfileSetupModal 
+                    isOpen={showProfileSetup} 
+                    onClose={() => setShowProfileSetup(false)}
+                />
+            </>
         );
     }
 
@@ -499,5 +421,121 @@ export default function ProfilePage() {
                 </div>
             </div>
         </AuthGuard>
+    );
+}
+
+// Featured Activity Module Component
+function FeaturedActivityModule({ isNewUser = false }: { isNewUser?: boolean }) {
+  const [isExpanded, setIsExpanded] = useState(isNewUser);
+
+  return (
+    <Card className="bg-gradient-to-br from-blue-900/50 to-purple-900/50 border-blue-500/30 overflow-hidden">
+      <CardContent className="p-0">
+        <div 
+          className="p-4 cursor-pointer flex items-center justify-between hover:bg-blue-900/20 transition-colors"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">
+                {isNewUser ? "🎉 Welcome to OnesToWatch!" : "⭐ Featured Activity"}
+              </h3>
+              <p className="text-sm text-blue-200">
+                {isNewUser ? "Let's get you started on your discovery journey" : "Discover new artists and earn rewards"}
+              </p>
+            </div>
+          </div>
+          {isExpanded ? <ChevronUp className="w-5 h-5 text-blue-300" /> : <ChevronDown className="w-5 h-5 text-blue-300" />}
+        </div>
+
+        {isExpanded && (
+          <div className="px-4 pb-4 space-y-4 animate-in slide-in-from-top-2 duration-300">
+            <div className="bg-black/20 rounded-lg p-4 border border-blue-500/20">
+              <div className="flex items-start gap-3">
+                <Target className="w-8 h-8 text-green-400 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <h4 className="font-semibold text-white mb-2">Start Your Discovery Journey</h4>
+                  <p className="text-sm text-gray-300 mb-3">
+                    Rate emerging artists weekly, watch their videos, and earn points toward exclusive rewards. 
+                    Each activity gets you closer to amazing prizes!
+                  </p>
+                  <Link href="/weekly-ratings">
+                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold">
+                      Watch & Rate This Week's Artists
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+           
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// September Reward Component
+function SeptemberReward({ totalPoints }: { totalPoints: number }) {
+    const goal = 180;
+    const isComplete = totalPoints >= goal;
+    const progress = Math.min((totalPoints / goal) * 100, 100);
+
+    return (
+        <div
+            className={`rounded-lg p-4 transition-all ${
+                isComplete
+                    ? "bg-gradient-to-r from-green-800/80 to-emerald-800/80 border border-green-500/50"
+                    : "bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border border-yellow-500/30"
+            }`}
+        >
+            <div className="flex items-center gap-4">
+                <div
+                    className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
+                        isComplete
+                            ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 shadow-lg shadow-yellow-500/20"
+                            : "bg-gradient-to-r from-gray-600 to-gray-700 text-gray-300"
+                    }`}
+                >
+                    {isComplete ? <Gift className="w-8 h-8" /> : <Trophy className="w-8 h-8" />}
+                </div>
+
+                <div className="flex-1">
+                    <h3 className="font-bold text-white text-lg mb-1">September Discovery Reward</h3>
+                    {!isComplete ? (
+                        <>
+                            <p className="text-sm text-gray-200 mb-3">
+                                Earn {goal} points this month and we'll mail you all 9 OnesToWatch zines!
+                            </p>
+                            <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden mb-2">
+                                <div
+                                    className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 transition-all duration-500 ease-out"
+                                    style={{ width: `${progress}%` }}
+                                />
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs text-gray-300">
+                                    {totalPoints} / {goal} points
+                                </span>
+                                <span className="text-xs font-medium text-yellow-400">
+                                    {Math.round(progress)}% complete
+                                </span>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <p className="text-sm text-green-200 font-semibold">
+                                🎉 Completed! Package on the way.
+                            </p>
+                            <Badge className="bg-green-500 text-white">Complete!</Badge>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 }
