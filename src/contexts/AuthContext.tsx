@@ -243,14 +243,23 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         try {
             console.log("👋 [AuthContext] Signing out...");
             
-            // Try normal logout first
+            // Try normal logout first, but with a shorter timeout
             const { error } = await supabase.auth.signOut();
             
             if (error) {
                 console.warn("⚠️ [AuthContext] Logout API error (session corrupted):", error.message);
                 
-                // If we get ANY error, immediately do nuclear cleanup
-                console.log("💥 [AuthContext] Session corrupted - performing nuclear cleanup");
+                // Check specifically for JWT/session errors
+                if (error.message.includes('JWT') || 
+                    error.message.includes('session') || 
+                    error.message.includes('claim') ||
+                    error.status === 403) {
+                    console.log("🔑 [AuthContext] JWT/Session error detected - performing nuclear cleanup");
+                } else {
+                    console.log("💥 [AuthContext] Other auth error - performing nuclear cleanup");
+                }
+                
+                // For ANY error, do nuclear cleanup
                 nuclearSessionCleanup();
                 
                 // Force page reload to completely reset the app state
@@ -267,7 +276,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             console.error("❌ [AuthContext] Logout error:", error);
             
             // ANY error during logout = nuclear cleanup
-            console.log("💥 [AuthContext] Error during logout - performing nuclear cleanup");
+            console.log("💥 [AuthContext] Exception during logout - performing nuclear cleanup");
             nuclearSessionCleanup();
             
             // Force page reload to completely reset the app state
@@ -278,7 +287,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             return;
         }
         
-        // Normal successful logout
+        // Normal successful logout path
         console.log("🧹 [AuthContext] Clearing local auth state...");
         setUser(null);
         setSupabaseUser(null);
