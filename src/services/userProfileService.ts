@@ -54,26 +54,27 @@ const userProfileService = {
    * @returns The user profile object or null if not found
    */
   async getUserProfile(authId: string): Promise<UserProfile> {
-    console.log("🔍 [UserProfileService] Getting user profile for auth ID:", authId);
-    
     try {
-        const response = await fetch(`/api/user/secure-profile?auth_id=${encodeURIComponent(authId)}`);
-        
-        if (!response.ok) {
-            if (response.status === 404) {
-                throw new Error("Profile not found");
-            }
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(`API Error (${response.status}): ${errorData.error || response.statusText}`);
+      console.log(`[UserProfileService] Getting profile via secure API for auth_id: ${authId}`);
+      
+      // Call the secure API endpoint instead of direct Supabase client
+      const response = await fetch(`/api/user/profile-by-auth-id?auth_id=${authId}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Profile not found');
         }
-        
-        const { profile } = await response.json();
-        console.log("✅ [UserProfileService] Profile retrieved via API:", profile.id);
-        return profile;
-        
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const profile = await response.json();
+      console.log(`[UserProfileService] Profile retrieved via API: ${profile.id} - ${profile.username}`);
+      return profile;
+      
     } catch (error) {
-        console.error("❌ [UserProfileService] Error getting profile:", error);
-        throw error;
+      console.error('[UserProfileService] Error getting user profile via API:', error);
+      throw error;
     }
   },
 

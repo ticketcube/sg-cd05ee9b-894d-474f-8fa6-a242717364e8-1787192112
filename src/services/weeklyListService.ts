@@ -224,51 +224,28 @@ export class WeeklyListService {
 
   async getActiveWeeklyList(): Promise<WeeklyListWithArtists | null> {
     try {
-      console.log("Fetching active weekly list...");
+      console.log("Fetching active weekly list via secure API...");
       
-      // Get the most recent active weekly list
-      const { data: weeklyList, error: listError } = await supabase
-        .from("weekly_lists")
-        .select("*")
-        .eq("status", "active")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (listError) {
-        console.error("Error fetching active weekly list:", listError);
-        if (listError.code === "PGRST116") {
-          console.log("No active weekly lists found");
+      // Call the secure API endpoint instead of direct Supabase client
+      const response = await fetch('/api/weekly-lists/active');
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log("No active weekly lists found via API");
           return null;
         }
-        throw listError;
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      console.log("Found active weekly list:", weeklyList);
+      const weeklyList = await response.json();
+      console.log("Found active weekly list via API:", weeklyList.id);
+      console.log("Found artists for weekly list via API:", weeklyList.artists?.length || 0);
 
-      const { data: weeklyListArtists, error: artistsError } = await supabase
-        .from("weekly_list_artists")
-        .select(`
-          *,
-          artist:artists(*)
-        `)
-        .eq("week_identifier", weeklyList.week_identifier)
-        .order("position", { ascending: true });
-
-      if (artistsError) {
-        console.error("Error fetching weekly list artists:", artistsError);
-        throw artistsError;
-      }
-
-      console.log("Found artists for weekly list:", weeklyListArtists?.length || 0);
-
-      return {
-        ...weeklyList,
-        artists: weeklyListArtists || []
-      };
+      return weeklyList;
       
     } catch (error) {
-      console.error("Error getting active weekly list:", error);
+      console.error("Error getting active weekly list via API:", error);
       throw error;
     }
   }
