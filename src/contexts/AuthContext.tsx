@@ -189,6 +189,56 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    // Add this nuclear cleanup function at the top level of the AuthProvider
+    const nuclearSessionCleanup = () => {
+        console.log("💥 [AuthContext] NUCLEAR SESSION CLEANUP - Clearing ALL auth data...");
+        
+        // Clear all state
+        setUser(null);
+        setSupabaseUser(null);
+        setProfileExists(false);
+        
+        // Clear localStorage
+        try {
+            // Clear our app's user data
+            localStorage.removeItem("otwchart_user");
+            
+            // Clear ALL Supabase-related localStorage keys
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (
+                    key.includes('supabase') || 
+                    key.includes('sb-') ||
+                    key.startsWith('sb.') ||
+                    key.includes('auth-token') ||
+                    key.includes('access_token') ||
+                    key.includes('refresh_token')
+                )) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => {
+                console.log("🗑️ [AuthContext] Removing corrupted key:", key);
+                localStorage.removeItem(key);
+            });
+            
+            // Also clear sessionStorage
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && (key.includes('supabase') || key.includes('sb-'))) {
+                    sessionStorage.removeItem(key);
+                }
+            }
+            
+            console.log("✅ [AuthContext] Nuclear cleanup completed");
+            
+        } catch (error) {
+            console.warn("⚠️ [AuthContext] Error during nuclear cleanup:", error);
+        }
+    };
+
     const logout = async () => {
         try {
             console.log("👋 [AuthContext] Signing out...");
@@ -197,15 +247,18 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             const { error } = await supabase.auth.signOut();
             
             if (error) {
-                console.warn("⚠️ [AuthContext] Logout API error (likely invalid session):", error.message);
+                console.warn("⚠️ [AuthContext] Logout API error (session corrupted):", error.message);
                 
-                // If session is invalid, try local-only logout
-                if (error.message.includes("session") || error.message.includes("JWT") || error.status === 403) {
-                    console.log("🔧 [AuthContext] Attempting local session cleanup...");
-                    
-                    // Force local session cleanup
-                    await supabase.auth.signOut({ scope: 'local' });
-                }
+                // If we get ANY error, immediately do nuclear cleanup
+                console.log("💥 [AuthContext] Session corrupted - performing nuclear cleanup");
+                nuclearSessionCleanup();
+                
+                // Force page reload to completely reset the app state
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 100);
+                
+                return;
             } else {
                 console.log("✅ [AuthContext] Successfully signed out from server");
             }
@@ -213,32 +266,24 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error("❌ [AuthContext] Logout error:", error);
             
-            // For any error, try local cleanup
-            try {
-                await supabase.auth.signOut({ scope: 'local' });
-                console.log("🔧 [AuthContext] Forced local session cleanup completed");
-            } catch (localError) {
-                console.warn("⚠️ [AuthContext] Local cleanup also failed, manually clearing state");
-            }
-        } finally {
-            // ALWAYS clear local state regardless of API success/failure
-            console.log("🧹 [AuthContext] Clearing local auth state...");
-            setUser(null);
-            setSupabaseUser(null);
-            setProfileExists(false);
-            localStorage.removeItem("otwchart_user");
+            // ANY error during logout = nuclear cleanup
+            console.log("💥 [AuthContext] Error during logout - performing nuclear cleanup");
+            nuclearSessionCleanup();
             
-            // Also clear any Supabase localStorage entries
-            try {
-                Object.keys(localStorage).forEach(key => {
-                    if (key.includes('supabase') || key.includes('sb-')) {
-                        localStorage.removeItem(key);
-                    }
-                });
-            } catch (clearError) {
-                console.warn("⚠️ [AuthContext] Error clearing Supabase localStorage:", clearError);
-            }
+            // Force page reload to completely reset the app state
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 100);
+            
+            return;
         }
+        
+        // Normal successful logout
+        console.log("🧹 [AuthContext] Clearing local auth state...");
+        setUser(null);
+        setSupabaseUser(null);
+        setProfileExists(false);
+        localStorage.removeItem("otwchart_user");
     };
 
     const value: AuthContextType = {
