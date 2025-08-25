@@ -53,95 +53,27 @@ const userProfileService = {
    * @param authId The user's auth.users.id
    * @returns The user profile object or null if not found
    */
-  async getUserProfile(authId: string): Promise<UserProfile | null> {
+  async getUserProfile(authId: string): Promise<UserProfile> {
+    console.log("🔍 [UserProfileService] Getting user profile for auth ID:", authId);
+    
     try {
-      console.log(`🔍 Fetching profile for auth ID: ${authId}`);
-      
-      // Get fresh session with retry logic
-      let session = null;
-      let retryCount = 0;
-      const maxRetries = 3;
-
-      while (!session && retryCount < maxRetries) {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const response = await fetch(`/api/user/secure-profile?auth_id=${encodeURIComponent(authId)}`);
         
-        if (sessionError) {
-          console.error(`Session error (attempt ${retryCount + 1}):`, sessionError);
-          retryCount++;
-          if (retryCount < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
-            continue;
-          } else {
-            throw new Error('Failed to get valid session after retries');
-          }
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error("Profile not found");
+            }
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`API Error (${response.status}): ${errorData.error || response.statusText}`);
         }
         
-        session = sessionData.session;
+        const { profile } = await response.json();
+        console.log("✅ [UserProfileService] Profile retrieved via API:", profile.id);
+        return profile;
         
-        if (!session?.access_token) {
-          console.warn(`No valid session found (attempt ${retryCount + 1})`);
-          retryCount++;
-          if (retryCount < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            continue;
-          } else {
-            throw new Error('No valid session available');
-          }
-        }
-        
-        break;
-      }
-
-      if (!session?.access_token) {
-        throw new Error('Unable to obtain valid authentication token');
-      }
-
-      console.log('✅ Valid session obtained, making API call');
-
-      // Call the secure API endpoint with proper headers and timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-      const response = await fetch('/api/user/profile', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      if (response.status === 404) {
-        console.warn(`❌ No profile found for auth_id: ${authId}`);
-        throw new Error('Profile not found');
-      }
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { error: errorText };
-        }
-        console.error('❌ API error response:', response.status, errorData);
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to fetch profile`);
-      }
-
-      const result = await response.json();
-      console.log("✅ Successfully fetched profile via secure API:", result.profile);
-      return result.profile;
-
     } catch (error) {
-      if (error.name === 'AbortError') {
-        console.error("❌ Profile API request timed out");
-        throw new Error('Profile request timed out - please try again');
-      }
-      
-      console.error("❌ Error fetching user profile via API:", error);
-      throw error;
+        console.error("❌ [UserProfileService] Error getting profile:", error);
+        throw error;
     }
   },
 
@@ -176,94 +108,34 @@ const userProfileService = {
    * @returns The newly created user profile
    */
   async createUserProfile(authId: string, username: string, email: string, city?: string): Promise<UserProfile> {
+    console.log("🔍 [UserProfileService] Creating user profile:", { authId, username, email, city });
+    
     try {
-      console.log(`🔧 Creating/updating profile for auth ID: ${authId}`);
-      
-      // Get fresh session with retry logic  
-      let session = null;
-      let retryCount = 0;
-      const maxRetries = 3;
-
-      while (!session && retryCount < maxRetries) {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const response = await fetch("/api/user/secure-profile", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                auth_id: authId,
+                username: username.trim(),
+                email: email.trim(),
+                city: city?.trim()
+            })
+        });
         
-        if (sessionError) {
-          console.error(`Session error (attempt ${retryCount + 1}):`, sessionError);
-          retryCount++;
-          if (retryCount < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            continue;
-          } else {
-            throw new Error('Failed to get valid session after retries');
-          }
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`API Error (${response.status}): ${errorData.error || response.statusText}`);
         }
         
-        session = sessionData.session;
+        const { profile } = await response.json();
+        console.log("✅ [UserProfileService] Profile created via API:", profile.id);
+        return profile;
         
-        if (!session?.access_token) {
-          console.warn(`No valid session found (attempt ${retryCount + 1})`);
-          retryCount++;
-          if (retryCount < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            continue;
-          } else {
-            throw new Error('No valid session available');
-          }
-        }
-        
-        break;
-      }
-
-      if (!session?.access_token) {
-        throw new Error('Unable to obtain valid authentication token');
-      }
-
-      console.log('✅ Valid session obtained for profile creation, making API call');
-
-      // Call the secure API endpoint
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout for creation
-
-      const response = await fetch('/api/user/profile', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: username.trim(),
-          email: email.trim(),
-          city: city?.trim()
-        }),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { error: errorText };
-        }
-        console.error('❌ Profile creation API error:', response.status, errorData);
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to create profile`);
-      }
-
-      const result = await response.json();
-      console.log("✅ Profile created/updated successfully via secure API:", result.profile);
-      return result.profile;
-
     } catch (error) {
-      if (error.name === 'AbortError') {
-        console.error("❌ Profile creation API request timed out");
-        throw new Error('Profile creation timed out - please try again');
-      }
-      
-      console.error("❌ Error creating user profile via API:", error);
-      throw error;
+        console.error("❌ [UserProfileService] Error creating profile:", error);
+        throw error;
     }
   },
 
