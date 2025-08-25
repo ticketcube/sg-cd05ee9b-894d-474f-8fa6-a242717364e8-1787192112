@@ -1,31 +1,34 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import userProfileService from "@/services/userProfileService";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import userProfileService from "@/services/userProfileService";
 
-export interface User {
-  id: number;
-  auth_id: string; // The UUID from supabase.auth.users
-  username: string;
-  email: string;
-  city?: string;
-  points?: number;
-  role?: string;
+interface User {
+    id: number;
+    auth_id: string;
+    username: string;
+    email: string;
+    city?: string;
+    points: number;
+    role?: string;
 }
 
 interface AuthContextType {
-    user: User | null;
     supabaseUser: SupabaseUser | null;
-    isAuthenticated: boolean;
-    profileExists: boolean; // Flag to track profile status
-    login: (username: string, email: string, city?: string) => Promise<void>;
-    logout: () => Promise<void>;
-    refreshUserProfile: () => Promise<void>; // New method to refresh profile
+    user: User | null;
+    profileExists: boolean;
     loading: boolean;
+    refreshUserProfile: () => Promise<void>;
 }
 
-const AuthContext = createContext < AuthContextType | undefined > (undefined);
+const AuthContext = createContext<AuthContextType>({
+    supabaseUser: null,
+    user: null,
+    profileExists: false,
+    loading: true,
+    refreshUserProfile: async () => {}
+});
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -234,7 +237,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const refreshUserProfile = async () => {
+    // Memoized refresh function to prevent infinite loops
+    const refreshUserProfile = useCallback(async () => {
         if (supabaseUser) {
             console.log("🔄 [AuthContext] Manually refreshing user profile for:", supabaseUser.id);
             console.log("  - Current user state before refresh:", user ? `ID:${user.id}` : "null");
@@ -243,12 +247,10 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             await loadUserProfile(supabaseUser);
             
             console.log("✅ [AuthContext] Profile refresh completed");
-            console.log("  - New user state after refresh:", user ? `ID:${user.id}` : "null");
-            console.log("  - New profileExists after refresh:", profileExists);
         } else {
             console.warn("⚠️ [AuthContext] Cannot refresh profile - no supabaseUser available");
         }
-    };
+    }, [supabaseUser]); // Only depend on supabaseUser, not user or profileExists
 
     const login = async (username: string, email: string, city?: string) => {
         try {

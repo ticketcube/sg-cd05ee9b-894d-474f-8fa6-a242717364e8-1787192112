@@ -69,13 +69,17 @@ export default function ProfilePage() {
                 // Profile exists but user data not loaded yet - trigger a refresh
                 console.log("🔄 Profile exists but user data not loaded - triggering refresh");
                 setLoading(true);
-                refreshUserProfile().then(() => {
-                    console.log("✅ Profile refresh completed, useEffect should retrigger");
-                }).catch((error) => {
-                    console.error("❌ Profile refresh failed:", error);
-                    setError("Failed to load your profile. Please refresh the page.");
-                    setLoading(false);
-                });
+                
+                // Call refreshUserProfile directly without dependency 
+                if (refreshUserProfile) {
+                    refreshUserProfile().then(() => {
+                        console.log("✅ Profile refresh completed, useEffect should retrigger");
+                    }).catch((error) => {
+                        console.error("❌ Profile refresh failed:", error);
+                        setError("Failed to load your profile. Please refresh the page.");
+                        setLoading(false);
+                    });
+                }
                 return;
             }
         }
@@ -88,7 +92,7 @@ export default function ProfilePage() {
         setLoading(false);
         setError("Authentication status unclear. Please try refreshing the page.");
         
-    }, [user, supabaseUser, profileExists, authLoading, user?.id, refreshUserProfile]);
+    }, [user, supabaseUser, profileExists, authLoading, user?.id]); // FIXED: Removed refreshUserProfile from dependencies
 
     const loadUserProfile = async (profileId: number) => {
         try {
