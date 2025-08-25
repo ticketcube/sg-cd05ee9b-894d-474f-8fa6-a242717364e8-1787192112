@@ -26,6 +26,7 @@ export default function ProfilePage() {
         console.log("  - profileExists:", profileExists);
         console.log("  - authLoading:", authLoading);
         console.log("  - userHistory:", userHistory ? "loaded" : "null");
+        console.log("  - loading:", loading);
         
         // Wait for auth to finish loading
         if (authLoading) {
@@ -49,36 +50,55 @@ export default function ProfilePage() {
             return;
         }
 
-        // Only fetch history if profile exists and userHistory is null AND we have user ID
-        if (supabaseUser && profileExists && !userHistory && user?.id) {
-            console.log("✅ Profile ready - loading engagement history for user ID:", user.id);
+        // ✅ CRITICAL FIX: Only fetch history if all conditions are met AND we haven't started loading yet
+        if (supabaseUser && profileExists && user?.id && !userHistory && !loading) {
+            console.log("🚀 TRIGGERING loadUserProfile for user ID:", user.id);
             loadUserProfile(user.id);
             return;
         }
 
-        // If we have everything loaded, ensure loading is false
+        // ✅ CRITICAL FIX: If everything is loaded, ensure loading state is false  
         if (supabaseUser && profileExists && user?.id && userHistory) {
-            console.log("✅ Everything loaded successfully");
-            setLoading(false);
-            setError(null);
+            console.log("✅ Everything loaded successfully - setting loading to false");
+            if (loading) {
+                setLoading(false);
+            }
+            if (error) {
+                setError(null);
+            }
         }
 
-    }, [supabaseUser, profileExists, authLoading, user?.id, userHistory]); // ✅ FIXED: Added user?.id and userHistory to dependencies
+        // ✅ CRITICAL FIX: Handle edge case where user exists but userHistory failed to load
+        if (supabaseUser && profileExists && user?.id && !userHistory && !loading && !error) {
+            console.log("🔄 Edge case: user exists but no userHistory and not loading - retry load");
+            loadUserProfile(user.id);
+        }
+
+    }, [supabaseUser, profileExists, authLoading, user?.id, userHistory, loading, error]); // ✅ Added loading and error to deps
 
     const loadUserProfile = async (profileId: number) => {
         try {
+            console.log("🔄 loadUserProfile called - setting loading to true");
             setLoading(true);
             setError(null);
-            console.log("Loading engagement history for user ID:", profileId);
+            console.log("📡 Calling getUserEngagementHistory for user ID:", profileId);
             
             const history = await userProfileService.getUserEngagementHistory(profileId);
             console.log("✅ Successfully loaded user engagement history:", history);
+            console.log("📊 History details:", {
+                userProfile: history.user_profile?.username,
+                totalPoints: history.total_points,
+                weeklyCount: history.weekly_summaries?.length
+            });
+            
             setUserHistory(history);
+            console.log("✅ userHistory state updated successfully");
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Failed to load profile";
             console.error("❌ Error loading engagement history:", errorMessage, err);
             setError(`Failed to load your profile: ${errorMessage}`);
         } finally {
+            console.log("🏁 loadUserProfile finally - setting loading to false");
             setLoading(false);
         }
     };
