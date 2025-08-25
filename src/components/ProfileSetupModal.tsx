@@ -14,7 +14,7 @@ interface ProfileSetupModalProps {
 }
 
 export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: ProfileSetupModalProps) {
-  const { user, supabaseUser, login } = useAuth();
+  const { user, supabaseUser, login, refreshUserProfile } = useAuth();
   const [formData, setFormData] = useState({
     username: user?.username || supabaseUser?.email?.split('@')[0] || '',
     email: user?.email || supabaseUser?.email || '',
@@ -47,18 +47,33 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
       console.log("✅ Profile setup completed successfully");
       setSuccess(true);
       
-      // Wait a moment for the database transaction to complete
-      setTimeout(() => {
-        console.log("🔄 Triggering success callback/reload after profile creation");
-        
-        if (onSuccess) {
-          onSuccess();
-        } else {
+      // Wait a moment for the database transaction to complete, then refresh auth state
+      setTimeout(async () => {
+        try {
+          console.log("🔄 Refreshing user profile after creation...");
+          await refreshUserProfile();
+          
+          // Give AuthContext a moment to update
+          setTimeout(() => {
+            console.log("✅ Profile refresh completed, triggering success callback");
+            if (onSuccess) {
+              onSuccess();
+            } else {
+              onClose();
+            }
+          }, 500);
+          
+        } catch (refreshError) {
+          console.error("❌ Profile refresh failed, falling back to page reload:", refreshError);
           // Fallback: close modal and refresh page
-          onClose();
-          window.location.reload();
+          if (onSuccess) {
+            onSuccess();
+          } else {
+            onClose();
+            window.location.reload();
+          }
         }
-      }, 1500); // 1.5 second delay to ensure DB consistency
+      }, 2000); // 2 second delay to ensure DB consistency
       
     } catch (error) {
       console.error("❌ Profile setup failed:", error);
@@ -79,6 +94,7 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
       
       setError(errorMessage);
       setLoading(false);
+      setSuccess(false);
     }
   };
 
@@ -101,8 +117,9 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
           <div className="text-center py-6">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-white mb-2">Profile Created Successfully!</h3>
-            <p className="text-gray-400">Redirecting you to your dashboard...</p>
-            <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mt-4"></div>
+            <p className="text-gray-400 mb-4">Setting up your dashboard...</p>
+            <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-xs text-gray-500 mt-4">This will only take a moment</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
