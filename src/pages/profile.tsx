@@ -13,7 +13,7 @@ import Link from "next/link";
 import ProfileSetupModal from "@/components/ProfileSetupModal";
 
 export default function ProfilePage() {
-    const { user, supabaseUser, profileExists, loading: authLoading } = useAuth();
+    const { user, supabaseUser, profileExists, loading: authLoading, refreshUserProfile } = useAuth();
     const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -79,11 +79,19 @@ export default function ProfilePage() {
     };
 
     // Handle successful profile setup
-    const handleProfileSetupComplete = () => {
-        console.log("Profile setup completed, reloading page to get updated user data");
+    const handleProfileSetupComplete = async () => {
+        console.log("Profile setup completed, refreshing auth state...");
         setShowProfileSetup(false);
-        // Force a page reload to get the updated auth state
-        window.location.reload();
+        
+        try {
+            // Use the refreshUserProfile method instead of reloading
+            await refreshUserProfile();
+            console.log("✅ Profile state refreshed successfully");
+        } catch (error) {
+            console.error("❌ Failed to refresh profile state, falling back to page reload:", error);
+            // Fallback to page reload if refresh fails
+            window.location.reload();
+        }
     };
 
     // Show loading while auth is initializing
