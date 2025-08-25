@@ -91,25 +91,14 @@ export default function ProfilePage() {
         try {
             console.log("🔄 Calling refreshUserProfile...");
             await refreshUserProfile();
-            console.log("✅ Profile state refreshed successfully - useEffect should trigger now");
+            console.log("✅ Profile state refreshed successfully - useEffect should handle the rest");
             
-            // Force a small delay to ensure state has propagated
-            setTimeout(() => {
-                console.log("🔍 Post-refresh state check:");
-                console.log("  - user:", user?.id ? `ID:${user.id}` : "null");
-                console.log("  - profileExists:", profileExists);
-                
-                // If profile still doesn't exist after refresh, something went wrong
-                if (!profileExists || !user?.id) {
-                    console.warn("⚠️ Profile refresh didn't set profileExists=true, falling back to page reload");
-                    window.location.reload();
-                }
-            }, 1000);
+            // ✅ REMOVED: setTimeout and window.location.reload() logic 
+            // Let useEffect handle state changes reactively instead of forcing page reloads
             
         } catch (error) {
             console.error("❌ Failed to refresh profile state:", error);
-            console.log("🔄 Falling back to page reload");
-            window.location.reload();
+            setError("Failed to refresh profile. Please try refreshing the page.");
         }
     };
 
