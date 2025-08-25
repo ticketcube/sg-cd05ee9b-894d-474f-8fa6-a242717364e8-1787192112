@@ -84,62 +84,75 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         try {
             console.log("🔍 Loading user profile for auth user:", authUser.id, authUser.email);
             
-            // Check if we have cached user data first
-            const storedUser = localStorage.getItem("otwchart_user");
-            if (storedUser) {
-                try {
-                    const userData = JSON.parse(storedUser);
-                    if (userData.auth_id === authUser.id && userData.id > 0) {
-                        console.log("✅ Found valid cached user data:", userData);
-                        setUser(userData);
-                        return;
-                    } else {
-                        console.log("⚠️ Cached user data is invalid or incomplete, removing from cache. User data:", userData);
-                        localStorage.removeItem("otwchart_user");
-                    }
-                } catch (error) {
-                    console.error("❌ Error parsing stored user data:", error);
-                    localStorage.removeItem("otwchart_user");
-                }
-            } else {
-                console.log("ℹ️ No cached user data found");
-            }
-
-            // Try to fetch user profile from database using secure API
+            // Direct database query approach - bypass API issues
             try {
-                console.log("🌐 Fetching user profile from secure API...");
-                const userProfile = await userProfileService.getUserProfile(authUser.id);
+                console.log("🔍 Querying database directly for user profile...");
                 
-                if (userProfile && userProfile.id) {
-                    console.log("✅ Successfully fetched user profile from API:", userProfile);
+                const { data: profile, error } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('auth_id', authUser.id)
+                    .single();
+
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        console.log("⚠️ No profile found in database for auth ID:", authUser.id);
+                        throw new Error('Profile not found');
+                    } else {
+                        console.error("❌ Database query error:", error);
+                        throw error;
+                    }
+                }
+
+                if (profile && profile.id) {
+                    console.log("✅ Successfully found user profile in database:", profile);
                     const userData: User = {
-                        id: userProfile.id,
+                        id: profile.id,
                         auth_id: authUser.id,
-                        username: userProfile.username,
-                        email: userProfile.email,
-                        city: userProfile.raw_city_input || undefined,
-                        points: userProfile.total_points || 0,
-                        role: userProfile.role || undefined
+                        username: profile.username,
+                        email: profile.email,
+                        city: profile.raw_city_input || undefined,
+                        points: profile.total_points || 0,
+                        role: profile.role || undefined
                     };
+                    
                     setUser(userData);
                     localStorage.setItem("otwchart_user", JSON.stringify(userData));
                     console.log("🎉 User profile loaded successfully with ID:", userData.id);
                     return;
-                } else {
-                    console.log("⚠️ No complete user profile found in database for auth ID:", authUser.id);
                 }
-            } catch (error) {
-                console.error("❌ Error fetching user profile from API:", error);
+            } catch (directError) {
+                console.error("❌ Direct database query failed:", directError);
                 
-                // If the error indicates profile not found, we can attempt to create one
-                if (error instanceof Error && error.message.includes('Profile not found')) {
-                    console.log("🔧 Profile not found, user may need to complete profile setup");
-                } else {
-                    console.error("🚨 Unexpected API error:", error);
+                // If direct query fails, fall back to API approach
+                console.log("🔄 Falling back to secure API approach...");
+                
+                try {
+                    const userProfile = await userProfileService.getUserProfile(authUser.id);
+                    
+                    if (userProfile && userProfile.id) {
+                        console.log("✅ Successfully fetched user profile from API:", userProfile);
+                        const userData: User = {
+                            id: userProfile.id,
+                            auth_id: authUser.id,
+                            username: userProfile.username,
+                            email: userProfile.email,
+                            city: userProfile.raw_city_input || undefined,
+                            points: userProfile.total_points || 0,
+                            role: userProfile.role || undefined
+                        };
+                        setUser(userData);
+                        localStorage.setItem("otwchart_user", JSON.stringify(userData));
+                        console.log("🎉 User profile loaded successfully via API with ID:", userData.id);
+                        return;
+                    }
+                } catch (apiError) {
+                    console.error("❌ API fallback also failed:", apiError);
+                    // Continue to incomplete profile setup below
                 }
             }
 
-            // If no profile exists, create a minimal user object to allow authentication
+            // If no profile exists or loading failed, create a minimal user object to allow authentication
             // but mark it as incomplete with id = 0
             console.log("⚙️ Setting up incomplete user profile - user needs to complete profile setup");
             const minimalUser: User = {
@@ -154,6 +167,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             setUser(minimalUser);
             localStorage.setItem("otwchart_user", JSON.stringify(minimalUser));
             console.log("⚠️ User profile incomplete - needs to complete setup. User data:", minimalUser);
+
         } catch (error) {
             console.error("🚨 Error loading user profile:", error);
             // Still set a minimal user to allow authentication to work
