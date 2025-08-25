@@ -135,23 +135,38 @@ function SeptemberReward({ totalPoints }: { totalPoints: number }) {
 
 // Main Profile Page Component
 export default function ProfilePage() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [profileCreationAttempted, setProfileCreationAttempted] = useState(false);
 
     useEffect(() => {
-        console.log("Profile page useEffect - user state:", user);
+        console.log("Profile page useEffect - user state:", user, "authLoading:", authLoading);
+        
+        // Wait for auth to finish loading
+        if (authLoading) {
+            console.log("Auth still loading, waiting...");
+            return;
+        }
         
         if (user && user.id > 0) {
-            // Use the numeric profile ID, not the auth UUID
-            console.log("Loading profile for numeric user ID:", user.id);
+            // User has complete profile, load engagement history
+            console.log("Loading engagement history for complete profile, user ID:", user.id);
             loadUserProfile(user.id);
         } else if (user && user.id === 0) {
-            // User is authenticated but doesn't have a complete profile yet
-            console.log("User authenticated but profile incomplete:", user);
-            setLoading(false);
-            setError("Profile setup incomplete. Please complete your profile setup.");
+            // User is authenticated but profile is incomplete
+            console.log("User authenticated but profile incomplete - attempting to complete setup:", user);
+            
+            // Try to create/complete the profile if we haven't already attempted
+            if (!profileCreationAttempted) {
+                setProfileCreationAttempted(true);
+                attemptProfileCompletion();
+            } else {
+                // Profile creation was already attempted, show setup incomplete message
+                setLoading(false);
+                setError("Profile setup is incomplete. Please complete your profile setup.");
+            }
         } else if (user === null) {
             console.log("No user found in auth context");
             setLoading(false);
@@ -161,32 +176,66 @@ export default function ProfilePage() {
             setLoading(false);
             setError("Authentication status unclear. Please try refreshing the page.");
         }
-    }, [user]);
+    }, [user, authLoading, profileCreationAttempted]);
+
+    const attemptProfileCompletion = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            console.log("🔧 Attempting to complete profile setup for user:", user);
+            
+            if (!user) {
+                throw new Error("No user found");
+            }
+
+            // The AuthContext should have already attempted profile creation
+            // Let's wait a moment and then reload the page to get the updated state
+            console.log("⏳ Waiting for profile creation to complete...");
+            
+            // Wait 2 seconds for any ongoing profile creation to complete
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Try to reload the page to get the updated user state
+            console.log("🔄 Reloading page to check for updated profile...");
+            window.location.reload();
+            
+        } catch (error) {
+            console.error("❌ Error during profile completion attempt:", error);
+            setError("Failed to complete profile setup. Please try signing in again.");
+            setLoading(false);
+        }
+    };
 
     const loadUserProfile = async (profileId: number) => {
         try {
             setLoading(true);
             setError(null);
-            console.log("Loading profile for user ID:", profileId);
+            console.log("Loading engagement history for user ID:", profileId);
             
             const history = await userProfileService.getUserEngagementHistory(profileId);
             console.log("✅ Successfully loaded user engagement history:", history);
             setUserHistory(history);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Failed to load profile";
-            console.error("❌ Error loading profile:", errorMessage, err);
+            console.error("❌ Error loading engagement history:", errorMessage, err);
             setError(`Failed to load your profile: ${errorMessage}`);
         } finally {
             setLoading(false);
         }
     };
 
-    if (loading) {
+    // Show loading while auth is initializing or while we're attempting profile completion
+    if (authLoading || loading) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Loading Profile...</h1>
+                    <h1 className="text-2xl font-bold mb-4">
+                        {authLoading ? "Loading..." : "Setting up your profile..."}
+                    </h1>
                     <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    {!authLoading && (
+                        <p className="text-gray-400 mt-4">This should only take a moment</p>
+                    )}
                 </div>
             </div>
         );
