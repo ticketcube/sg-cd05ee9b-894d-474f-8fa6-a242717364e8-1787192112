@@ -20,48 +20,58 @@ export default function ProfilePage() {
     const [showProfileSetup, setShowProfileSetup] = useState(false);
 
     useEffect(() => {
-        console.log("Profile page useEffect - user:", user, "supabaseUser:", !!supabaseUser, "profileExists:", profileExists, "authLoading:", authLoading);
+        console.log("🔍 Profile page useEffect triggered:");
+        console.log("  - user:", user?.id ? `ID:${user.id}, username:${user.username}` : "null");
+        console.log("  - supabaseUser:", supabaseUser ? `ID:${supabaseUser.id}` : "null");
+        console.log("  - profileExists:", profileExists);
+        console.log("  - authLoading:", authLoading);
+        console.log("  - loading:", loading);
+        console.log("  - showProfileSetup:", showProfileSetup);
         
         // Wait for auth to finish loading
         if (authLoading) {
-            console.log("Auth still loading, waiting...");
+            console.log("✋ Auth still loading, waiting...");
             return;
         }
         
         // Handle different authentication states using the new AuthContext flags
         if (!supabaseUser) {
             // User is not authenticated at all
-            console.log("User not authenticated - needs to sign in");
+            console.log("❌ User not authenticated - needs to sign in");
             setLoading(false);
             setError("Please sign in to view your profile.");
-            setShowProfileSetup(false); // Clear setup modal
+            setShowProfileSetup(false);
             return;
         }
         
         if (supabaseUser && !profileExists) {
             // User is authenticated but profile doesn't exist - show setup modal
-            console.log("User authenticated but no profile exists - showing setup modal");
+            console.log("⚠️ User authenticated but no profile exists - showing setup modal");
             setLoading(false);
             setShowProfileSetup(true);
-            setError(null); // Clear any existing errors
-            setUserHistory(null); // Clear any existing history
+            setError(null);
+            setUserHistory(null);
             return;
         }
         
         if (user && user.id > 0 && profileExists) {
             // User has complete profile, load engagement history
-            console.log("Loading engagement history for complete profile, user ID:", user.id);
-            setShowProfileSetup(false); // Ensure setup modal is closed
+            console.log("✅ Complete profile detected - loading engagement history for user ID:", user.id);
+            setShowProfileSetup(false);
+            setError(null); // Clear any previous errors
             loadUserProfile(user.id);
             return;
         }
         
         // Fallback case - something unexpected happened
-        console.log("Unexpected auth state - user:", user, "supabaseUser:", !!supabaseUser, "profileExists:", profileExists);
+        console.log("🤔 Unexpected auth state combination:");
+        console.log("  - user ID:", user?.id || "none");
+        console.log("  - profileExists:", profileExists);
+        console.log("  - supabaseUser:", !!supabaseUser);
         setLoading(false);
         setError("Authentication status unclear. Please try refreshing the page.");
         
-    }, [user, supabaseUser, profileExists, authLoading, user?.id]); // Added user?.id to dependencies
+    }, [user, supabaseUser, profileExists, authLoading, user?.id]);
 
     const loadUserProfile = async (profileId: number) => {
         try {
@@ -83,16 +93,30 @@ export default function ProfilePage() {
 
     // Handle successful profile setup
     const handleProfileSetupComplete = async () => {
-        console.log("Profile setup completed, refreshing auth state...");
+        console.log("🎉 Profile setup completed - starting refresh process...");
         setShowProfileSetup(false);
         
         try {
-            // Use the refreshUserProfile method instead of reloading
+            console.log("🔄 Calling refreshUserProfile...");
             await refreshUserProfile();
-            console.log("✅ Profile state refreshed successfully");
+            console.log("✅ Profile state refreshed successfully - useEffect should trigger now");
+            
+            // Force a small delay to ensure state has propagated
+            setTimeout(() => {
+                console.log("🔍 Post-refresh state check:");
+                console.log("  - user:", user?.id ? `ID:${user.id}` : "null");
+                console.log("  - profileExists:", profileExists);
+                
+                // If profile still doesn't exist after refresh, something went wrong
+                if (!profileExists || !user?.id) {
+                    console.warn("⚠️ Profile refresh didn't set profileExists=true, falling back to page reload");
+                    window.location.reload();
+                }
+            }, 1000);
+            
         } catch (error) {
-            console.error("❌ Failed to refresh profile state, falling back to page reload:", error);
-            // Fallback to page reload if refresh fails
+            console.error("❌ Failed to refresh profile state:", error);
+            console.log("🔄 Falling back to page reload");
             window.location.reload();
         }
     };
