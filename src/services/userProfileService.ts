@@ -54,24 +54,43 @@ const userProfileService = {
    * @returns The user profile object or null if not found
    */
   async getUserProfile(authId: string): Promise<UserProfile | null> {
-    console.log(`Fetching profile for auth ID: ${authId}`);
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("auth_id", authId)
-      .single();
+    try {
+      console.log(`Fetching profile for auth ID: ${authId}`);
+      
+      // Get the current user's JWT token for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        console.error('No valid session found');
+        return null;
+      }
 
-    if (error) {
-      if (error.code === "PGRST116") {
+      // Call the secure API endpoint
+      const response = await fetch('/api/user/profile', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 404) {
         console.warn(`No profile found for auth_id: ${authId}`);
         return null;
       }
-      console.error("Error fetching user profile:", error);
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('API error:', error);
+        throw new Error(error.error || 'Failed to fetch profile');
+      }
+
+      const result = await response.json();
+      console.log("Found profile via API:", result.profile);
+      return result.profile;
+    } catch (error) {
+      console.error("Error fetching user profile via API:", error);
       throw error;
     }
-
-    console.log("Found profile:", data);
-    return data;
   },
 
   /**
@@ -105,29 +124,42 @@ const userProfileService = {
    * @returns The newly created user profile
    */
   async createUserProfile(authId: string, username: string, email: string, city?: string): Promise<UserProfile> {
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .insert([{
-        auth_id: authId,
-        username: username,
-        email: email,
-        raw_city_input: city || null,
-        total_points: 0,
-        last_active: new Date().toISOString()
-      }])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error creating user profile:", error);
-      // Check for unique constraint violation
-      if (error.code === "23505") {
-        console.warn("User profile likely already exists, attempting to fetch.");
-        return this.getUserProfile(authId);
+    try {
+      console.log(`Creating profile for auth ID: ${authId}`);
+      
+      // Get the current user's JWT token for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No valid session found');
       }
+
+      // Call the secure API endpoint
+      const response = await fetch('/api/user/profile', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          city
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('API error:', error);
+        throw new Error(error.error || 'Failed to create profile');
+      }
+
+      const result = await response.json();
+      console.log("Profile created successfully via API:", result.profile);
+      return result.profile;
+    } catch (error) {
+      console.error("Error creating user profile via API:", error);
       throw error;
     }
-    return data;
   },
 
   /**
