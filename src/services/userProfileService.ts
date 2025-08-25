@@ -83,20 +83,28 @@ const userProfileService = {
    * @returns The user profile object or null if not found
    */
   async getUserProfileById(profileId: number): Promise<UserProfile | null> {
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("id", profileId)
-      .single();
-
-    if (error) {
-      if (error.code === "PGRST116") {
-        return null;
-      }
-      console.error("Error fetching user profile by ID:", error);
-      throw error;
+    console.log("🔍 [UserProfileService] Getting user profile by ID:", profileId);
+    
+    try {
+        const response = await fetch(`/api/user/secure-profile-by-id?profile_id=${profileId}`);
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                console.log("⚠️ [UserProfileService] Profile not found for ID:", profileId);
+                return null;
+            }
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`API Error (${response.status}): ${errorData.error || response.statusText}`);
+        }
+        
+        const { profile } = await response.json();
+        console.log("✅ [UserProfileService] Profile retrieved by ID via API:", profile.id, profile.username);
+        return profile;
+        
+    } catch (error) {
+        console.error("❌ [UserProfileService] Error getting profile by ID:", error);
+        throw error;
     }
-    return data;
   },
 
   /**
