@@ -91,7 +91,7 @@ export default function ProfilePage() {
             // to work with auth_id instead of numeric IDs
             const history: UserEngagementHistory = {
                 user_profile: userProfile,
-                weekly_summaries: [], // TODO: Update service to get this by auth_id
+                weekly_summaries: weekly_summaries // TODO: Update service to get this by auth_id
                 total_points: userProfile.total_points || 0
             };
             
