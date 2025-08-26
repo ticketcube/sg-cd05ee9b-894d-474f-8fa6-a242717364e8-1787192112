@@ -89,6 +89,7 @@ export default function ProfilePage() {
             
             // For now, we'll create a basic history object since we need to update the service
             // to work with auth_id instead of numeric IDs
+            const weeklySummaries = await userProfileService.getWeeklySummaries(authId);
             const history: UserEngagementHistory = {
                 user_profile: userProfile,
                 weekly_summaries: weekly_summaries // TODO: Update service to get this by auth_id
