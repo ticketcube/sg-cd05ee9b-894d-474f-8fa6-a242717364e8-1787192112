@@ -42,39 +42,30 @@ export default function ProfilePage() {
             return;
         }
 
-        // Handle authenticated users without profiles - show setup
+        // ✅ CRITICAL FIX: Handle authenticated users without profiles - show setup immediately
         if (supabaseUser && !profileExists) {
-            console.log("⚠️ User authenticated but no profile exists - showing setup modal");
-            setShowProfileSetup(true);
+            console.log("⚠️ User authenticated but no profile exists - stopping loading and showing setup");
             setLoading(false);
+            setError(null);
+            // Don't try to load data for users without profiles
             return;
         }
 
-        // ✅ FIXED: Use auth_id instead of non-existent id field
-        if (supabaseUser && profileExists && user?.auth_id && !userHistory) {
-            console.log("🚀 TRIGGERING loadUserProfile for user auth_id:", user.auth_id);
+        // ✅ CRITICAL FIX: Only try to load user history if we have a complete profile
+        if (supabaseUser && profileExists && user?.auth_id && !userHistory && !loading) {
+            console.log("🚀 TRIGGERING loadUserProfileByAuthId for user auth_id:", user.auth_id);
             loadUserProfileByAuthId(user.auth_id);
             return;
         }
 
-        // ✅ CRITICAL FIX: If everything is loaded, ensure loading state is false  
-        if (supabaseUser && profileExists && user?.auth_id && userHistory) {
+        // ✅ If everything is loaded successfully, ensure loading is false
+        if (supabaseUser && profileExists && user?.auth_id && userHistory && loading) {
             console.log("✅ Everything loaded successfully - setting loading to false");
-            if (loading) {
-                setLoading(false);
-            }
-            if (error) {
-                setError(null);
-            }
+            setLoading(false);
+            setError(null);
         }
 
-        // ✅ CRITICAL FIX: Handle edge case where user exists but userHistory failed to load
-        if (supabaseUser && profileExists && user?.auth_id && !userHistory && !loading && !error) {
-            console.log("🔄 Edge case: user exists but no userHistory and not loading - retry load");
-            loadUserProfileByAuthId(user.auth_id);
-        }
-
-    }, [supabaseUser, profileExists, authLoading, user?.auth_id, userHistory, loading, error]);
+    }, [supabaseUser, profileExists, authLoading, user?.auth_id, userHistory]);
 
     // ✅ FIXED: New function to load user profile using auth_id (UUID)
     const loadUserProfileByAuthId = async (authId: string) => {
