@@ -129,7 +129,7 @@ export default function Top100Page() {
         }
       }, 50);
     }
-  }, [hasMore]); // ✅ FIXED: Simplified dependencies to only include hasMore
+  }, []); // ✅ FIXED: Remove all dependencies to prevent deep type instantiation
 
   const handleVote = async (artistId: string) => {
     if (!user) {
