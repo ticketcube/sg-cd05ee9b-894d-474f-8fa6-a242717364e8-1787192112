@@ -49,36 +49,42 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const [profileExists, setProfileExists] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const loadUserProfile = async (authUser: SupabaseUser) => {
+    const loadUserProfile = async (authUser: SupabaseUser, retryCount = 0) => {
         try {
-            console.log("🔍 [AuthContext] Loading user profile for:", authUser.id);
+            console.log(`🔍 [AuthContext] Loading user profile for: ${authUser.id} (attempt ${retryCount + 1})`);
             
-            // ✅ CRITICAL FIX: First check if profile exists without throwing error
-            console.log("🔍 [AuthContext] Checking if profile exists before loading...");
-            
+            // ✅ CRITICAL FIX: Handle race condition between auth signup and profile creation trigger
             const response = await fetch(`/api/user/profile-by-auth-id?auth_id=${authUser.id}`);
             
             if (response.status === 404) {
-                // Profile doesn't exist - this is normal for new users
-                console.log("ℹ️ [AuthContext] Profile not found - user needs to complete setup");
+                // Profile doesn't exist yet - this could be a race condition with the trigger
+                console.log(`ℹ️ [AuthContext] Profile not found for ${authUser.id}`);
+                
+                // ✅ RETRY LOGIC: For new users, wait a moment for the trigger to create the profile
+                if (retryCount < 3) {
+                    console.log(`🔄 [AuthContext] Retrying profile load in 1 second (attempt ${retryCount + 1}/3)...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    return loadUserProfile(authUser, retryCount + 1);
+                }
+                
+                // After retries, user genuinely needs profile setup
+                console.log("ℹ️ [AuthContext] No profile found after retries - user needs to complete setup");
                 setUser(null);
                 setProfileExists(false);
                 localStorage.removeItem("otwchart_user");
-                return; // Exit early, no error thrown
+                return;
             }
             
             if (!response.ok) {
-                // Other HTTP errors (500, 403, etc.)
                 const errorData = await response.json();
                 throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
             }
             
-            // Profile exists and was retrieved successfully
             const userProfile = await response.json();
             console.log("✅ [AuthContext] Profile found via API:", userProfile.auth_id, userProfile.username);
             
             const userData: User = {
-                auth_id: authUser.id,          // ✅ Use auth_id as primary identifier
+                auth_id: authUser.id,
                 username: userProfile.username,
                 email: userProfile.email,
                 city: userProfile.raw_city_input || undefined,
@@ -98,8 +104,6 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null);
             setProfileExists(false);
             localStorage.removeItem("otwchart_user");
-            
-            // Don't throw the error - let the UI handle the state gracefully
         }
     };
 
