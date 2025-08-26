@@ -100,7 +100,7 @@ export default function Top100Page() {
     }
   }, [user, isUnlocked, loadExistingVotes]);
 
-  const lastArtistElementRef = useCallback((node: HTMLDivElement | null) => {
+  const lastArtistElementRef = (node: HTMLDivElement | null) => {
     if (observer.current) observer.current.disconnect();
     
     observer.current = new IntersectionObserver((entries) => {
@@ -129,7 +129,7 @@ export default function Top100Page() {
         }
       }, 50);
     }
-  }, []); // ✅ FIXED: Remove all dependencies to prevent deep type instantiation
+  };
 
   const handleVote = async (artistId: string) => {
     if (!user) {
