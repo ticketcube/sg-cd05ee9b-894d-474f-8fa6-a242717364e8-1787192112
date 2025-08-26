@@ -103,10 +103,8 @@ export default function Top100Page() {
   useEffect(() => {
     if (!hasMore) return;
     
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore) {
+    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+      if (entries[0].isIntersecting && hasMore && !loadingMore) {
         console.log("Last artist in view. Loading more...", { 
           currentPage: page.current, 
           hasMore,
@@ -120,7 +118,10 @@ export default function Top100Page() {
           setLoadingMore(false);
         });
       }
-    }, {
+    };
+    
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(handleIntersection, {
       rootMargin: '100px'
     });
     
@@ -129,10 +130,10 @@ export default function Top100Page() {
         observer.current.disconnect();
       }
     };
-  }, [hasMore, artists.length, totalCount, loadArtists]);
+  }, [hasMore, loadingMore, artists.length, totalCount, loadArtists]);
 
-  // Simple function to observe the last element
-  const observeLastElement = (node: HTMLDivElement | null) => {
+  // Simple ref callback that doesn't cause type issues
+  const setObserverRef = (node: HTMLDivElement | null) => {
     if (node && observer.current && hasMore) {
       observer.current.observe(node);
     }
@@ -380,7 +381,7 @@ export default function Top100Page() {
                 return (
                   <div
                     key={artist.uuid}
-                    ref={isLast ? observeLastElement : null}
+                    ref={isLast ? setObserverRef : null}
                     className={cn(
                       "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
                       isSelected && "ring-2 ring-green-500 bg-gray-800",
