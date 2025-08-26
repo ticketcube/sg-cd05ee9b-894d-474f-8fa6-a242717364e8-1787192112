@@ -217,7 +217,7 @@ export default function WeeklyArtistRatingPopup({
       const result = await weeklyVotingService.submitQuadrantVote(
         user.auth_id, // ✅ ALREADY CORRECT: Uses user.auth_id (string)
         weekIdentifier,
-        weeklyListId,
+        weeklyListId || 1, // ✅ FIXED: Ensure weeklyListId is a number by providing default
         artist.uuid,
         ticketValue,
         shareValue

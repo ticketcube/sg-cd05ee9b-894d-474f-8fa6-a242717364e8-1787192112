@@ -194,8 +194,8 @@ const pointsTestService = {
   },
 
   // Test 4: Test video watch status tracking
-  async testVideoWatchStatus(userId: number) {
-    console.log(`🧪 Testing video watch status tracking for user ${userId}...`);
+  async testVideoWatchStatus(authId: string) { // ✅ FIXED: Change parameter to authId (string)
+    console.log(`🧪 Testing video watch status tracking for user ${authId}...`);
     
     try {
       const testArtistUuid = "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c"; // Laufey
@@ -203,7 +203,7 @@ const pointsTestService = {
       
       // Get video watch status after our previous tests
       const watchStatus = await videoWatchService.getWatchStatus(
-        userId,
+        authId, // ✅ FIXED: Use authId (string) instead of userId (number)
         testArtistUuid,
         testWeekIdentifier
       );
@@ -228,8 +228,8 @@ const pointsTestService = {
   },
 
   // Test 5: Test eligibility checking system
-  async testEligibilitySystem(userId: number) {
-    console.log(`🧪 Testing eligibility checking system for user ${userId}...`);
+  async testEligibilitySystem(authId: string) { // ✅ FIXED: Change parameter to authId (string)
+    console.log(`🧪 Testing eligibility checking system for user ${authId}...`);
     
     try {
       const testArtistUuid = "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c"; // Laufey
@@ -238,7 +238,7 @@ const pointsTestService = {
       // Check eligibility for same artist/week (should be false since we already earned points)
       const eligibleSameWeek = await pointsConfigService.checkEligibility(
         'video_view',
-        userId,
+        authId, // ✅ FIXED: Use authId (string) instead of userId (number)
         testArtistUuid,
         testWeekIdentifier
       );
@@ -252,7 +252,7 @@ const pointsTestService = {
       // Check eligibility for same artist, different week (should be true)
       const eligibleDifferentWeek = await pointsConfigService.checkEligibility(
         'video_view',
-        userId,
+        authId, // ✅ FIXED: Use authId (string) instead of userId (number)
         testArtistUuid,
         "2025-W32" // Different week
       );
@@ -266,7 +266,7 @@ const pointsTestService = {
       // Check eligibility for different artist, same week (should be true)
       const eligibleDifferentArtist = await pointsConfigService.checkEligibility(
         'video_view',
-        userId,
+        authId, // ✅ FIXED: Use authId (string) instead of userId (number)
         "different-artist-uuid",
         testWeekIdentifier
       );
@@ -293,39 +293,33 @@ const pointsTestService = {
   },
 
   // Test 6: Clean up test data
-  async cleanup(userId: number) {
-    console.log(`🧹 Cleaning up test data for user ${userId}...`);
+  async cleanup(testUser: UserProfile) { // ✅ FIXED: Accept full UserProfile object instead of just numeric ID
+    console.log(`🧹 Cleaning up test data for user ${testUser.auth_id}...`);
     
-    // Delete test engagements
+    // Delete test engagements using auth_id
     const { error: engagementError } = await supabase
       .from("user_engagements")
       .delete()
-      .eq("user_id", userId);
+      .eq("auth_id", testUser.auth_id); // ✅ FIXED: Use auth_id instead of user_id
       
     if (engagementError) console.error("Error cleaning up engagements:", engagementError.message);
     else console.log("✅ Test engagements cleaned up.");
 
-    // Reset user points
+    // Reset user points using numeric ID
     const { error: pointsError } = await supabase
       .from("user_profiles")
       .update({ total_points: 0 })
-      .eq("id", userId);
+      .eq("id", testUser.id); // Use numeric ID for profile updates
       
     if (pointsError) console.error("Error resetting user points:", pointsError.message);
     else console.log("✅ User points reset.");
 
-    // Optionally delete test user
-    const { data: user } = await supabase
-      .from("user_profiles")
-      .select("email")
-      .eq("id", userId)
-      .single();
-      
-    if (user && user.email && user.email.endsWith("@test.com")) {
+    // Optionally delete test user if it's a test account
+    if (testUser.email && testUser.email.endsWith("@test.com")) {
       const { error: userError } = await supabase
         .from("user_profiles")
         .delete()
-        .eq("id", userId);
+        .eq("id", testUser.id); // Use numeric ID for deletion
       
       if (userError) console.error("Error cleaning up test user:", userError.message);
       else console.log("✅ Test user cleaned up.");
@@ -333,7 +327,7 @@ const pointsTestService = {
   },
 
   // Main comprehensive test runner
-  async runComprehensiveTestSuite(userId?: number) {
+  async runComprehensiveTestSuite(authId?: string) { // ✅ FIXED: Change parameter to authId (string)
     console.log("🚀 Starting comprehensive points system test suite...");
     console.log("==================================================");
     let testUser: UserProfile | null = null;
@@ -341,8 +335,8 @@ const pointsTestService = {
     try {
       // Step 1: Get or create test user
       console.log("Step 1: User Setup");
-      testUser = await this.getTestUser(userId);
-      const currentUserId = testUser.id;
+      testUser = await this.getTestUser(authId); // ✅ FIXED: Use authId instead of userId
+      const currentAuthId = testUser.auth_id; // ✅ FIXED: Use auth_id instead of numeric id
       console.log("==================================================");
 
       // Step 2: Test points configuration system
@@ -352,24 +346,24 @@ const pointsTestService = {
 
       // Step 3: Test video view points and frequency rules
       console.log("Step 3: Video View Points & Frequency Rules Test");
-      const videoResult = await this.testVideoViewPoints(currentUserId);
+      const videoResult = await this.testVideoViewPoints(currentAuthId); // ✅ FIXED: Use auth_id
       console.log("==================================================");
 
       // Step 4: Test video watch status tracking
       console.log("Step 4: Video Watch Status Tracking Test");
-      const statusResult = await this.testVideoWatchStatus(currentUserId);
+      const statusResult = await this.testVideoWatchStatus(currentAuthId); // ✅ FIXED: Use auth_id
       console.log("==================================================");
 
       // Step 5: Test eligibility system
       console.log("Step 5: Eligibility System Test");
-      const eligibilityResult = await this.testEligibilitySystem(currentUserId);
+      const eligibilityResult = await this.testEligibilitySystem(currentAuthId); // ✅ FIXED: Use auth_id
       console.log("==================================================");
 
       console.log("🎉 ALL TESTS PASSED! Points system is working correctly!");
       
       return {
         success: true,
-        userId: currentUserId,
+        authId: currentAuthId, // ✅ FIXED: Return auth_id instead of userId
         results: {
           configuration: configResult,
           videoPoints: videoResult,
@@ -386,7 +380,7 @@ const pointsTestService = {
       // Step 6: Cleanup
       if (testUser) {
         console.log("Step 6: Cleanup");
-        await this.cleanup(testUser.id);
+        await this.cleanup(testUser); // ✅ FIXED: Pass full user object
         console.log("==================================================");
       }
       console.log("🏁 Test suite finished.");
