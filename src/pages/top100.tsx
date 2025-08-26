@@ -137,15 +137,15 @@ export default function Top100Page() {
     try {
       console.log(`Submitting ${selectedArtists.length} votes...`);
       
-      // Delete existing votes
+      // Delete existing votes first
       const { error: deleteError } = await supabase
         .from("top25_votes")
         .delete()
-        .eq("user_id", user.auth_id);
+        .eq("auth_id", user.auth_id);
       
       if (deleteError) throw deleteError;
       
-      // Insert new votes
+      // Submit votes using the voting service
       const votes = selectedArtists.map(artistUuid => ({
         auth_id: user.auth_id,
         artist_uuid: artistUuid
