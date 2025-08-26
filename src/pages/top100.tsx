@@ -68,7 +68,6 @@ export default function Top100Page() {
     }
   }, []);
 
-  // Load existing votes when user is authenticated and page is unlocked
   const loadExistingVotes = useCallback(async () => {
     if (!user || !isUnlocked) return;
     
@@ -79,7 +78,6 @@ export default function Top100Page() {
       console.log(`Found ${artistUuids.length} existing votes:`, artistUuids);
       setSelectedArtists(artistUuids);
       
-      // If user has already voted, set appropriate state
       if (artistUuids.length > 0) {
         setVotingState("voting");
       }
@@ -88,28 +86,27 @@ export default function Top100Page() {
     }
   }, [user, isUnlocked]);
 
-  // Simple scroll-based infinite loading
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 1000 &&
-        hasMore &&
-        !loadingMore &&
-        !loadingRef.current
-      ) {
-        console.log("Near bottom, loading more artists...");
-        setLoadingMore(true);
-        pageRef.current += 1;
-        loadArtists(pageRef.current, false).finally(() => {
-          setLoadingMore(false);
-        });
-      }
-    };
+  const handleScroll = useCallback(() => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop >=
+      document.documentElement.offsetHeight - 1000 &&
+      hasMore &&
+      !loadingMore &&
+      !loadingRef.current
+    ) {
+      console.log("Near bottom, loading more artists...");
+      setLoadingMore(true);
+      pageRef.current += 1;
+      loadArtists(pageRef.current, false).finally(() => {
+        setLoadingMore(false);
+      });
+    }
+  }, [hasMore, loadingMore, loadArtists]);
 
+  useEffect(() => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [hasMore, loadingMore, loadArtists]);
+  }, [handleScroll]);
 
   useEffect(() => {
     const initialLoad = async () => {
