@@ -3,7 +3,7 @@ import { pointsConfigService } from "./pointsConfigService";
 import userProfileService from "./userProfileService";
 
 export interface VideoViewData {
-  userId: number;
+  userId: string; // ✅ FIXED: Changed from number to string (auth_id)
   artistUuid: string;
   weekIdentifier: string;
   watchTimeSeconds: number;
@@ -23,7 +23,7 @@ export const videoWatchService = {
       // Check if user is eligible for points (once per artist per week)
       const eligible = await pointsConfigService.checkEligibility(
         'video_view',
-        data.userId,
+        data.userId, // ✅ Now uses string auth_id
         data.artistUuid,
         data.weekIdentifier
       );
@@ -33,9 +33,9 @@ export const videoWatchService = {
       
       const pointsEarned = (eligible && meetsWatchTime) ? videoViewPoints : 0;
 
-      // Record the engagement regardless of points earned (for analytics)
+      // Record the engagement using auth_id
       await userProfileService.recordEngagement(
-        data.userId,
+        data.userId, // ✅ Now uses string auth_id
         "video_view",
         pointsEarned,
         data.weekIdentifier,
@@ -60,13 +60,13 @@ export const videoWatchService = {
   /**
    * Checks if a user has watched all videos in a given week.
    */
-  async hasWatchedAllVideosInWeek(userId: number, weekIdentifier: string, artistUuidsInWeek: string[]): Promise<boolean> {
+  async hasWatchedAllVideosInWeek(authId: string, weekIdentifier: string, artistUuidsInWeek: string[]): Promise<boolean> {
     const uniqueArtistUuids = [...new Set(artistUuidsInWeek)];
 
     const { data, error } = await supabase
       .from("user_engagements")
       .select("artist_uuid")
-      .eq("user_id", userId)
+      .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
       .eq("week_identifier", weekIdentifier)
       .eq("engagement_type", "video_view")
       .in("artist_uuid", uniqueArtistUuids);
@@ -84,11 +84,11 @@ export const videoWatchService = {
   /**
    * Gets the watch status for a user, artist, and week.
    */
-  async getWatchStatus(userId: number, artistUuid: string, weekIdentifier: string) {
+  async getWatchStatus(authId: string, artistUuid: string, weekIdentifier: string) { // ✅ FIXED: Changed parameter from userId to authId
     const { data, error } = await supabase
       .from("user_engagements")
       .select("created_at")
-      .eq("user_id", userId)
+      .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
       .eq("artist_uuid", artistUuid)
       .eq("week_identifier", weekIdentifier)
       .eq("engagement_type", "video_view")

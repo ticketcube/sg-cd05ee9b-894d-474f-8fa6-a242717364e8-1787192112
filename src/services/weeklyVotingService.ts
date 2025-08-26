@@ -30,17 +30,17 @@ export interface SubmissionResult {
 
 const weeklyVotingService = {
   async submitQuadrantVote(
-    userId: number,
+    authId: string, // ✅ FIXED: Changed from userId to authId (string)
     weekIdentifier: string,
     weeklyListId: number,
     artistUuid: string,
     quadrantX: number,
     quadrantY: number,
   ): Promise<SubmissionResult> {
-    if (!userId) throw new Error("User ID is required to record a vote.");
+    if (!authId) throw new Error("Auth ID is required to record a vote.");
 
     // ✅ CHECK FOR EXISTING VOTE FIRST
-    const existingVotes = await this.getVotesForWeek(userId, weekIdentifier);
+    const existingVotes = await this.getVotesForWeek(authId, weekIdentifier);
     const hasVotedForArtist = existingVotes.some(vote => vote.artist_uuid === artistUuid);
     
     if (hasVotedForArtist) {
@@ -53,7 +53,7 @@ const weeklyVotingService = {
       const ratingPoints = await pointsConfigService.getPoints('quadrant');
       // Record engagement with quadrant metadata
       const engagement = await userProfileService.recordEngagement(
-        userId,
+        authId, // ✅ FIXED: Use authId instead of userId
         "quadrant",
         ratingPoints,
         weekIdentifier,
@@ -80,21 +80,21 @@ const weeklyVotingService = {
     return submissionResult;
   },
 
-  async getVotesForWeek(userId: number, weekIdentifier: string): Promise<ArtistVote[]> {
-    if (!userId) {
-      console.warn("No user ID provided to getVotesForWeek, returning empty array.");
+  async getVotesForWeek(authId: string, weekIdentifier: string): Promise<ArtistVote[]> { // ✅ FIXED: Changed from userId to authId
+    if (!authId) {
+      console.warn("No auth ID provided to getVotesForWeek, returning empty array.");
       return [];
     }
 
     const { data, error } = await supabase
       .from("user_engagements")
       .select(`*`)
-      .eq("user_id", userId)
+      .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
       .eq("week_identifier", weekIdentifier)
       .eq("engagement_type", "quadrant");  // ✅ Use "quadrant" to match recording type
 
     if (error) {
-      console.error(`Error fetching votes for user ${userId} and week ${weekIdentifier}:`, error);
+      console.error(`Error fetching votes for auth_id ${authId} and week ${weekIdentifier}:`, error);
       throw error;
     }
 
@@ -126,8 +126,8 @@ const weeklyVotingService = {
   },
 
   // Legacy method name for backward compatibility
-  async getUserVotes(userId: number, weekIdentifier: string): Promise<ArtistVote[]> {
-    return this.getVotesForWeek(userId, weekIdentifier);
+  async getUserVotes(authId: string, weekIdentifier: string): Promise<ArtistVote[]> { // ✅ FIXED: Changed from userId to authId
+    return this.getVotesForWeek(authId, weekIdentifier);
   },
 };
 

@@ -215,7 +215,7 @@ const userProfileService = {
 
   /**
    * Record a user engagement (e.g., video view, vote submission)
-   * @param userId The ID of the user who engaged
+   * @param authId The auth_id of the user who engaged (string UUID)
    * @param engagementType The type of engagement
    * @param pointsEarned The points earned from this engagement
    * @param weekIdentifier The week identifier for this engagement
@@ -224,7 +224,7 @@ const userProfileService = {
    * @returns The recorded engagement
    */
   async recordEngagement(
-    userId: number,
+    authId: string, // ✅ FIXED: Now accepts string auth_id instead of numeric userId
     engagementType: EngagementType,
     pointsEarned: number,
     weekIdentifier: string,
@@ -236,7 +236,7 @@ const userProfileService = {
       const { data: engagement, error: engagementError } = await supabase
         .from("user_engagements")
         .insert([{
-          auth_id: userId.toString(), // ✅ FIXED: Use auth_id instead of user_id to match new database schema
+          auth_id: authId, // ✅ FIXED: Use auth_id directly
           engagement_type: engagementType,
           points_earned: pointsEarned,
           week_identifier: weekIdentifier,
@@ -248,9 +248,13 @@ const userProfileService = {
 
       if (engagementError) throw engagementError;
 
+      // Get the user profile to get the numeric ID for points update
+      const userProfile = await this.getUserProfile(authId);
+      if (!userProfile) throw new Error("User profile not found");
+
       // Update user's total points and last_active timestamp atomically
       const { error: rpcError } = await supabase.rpc("increment_user_points", {
-        user_id_to_update: userId,
+        user_id_to_update: userProfile.id,
         points_to_add: pointsEarned,
       });
 
