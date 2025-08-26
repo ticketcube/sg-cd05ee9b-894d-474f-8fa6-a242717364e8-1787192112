@@ -41,16 +41,19 @@ export type Database = {
         Tables: {
             admin_users: {
                 Row: {
+                    auth_id: string
                     created_at: string | null
                     email: string
                     id: string
                 }
                 Insert: {
+                    auth_id: string
                     created_at?: string | null
                     email: string
                     id?: string
                 }
                 Update: {
+                    auth_id?: string
                     created_at?: string | null
                     email?: string
                     id?: string
@@ -241,23 +244,23 @@ export type Database = {
             }
             ticket_entries: {
                 Row: {
+                    auth_id: string
                     created_at: string | null
                     email: string
-                    id: string
                     user_id: string | null
                     username: string | null
                 }
                 Insert: {
+                    auth_id?: string
                     created_at?: string | null
                     email: string
-                    id?: string
                     user_id?: string | null
                     username?: string | null
                 }
                 Update: {
+                    auth_id?: string
                     created_at?: string | null
                     email?: string
-                    id?: string
                     user_id?: string | null
                     username?: string | null
                 }
@@ -385,74 +388,59 @@ export type Database = {
             top25_votes: {
                 Row: {
                     artist_uuid: string
+                    auth_id: string
                     created_at: string | null
-                    user_id: number
-                    uuid: string
                 }
                 Insert: {
                     artist_uuid: string
+                    auth_id: string
                     created_at?: string | null
-                    user_id: number
-                    uuid?: string
                 }
                 Update: {
                     artist_uuid?: string
+                    auth_id?: string
                     created_at?: string | null
-                    user_id?: number
-                    uuid?: string
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "top25_votes_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "user_profiles"
-                        referencedColumns: ["id"]
-                    },
-                ]
+                Relationships: []
             }
             user_engagements: {
                 Row: {
                     artist_uuid: string | null
+                    auth_id: string
                     created_at: string
                     engagement_type: string
                     id: number
                     metadata: Json | null
                     points_earned: number | null
-                    user_id: number | null
+                    user_auth_id: string | null
                     week_identifier: string | null
                     weekly_list_id: number | null
                 }
                 Insert: {
                     artist_uuid?: string | null
+                    auth_id: string
                     created_at?: string
                     engagement_type: string
                     id?: number
                     metadata?: Json | null
                     points_earned?: number | null
-                    user_id?: number | null
+                    user_auth_id?: string | null
                     week_identifier?: string | null
                     weekly_list_id?: number | null
                 }
                 Update: {
                     artist_uuid?: string | null
+                    auth_id?: string
                     created_at?: string
                     engagement_type?: string
                     id?: number
                     metadata?: Json | null
                     points_earned?: number | null
-                    user_id?: number | null
+                    user_auth_id?: string | null
                     week_identifier?: string | null
                     weekly_list_id?: number | null
                 }
                 Relationships: [
-                    {
-                        foreignKeyName: "user_engagements_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "user_profiles"
-                        referencedColumns: ["id"]
-                    },
                     {
                         foreignKeyName: "user_engagements_weekly_list_id_fkey"
                         columns: ["weekly_list_id"]
@@ -464,7 +452,7 @@ export type Database = {
             }
             user_profiles: {
                 Row: {
-                    auth_id: string | null
+                    auth_id: string
                     city_id: number | null
                     created_at: string
                     email: string
@@ -476,7 +464,7 @@ export type Database = {
                     username: string
                 }
                 Insert: {
-                    auth_id?: string | null
+                    auth_id: string
                     city_id?: number | null
                     created_at?: string
                     email: string
@@ -488,7 +476,7 @@ export type Database = {
                     username: string
                 }
                 Update: {
-                    auth_id?: string | null
+                    auth_id?: string
                     city_id?: number | null
                     created_at?: string
                     email?: string
@@ -511,6 +499,7 @@ export type Database = {
             }
             user_streaks: {
                 Row: {
+                    auth_id: string
                     created_at: string | null
                     current_streak: number | null
                     id: number
@@ -521,6 +510,7 @@ export type Database = {
                     user_id: number | null
                 }
                 Insert: {
+                    auth_id: string
                     created_at?: string | null
                     current_streak?: number | null
                     id?: number
@@ -531,6 +521,7 @@ export type Database = {
                     user_id?: number | null
                 }
                 Update: {
+                    auth_id?: string
                     created_at?: string | null
                     current_streak?: number | null
                     id?: number
@@ -540,15 +531,7 @@ export type Database = {
                     updated_at?: string | null
                     user_id?: number | null
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "user_streaks_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "user_profiles"
-                        referencedColumns: ["id"]
-                    },
-                ]
+                Relationships: []
             }
             venues: {
                 Row: {
@@ -661,37 +644,37 @@ export type Database = {
             weekly_votes: {
                 Row: {
                     artist_uuid: string
+                    auth_id: string
                     created_at: string | null
                     id: number
                     quadrant_x: number | null
                     quadrant_y: number | null
                     ranking_position: number | null
                     updated_at: string | null
-                    user_id: number
                     vote_type: string
                     week_identifier: string
                 }
                 Insert: {
                     artist_uuid: string
+                    auth_id: string
                     created_at?: string | null
                     id?: number
                     quadrant_x?: number | null
                     quadrant_y?: number | null
                     ranking_position?: number | null
                     updated_at?: string | null
-                    user_id: number
                     vote_type: string
                     week_identifier: string
                 }
                 Update: {
                     artist_uuid?: string
+                    auth_id?: string
                     created_at?: string | null
                     id?: number
                     quadrant_x?: number | null
                     quadrant_y?: number | null
                     ranking_position?: number | null
                     updated_at?: string | null
-                    user_id?: number
                     vote_type?: string
                     week_identifier?: string
                 }
@@ -702,13 +685,6 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: "artists"
                         referencedColumns: ["uuid"]
-                    },
-                    {
-                        foreignKeyName: "weekly_votes_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "user_profiles"
-                        referencedColumns: ["id"]
                     },
                 ]
             }
