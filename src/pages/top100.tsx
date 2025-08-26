@@ -129,7 +129,7 @@ export default function Top100Page() {
         }
       }, 50);
     }
-  }, [hasMore, artists.length, totalCount, loadArtists]);
+  }, [hasMore]); // ✅ FIXED: Simplified dependencies to only include hasMore
 
   const handleVote = async (artistId: string) => {
     if (!user) {
