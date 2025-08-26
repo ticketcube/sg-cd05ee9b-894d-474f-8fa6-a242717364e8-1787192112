@@ -92,7 +92,7 @@ function WeeklyRatingsPageContent() {
       setWeeklyList(list);
 
       // Load existing user votes
-      const userVotes = await weeklyVotingService.getUserVotes(user.auth_id, weekIdentifier); // ✅ FIXED: Use auth_id (string) instead of user.id
+      const userVotes = await weeklyVotingService.getUserVotes(user.id, weekIdentifier); // ✅ FIXED: Use auth_id (string) instead of user.id
       const initialRatings = userVotes.map(vote => ({
         artistUuid: vote.artist_uuid,
         ticketInterest: (vote.quadrant_x || 0) * 50 + 50,
@@ -105,7 +105,7 @@ function WeeklyRatingsPageContent() {
       const watchStatuses: VideoWatchStatus[] = [];
       for (const artistData of list.artists) {
         try {
-          const watchData = await videoWatchService.getWatchStatus(user.auth_id, artistData.artist.uuid, weekIdentifier); // ✅ FIXED: Use artistData.artist.uuid instead of undefined artist.uuid
+          const watchData = await videoWatchService.getWatchStatus(user.id, artistData.artist.uuid, weekIdentifier); // ✅ FIXED: Use artistData.artist.uuid instead of undefined artist.uuid
           watchStatuses.push({
             artistUuid: artistData.artist.uuid,
             hasWatched: watchData.length > 0,
