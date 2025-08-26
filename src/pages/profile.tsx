@@ -55,14 +55,8 @@ export default function ProfilePage() {
             setLoading(true);
             setError(null);
             try {
-                const userProfile = await userProfileService.getUserProfile(user.auth_id);
-                const weeklySummaries = await userProfileService.getWeeklySummaries(user.auth_id);
-
-                setUserHistory({
-                    user_profile: userProfile,
-                    weekly_summaries: weeklySummaries,
-                    total_points: userProfile.total_points || 0
-                });
+                const history = await userProfileService.getUserEngagementHistory(user.auth_id);
+                setUserHistory(history);
             } catch (err) {
                 setError(err instanceof Error ? err.message : "Failed to load profile");
             } finally {
@@ -70,44 +64,14 @@ export default function ProfilePage() {
             }
         };
 
+
         fetchUserHistory();
 
     }, [supabaseUser, profileExists, authLoading, user?.auth_id, userHistory]);
 
 
     // ✅ FIXED: New function to load user profile using auth_id (UUID)
-    const loadUserProfileByAuthId = async (authId: string) => {
-        try {
-            console.log("🔄 loadUserProfileByAuthId called - setting loading to true");
-            setLoading(true);
-            setError(null);
-            console.log("📡 Getting user engagement history for auth_id:", authId);
-            
-            // First get the user profile to get the numeric ID for engagement history
-            const userProfile = await userProfileService.getUserProfile(authId);
-            console.log("✅ Got user profile:", userProfile);
-            
-            // For now, we'll create a basic history object since we need to update the service
-            // to work with auth_id instead of numeric IDs
-            
-            const history: UserEngagementHistory = {
-                user_profile: userProfile,
-                weekly_summaries: weeklySummaries,
-                total_points: userProfile.total_points || 0
-            };
-            
-            console.log("✅ Successfully created user engagement history:", history);
-            setUserHistory(history);
-            console.log("✅ userHistory state updated successfully");
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to load profile";
-            console.error("❌ Error loading engagement history:", errorMessage, err);
-            setError(`Failed to load your profile: ${errorMessage}`);
-        } finally {
-            console.log("🏁 loadUserProfileByAuthId finally - setting loading to false");
-            setLoading(false);
-        }
-    };
+   
 
     // Handle successful profile setup
     const handleProfileSetupComplete = async () => {
