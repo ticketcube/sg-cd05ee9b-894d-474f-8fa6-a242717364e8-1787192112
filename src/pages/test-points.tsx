@@ -62,7 +62,7 @@ export default function TestPointsPage() {
       const testWeekIdentifier = "2025-W30";
       
       const result = await videoWatchService.recordVideoView({
-        userId: user.id,
+        userId: user.auth_id, // ✅ FIXED: Use user.auth_id instead of user.id
         artistUuid: testArtistUuid,
         weekIdentifier: testWeekIdentifier,
         watchTimeSeconds: 20
@@ -73,7 +73,7 @@ export default function TestPointsPage() {
       setTestResults({
         success: true,
         videoViewResult: result,
-        userId: user.id,
+        userId: user.auth_id, // ✅ FIXED: Use user.auth_id instead of user.id
         artistUuid: testArtistUuid,
         weekIdentifier: testWeekIdentifier
       });
@@ -97,7 +97,7 @@ export default function TestPointsPage() {
     try {
       console.log('🚀 Running comprehensive test suite...');
       
-      const result = await pointsTestService.runComprehensiveTestSuite(user.id);
+      const result = await pointsTestService.runComprehensiveTestSuite(user.auth_id); // ✅ FIXED: Use user.auth_id instead of user.id
       console.log('🎉 Test suite completed:', result);
       
       setTestResults(result);

@@ -68,8 +68,8 @@ export default function Top100Page() {
     if (!user || !isUnlocked) return;
     
     try {
-      console.log("Loading existing Top100 votes for user:", user.id);
-      const existingVotes = await votingService.getUserVotes(user.id);
+      console.log("Loading existing Top100 votes for user:", user.auth_id); // ✅ FIXED: Use user.auth_id instead of user.id
+      const existingVotes = await votingService.getUserVotes(user.auth_id); // ✅ FIXED: Use user.auth_id instead of user.id
       const artistUuids = existingVotes.map(vote => vote.artist_uuid);
       console.log(`Found ${artistUuids.length} existing votes:`, artistUuids);
       setSelectedArtists(artistUuids);
@@ -176,7 +176,7 @@ export default function Top100Page() {
       const { error: deleteError } = await supabase
         .from("top25_votes")
         .delete()
-        .eq("user_id", user.id);
+        .eq("user_id", user.auth_id); // ✅ FIXED: Use user.auth_id instead of user.id
       
       if (deleteError) {
         console.error("Error deleting existing votes:", deleteError);
@@ -185,7 +185,7 @@ export default function Top100Page() {
       
       // Step 2: Insert all new votes
       const voteData = selectedArtists.map(artistUuid => ({
-        user_id: user.id,
+        user_id: user.auth_id, // ✅ FIXED: Use user.auth_id instead of user.id
         artist_uuid: artistUuid
       }));
 
