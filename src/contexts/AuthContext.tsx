@@ -5,8 +5,7 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import userProfileService from "@/services/userProfileService";
 
 interface User {
-    id: number;
-    auth_id: string;
+    auth_id: string;      // ✅ This is now the primary key (UUID)
     username: string;
     email: string;
     city?: string;
@@ -54,14 +53,13 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         try {
             console.log("🔍 [AuthContext] Loading user profile for:", authUser.id);
             
-            // Use the secure API to get profile
+            // Use the secure API to get profile by auth_id
             const userProfile = await userProfileService.getUserProfile(authUser.id);
             
-            console.log("✅ [AuthContext] Profile found via API:", userProfile.id, userProfile.username);
+            console.log("✅ [AuthContext] Profile found via API:", userProfile.auth_id, userProfile.username);
             
             const userData: User = {
-                id: userProfile.id,
-                auth_id: authUser.id,
+                auth_id: authUser.id,          // ✅ Use auth_id as primary identifier
                 username: userProfile.username,
                 email: userProfile.email,
                 city: userProfile.raw_city_input || undefined,
@@ -72,7 +70,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             setUser(userData);
             setProfileExists(true);
             localStorage.setItem("otwchart_user", JSON.stringify(userData));
-            console.log("🎉 [AuthContext] Profile loaded successfully:", userData.id);
+            console.log("🎉 [AuthContext] Profile loaded successfully:", userData.auth_id);
             
         } catch (error) {
             console.log("⚠️ [AuthContext] Profile not found or error:", error);
@@ -169,8 +167,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             );
 
             const userData: User = {
-                id: userProfile.id,
-                auth_id: currentUser.id,
+                auth_id: currentUser.id,       // ✅ Use auth_id as primary identifier
                 username: userProfile.username,
                 email: userProfile.email,
                 city: userProfile.raw_city_input || undefined,
@@ -181,7 +178,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             setUser(userData);
             setProfileExists(true);
             localStorage.setItem("otwchart_user", JSON.stringify(userData));
-            console.log("✅ [AuthContext] Profile created successfully:", userData.id);
+            console.log("✅ [AuthContext] Profile created successfully:", userData.auth_id);
             
         } catch (error) {
             console.error("❌ [AuthContext] Login error:", error);
