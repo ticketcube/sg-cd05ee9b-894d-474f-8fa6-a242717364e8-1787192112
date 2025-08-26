@@ -100,32 +100,40 @@ export default function Top100Page() {
     }
   }, [user, isUnlocked, loadExistingVotes]);
 
-  const setupIntersectionObserver = useCallback(() => {
-    if (observer.current) observer.current.disconnect();
+  useEffect(() => {
+    if (hasMore) {
+      if (observer.current) observer.current.disconnect();
+      
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          console.log("Last artist in view. Loading more...", { 
+            currentPage: page.current, 
+            hasMore,
+            totalArtists: artists.length,
+            totalCount 
+          });
+          
+          setLoadingMore(true);
+          page.current += 1;
+          loadArtists(page.current, false).finally(() => {
+            setLoadingMore(false);
+          });
+        }
+      }, {
+        rootMargin: '100px'
+      });
+    }
     
-    observer.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore) {
-        console.log("Last artist in view. Loading more...", { 
-          currentPage: page.current, 
-          hasMore,
-          totalArtists: artists.length,
-          totalCount 
-        });
-        
-        setLoadingMore(true);
-        page.current += 1;
-        loadArtists(page.current, false).finally(() => {
-          setLoadingMore(false);
-        });
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
       }
-    }, {
-      rootMargin: '100px'
-    });
+    };
   }, [hasMore, artists.length, totalCount, loadArtists]);
 
-  // Simple ref callback without complex type inference
-  const lastArtistElementRef = (node: HTMLDivElement | null) => {
-    if (node && hasMore && observer.current) {
+  // Simple ref function without complex dependencies
+  const observeLastElement = (node: HTMLDivElement | null) => {
+    if (node && observer.current && hasMore) {
       observer.current.observe(node);
     }
   };
@@ -372,7 +380,7 @@ export default function Top100Page() {
                 return (
                   <div
                     key={artist.uuid}
-                    ref={isLast ? lastArtistElementRef : null}
+                    ref={isLast ? observeLastElement : null}
                     className={cn(
                       "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
                       isSelected && "ring-2 ring-green-500 bg-gray-800",
