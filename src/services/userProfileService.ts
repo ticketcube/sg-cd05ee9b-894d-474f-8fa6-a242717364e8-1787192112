@@ -53,17 +53,20 @@ const userProfileService = {
    * @param authId The user's auth.users.id
    * @returns The user profile object or null if not found
    */
-  async getUserProfile(authId: string): Promise<UserProfile> {
+  async getUserProfile(authId: string): Promise<UserProfile | null> { // ✅ FIXED: Return null instead of throwing
     try {
       console.log(`[UserProfileService] Getting profile via secure API for auth_id: ${authId}`);
       
       // Call the secure API endpoint instead of direct Supabase client
       const response = await fetch(`/api/user/profile-by-auth-id?auth_id=${authId}`);
       
+      if (response.status === 404) {
+        // ✅ CRITICAL FIX: Return null instead of throwing error
+        console.log(`ℹ️ [UserProfileService] Profile not found for auth_id: ${authId} - returning null`);
+        return null;
+      }
+      
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Profile not found');
-        }
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
