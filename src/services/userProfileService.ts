@@ -17,12 +17,12 @@ export type EngagementType =
 
 export interface UserEngagement {
     id: number;
-    auth_id: string; // ✅ Use auth_id consistently
+    auth_id: string;
     engagement_type: EngagementType;
-    points_earned?: number | null;
-    week_identifier?: string | null;
-    artist_uuid?: string | null;
-    metadata?: Record<string, any> | null;
+    points_earned: number | null;
+    week_identifier: string | null;
+    artist_uuid: string | null;
+    metadata: Record<string, any> | null;
     created_at: string;
 }
 
