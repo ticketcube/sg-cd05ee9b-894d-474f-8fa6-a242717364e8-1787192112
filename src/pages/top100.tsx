@@ -100,7 +100,7 @@ export default function Top100Page() {
     }
   }, [user, isUnlocked, loadExistingVotes]);
 
-  const lastArtistElementRef = useCallback((node: HTMLDivElement) => {
+  const lastArtistElementRef = useCallback((node: HTMLDivElement | null) => {
     if (observer.current) observer.current.disconnect();
     
     observer.current = new IntersectionObserver(entries => {
