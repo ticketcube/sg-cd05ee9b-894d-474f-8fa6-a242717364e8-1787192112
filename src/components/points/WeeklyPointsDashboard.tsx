@@ -42,7 +42,7 @@ export default function WeeklyPointsDashboard({
       setError(null);
 
       // Get the weekly list and its artists
-      const weeklyList = await weeklyListService.getWeeklyListForUser(weekIdentifier, user.auth_id);
+      const weeklyList = await weeklyListService.getWeeklyListForUser(weekIdentifier, user.auth_id); // ✅ FIXED: Use user.auth_id instead of user.id
       if (!weeklyList) {
         throw new Error("Weekly list not found");
       }
@@ -54,7 +54,7 @@ export default function WeeklyPointsDashboard({
       let videosWatched = 0;
       for (const artistUuid of artistUuids) {
         try {
-          const watchData = await videoWatchService.getWatchStatus(user.id, artistUuid, weekIdentifier);
+          const watchData = await videoWatchService.getWatchStatus(user.auth_id, artistUuid, weekIdentifier); // ✅ FIXED: Use user.auth_id instead of user.id
           if (watchData.length > 0) {
             videosWatched++;
           }
@@ -64,11 +64,11 @@ export default function WeeklyPointsDashboard({
       }
 
       // Get user votes for this week
-      const userVotes = await weeklyVotingService.getUserVotes(user.id, weekIdentifier);
+      const userVotes = await weeklyVotingService.getUserVotes(user.auth_id, weekIdentifier); // ✅ FIXED: Use user.auth_id instead of user.id
       const artistsRated = userVotes.length;
 
       // Get total points earned this week
-      const weeklyStats = await userProfileService.getWeeklyStats(user.id, weekIdentifier);
+      const weeklyStats = await userProfileService.getWeeklyStats(user.auth_id, weekIdentifier); // ✅ FIXED: Use user.auth_id instead of user.id
       const pointsEarned = weeklyStats.total_points || 0;
 
       // Calculate completion bonus (assuming it's awarded when all artists are rated)

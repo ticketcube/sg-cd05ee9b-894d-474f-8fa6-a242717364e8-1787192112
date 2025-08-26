@@ -99,7 +99,7 @@ export default function WeeklyArtistRatingPopup({
       // Check if user is eligible for points
       const eligible = await pointsConfigService.checkEligibility(
         'video_view',
-        user.id,
+        user.auth_id, // ✅ FIXED: Use user.auth_id instead of user.id
         artist.uuid,
         weekIdentifier
       );
@@ -147,7 +147,7 @@ export default function WeeklyArtistRatingPopup({
 
     try {
       const result = await videoWatchService.recordVideoView({
-        userId: user.id,
+        userId: user.auth_id, // ✅ FIXED: Use user.auth_id instead of user.id
         artistUuid: artist.uuid,
         weekIdentifier: weekIdentifier,
         watchTimeSeconds: minWatchTime // Use minWatchTime instead of current watchTime
@@ -215,7 +215,7 @@ export default function WeeklyArtistRatingPopup({
       const shareValue = (shareInterest - 50) / 50;
       
       const result = await weeklyVotingService.submitQuadrantVote(
-        user.id,
+        user.auth_id, // ✅ FIXED: Use user.auth_id instead of user.id
         weekIdentifier,
         weeklyListId,
         artist.uuid,

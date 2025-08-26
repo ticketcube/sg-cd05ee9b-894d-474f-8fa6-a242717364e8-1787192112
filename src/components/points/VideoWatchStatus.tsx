@@ -36,7 +36,7 @@ export default function VideoWatchStatus({
 
     try {
       setLoading(true);
-      const watchData = await videoWatchService.getWatchStatus(user.id, artistUuid, weekIdentifier);
+      const watchData = await videoWatchService.getWatchStatus(user.auth_id, artistUuid, weekIdentifier); // ✅ FIXED: Use user.auth_id instead of user.id
       
       setWatchStatus({
         hasWatched: watchData.length > 0,
