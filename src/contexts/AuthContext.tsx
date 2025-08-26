@@ -140,19 +140,41 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             async (event, session) => {
                 console.log("🔄 [AuthContext] Auth state changed:", event);
                 
-                if (session?.user) {
-                    console.log("✅ [AuthContext] User signed in:", session.user.id);
+                if (event === 'SIGNED_UP' && session?.user) {
+                    // ✅ CRITICAL FIX: For new signups, user doesn't have a profile yet
+                    console.log("🆕 [AuthContext] New user signed up:", session.user.id);
+                    setSupabaseUser(session.user);
+                    setUser(null);
+                    setProfileExists(false); // ✅ NEW USERS DON'T HAVE PROFILES YET
+                    setLoading(false);
+                    return;
+                }
+                
+                if (event === 'SIGNED_IN' && session?.user) {
+                    console.log("🔑 [AuthContext] User signed in:", session.user.id);
                     setSupabaseUser(session.user);
                     setLoading(true);
                     await loadUserProfile(session.user);
                     setLoading(false);
-                } else {
+                    return;
+                }
+                
+                if (event === 'SIGNED_OUT' || !session?.user) {
                     console.log("👋 [AuthContext] User signed out or no session");
                     setSupabaseUser(null);
                     setUser(null);
                     setProfileExists(false);
                     setLoading(false);
                     localStorage.removeItem("otwchart_user");
+                    return;
+                }
+                
+                // ✅ For other events with valid session, try to load profile
+                if (session?.user) {
+                    setSupabaseUser(session.user);
+                    setLoading(true);
+                    await loadUserProfile(session.user);
+                    setLoading(false);
                 }
             }
         );
