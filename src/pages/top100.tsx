@@ -100,8 +100,7 @@ export default function Top100Page() {
     }
   }, [user, isUnlocked, loadExistingVotes]);
 
-  // Replace the problematic useCallback with a simpler ref pattern
-  const lastArtistElementRef = (node: HTMLDivElement | null) => {
+  const setupIntersectionObserver = useCallback(() => {
     if (observer.current) observer.current.disconnect();
     
     observer.current = new IntersectionObserver((entries) => {
@@ -122,13 +121,12 @@ export default function Top100Page() {
     }, {
       rootMargin: '100px'
     });
-    
-    if (node && hasMore) {
-      setTimeout(() => {
-        if (node && observer.current) {
-          observer.current.observe(node);
-        }
-      }, 50);
+  }, [hasMore, artists.length, totalCount, loadArtists]);
+
+  // Simple ref callback without complex type inference
+  const lastArtistElementRef = (node: HTMLDivElement | null) => {
+    if (node && hasMore && observer.current) {
+      observer.current.observe(node);
     }
   };
 
