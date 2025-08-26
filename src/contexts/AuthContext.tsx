@@ -49,30 +49,48 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const [profileExists, setProfileExists] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const loadUserProfile = async (authUser: SupabaseUser) => {
+    const loadUserProfile = async (authUser: SupabaseUser, retryCount = 0, maxRetries = 5) => {
+        const MAX_RETRIES = maxRetries;
+        const baseDelay = 500; // 500ms base delay
+        
         try {
-            console.log(`🔍 [AuthContext] Loading user profile for: ${authUser.id}`);
+            console.log(`🔍 [AuthContext] Loading user profile for: ${authUser.id} (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
             
-            // ✅ CRITICAL FIX: First check if profile exists
+            // ✅ CRITICAL FIX: Robust retry system with exponential backoff
             const response = await fetch(`/api/user/profile-by-auth-id?auth_id=${authUser.id}`);
             
             if (response.status === 404) {
-                // Profile doesn't exist - CREATE IT IMMEDIATELY
-                console.log(`🚨 [AuthContext] Profile not found for ${authUser.id} - CREATING NOW`);
+                console.log(`⚠️ [AuthContext] Profile not found for ${authUser.id} (attempt ${retryCount + 1})`);
+                
+                if (retryCount < MAX_RETRIES) {
+                    // Calculate exponential backoff delay: 500ms, 1000ms, 2000ms, 4000ms, 8000ms
+                    const delay = baseDelay * Math.pow(2, retryCount);
+                    console.log(`🔄 [AuthContext] Waiting ${delay}ms before retry ${retryCount + 1}...`);
+                    
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    
+                    // Retry recursively
+                    return loadUserProfile(authUser, retryCount + 1, maxRetries);
+                }
+                
+                // ✅ FALLBACK: After all retries, create profile manually
+                console.log(`🚨 [AuthContext] Profile still not found after ${MAX_RETRIES} retries - creating manually`);
                 
                 try {
-                    // Create profile immediately using signup data
+                    // Extract username from email or metadata
                     const username = authUser.user_metadata?.username || 
-                                     authUser.email?.split('@')[0] || 
-                                     `user${Date.now()}`;
+                                    authUser.email?.split('@')[0] || 
+                                    `user${Date.now()}`;
                     
+                    console.log(`📝 [AuthContext] Creating profile manually: ${username}`);
                     const createdProfile = await userProfileService.createUserProfile(
                         authUser.id,
                         username,
                         authUser.email || 'no-email@example.com'
                     );
                     
-                    console.log("✅ [AuthContext] Profile created immediately:", createdProfile.id, createdProfile.username);
+                    console.log("✅ [AuthContext] Profile created manually:", createdProfile.id, createdProfile.username);
                     
                     // Set user data immediately
                     const userData: User = {
@@ -87,24 +105,30 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                     setUser(userData);
                     setProfileExists(true);
                     localStorage.setItem("otwchart_user", JSON.stringify(userData));
-                    console.log("🎉 [AuthContext] Profile created and loaded successfully:", userData.auth_id);
+                    console.log("🎉 [AuthContext] Manual profile creation successful:", userData.auth_id);
                     return;
                     
                 } catch (createError) {
-                    console.error("❌ [AuthContext] Failed to create profile:", createError);
-                    // If profile creation fails, still try the original approach
+                    console.error("❌ [AuthContext] Failed to create profile manually:", createError);
+                    
+                    // Complete failure - user needs to sign out and try again
                     setUser(null);
                     setProfileExists(false);
                     localStorage.removeItem("otwchart_user");
+                    
+                    // Show user-friendly error message
+                    alert("There was an issue setting up your profile. Please sign out and try signing in again.");
                     return;
                 }
             }
             
+            // Handle other HTTP errors
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
             }
             
+            // ✅ SUCCESS: Profile found
             const userProfile = await response.json();
             console.log("✅ [AuthContext] Profile found via API:", userProfile.auth_id, userProfile.username);
             
