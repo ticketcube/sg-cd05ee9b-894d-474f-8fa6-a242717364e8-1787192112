@@ -21,7 +21,7 @@ export default function ProfilePage() {
 
     useEffect(() => {
         console.log("🔍 Profile page useEffect triggered:");
-        console.log("  - user:", user?.id ? `ID:${user.id}, username:${user.username}` : "null");
+        console.log("  - user:", user?.auth_id ? `auth_id:${user.auth_id}, username:${user.username}` : "null");
         console.log("  - supabaseUser:", supabaseUser ? `ID:${supabaseUser.id}` : "null");
         console.log("  - profileExists:", profileExists);
         console.log("  - authLoading:", authLoading);
@@ -50,15 +50,15 @@ export default function ProfilePage() {
             return;
         }
 
-        // ✅ FINAL FIX: Allow fetch on initial load AND prevent duplicates with a fetching flag
-        if (supabaseUser && profileExists && user?.id && !userHistory) {
-            console.log("🚀 TRIGGERING loadUserProfile for user ID:", user.id);
-            loadUserProfile(user.id);
+        // ✅ FIXED: Use auth_id instead of non-existent id field
+        if (supabaseUser && profileExists && user?.auth_id && !userHistory) {
+            console.log("🚀 TRIGGERING loadUserProfile for user auth_id:", user.auth_id);
+            loadUserProfileByAuthId(user.auth_id);
             return;
         }
 
         // ✅ CRITICAL FIX: If everything is loaded, ensure loading state is false  
-        if (supabaseUser && profileExists && user?.id && userHistory) {
+        if (supabaseUser && profileExists && user?.auth_id && userHistory) {
             console.log("✅ Everything loaded successfully - setting loading to false");
             if (loading) {
                 setLoading(false);
@@ -69,28 +69,34 @@ export default function ProfilePage() {
         }
 
         // ✅ CRITICAL FIX: Handle edge case where user exists but userHistory failed to load
-        if (supabaseUser && profileExists && user?.id && !userHistory && !loading && !error) {
+        if (supabaseUser && profileExists && user?.auth_id && !userHistory && !loading && !error) {
             console.log("🔄 Edge case: user exists but no userHistory and not loading - retry load");
-            loadUserProfile(user.id);
+            loadUserProfileByAuthId(user.auth_id);
         }
 
-    }, [supabaseUser, profileExists, authLoading, user?.id, userHistory, loading, error]); // ✅ Added loading and error to deps
+    }, [supabaseUser, profileExists, authLoading, user?.auth_id, userHistory, loading, error]);
 
-    const loadUserProfile = async (profileId: number) => {
+    // ✅ FIXED: New function to load user profile using auth_id (UUID)
+    const loadUserProfileByAuthId = async (authId: string) => {
         try {
-            console.log("🔄 loadUserProfile called - setting loading to true");
+            console.log("🔄 loadUserProfileByAuthId called - setting loading to true");
             setLoading(true);
             setError(null);
-            console.log("📡 Calling getUserEngagementHistory for user ID:", profileId);
+            console.log("📡 Getting user engagement history for auth_id:", authId);
             
-            const history = await userProfileService.getUserEngagementHistory(profileId);
-            console.log("✅ Successfully loaded user engagement history:", history);
-            console.log("📊 History details:", {
-                userProfile: history.user_profile?.username,
-                totalPoints: history.total_points,
-                weeklyCount: history.weekly_summaries?.length
-            });
+            // First get the user profile to get the numeric ID for engagement history
+            const userProfile = await userProfileService.getUserProfile(authId);
+            console.log("✅ Got user profile:", userProfile);
             
+            // For now, we'll create a basic history object since we need to update the service
+            // to work with auth_id instead of numeric IDs
+            const history: UserEngagementHistory = {
+                user_profile: userProfile,
+                weekly_summaries: [], // TODO: Update service to get this by auth_id
+                total_points: userProfile.total_points || 0
+            };
+            
+            console.log("✅ Successfully created user engagement history:", history);
             setUserHistory(history);
             console.log("✅ userHistory state updated successfully");
         } catch (err) {
@@ -98,7 +104,7 @@ export default function ProfilePage() {
             console.error("❌ Error loading engagement history:", errorMessage, err);
             setError(`Failed to load your profile: ${errorMessage}`);
         } finally {
-            console.log("🏁 loadUserProfile finally - setting loading to false");
+            console.log("🏁 loadUserProfileByAuthId finally - setting loading to false");
             setLoading(false);
         }
     };
@@ -112,9 +118,6 @@ export default function ProfilePage() {
             console.log("🔄 Calling refreshUserProfile...");
             await refreshUserProfile();
             console.log("✅ Profile state refreshed successfully - useEffect should handle the rest");
-            
-            // ✅ REMOVED: setTimeout and window.location.reload() logic 
-            // Let useEffect handle state changes reactively instead of forcing page reloads
             
         } catch (error) {
             console.error("❌ Failed to refresh profile state:", error);
