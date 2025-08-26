@@ -92,7 +92,7 @@ export default function ProfilePage() {
             const weeklySummaries = await userProfileService.getWeeklySummaries(authId);
             const history: UserEngagementHistory = {
                 user_profile: userProfile,
-                weekly_summaries: weeklySummaries 
+                weekly_summaries: weekly_summaries
                 total_points: userProfile.total_points || 0
             };
             
