@@ -236,7 +236,7 @@ const userProfileService = {
       const { data: engagement, error: engagementError } = await supabase
         .from("user_engagements")
         .insert([{
-          user_id: userId,
+          auth_id: userId.toString(), // ✅ FIXED: Use auth_id instead of user_id to match new database schema
           engagement_type: engagementType,
           points_earned: pointsEarned,
           week_identifier: weekIdentifier,
@@ -277,11 +277,11 @@ const userProfileService = {
       const userProfile = await this.getUserProfileById(userId);
       if (!userProfile) throw new Error("User profile not found");
 
-      // Get all engagements grouped by week
+      // Get all engagements grouped by week - ✅ FIXED: Use auth_id instead of user_id
       const { data: engagements, error } = await supabase
         .from("user_engagements")
         .select("*")
-        .eq("user_id", userId)
+        .eq("auth_id", userProfile.auth_id) // ✅ FIXED: Query by auth_id instead of user_id
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -338,10 +338,14 @@ const userProfileService = {
    */
   async checkVideoViewEligibility(userId: number, artistUuid: string, weekIdentifier: string): Promise<boolean> {
     try {
+      // Get user profile to get auth_id
+      const userProfile = await this.getUserProfileById(userId);
+      if (!userProfile) return false;
+
       const { data, error } = await supabase
         .from("user_engagements")
         .select("id")
-        .eq("user_id", userId)
+        .eq("auth_id", userProfile.auth_id) // ✅ FIXED: Use auth_id instead of user_id
         .eq("artist_uuid", artistUuid)
         .eq("week_identifier", weekIdentifier)
         .eq("engagement_type", "video_view")
@@ -368,10 +372,14 @@ const userProfileService = {
    */
   async checkVoteSubmissionEligibility(userId: number, weekIdentifier: string): Promise<boolean> {
     try {
+      // Get user profile to get auth_id
+      const userProfile = await this.getUserProfileById(userId);
+      if (!userProfile) return false;
+
       const { data, error } = await supabase
         .from("user_engagements")
         .select("id")
-        .eq("user_id", userId)
+        .eq("auth_id", userProfile.auth_id) // ✅ FIXED: Use auth_id instead of user_id
         .eq("week_identifier", weekIdentifier)
         .in("engagement_type", ["vote_submission", "artist_rating"])
         .limit(1);
@@ -397,10 +405,14 @@ const userProfileService = {
    */
   async getWeeklyStats(userId: number, weekIdentifier: string): Promise<{ total_points: number }> {
     try {
+      // Get user profile to get auth_id
+      const userProfile = await this.getUserProfileById(userId);
+      if (!userProfile) throw new Error("User profile not found");
+
       const { data, error } = await supabase
         .from("user_engagements")
         .select("points_earned")
-        .eq("user_id", userId)
+        .eq("auth_id", userProfile.auth_id) // ✅ FIXED: Use auth_id instead of user_id
         .eq("week_identifier", weekIdentifier);
 
       if (error) throw error;

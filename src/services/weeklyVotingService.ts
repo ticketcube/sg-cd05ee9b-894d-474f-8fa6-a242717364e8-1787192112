@@ -115,7 +115,7 @@ const weeklyVotingService = {
 
       return {
         id: engagement.id,
-        user_id: engagement.user_id,
+        user_id: engagement.auth_id, // ✅ FIXED: Map auth_id to user_id for backward compatibility
         artist_uuid: engagement.artist_uuid || '',
         week_identifier: engagement.week_identifier || '',
         quadrant_x: metadata?.quadrant_x || null,
