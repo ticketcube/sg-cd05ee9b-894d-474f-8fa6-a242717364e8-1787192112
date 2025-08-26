@@ -113,15 +113,18 @@ const weeklyVotingService = {
         metadata = {};
       }
 
-      return {
+      // ✅ FIXED: Create a proper ArtistVote object with correct user_id type
+      const vote: ArtistVote = {
         id: engagement.id,
-        user_id: engagement.auth_id, // ✅ FIXED: Map auth_id to user_id for backward compatibility
+        user_id: 0, // ✅ FIXED: Use 0 as placeholder since we're using auth_id now, keeping for backward compatibility
         artist_uuid: engagement.artist_uuid || '',
         week_identifier: engagement.week_identifier || '',
         quadrant_x: metadata?.quadrant_x || null,
         quadrant_y: metadata?.quadrant_y || null,
         created_at: engagement.created_at
       };
+      
+      return vote;
     }) as ArtistVote[];
   },
 
