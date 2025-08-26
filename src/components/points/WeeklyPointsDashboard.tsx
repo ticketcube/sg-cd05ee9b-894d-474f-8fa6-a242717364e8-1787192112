@@ -42,7 +42,7 @@ export default function WeeklyPointsDashboard({
       setError(null);
 
       // Get the weekly list and its artists
-      const weeklyList = await weeklyListService.getWeeklyListForUser(weekIdentifier, user.auth_id); // ✅ FIXED: Use user.auth_id instead of user.id
+      const weeklyList = await weeklyListService.getWeeklyListForUser(weekIdentifier, user.auth_id); // ✅ ALREADY CORRECT: Uses user.auth_id (string)
       if (!weeklyList) {
         throw new Error("Weekly list not found");
       }
@@ -54,7 +54,7 @@ export default function WeeklyPointsDashboard({
       let videosWatched = 0;
       for (const artistUuid of artistUuids) {
         try {
-          const watchData = await videoWatchService.getWatchStatus(user.auth_id, artistUuid, weekIdentifier); // ✅ FIXED: Use user.auth_id instead of user.id
+          const watchData = await videoWatchService.getWatchStatus(user.auth_id, artistUuid, weekIdentifier); // ✅ ALREADY CORRECT: Uses user.auth_id (string)
           if (watchData.length > 0) {
             videosWatched++;
           }
@@ -64,11 +64,13 @@ export default function WeeklyPointsDashboard({
       }
 
       // Get user votes for this week
-      const userVotes = await weeklyVotingService.getUserVotes(user.auth_id, weekIdentifier); // ✅ FIXED: Use user.auth_id instead of user.id
+      const userVotes = await weeklyVotingService.getUserVotes(user.auth_id, weekIdentifier); // ✅ ALREADY CORRECT: Uses user.auth_id (string)
       const artistsRated = userVotes.length;
 
-      // Get total points earned this week
-      const weeklyStats = await userProfileService.getWeeklyStats(user.auth_id, weekIdentifier); // ✅ FIXED: Use user.auth_id instead of user.id
+      // Get total points earned this week - ✅ FIXED: Need to convert auth_id to numeric user ID
+      // First get user profile to get numeric ID
+      const userProfile = await userProfileService.getUserProfile(user.auth_id);
+      const weeklyStats = await userProfileService.getWeeklyStats(userProfile.id, weekIdentifier); // ✅ FIXED: Use numeric ID for getWeeklyStats
       const pointsEarned = weeklyStats.total_points || 0;
 
       // Calculate completion bonus (assuming it's awarded when all artists are rated)

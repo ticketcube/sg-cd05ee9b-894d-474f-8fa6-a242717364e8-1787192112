@@ -7,6 +7,7 @@ import { videoWatchService } from "@/services/videoWatchService";
 import { pointsConfigService } from "@/services/pointsConfigService";
 import pointsTestService from "@/services/pointsTestService";
 import { useAuth } from "@/contexts/AuthContext";
+import { userProfileService } from "@/services/userProfileService";
 
 export default function TestPointsPage() {
   const { user } = useAuth();
@@ -61,12 +62,13 @@ export default function TestPointsPage() {
       const testArtistUuid = "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c"; // Laufey
       const testWeekIdentifier = "2025-W30";
       
-      const result = await videoWatchService.recordVideoView({
-        userId: user.auth_id, // ✅ FIXED: Use user.auth_id instead of user.id
-        artistUuid: testArtistUuid,
-        weekIdentifier: testWeekIdentifier,
-        watchTimeSeconds: 20
-      });
+      const result = await userProfileService.recordEngagement(
+        user.auth_id, // ✅ FIXED: Use string auth_id instead of numeric user.id
+        "video_view",
+        10,
+        testWeekIdentifier,
+        "test-artist-uuid"
+      );
       
       console.log('📊 Video view result:', result);
       
