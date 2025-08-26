@@ -47,20 +47,20 @@ export default function ProfilePage() {
             console.log("⚠️ User authenticated but no profile exists - stopping loading and showing setup");
             setLoading(false);
             setError(null);
-            // Don't try to load data for users without profiles
+            // Don't try to load data for users without profiles - the component will show profile setup
             return;
         }
 
-        // ✅ CRITICAL FIX: Only try to load user history if we have a complete profile
-        if (supabaseUser && profileExists && user?.auth_id && !userHistory && !loading) {
+        // ✅ CRITICAL FIX: Only try to load user history if we have a complete profile AND no userHistory yet
+        if (supabaseUser && profileExists && user?.auth_id && !userHistory) {
             console.log("🚀 TRIGGERING loadUserProfileByAuthId for user auth_id:", user.auth_id);
             loadUserProfileByAuthId(user.auth_id);
             return;
         }
 
         // ✅ If everything is loaded successfully, ensure loading is false
-        if (supabaseUser && profileExists && user?.auth_id && userHistory && loading) {
-            console.log("✅ Everything loaded successfully - setting loading to false");
+        if (supabaseUser && profileExists && user?.auth_id && userHistory) {
+            console.log("✅ Everything loaded successfully - ensuring loading is false");
             setLoading(false);
             setError(null);
         }
