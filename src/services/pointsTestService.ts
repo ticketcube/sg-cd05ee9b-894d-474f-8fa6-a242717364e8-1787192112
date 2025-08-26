@@ -10,17 +10,17 @@ type UserProfile = Tables<"user_profiles">;
 
 const pointsTestService = {
   // Test 1: Ensure a test user can be created or found
-  async getTestUser(userId?: number): Promise<UserProfile> {
+  async getTestUser(authId?: string): Promise<UserProfile> { // ✅ FIXED: Change parameter to authId (string)
     console.log("🧪 Getting test user...");
-    if (userId) {
+    if (authId) {
       const { data, error } = await supabase
         .from("user_profiles")
         .select("*")
-        .eq("id", userId)
+        .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of id
         .single();
       if (error) throw new Error(`Error fetching existing user: ${error.message}`);
-      if (!data) throw new Error(`User with ID ${userId} not found.`);
-      console.log(`✅ Found existing user: ${data.username} (ID: ${data.id})`);
+      if (!data) throw new Error(`User with auth_id ${authId} not found.`);
+      console.log(`✅ Found existing user: ${data.username} (auth_id: ${data.auth_id})`);
       return data;
     }
 
@@ -28,6 +28,7 @@ const pointsTestService = {
     const randomSuffix = Math.floor(Math.random() * 10000);
     const testUsername = `testuser_${timestamp}_${randomSuffix}`;
     const testEmail = `${testUsername}@test.com`;
+    const testAuthId = `test-auth-${timestamp}-${randomSuffix}`; // ✅ FIXED: Generate test auth_id
 
     console.log(`🔍 Attempting to create test user: ${testUsername}`);
 
@@ -42,13 +43,14 @@ const pointsTestService = {
     }
 
     if (existingUser) {
-      console.log(`✅ Found existing test user: ${existingUser.username} (ID: ${existingUser.id})`);
+      console.log(`✅ Found existing test user: ${existingUser.username} (auth_id: ${existingUser.auth_id})`);
       return existingUser;
     }
 
     const { data, error } = await supabase
       .from("user_profiles")
       .insert({
+        auth_id: testAuthId, // ✅ FIXED: Add required auth_id field
         username: testUsername,
         email: testEmail,
         total_points: 0,
@@ -72,7 +74,7 @@ const pointsTestService = {
         }
 
         if (anyTestUser) {
-          console.log(`✅ Using existing test user: ${anyTestUser.username} (ID: ${anyTestUser.id})`);
+          console.log(`✅ Using existing test user: ${anyTestUser.username} (auth_id: ${anyTestUser.auth_id})`);
           return anyTestUser;
         }
       }
@@ -80,7 +82,7 @@ const pointsTestService = {
       throw new Error(`Error creating test user: ${error.message}`);
     }
     
-    console.log(`✅ Created new test user: ${data.username} (ID: ${data.id})`);
+    console.log(`✅ Created new test user: ${data.username} (auth_id: ${data.auth_id})`);
     return data;
   },
 
@@ -117,8 +119,8 @@ const pointsTestService = {
   },
 
   // Test 3: Test video view points with "once per artist per week" logic
-  async testVideoViewPoints(userId: number) {
-    console.log(`🧪 Testing video view points for user ${userId}...`);
+  async testVideoViewPoints(authId: string) { // ✅ FIXED: Change parameter to authId (string)
+    console.log(`🧪 Testing video view points for user ${authId}...`);
     
     try {
       const testArtistUuid = "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c"; // Laufey
@@ -128,7 +130,7 @@ const pointsTestService = {
       
       // First video view - should earn points
       const firstViewResult = await videoWatchService.recordVideoView({
-        userId: userId,
+        userId: authId, // ✅ FIXED: Use authId (string) instead of userId (number)
         artistUuid: testArtistUuid,
         weekIdentifier: testWeekIdentifier,
         watchTimeSeconds: 20 // Above 15 second minimum
@@ -146,7 +148,7 @@ const pointsTestService = {
       console.log("📊 Testing second video view (should NOT earn points)...");
       
       const secondViewResult = await videoWatchService.recordVideoView({
-        userId: userId,
+        userId: authId, // ✅ FIXED: Use authId (string) instead of userId (number)
         artistUuid: testArtistUuid,
         weekIdentifier: testWeekIdentifier,
         watchTimeSeconds: 25
@@ -164,7 +166,7 @@ const pointsTestService = {
       console.log("📊 Testing same artist, different week (should earn points)...");
       
       const differentWeekResult = await videoWatchService.recordVideoView({
-        userId: userId,
+        userId: authId, // ✅ FIXED: Use authId (string) instead of userId (number)
         artistUuid: testArtistUuid,
         weekIdentifier: "2025-W31", // Different week
         watchTimeSeconds: 18

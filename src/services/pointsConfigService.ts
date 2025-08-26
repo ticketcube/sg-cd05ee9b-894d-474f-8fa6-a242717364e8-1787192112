@@ -151,13 +151,13 @@ export class PointsConfigService {
 
   /**
    * Check if user is eligible for points based on frequency rules
-   * FIXED: Now uses user_engagements table instead of user_achievements
+   * ✅ FIXED: Now uses auth_id (string) instead of user_id (number) and user_engagements table
    */
   async checkEligibility(
     actionName: keyof PointsConfigCache,
-    userId: number,
+    authId: string, // ✅ FIXED: Changed from userId (number) to authId (string)
     artistUuid?: string,
-      weekIdentifier?: string
+    weekIdentifier?: string
   ): Promise<boolean> {
     try {
       const frequency = await this.getFrequency(actionName);
@@ -170,7 +170,7 @@ export class PointsConfigService {
           const { data: artistEngagement, error: artistError } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", userId)
+            .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
             .eq("engagement_type", actionName)
             .eq("artist_uuid", artistUuid)
             .gt("points_earned", 0)
@@ -190,11 +190,10 @@ export class PointsConfigService {
           const { data: artistWeekEngagement, error: artistWeekError } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", userId)
+            .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
             .eq("engagement_type", actionName)
             .eq("artist_uuid", artistUuid)
             .eq("week_identifier", weekIdentifier)
-            
             .gt("points_earned", 0)
             .limit(1);
 
@@ -212,7 +211,7 @@ export class PointsConfigService {
           const { data: weekEngagement, error: weekError } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", userId)
+            .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
             .eq("engagement_type", actionName)
             .eq("week_identifier", weekIdentifier)
             .gt("points_earned", 0)
@@ -235,7 +234,7 @@ export class PointsConfigService {
           const { data: generalEngagement, error: generalError } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", userId)
+            .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
             .eq("engagement_type", actionName)
             .gt("points_earned", 0)
             .limit(1);
