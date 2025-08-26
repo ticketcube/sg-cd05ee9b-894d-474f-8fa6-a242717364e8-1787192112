@@ -20,60 +20,60 @@ export default function ProfilePage() {
     const [showProfileSetup, setShowProfileSetup] = useState(false);
 
     useEffect(() => {
-        console.log("🔍 Profile page useEffect triggered:");
-        console.log("  - user:", user?.auth_id ? `auth_id:${user.auth_id}, username:${user.username}` : "null");
-        console.log("  - supabaseUser:", supabaseUser ? `ID:${supabaseUser.id}` : "null");
+        console.log("🔍 Profile page useEffect triggered");
+        console.log("  - user:", user?.auth_id);
+        console.log("  - supabaseUser:", supabaseUser?.id);
         console.log("  - profileExists:", profileExists);
         console.log("  - authLoading:", authLoading);
-        console.log("  - userHistory:", userHistory ? "loaded" : "null");
-        console.log("  - loading:", loading);
-        
+
         // Wait for auth to finish loading
-        if (authLoading) {
-            console.log("✋ Auth still loading, waiting...");
-            return;
-        }
-        
-        // Handle unauthenticated users
+        if (authLoading) return;
+
+        // User not signed in
         if (!supabaseUser) {
-            console.log("❌ User not authenticated - needs to sign in");
             setError("Please sign in to view your profile.");
             setLoading(false);
             return;
         }
 
-        // ✅ CRITICAL FIX: Handle authenticated users without profiles
-        // IMMEDIATELY stop loading and show profile setup - DO NOT attempt to load any data
-        if (supabaseUser && profileExists === false) {
-            console.log("🛑 IMMEDIATE STOP: User authenticated but profileExists is FALSE");
-            console.log("🎯 Setting loading to false and showing profile setup UI");
-            setLoading(false);
+        // Authenticated but profile missing
+        if (profileExists === false) {
+            setUserHistory(null);
             setError(null);
-            setUserHistory(null); // Clear any existing data
-            // Do NOT call loadUserProfileByAuthId - just let the component render profile setup
+            setLoading(false);
             return;
         }
 
-        // ✅ CRITICAL FIX: Only try to load user history if ALL conditions are met:
-        // 1. User is authenticated (supabaseUser exists)
-        // 2. Profile EXISTS (profileExists === true, not just truthy)
-        // 3. We have complete user data with auth_id
-        // 4. We don't have userHistory yet
-        if (supabaseUser && profileExists === true && user?.auth_id && !userHistory) {
-            console.log("🚀 ALL CONDITIONS MET - Loading user data for auth_id:", user.auth_id);
-            console.log("✅ profileExists is TRUE, proceeding with data load");
-            loadUserProfileByAuthId(user.auth_id);
+        // Profile exists, fetch user history only if not loaded
+        const shouldLoadProfile = profileExists === true && user?.auth_id && !userHistory;
+        if (!shouldLoadProfile) {
+            setLoading(false);
             return;
         }
 
-        // ✅ If everything is loaded successfully, ensure loading is false
-        if (supabaseUser && profileExists === true && user?.auth_id && userHistory) {
-            console.log("✅ All data loaded successfully - ensuring loading is false");
-            setLoading(false);
+        const fetchUserHistory = async () => {
+            setLoading(true);
             setError(null);
-        }
+            try {
+                const userProfile = await userProfileService.getUserProfile(user.auth_id);
+                const weeklySummaries = await userProfileService.getWeeklySummaries(user.auth_id);
+
+                setUserHistory({
+                    user_profile: userProfile,
+                    weekly_summaries: weeklySummaries,
+                    total_points: userProfile.total_points || 0
+                });
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Failed to load profile");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserHistory();
 
     }, [supabaseUser, profileExists, authLoading, user?.auth_id, userHistory]);
+
 
     // ✅ FIXED: New function to load user profile using auth_id (UUID)
     const loadUserProfileByAuthId = async (authId: string) => {
