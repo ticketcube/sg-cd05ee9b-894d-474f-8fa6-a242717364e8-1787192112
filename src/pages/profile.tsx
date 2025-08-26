@@ -43,23 +43,25 @@ export default function ProfilePage() {
         }
 
         // ✅ CRITICAL FIX: Handle authenticated users without profiles
-        // Stop ALL loading and show profile setup immediately
+        // IMMEDIATELY stop loading and show profile setup - DO NOT attempt to load any data
         if (supabaseUser && profileExists === false) {
-            console.log("🚫 STOPPING: User authenticated but profileExists is FALSE - showing profile setup");
+            console.log("🛑 IMMEDIATE STOP: User authenticated but profileExists is FALSE");
+            console.log("🎯 Setting loading to false and showing profile setup UI");
             setLoading(false);
             setError(null);
             setUserHistory(null); // Clear any existing data
-            // Component will render profile setup UI since profileExists is false
+            // Do NOT call loadUserProfileByAuthId - just let the component render profile setup
             return;
         }
 
-        // ✅ CRITICAL FIX: Only try to load user history if:
-        // 1. User is authenticated
-        // 2. Profile exists (profileExists === true)
-        // 3. We have user data with auth_id
+        // ✅ CRITICAL FIX: Only try to load user history if ALL conditions are met:
+        // 1. User is authenticated (supabaseUser exists)
+        // 2. Profile EXISTS (profileExists === true, not just truthy)
+        // 3. We have complete user data with auth_id
         // 4. We don't have userHistory yet
         if (supabaseUser && profileExists === true && user?.auth_id && !userHistory) {
-            console.log("🚀 LOADING user data - all conditions met for user auth_id:", user.auth_id);
+            console.log("🚀 ALL CONDITIONS MET - Loading user data for auth_id:", user.auth_id);
+            console.log("✅ profileExists is TRUE, proceeding with data load");
             loadUserProfileByAuthId(user.auth_id);
             return;
         }
