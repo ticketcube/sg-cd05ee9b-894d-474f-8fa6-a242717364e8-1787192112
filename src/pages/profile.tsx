@@ -42,25 +42,31 @@ export default function ProfilePage() {
             return;
         }
 
-        // ✅ CRITICAL FIX: Handle authenticated users without profiles - show setup immediately
-        if (supabaseUser && !profileExists) {
-            console.log("⚠️ User authenticated but no profile exists - stopping loading and showing setup");
+        // ✅ CRITICAL FIX: Handle authenticated users without profiles
+        // Stop ALL loading and show profile setup immediately
+        if (supabaseUser && profileExists === false) {
+            console.log("🚫 STOPPING: User authenticated but profileExists is FALSE - showing profile setup");
             setLoading(false);
             setError(null);
-            // Don't try to load data for users without profiles - the component will show profile setup
+            setUserHistory(null); // Clear any existing data
+            // Component will render profile setup UI since profileExists is false
             return;
         }
 
-        // ✅ CRITICAL FIX: Only try to load user history if we have a complete profile AND no userHistory yet
-        if (supabaseUser && profileExists && user?.auth_id && !userHistory) {
-            console.log("🚀 TRIGGERING loadUserProfileByAuthId for user auth_id:", user.auth_id);
+        // ✅ CRITICAL FIX: Only try to load user history if:
+        // 1. User is authenticated
+        // 2. Profile exists (profileExists === true)
+        // 3. We have user data with auth_id
+        // 4. We don't have userHistory yet
+        if (supabaseUser && profileExists === true && user?.auth_id && !userHistory) {
+            console.log("🚀 LOADING user data - all conditions met for user auth_id:", user.auth_id);
             loadUserProfileByAuthId(user.auth_id);
             return;
         }
 
         // ✅ If everything is loaded successfully, ensure loading is false
-        if (supabaseUser && profileExists && user?.auth_id && userHistory) {
-            console.log("✅ Everything loaded successfully - ensuring loading is false");
+        if (supabaseUser && profileExists === true && user?.auth_id && userHistory) {
+            console.log("✅ All data loaded successfully - ensuring loading is false");
             setLoading(false);
             setError(null);
         }
