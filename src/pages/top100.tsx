@@ -38,9 +38,12 @@ export default function Top100Page() {
   const [isUnlocked, setIsUnlocked] = useState(false);
 
   const page = useRef(1);
-  const observer = useRef<IntersectionObserver>();
+  const loadingRef = useRef(false);
 
   const loadArtists = useCallback(async (pageToLoad: number, refresh = false) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    
     try {
       console.log(`Loading page ${pageToLoad} of artists...`);
       const { artists: newArtists, count } = await artistService.getTop100ArtistsSortedByVotes(pageToLoad, ARTISTS_PER_PAGE);
@@ -60,6 +63,8 @@ export default function Top100Page() {
     } catch (err) {
       console.error("Error loading artists:", err);
       setError(err instanceof Error ? err.message : "An unknown error occurred");
+    } finally {
+      loadingRef.current = false;
     }
   }, []);
 
@@ -68,8 +73,8 @@ export default function Top100Page() {
     if (!user || !isUnlocked) return;
     
     try {
-      console.log("Loading existing Top100 votes for user:", user.auth_id); // ✅ FIXED: Use user.auth_id instead of user.id
-      const existingVotes = await votingService.getUserVotes(user.auth_id); // ✅ FIXED: Use user.auth_id instead of user.id
+      console.log("Loading existing Top100 votes for user:", user.auth_id);
+      const existingVotes = await votingService.getUserVotes(user.auth_id);
       const artistUuids = existingVotes.map(vote => vote.artist_uuid);
       console.log(`Found ${artistUuids.length} existing votes:`, artistUuids);
       setSelectedArtists(artistUuids);
@@ -82,6 +87,29 @@ export default function Top100Page() {
       console.error("Error loading existing votes:", error);
     }
   }, [user, isUnlocked]);
+
+  // Simple scroll-based infinite loading
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+        document.documentElement.offsetHeight - 1000 &&
+        hasMore &&
+        !loadingMore &&
+        !loadingRef.current
+      ) {
+        console.log("Near bottom, loading more artists...");
+        setLoadingMore(true);
+        page.current += 1;
+        loadArtists(page.current, false).finally(() => {
+          setLoadingMore(false);
+        });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasMore, loadingMore, loadArtists]);
 
   useEffect(() => {
     const initialLoad = async () => {
@@ -99,45 +127,6 @@ export default function Top100Page() {
       loadExistingVotes();
     }
   }, [user, isUnlocked, loadExistingVotes]);
-
-  useEffect(() => {
-    if (!hasMore) return;
-    
-    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-      if (entries[0].isIntersecting && hasMore && !loadingMore) {
-        console.log("Last artist in view. Loading more...", { 
-          currentPage: page.current, 
-          hasMore,
-          totalArtists: artists.length,
-          totalCount 
-        });
-        
-        setLoadingMore(true);
-        page.current += 1;
-        loadArtists(page.current, false).finally(() => {
-          setLoadingMore(false);
-        });
-      }
-    };
-    
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(handleIntersection, {
-      rootMargin: '100px'
-    });
-    
-    return () => {
-      if (observer.current) {
-        observer.current.disconnect();
-      }
-    };
-  }, [hasMore, loadingMore, artists.length, totalCount, loadArtists]);
-
-  // Simple ref callback that doesn't cause type issues
-  const setObserverRef = (node: HTMLDivElement | null) => {
-    if (node && observer.current && hasMore) {
-      observer.current.observe(node);
-    }
-  };
 
   const handleVote = async (artistId: string) => {
     if (!user) {
@@ -184,7 +173,7 @@ export default function Top100Page() {
       const { error: deleteError } = await supabase
         .from("top25_votes")
         .delete()
-        .eq("user_id", user.auth_id); // ✅ FIXED: Use user.auth_id instead of user.id
+        .eq("user_id", user.auth_id);
       
       if (deleteError) {
         console.error("Error deleting existing votes:", deleteError);
@@ -193,7 +182,7 @@ export default function Top100Page() {
       
       // Step 2: Insert all new votes
       const votes = selectedArtists.map(artistUuid => ({
-        auth_id: user.auth_id, // ✅ FIXED: Use auth_id field name to match database schema
+        auth_id: user.auth_id,
         artist_uuid: artistUuid
       }));
 
@@ -375,13 +364,11 @@ export default function Top100Page() {
           <div className="max-w-3xl mx-auto">
             <div className="grid gap-2">
               {artists.map((artist, index) => {
-                const isLast = index === artists.length - 1;
                 const isSelected = selectedArtists.includes(artist.uuid);
                 
                 return (
                   <div
                     key={artist.uuid}
-                    ref={isLast ? setObserverRef : null}
                     className={cn(
                       "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
                       isSelected && "ring-2 ring-green-500 bg-gray-800",
