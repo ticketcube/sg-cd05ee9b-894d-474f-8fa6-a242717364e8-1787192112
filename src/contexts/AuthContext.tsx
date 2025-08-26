@@ -167,7 +167,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         );
 
         return () => subscription.unsubscribe();
-    }, []);
+    }, []); // ✅ CRITICAL FIX: Empty dependency array - only run on mount and set up auth listener
 
     const refreshUserProfile = useCallback(async () => {
         console.log("🔄 [AuthContext] Refreshing user profile...");
