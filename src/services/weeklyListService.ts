@@ -133,33 +133,20 @@ export class WeeklyListService {
 
   async getWeeklyListForUser(weekIdentifier: string, userAuthId: string): Promise<WeeklyListWithEnrichedArtists | null> {
     try {
-      console.log(`Getting weekly list for user auth_id: ${userAuthId}, week: ${weekIdentifier}`);
+      console.log(`✅ CRITICAL FIX: Getting weekly list for user auth_id: ${userAuthId}, week: ${weekIdentifier}`);
       
-      // First, get the user's profile to get their numeric ID
-      const { data: userProfile, error: userError } = await supabase
-        .from("user_profiles")
-        .select("id")
-        .eq("auth_id", userAuthId)
-        .single();
-
-      if (userError) {
-        console.error("Error getting user profile:", userError);
-        throw new Error("User profile not found");
-      }
-
-      const userId = userProfile.id;
-
       // Get the basic weekly list
       const weeklyList = await this.getWeeklyList(weekIdentifier);
       if (!weeklyList) {
+        console.log("No weekly list found for identifier:", weekIdentifier);
         return null;
       }
 
-      // Get user's votes for this week - ✅ Fix to use correct table and engagement type
+      // ✅ CRITICAL FIX: Get user's votes for this week using auth_id directly
       const { data: userVotes, error: votesError } = await supabase
-        .from("user_engagements")  // ✅ Use correct table
+        .from("user_engagements")  // ✅ Use user_engagements table
         .select("artist_uuid")
-        .eq("user_id", userId)
+        .eq("auth_id", userAuthId) // ✅ FIXED: Use auth_id directly instead of numeric user_id
         .eq("week_identifier", weekIdentifier)
         .eq("engagement_type", "quadrant");  // ✅ Use "quadrant" engagement type
 
@@ -168,12 +155,13 @@ export class WeeklyListService {
       }
 
       const votedArtistUuids = new Set(userVotes?.map(v => v.artist_uuid) || []);
+      console.log(`✅ Found ${votedArtistUuids.size} voted artists for user`);
 
-      // Get user's video watch status for this week
+      // ✅ CRITICAL FIX: Get user's video watch status for this week using auth_id directly
       const { data: userEngagements, error: engagementsError } = await supabase
         .from("user_engagements")
         .select("artist_uuid")
-        .eq("user_id", userId)
+        .eq("auth_id", userAuthId) // ✅ FIXED: Use auth_id directly instead of numeric user_id
         .eq("week_identifier", weekIdentifier)
         .eq("engagement_type", "video_view");
 
@@ -182,6 +170,7 @@ export class WeeklyListService {
       }
 
       const watchedArtistUuids = new Set(userEngagements?.map(e => e.artist_uuid) || []);
+      console.log(`✅ Found ${watchedArtistUuids.size} watched videos for user`);
 
       // Create enriched artists with user status
       const enrichedArtists: EnrichedWeeklyListArtist[] = weeklyList.artists.map(artistData => ({
@@ -195,10 +184,11 @@ export class WeeklyListService {
         artists: enrichedArtists
       };
 
+      console.log(`✅ FIXED: Successfully created enriched weekly list with ${enrichedArtists.length} artists`);
       return enrichedList;
 
     } catch (error) {
-      console.error("Error getting weekly list for user:", error);
+      console.error("❌ Error getting weekly list for user:", error);
       throw error;
     }
   }
