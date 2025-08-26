@@ -37,7 +37,7 @@ export default function Top100Page() {
   const [totalCount, setTotalCount] = useState(0);
   const [isUnlocked, setIsUnlocked] = useState(false);
 
-  const page = useRef(1);
+  const pageRef = useRef(1);
   const loadingRef = useRef(false);
 
   const loadArtists = useCallback(async (pageToLoad: number, refresh = false) => {
@@ -100,8 +100,8 @@ export default function Top100Page() {
       ) {
         console.log("Near bottom, loading more artists...");
         setLoadingMore(true);
-        page.current += 1;
-        loadArtists(page.current, false).finally(() => {
+        pageRef.current += 1;
+        loadArtists(pageRef.current, false).finally(() => {
           setLoadingMore(false);
         });
       }
@@ -114,7 +114,7 @@ export default function Top100Page() {
   useEffect(() => {
     const initialLoad = async () => {
       setLoading(true);
-      page.current = 1;
+      pageRef.current = 1;
       await loadArtists(1, true);
       setLoading(false);
     };
