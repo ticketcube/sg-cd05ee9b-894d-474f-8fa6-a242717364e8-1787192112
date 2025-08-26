@@ -53,9 +53,28 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         try {
             console.log("🔍 [AuthContext] Loading user profile for:", authUser.id);
             
-            // Use the secure API to get profile by auth_id
-            const userProfile = await userProfileService.getUserProfile(authUser.id);
+            // ✅ CRITICAL FIX: First check if profile exists without throwing error
+            console.log("🔍 [AuthContext] Checking if profile exists before loading...");
             
+            const response = await fetch(`/api/user/profile-by-auth-id?auth_id=${authUser.id}`);
+            
+            if (response.status === 404) {
+                // Profile doesn't exist - this is normal for new users
+                console.log("ℹ️ [AuthContext] Profile not found - user needs to complete setup");
+                setUser(null);
+                setProfileExists(false);
+                localStorage.removeItem("otwchart_user");
+                return; // Exit early, no error thrown
+            }
+            
+            if (!response.ok) {
+                // Other HTTP errors (500, 403, etc.)
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+            }
+            
+            // Profile exists and was retrieved successfully
+            const userProfile = await response.json();
             console.log("✅ [AuthContext] Profile found via API:", userProfile.auth_id, userProfile.username);
             
             const userData: User = {
@@ -73,16 +92,14 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             console.log("🎉 [AuthContext] Profile loaded successfully:", userData.auth_id);
             
         } catch (error) {
-            console.log("⚠️ [AuthContext] Profile not found - this is expected for new users");
-            console.log("🔧 [AuthContext] Setting up for profile creation flow...");
+            console.error("❌ [AuthContext] Unexpected error loading profile:", error);
             
-            // ✅ CRITICAL FIX: Handle "Profile not found" gracefully
-            // This is expected for new users who just signed up
+            // For any unexpected errors, assume profile doesn't exist
             setUser(null);
             setProfileExists(false);
             localStorage.removeItem("otwchart_user");
             
-            // Don't throw the error - let the UI handle showing profile setup
+            // Don't throw the error - let the UI handle the state gracefully
         }
     };
 
