@@ -101,28 +101,28 @@ export default function Top100Page() {
   }, [user, isUnlocked, loadExistingVotes]);
 
   useEffect(() => {
-    if (hasMore) {
-      if (observer.current) observer.current.disconnect();
-      
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
-          console.log("Last artist in view. Loading more...", { 
-            currentPage: page.current, 
-            hasMore,
-            totalArtists: artists.length,
-            totalCount 
-          });
-          
-          setLoadingMore(true);
-          page.current += 1;
-          loadArtists(page.current, false).finally(() => {
-            setLoadingMore(false);
-          });
-        }
-      }, {
-        rootMargin: '100px'
-      });
-    }
+    if (!hasMore) return;
+    
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore) {
+        console.log("Last artist in view. Loading more...", { 
+          currentPage: page.current, 
+          hasMore,
+          totalArtists: artists.length,
+          totalCount 
+        });
+        
+        setLoadingMore(true);
+        page.current += 1;
+        loadArtists(page.current, false).finally(() => {
+          setLoadingMore(false);
+        });
+      }
+    }, {
+      rootMargin: '100px'
+    });
     
     return () => {
       if (observer.current) {
@@ -131,7 +131,7 @@ export default function Top100Page() {
     };
   }, [hasMore, artists.length, totalCount, loadArtists]);
 
-  // Simple ref function without complex dependencies
+  // Simple function to observe the last element
   const observeLastElement = (node: HTMLDivElement | null) => {
     if (node && observer.current && hasMore) {
       observer.current.observe(node);
