@@ -103,7 +103,7 @@ export default function Top100Page() {
   const lastArtistElementRef = useCallback((node: HTMLDivElement | null) => {
     if (observer.current) observer.current.disconnect();
     
-    observer.current = new IntersectionObserver(entries => {
+    observer.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasMore) {
         console.log("Last artist in view. Loading more...", { 
           currentPage: page.current, 
@@ -129,7 +129,7 @@ export default function Top100Page() {
         }
       }, 50);
     }
-  }, [hasMore, loadArtists, artists.length, totalCount]);
+  }, [hasMore, artists.length, totalCount, loadArtists]);
 
   const handleVote = async (artistId: string) => {
     if (!user) {
