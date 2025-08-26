@@ -49,30 +49,55 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const [profileExists, setProfileExists] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const loadUserProfile = async (authUser: SupabaseUser, retryCount = 0) => {
+    const loadUserProfile = async (authUser: SupabaseUser) => {
         try {
-            console.log(`🔍 [AuthContext] Loading user profile for: ${authUser.id} (attempt ${retryCount + 1})`);
+            console.log(`🔍 [AuthContext] Loading user profile for: ${authUser.id}`);
             
-            // ✅ CRITICAL FIX: Handle race condition between auth signup and profile creation trigger
+            // ✅ CRITICAL FIX: First check if profile exists
             const response = await fetch(`/api/user/profile-by-auth-id?auth_id=${authUser.id}`);
             
             if (response.status === 404) {
-                // Profile doesn't exist yet - this could be a race condition with the trigger
-                console.log(`ℹ️ [AuthContext] Profile not found for ${authUser.id}`);
+                // Profile doesn't exist - CREATE IT IMMEDIATELY
+                console.log(`🚨 [AuthContext] Profile not found for ${authUser.id} - CREATING NOW`);
                 
-                // ✅ RETRY LOGIC: For new users, wait a moment for the trigger to create the profile
-                if (retryCount < 3) {
-                    console.log(`🔄 [AuthContext] Retrying profile load in 1 second (attempt ${retryCount + 1}/3)...`);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    return loadUserProfile(authUser, retryCount + 1);
+                try {
+                    // Create profile immediately using signup data
+                    const username = authUser.user_metadata?.username || 
+                                     authUser.email?.split('@')[0] || 
+                                     `user${Date.now()}`;
+                    
+                    const createdProfile = await userProfileService.createUserProfile(
+                        authUser.id,
+                        username,
+                        authUser.email || 'no-email@example.com'
+                    );
+                    
+                    console.log("✅ [AuthContext] Profile created immediately:", createdProfile.id, createdProfile.username);
+                    
+                    // Set user data immediately
+                    const userData: User = {
+                        auth_id: authUser.id,
+                        username: createdProfile.username,
+                        email: createdProfile.email,
+                        city: createdProfile.raw_city_input || undefined,
+                        points: createdProfile.total_points || 0,
+                        role: createdProfile.role || undefined
+                    };
+                    
+                    setUser(userData);
+                    setProfileExists(true);
+                    localStorage.setItem("otwchart_user", JSON.stringify(userData));
+                    console.log("🎉 [AuthContext] Profile created and loaded successfully:", userData.auth_id);
+                    return;
+                    
+                } catch (createError) {
+                    console.error("❌ [AuthContext] Failed to create profile:", createError);
+                    // If profile creation fails, still try the original approach
+                    setUser(null);
+                    setProfileExists(false);
+                    localStorage.removeItem("otwchart_user");
+                    return;
                 }
-                
-                // After retries, user genuinely needs profile setup
-                console.log("ℹ️ [AuthContext] No profile found after retries - user needs to complete setup");
-                setUser(null);
-                setProfileExists(false);
-                localStorage.removeItem("otwchart_user");
-                return;
             }
             
             if (!response.ok) {
