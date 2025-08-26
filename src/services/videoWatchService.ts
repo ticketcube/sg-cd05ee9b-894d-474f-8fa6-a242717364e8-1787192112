@@ -99,6 +99,6 @@ export const videoWatchService = {
       throw error;
     }
 
-    return data;
+    return data || [];
   },
 };

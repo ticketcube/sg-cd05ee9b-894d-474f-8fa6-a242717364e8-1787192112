@@ -18,7 +18,7 @@ export type EngagementType =
 
 export interface UserEngagement {
   id: number;
-  user_id: number;
+  auth_id: string; // ✅ FIXED: Changed from user_id (number) to auth_id (string)
   engagement_type: EngagementType;
   points_earned?: number | null;
   week_identifier?: string | null;
