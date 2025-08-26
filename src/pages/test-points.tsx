@@ -7,7 +7,7 @@ import { videoWatchService } from "@/services/videoWatchService";
 import { pointsConfigService } from "@/services/pointsConfigService";
 import pointsTestService from "@/services/pointsTestService";
 import { useAuth } from "@/contexts/AuthContext";
-import { userProfileService } from "@/services/userProfileService";
+import userProfileService from "@/services/userProfileService"; // ✅ FIXED: Use default import instead of named import
 
 export default function TestPointsPage() {
   const { user } = useAuth();

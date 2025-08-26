@@ -184,12 +184,12 @@ export default function Top100Page() {
       }
       
       // Step 2: Insert all new votes
-      const voteData = selectedArtists.map(artistUuid => ({
-        user_id: user.auth_id, // ✅ FIXED: Use user.auth_id instead of user.id
+      const votes = selectedArtists.map(artistUuid => ({
+        auth_id: user.auth_id, // ✅ FIXED: Use auth_id field name to match database schema
         artist_uuid: artistUuid
       }));
 
-      await votingService.submitVotes(voteData);
+      await votingService.submitVotes(votes);
       
       console.log("✅ Votes submitted successfully!");
       setVotingState("submitted");

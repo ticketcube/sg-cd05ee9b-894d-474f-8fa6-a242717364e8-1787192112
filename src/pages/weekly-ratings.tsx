@@ -105,7 +105,7 @@ function WeeklyRatingsPageContent() {
       const watchStatuses: VideoWatchStatus[] = [];
       for (const artistData of list.artists) {
         try {
-          const watchData = await videoWatchService.getWatchStatus(user.auth_id, artist.uuid, weekIdentifier); // ✅ FIXED: Use auth_id (string) instead of user.id
+          const watchData = await videoWatchService.getWatchStatus(user.auth_id, artistData.artist.uuid, weekIdentifier); // ✅ FIXED: Use artistData.artist.uuid instead of undefined artist.uuid
           watchStatuses.push({
             artistUuid: artistData.artist.uuid,
             hasWatched: watchData.length > 0,
