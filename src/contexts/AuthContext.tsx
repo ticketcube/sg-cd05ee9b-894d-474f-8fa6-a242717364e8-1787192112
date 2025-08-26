@@ -140,16 +140,6 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             async (event, session) => {
                 console.log("🔄 [AuthContext] Auth state changed:", event);
                 
-                if (event === 'SIGNED_UP' && session?.user) {
-                    // ✅ CRITICAL FIX: For new signups, user doesn't have a profile yet
-                    console.log("🆕 [AuthContext] New user signed up:", session.user.id);
-                    setSupabaseUser(session.user);
-                    setUser(null);
-                    setProfileExists(false); // ✅ NEW USERS DON'T HAVE PROFILES YET
-                    setLoading(false);
-                    return;
-                }
-                
                 if (event === 'SIGNED_IN' && session?.user) {
                     console.log("🔑 [AuthContext] User signed in:", session.user.id);
                     setSupabaseUser(session.user);
