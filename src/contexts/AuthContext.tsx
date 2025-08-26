@@ -50,69 +50,52 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     /**
-     * CRITICAL FIX: Simplified profile loading with proper polling for database trigger
-     * This replaces the complex retry logic that was causing race conditions
+     * ✅ CRITICAL FIX: Simplified and robust profile loading
+     * - Removes complex polling logic that was causing loops
+     * - Uses direct API calls with proper error handling
+     * - Clearly distinguishes between "profile doesn't exist" vs "temporary error"
      */
     const loadUserProfile = async (authUser: SupabaseUser) => {
         console.log(`🔍 [AuthContext] Loading profile for auth_id: ${authUser.id}`);
         
         try {
-            // Poll for profile existence with longer timeout to handle database trigger delay
-            let attempts = 0;
-            const maxAttempts = 10; // 10 attempts over ~30 seconds
+            // Direct API call to get profile - no polling needed
+            const userProfile = await userProfileService.getUserProfile(authUser.id);
             
-            while (attempts < maxAttempts) {
-                attempts++;
-                console.log(`🔄 [AuthContext] Profile check attempt ${attempts}/${maxAttempts}`);
+            if (userProfile) {
+                // ✅ SUCCESS: Profile found and loaded
+                console.log("✅ [AuthContext] Profile found and loaded:", userProfile.id, userProfile.username);
                 
-                try {
-                    const userProfile = await userProfileService.getUserProfile(authUser.id);
-                    
-                    if (userProfile) {
-                        // SUCCESS: Profile found
-                        console.log("✅ [AuthContext] Profile found:", userProfile.id, userProfile.username);
-                        
-                        const userData: User = {
-                            auth_id: authUser.id,
-                            username: userProfile.username,
-                            email: userProfile.email,
-                            city: userProfile.raw_city_input || undefined,
-                            points: userProfile.total_points || 0,
-                            role: userProfile.role || undefined
-                        };
-                        
-                        setUser(userData);
-                        setProfileExists(true);
-                        localStorage.setItem("otwchart_user", JSON.stringify(userData));
-                        console.log("🎉 [AuthContext] Profile loaded successfully");
-                        return;
-                    }
-                    
-                } catch (error) {
-                    console.log(`⚠️ [AuthContext] Profile check ${attempts} failed:`, error);
-                }
+                const userData: User = {
+                    auth_id: authUser.id,
+                    username: userProfile.username,
+                    email: userProfile.email,
+                    city: userProfile.raw_city_input || undefined,
+                    points: userProfile.total_points || 0,
+                    role: userProfile.role || undefined
+                };
                 
-                // If not found and not last attempt, wait before retry
-                if (attempts < maxAttempts) {
-                    const delay = Math.min(1000 * Math.pow(1.5, attempts - 1), 5000); // Progressive delay up to 5s
-                    console.log(`⏳ [AuthContext] Waiting ${delay}ms before next attempt...`);
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
+                setUser(userData);
+                setProfileExists(true);
+                localStorage.setItem("otwchart_user", JSON.stringify(userData));
+                console.log("🎉 [AuthContext] Profile loaded and state updated successfully");
+                return;
+            } else {
+                // ✅ PROFILE DOESN'T EXIST: Clean case - show profile setup
+                console.log("ℹ️ [AuthContext] Profile doesn't exist - user needs to complete profile setup");
+                setUser(null);
+                setProfileExists(false);
+                localStorage.removeItem("otwchart_user");
+                return;
             }
             
-            // FALLBACK: All attempts failed - profile needs to be created
-            console.log(`🚨 [AuthContext] Profile not found after ${maxAttempts} attempts`);
-            console.log("🛑 [AuthContext] Setting profileExists = false to show profile setup");
-            
-            setUser(null);
-            setProfileExists(false);
-            localStorage.removeItem("otwchart_user");
-            
         } catch (error) {
-            console.error("❌ [AuthContext] Critical error loading profile:", error);
-            setUser(null);
-            setProfileExists(false);
-            localStorage.removeItem("otwchart_user");
+            // ✅ HANDLE API ERRORS: Don't assume profile doesn't exist on error
+            console.error("❌ [AuthContext] Error loading profile:", error);
+            
+            // If it's a network error or temporary issue, don't change profile state
+            // Let the user try again or refresh the page
+            console.log("⚠️ [AuthContext] Keeping current state due to API error");
         }
     };
 
@@ -152,7 +135,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                 if (session?.user) {
                     console.log("✅ [AuthContext] User signed in:", session.user.id);
                     setSupabaseUser(session.user);
-                    setLoading(true); // Show loading while we check for profile
+                    setLoading(true);
                     await loadUserProfile(session.user);
                     setLoading(false);
                 } else {
@@ -167,7 +150,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         );
 
         return () => subscription.unsubscribe();
-    }, []); // ✅ CRITICAL FIX: Empty dependency array - only run on mount and set up auth listener
+    }, []);
 
     const refreshUserProfile = useCallback(async () => {
         console.log("🔄 [AuthContext] Refreshing user profile...");
