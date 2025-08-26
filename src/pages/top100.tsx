@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { artistService } from "@/services/artistService";
 import type { Artist, ArtistWithVoteCount } from "@/types/artists";
 import { Button } from "@/components/ui/button";
@@ -13,143 +13,114 @@ import AuthGuard from "@/components/AuthGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-type VotingState = "initial" | "voting" | "submitted";
-
-const ARTISTS_PER_PAGE = 25;
 const REQUIRED_PASSCODE = "otw10";
 
 export default function Top100Page() {
   const { user } = useAuth();
+  
+  // Core state
   const [artists, setArtists] = useState<ArtistWithVoteCount[]>([]);
+  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  
+  // Dialog state
   const [isPasscodeDialogOpen, setIsPasscodeDialogOpen] = useState(false);
   const [isSubmissionDialogOpen, setIsSubmissionDialogOpen] = useState(false);
-  const [showThankYou, setShowThankYou] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [email, setEmail] = useState("");
-  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
-  const [votingState, setVotingState] = useState<VotingState>("initial");
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Popup state
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [isPopupOpen, setPopupOpen] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  
+  // Thank you state
+  const [showThankYou, setShowThankYou] = useState(false);
 
-  const pageRef = useRef(1);
-  const loadingRef = useRef(false);
-
-  const loadArtists = useCallback(async (pageToLoad: number, refresh = false) => {
-    if (loadingRef.current) return;
-    loadingRef.current = true;
-    
+  // Load all artists at once - simple approach
+  const loadAllArtists = useCallback(async () => {
     try {
-      console.log(`Loading page ${pageToLoad} of artists...`);
-      const { artists: newArtists, count } = await artistService.getTop100ArtistsSortedByVotes(pageToLoad, ARTISTS_PER_PAGE);
-      console.log(`Loaded ${newArtists.length} artists, total available: ${count}`);
+      setLoading(true);
+      setError(null);
+      console.log("Loading all top 100 artists...");
       
-      setArtists(prev => {
-        const prevArtists = refresh ? [] : prev;
-        const updatedArtists = refresh ? newArtists : [...prevArtists, ...newArtists];
-        console.log(`Total artists after update: ${updatedArtists.length}`);
-        
-        setHasMore(updatedArtists.length < count);
-        
-        return updatedArtists;
-      });
-      setTotalCount(count);
+      // Load first 100 artists in one go
+      const { artists: allArtists, count } = await artistService.getTop100ArtistsSortedByVotes(1, 100);
+      console.log(`Loaded ${allArtists.length} artists`);
       
+      setArtists(allArtists);
     } catch (err) {
       console.error("Error loading artists:", err);
-      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      setError(err instanceof Error ? err.message : "Failed to load artists");
     } finally {
-      loadingRef.current = false;
+      setLoading(false);
     }
   }, []);
 
+  // Load existing votes
   const loadExistingVotes = useCallback(async () => {
     if (!user || !isUnlocked) return;
     
     try {
-      console.log("Loading existing Top100 votes for user:", user.auth_id);
+      console.log("Loading existing votes for user:", user.auth_id);
       const existingVotes = await votingService.getUserVotes(user.auth_id);
       const artistUuids = existingVotes.map(vote => vote.artist_uuid);
-      console.log(`Found ${artistUuids.length} existing votes:`, artistUuids);
+      console.log(`Found ${artistUuids.length} existing votes`);
       setSelectedArtists(artistUuids);
-      
-      if (artistUuids.length > 0) {
-        setVotingState("voting");
-      }
     } catch (error) {
       console.error("Error loading existing votes:", error);
     }
   }, [user, isUnlocked]);
 
-  const handleScroll = useCallback(() => {
-    if (
-      window.innerHeight + document.documentElement.scrollTop >=
-      document.documentElement.offsetHeight - 1000 &&
-      hasMore &&
-      !loadingMore &&
-      !loadingRef.current
-    ) {
-      console.log("Near bottom, loading more artists...");
-      setLoadingMore(true);
-      pageRef.current += 1;
-      loadArtists(pageRef.current, false).finally(() => {
-        setLoadingMore(false);
-      });
-    }
-  }, [hasMore, loadingMore, loadArtists]);
-
+  // Initial load
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+    loadAllArtists();
+  }, [loadAllArtists]);
 
-  useEffect(() => {
-    const initialLoad = async () => {
-      setLoading(true);
-      pageRef.current = 1;
-      await loadArtists(1, true);
-      setLoading(false);
-    };
-    initialLoad();
-  }, [loadArtists]);
-
-  // Load existing votes when conditions are met
+  // Load votes when unlocked
   useEffect(() => {
     if (user && isUnlocked) {
       loadExistingVotes();
     }
   }, [user, isUnlocked, loadExistingVotes]);
 
-  const handleVote = async (artistId: string) => {
+  // Show passcode dialog when loaded but not unlocked
+  useEffect(() => {
+    if (!loading && !isUnlocked && !error) {
+      setIsPasscodeDialogOpen(true);
+    }
+  }, [loading, isUnlocked, error]);
+
+  const handleUnlockAccess = () => {
+    if (passcode.trim() !== REQUIRED_PASSCODE) {
+      alert("Invalid passcode. Please enter the correct passcode to view the Top 100 list.");
+      return;
+    }
+    
+    setIsUnlocked(true);
+    setIsPasscodeDialogOpen(false);
+    setPasscode("");
+    console.log("✅ Top100 page unlocked");
+  };
+
+  const handleVote = (artistId: string) => {
     if (!user) {
       alert("Please log in to vote");
       return;
     }
     
-    // Check if user has reached the 25-vote limit
     if (selectedArtists.length >= 25 && !selectedArtists.includes(artistId)) {
       alert("You can only select up to 25 artists!");
       return;
     }
     
     const isAlreadySelected = selectedArtists.includes(artistId);
-
-    // Update UI immediately (optimistic update)
     setSelectedArtists(prev => 
       isAlreadySelected
         ? prev.filter(id => id !== artistId)
         : [...prev, artistId]
     );
-
-    // Set voting state to voting if not already
-    if (votingState === "initial") {
-      setVotingState("voting");
-    }
   };
 
   const handleVoteSubmit = async () => {
@@ -164,20 +135,17 @@ export default function Top100Page() {
     }
 
     try {
-      console.log(`Submitting ${selectedArtists.length} votes atomically...`);
+      console.log(`Submitting ${selectedArtists.length} votes...`);
       
-      // Step 1: Delete all existing votes for this user (atomic replacement)
+      // Delete existing votes
       const { error: deleteError } = await supabase
         .from("top25_votes")
         .delete()
         .eq("user_id", user.auth_id);
       
-      if (deleteError) {
-        console.error("Error deleting existing votes:", deleteError);
-        throw deleteError;
-      }
+      if (deleteError) throw deleteError;
       
-      // Step 2: Insert all new votes
+      // Insert new votes
       const votes = selectedArtists.map(artistUuid => ({
         auth_id: user.auth_id,
         artist_uuid: artistUuid
@@ -186,7 +154,6 @@ export default function Top100Page() {
       await votingService.submitVotes(votes);
       
       console.log("✅ Votes submitted successfully!");
-      setVotingState("submitted");
       setIsSubmissionDialogOpen(true);
       
     } catch (error) {
@@ -211,48 +178,13 @@ export default function Top100Page() {
       setIsSubmissionDialogOpen(false);
       setShowThankYou(true);
       setTimeout(() => {
-        resetVoting();
+        setShowThankYou(false);
+        setEmail("");
+        setSelectedArtists([]);
       }, 3000);
     } catch (error) {
       console.error("Error entering drawing:", error);
       alert("Error entering drawing. Please try again.");
-    }
-  };
-
-  const resetVoting = () => {
-    setVotingState("initial");
-    setPasscode("");
-    setEmail("");
-    setSelectedArtists([]);
-    setIsPasscodeDialogOpen(false);
-    setIsSubmissionDialogOpen(false);
-    setShowThankYou(false);
-  };
-
-  const getMainButtonText = () => {
-    switch (votingState) {
-      case "initial":
-        return "VOTE FOR YOUR TOP 25!";
-      case "voting":
-        return `SUBMIT YOUR VOTES (${selectedArtists.length}/25)`;
-      case "submitted":
-        return "VOTES SUBMITTED";
-      default:
-        return "VOTE FOR YOUR TOP 25!";
-    }
-  };
-
-  const handleMainButtonClick = () => {
-    switch (votingState) {
-      case "initial":
-        setIsPasscodeDialogOpen(true);
-        break;
-      case "voting":
-        handleVoteSubmit();
-        break;
-      case "submitted":
-        // Show submitted state, maybe allow to view results
-        break;
     }
   };
 
@@ -266,29 +198,7 @@ export default function Top100Page() {
     setSelectedArtist(null);
   };
 
-  // Modified to handle single passcode entry for both access and voting
-  const handleUnlockAccess = () => {
-    if (passcode.trim() !== REQUIRED_PASSCODE) {
-      alert("Invalid passcode. Please enter the correct passcode to view the Top 100 list.");
-      return;
-    }
-    
-    // Single passcode unlocks both access and voting
-    setIsUnlocked(true);
-    setVotingState("voting"); // Enable voting immediately
-    setIsPasscodeDialogOpen(false);
-    setPasscode("");
-    
-    console.log("✅ Top100 page unlocked - both viewing and voting enabled");
-  };
-
-  // Show initial passcode dialog if not unlocked
-  useEffect(() => {
-    if (!loading && !isUnlocked && !error) {
-      setIsPasscodeDialogOpen(true);
-    }
-  }, [loading, isUnlocked, error]);
-
+  // Thank you screen
   if (showThankYou) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -301,6 +211,7 @@ export default function Top100Page() {
     );
   }
 
+  // Loading screen
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -312,6 +223,7 @@ export default function Top100Page() {
     );
   }
 
+  // Error screen
   if (error) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -326,38 +238,40 @@ export default function Top100Page() {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-black text-white">
-        <div className="sticky top-0 bg-black z-10 p-3 sm:p-4 border-b border-gray-800">
+        {/* Header */}
+        <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div className="flex items-center gap-4 mb-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => window.location.href = "/profile"}
-                className="text-white hover:bg-gray-800 flex-shrink-0"
+                className="text-white hover:bg-gray-800"
               >
-                <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Back </span>
-                <span className="sm:hidden">Back</span>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
               </Button>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-500 truncate">Top 100 OTW Artists</h1>
-                <p className="text-xs sm:text-sm text-gray-400">
-                  Showing {artists.length} of {totalCount} artists
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-blue-500">Top 100 OTW Artists</h1>
+                <p className="text-sm text-gray-400">
+                  Showing {artists.length} artists
                 </p>
               </div>
             </div>
             
+            {/* Vote Button */}
             <Button
-              className="w-full text-base sm:text-lg md:text-xl py-3 sm:py-4 md:py-6 bg-white text-black hover:bg-gray-100"
-              onClick={handleMainButtonClick}
-              disabled={votingState === "submitted"}
+              className="w-full text-lg py-4 bg-white text-black hover:bg-gray-100"
+              onClick={handleVoteSubmit}
+              disabled={selectedArtists.length === 0}
             >
-              {getMainButtonText()}
+              SUBMIT YOUR VOTES ({selectedArtists.length}/25)
             </Button>
           </div>
         </div>
 
-        <div className="p-2 sm:p-4 pb-32 min-h-screen">
+        {/* Artist List */}
+        <div className="p-4">
           <div className="max-w-3xl mx-auto">
             <div className="grid gap-2">
               {artists.map((artist, index) => {
@@ -367,19 +281,19 @@ export default function Top100Page() {
                   <div
                     key={artist.uuid}
                     className={cn(
-                      "bg-gray-900 rounded-lg p-2 sm:p-3 hover:bg-gray-800 transition-all duration-200 max-w-full",
+                      "bg-gray-900 rounded-lg p-3 hover:bg-gray-800 transition-all duration-200",
                       isSelected && "ring-2 ring-green-500 bg-gray-800",
                       !isUnlocked && "opacity-50 pointer-events-none"
                     )}
                     onClick={isUnlocked ? () => handleRowClick(artist) : undefined}
                   >
-                    <div className="flex items-center gap-2">
-                      <div className="text-lg sm:text-xl font-bold text-gray-500 w-5 sm:w-6 flex-shrink-0">
-                        {artist.rank || index + 1}
+                    <div className="flex items-center gap-3">
+                      <div className="text-xl font-bold text-gray-500 w-8">
+                        {index + 1}
                       </div>
                       
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm sm:text-base truncate">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-base">
                           {isUnlocked ? artist.artist_name : "••••••••••"}
                         </h3>
                         <div className="text-xs text-gray-400">
@@ -390,7 +304,7 @@ export default function Top100Page() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                      <div className="flex items-center gap-3">
                         {isUnlocked ? (
                           <>
                             <ArtistVideoPlayer 
@@ -409,21 +323,17 @@ export default function Top100Page() {
                                 handleVote(artist.uuid);
                               }}
                               className={cn(
-                                "px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm font-semibold transition-all duration-200 hover:scale-105",
+                                "px-3 py-2 rounded text-sm font-semibold transition-all duration-200",
                                 isSelected 
                                   ? "bg-green-500 hover:bg-green-600 text-white" 
                                   : "bg-purple-500 hover:bg-purple-600 text-white"
                               )}
                             >
-                              {isSelected ? "✓" : "VOTE"}
+                              {isSelected ? "✓ VOTED" : "VOTE"}
                             </Button>
-                            
-                            {isSelected && (
-                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
-                            )}
                           </>
                         ) : (
-                          <div className="w-16 h-8 bg-gray-700 rounded animate-pulse"></div>
+                          <div className="w-20 h-8 bg-gray-700 rounded animate-pulse"></div>
                         )}
                       </div>
                     </div>
@@ -432,24 +342,9 @@ export default function Top100Page() {
               })}
             </div>
           </div>
-          
-          {loadingMore && (
-            <div className="flex justify-center items-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin mr-2" />
-              <span className="text-gray-400">Loading more artists...</span>
-            </div>
-          )}
-          
-          {!hasMore && artists.length > 0 && (
-            <div className="text-center py-8 text-gray-400">
-              <p>You've reached the end of the list!</p>
-              <p className="text-sm mt-2">Loaded {artists.length} of {totalCount} total artists</p>
-            </div>
-          )}
-          
-          <div style={{ height: '200px' }}></div>
         </div>
 
+        {/* Artist Popup */}
         {selectedArtist && isPopupOpen && (
           <UnifiedArtistPopup 
             artist={selectedArtist} 
@@ -473,6 +368,7 @@ export default function Top100Page() {
           />
         )}
 
+        {/* Passcode Dialog */}
         <Dialog open={isPasscodeDialogOpen} onOpenChange={setIsPasscodeDialogOpen}>
           <DialogContent>
             <DialogHeader>
@@ -503,6 +399,7 @@ export default function Top100Page() {
           </DialogContent>
         </Dialog>
 
+        {/* Submission Dialog */}
         <Dialog open={isSubmissionDialogOpen} onOpenChange={setIsSubmissionDialogOpen}>
           <DialogContent>
             <DialogHeader>
@@ -528,7 +425,7 @@ export default function Top100Page() {
               
               <Button 
                 className="w-full bg-blue-500 hover:bg-blue-600"
-                onClick={resetVoting}
+                onClick={() => setIsSubmissionDialogOpen(false)}
               >
                 FINISH VOTING
               </Button>
