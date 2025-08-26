@@ -73,11 +73,16 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             console.log("🎉 [AuthContext] Profile loaded successfully:", userData.auth_id);
             
         } catch (error) {
-            console.log("⚠️ [AuthContext] Profile not found or error:", error);
-            // Profile doesn't exist - clear state
+            console.log("⚠️ [AuthContext] Profile not found - this is expected for new users");
+            console.log("🔧 [AuthContext] Setting up for profile creation flow...");
+            
+            // ✅ CRITICAL FIX: Handle "Profile not found" gracefully
+            // This is expected for new users who just signed up
             setUser(null);
             setProfileExists(false);
             localStorage.removeItem("otwchart_user");
+            
+            // Don't throw the error - let the UI handle showing profile setup
         }
     };
 
