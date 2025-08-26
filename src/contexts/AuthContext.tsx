@@ -5,7 +5,7 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import userProfileService from "@/services/userProfileService";
 
 interface User {
-    auth_id: string;      // ✅ This is now the primary key (UUID)
+    auth_id: string;
     username: string;
     email: string;
     city?: string;
@@ -49,107 +49,67 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const [profileExists, setProfileExists] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const loadUserProfile = async (authUser: SupabaseUser, retryCount = 0, maxRetries = 5) => {
-        const MAX_RETRIES = maxRetries;
-        const baseDelay = 500; // 500ms base delay
+    /**
+     * CRITICAL FIX: Simplified profile loading with proper polling for database trigger
+     * This replaces the complex retry logic that was causing race conditions
+     */
+    const loadUserProfile = async (authUser: SupabaseUser) => {
+        console.log(`🔍 [AuthContext] Loading profile for auth_id: ${authUser.id}`);
         
         try {
-            console.log(`🔍 [AuthContext] Loading user profile for: ${authUser.id} (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
+            // Poll for profile existence with longer timeout to handle database trigger delay
+            let attempts = 0;
+            const maxAttempts = 10; // 10 attempts over ~30 seconds
             
-            // ✅ CRITICAL FIX: Robust retry system with exponential backoff
-            const response = await fetch(`/api/user/profile-by-auth-id?auth_id=${authUser.id}`);
-            
-            if (response.status === 404) {
-                console.log(`⚠️ [AuthContext] Profile not found for ${authUser.id} (attempt ${retryCount + 1})`);
-                
-                if (retryCount < MAX_RETRIES) {
-                    // Calculate exponential backoff delay: 500ms, 1000ms, 2000ms, 4000ms, 8000ms
-                    const delay = baseDelay * Math.pow(2, retryCount);
-                    console.log(`🔄 [AuthContext] Waiting ${delay}ms before retry ${retryCount + 1}...`);
-                    
-                    // Wait before retrying
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    
-                    // Retry recursively
-                    return loadUserProfile(authUser, retryCount + 1, maxRetries);
-                }
-                
-                // ✅ FALLBACK: After all retries, create profile manually
-                console.log(`🚨 [AuthContext] Profile still not found after ${MAX_RETRIES} retries - creating manually`);
+            while (attempts < maxAttempts) {
+                attempts++;
+                console.log(`🔄 [AuthContext] Profile check attempt ${attempts}/${maxAttempts}`);
                 
                 try {
-                    // Extract username from email or metadata
-                    const username = authUser.user_metadata?.username || 
-                                    authUser.email?.split('@')[0] || 
-                                    `user${Date.now()}`;
+                    const userProfile = await userProfileService.getUserProfile(authUser.id);
                     
-                    console.log(`📝 [AuthContext] Creating profile manually: ${username}`);
-                    const createdProfile = await userProfileService.createUserProfile(
-                        authUser.id,
-                        username,
-                        authUser.email || 'no-email@example.com'
-                    );
+                    if (userProfile) {
+                        // SUCCESS: Profile found
+                        console.log("✅ [AuthContext] Profile found:", userProfile.id, userProfile.username);
+                        
+                        const userData: User = {
+                            auth_id: authUser.id,
+                            username: userProfile.username,
+                            email: userProfile.email,
+                            city: userProfile.raw_city_input || undefined,
+                            points: userProfile.total_points || 0,
+                            role: userProfile.role || undefined
+                        };
+                        
+                        setUser(userData);
+                        setProfileExists(true);
+                        localStorage.setItem("otwchart_user", JSON.stringify(userData));
+                        console.log("🎉 [AuthContext] Profile loaded successfully");
+                        return;
+                    }
                     
-                    console.log("✅ [AuthContext] Profile created manually:", createdProfile.id, createdProfile.username);
-                    
-                    // Set user data immediately
-                    const userData: User = {
-                        auth_id: authUser.id,
-                        username: createdProfile.username,
-                        email: createdProfile.email,
-                        city: createdProfile.raw_city_input || undefined,
-                        points: createdProfile.total_points || 0,
-                        role: createdProfile.role || undefined
-                    };
-                    
-                    setUser(userData);
-                    setProfileExists(true);
-                    localStorage.setItem("otwchart_user", JSON.stringify(userData));
-                    console.log("🎉 [AuthContext] Manual profile creation successful:", userData.auth_id);
-                    return;
-                    
-                } catch (createError) {
-                    console.error("❌ [AuthContext] Failed to create profile manually:", createError);
-                    
-                    // Complete failure - user needs to sign out and try again
-                    setUser(null);
-                    setProfileExists(false);
-                    localStorage.removeItem("otwchart_user");
-                    
-                    // Show user-friendly error message
-                    alert("There was an issue setting up your profile. Please sign out and try signing in again.");
-                    return;
+                } catch (error) {
+                    console.log(`⚠️ [AuthContext] Profile check ${attempts} failed:`, error);
+                }
+                
+                // If not found and not last attempt, wait before retry
+                if (attempts < maxAttempts) {
+                    const delay = Math.min(1000 * Math.pow(1.5, attempts - 1), 5000); // Progressive delay up to 5s
+                    console.log(`⏳ [AuthContext] Waiting ${delay}ms before next attempt...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
             
-            // Handle other HTTP errors
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-            }
+            // FALLBACK: All attempts failed - profile needs to be created
+            console.log(`🚨 [AuthContext] Profile not found after ${maxAttempts} attempts`);
+            console.log("🛑 [AuthContext] Setting profileExists = false to show profile setup");
             
-            // ✅ SUCCESS: Profile found
-            const userProfile = await response.json();
-            console.log("✅ [AuthContext] Profile found via API:", userProfile.auth_id, userProfile.username);
-            
-            const userData: User = {
-                auth_id: authUser.id,
-                username: userProfile.username,
-                email: userProfile.email,
-                city: userProfile.raw_city_input || undefined,
-                points: userProfile.total_points || 0,
-                role: userProfile.role || undefined
-            };
-            
-            setUser(userData);
-            setProfileExists(true);
-            localStorage.setItem("otwchart_user", JSON.stringify(userData));
-            console.log("🎉 [AuthContext] Profile loaded successfully:", userData.auth_id);
+            setUser(null);
+            setProfileExists(false);
+            localStorage.removeItem("otwchart_user");
             
         } catch (error) {
-            console.error("❌ [AuthContext] Unexpected error loading profile:", error);
-            
-            // For any unexpected errors, assume profile doesn't exist
+            console.error("❌ [AuthContext] Critical error loading profile:", error);
             setUser(null);
             setProfileExists(false);
             localStorage.removeItem("otwchart_user");
@@ -161,12 +121,15 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             try {
                 console.log("🚀 [AuthContext] Initializing auth...");
                 
-                // Get current session
                 const { data: { session }, error } = await supabase.auth.getSession();
                 
                 if (error) {
                     console.error("❌ [AuthContext] Error getting session:", error);
-                } else if (session?.user) {
+                    setLoading(false);
+                    return;
+                }
+                
+                if (session?.user) {
                     console.log("✅ [AuthContext] Found existing session for:", session.user.id);
                     setSupabaseUser(session.user);
                     await loadUserProfile(session.user);
@@ -182,7 +145,6 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
         initializeAuth();
 
-        // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
                 console.log("🔄 [AuthContext] Auth state changed:", event);
@@ -190,15 +152,17 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                 if (session?.user) {
                     console.log("✅ [AuthContext] User signed in:", session.user.id);
                     setSupabaseUser(session.user);
+                    setLoading(true); // Show loading while we check for profile
                     await loadUserProfile(session.user);
+                    setLoading(false);
                 } else {
                     console.log("👋 [AuthContext] User signed out or no session");
                     setSupabaseUser(null);
                     setUser(null);
                     setProfileExists(false);
+                    setLoading(false);
                     localStorage.removeItem("otwchart_user");
                 }
-                setLoading(false);
             }
         );
 
@@ -209,7 +173,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         console.log("🔄 [AuthContext] Refreshing user profile...");
         
         if (supabaseUser) {
+            setLoading(true);
             await loadUserProfile(supabaseUser);
+            setLoading(false);
         } else {
             console.warn("⚠️ [AuthContext] No authenticated user to refresh");
         }
@@ -220,7 +186,6 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             console.log("🔑 [AuthContext] Creating profile for authenticated user...");
             
             if (!supabaseUser) {
-                // Try to get current session
                 const { data: { session }, error } = await supabase.auth.getSession();
                 if (error || !session?.user) {
                     throw new Error("No authenticated session found. Please sign in first.");
@@ -242,7 +207,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             );
 
             const userData: User = {
-                auth_id: currentUser.id,       // ✅ Use auth_id as primary identifier
+                auth_id: currentUser.id,
                 username: userProfile.username,
                 email: userProfile.email,
                 city: userProfile.raw_city_input || undefined,
@@ -261,21 +226,16 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Add this nuclear cleanup function at the top level of the AuthProvider
     const nuclearSessionCleanup = () => {
         console.log("💥 [AuthContext] NUCLEAR SESSION CLEANUP - Clearing ALL auth data...");
         
-        // Clear all state
         setUser(null);
         setSupabaseUser(null);
         setProfileExists(false);
         
-        // Clear localStorage
         try {
-            // Clear our app's user data
             localStorage.removeItem("otwchart_user");
             
-            // Clear ALL Supabase-related localStorage keys
             const keysToRemove = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
@@ -296,7 +256,6 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.removeItem(key);
             });
             
-            // Also clear sessionStorage
             for (let i = 0; i < sessionStorage.length; i++) {
                 const key = sessionStorage.key(i);
                 if (key && (key.includes('supabase') || key.includes('sb-'))) {
@@ -315,13 +274,11 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         try {
             console.log("👋 [AuthContext] Signing out...");
             
-            // Try normal logout first, but with a shorter timeout
             const { error } = await supabase.auth.signOut();
             
             if (error) {
                 console.warn("⚠️ [AuthContext] Logout API error (session corrupted):", error.message);
                 
-                // Check specifically for JWT/session errors
                 if (error.message.includes('JWT') || 
                     error.message.includes('session') || 
                     error.message.includes('claim') ||
@@ -331,14 +288,10 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                     console.log("💥 [AuthContext] Other auth error - performing nuclear cleanup");
                 }
                 
-                // For ANY error, do nuclear cleanup
                 nuclearSessionCleanup();
-                
-                // Force page reload to completely reset the app state
                 setTimeout(() => {
                     window.location.href = '/';
                 }, 100);
-                
                 return;
             } else {
                 console.log("✅ [AuthContext] Successfully signed out from server");
@@ -346,20 +299,14 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             
         } catch (error) {
             console.error("❌ [AuthContext] Logout error:", error);
-            
-            // ANY error during logout = nuclear cleanup
             console.log("💥 [AuthContext] Exception during logout - performing nuclear cleanup");
             nuclearSessionCleanup();
-            
-            // Force page reload to completely reset the app state
             setTimeout(() => {
                 window.location.href = '/';
             }, 100);
-            
             return;
         }
         
-        // Normal successful logout path
         console.log("🧹 [AuthContext] Clearing local auth state...");
         setUser(null);
         setSupabaseUser(null);
