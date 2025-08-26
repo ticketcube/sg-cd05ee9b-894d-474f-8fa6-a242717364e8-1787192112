@@ -67,7 +67,7 @@ export default function ProfilePage() {
 
         fetchUserHistory();
 
-    }, [supabaseUser, profileExists, authLoading, user?.auth_id, userHistory]);
+    }, [supabaseUser, profileExists, authLoading, user?.auth_id]);
 
 
     // ✅ FIXED: New function to load user profile using auth_id (UUID)
