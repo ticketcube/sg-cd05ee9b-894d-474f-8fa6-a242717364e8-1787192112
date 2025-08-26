@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data: engagement, error } = await supabaseAdmin
       .from('user_engagements')
       .insert({
-        user_id: userId,
+        auth_id: userId,  // ✅ FIXED: Use auth_id instead of user_id to match new database schema
         engagement_type: engagementType,
         points_earned: pointsEarned,
         week_identifier: weekIdentifier,
