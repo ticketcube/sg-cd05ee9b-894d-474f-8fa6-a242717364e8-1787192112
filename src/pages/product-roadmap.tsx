@@ -55,31 +55,69 @@ export default function ProductRoadmap() {
 
   const loadComments = async () => {
     try {
+      console.log('🔍 [Frontend] Starting loadComments...');
       setLoading(true);
+      setError(null);
+      
+      console.log('🔍 [Frontend] Getting auth token...');
       const token = await getAuthToken();
       
       if (!token) {
+        console.log('❌ [Frontend] No auth token available');
         setError("Authentication required");
         return;
       }
-
+      
+      console.log('✅ [Frontend] Auth token obtained, length:', token.length);
+      console.log('🔍 [Frontend] Making fetch request to /api/product-roadmap/comments...');
+      
       const response = await fetch('/api/product-roadmap/comments', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
+      console.log('✅ [Frontend] Fetch response received. Status:', response.status);
+      console.log('🔍 [Frontend] Response ok:', response.ok);
+      
       if (!response.ok) {
-        throw new Error('Failed to load comments');
+        const errorText = await response.text();
+        console.error('❌ [Frontend] Response not ok. Status:', response.status, 'Error text:', errorText);
+        
+        // Try to parse as JSON for better error details
+        try {
+          const errorJson = JSON.parse(errorText);
+          console.error('❌ [Frontend] Parsed error details:', errorJson);
+          setError(`Failed to load comments: ${errorJson.error || errorJson.message || 'Unknown error'}`);
+        } catch (parseError) {
+          console.error('❌ [Frontend] Could not parse error response as JSON');
+          setError(`Failed to load comments (Status: ${response.status})`);
+        }
+        return;
       }
 
+      console.log('🔍 [Frontend] Parsing response as JSON...');
       const data = await response.json();
+      console.log('✅ [Frontend] Response parsed successfully. Comments count:', data.comments?.length || 0);
+      
       setComments(data.comments);
+      setError(null);
+      console.log('✅ [Frontend] Comments state updated successfully');
+      
     } catch (err) {
-      setError('Failed to load comments');
-      console.error('Error loading comments:', err);
+      console.error('🚨 [Frontend] Unexpected error in loadComments:', err);
+      
+      // Provide more detailed error information
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Network error: Could not connect to server');
+      } else if (err instanceof SyntaxError) {
+        setError('Server response format error');
+      } else {
+        setError(`Failed to load comments: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
     } finally {
       setLoading(false);
+      console.log('🏁 [Frontend] loadComments completed');
     }
   };
 
