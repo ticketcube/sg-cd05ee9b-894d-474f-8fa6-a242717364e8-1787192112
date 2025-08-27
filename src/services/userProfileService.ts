@@ -139,7 +139,7 @@ const userProfileService = {
         if (error) throw error;
     },
 
-    /** Record a user engagement and add points */
+    /** Record a user engagement and add points - ✅ FIXED: Now uses API to ensure service role access */
     async recordEngagement(
         authId: string,
         engagementType: EngagementType,
@@ -149,27 +149,50 @@ const userProfileService = {
         metadata?: Record<string, any>
     ): Promise<UserEngagement> {
         try {
-            const { data: engagement, error: engagementError } = await supabase
-                .from("user_engagements")
-                .insert([{
-                    auth_id: authId,
-                    engagement_type: engagementType,
-                    points_earned: pointsEarned,
-                    week_identifier: weekIdentifier,
-                    artist_uuid: artistUuid || null,
-                    metadata: metadata || null,
-                }])
-                .select()
-                .single();
+            // Get the user's session token for API authentication
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.access_token) {
+                throw new Error('No valid session found for recording engagement');
+            }
 
-            if (engagementError) throw engagementError;
+            // Call the engagement API endpoint which uses service role
+            const response = await fetch('/api/user/engagement', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    authId,
+                    engagementType,
+                    pointsEarned,
+                    weekIdentifier,
+                    artistUuid,
+                    metadata
+                })
+            });
 
-            await this.addPoints(authId, pointsEarned);
-            await this.updateLastActive(authId);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Server error: ${response.status}`);
+            }
 
-            return engagement as UserEngagement;
+            const result = await response.json();
+            console.log('✅ Engagement recorded via API:', result);
+
+            // Return the engagement data in the expected format
+            return {
+                id: result.engagement?.id || Date.now(), // Fallback ID
+                auth_id: authId,
+                engagement_type: engagementType,
+                points_earned: pointsEarned,
+                week_identifier: weekIdentifier,
+                artist_uuid: artistUuid || null,
+                metadata: metadata || null,
+                created_at: new Date().toISOString()
+            } as UserEngagement;
         } catch (error) {
-            console.error("Error recording engagement:", error);
+            console.error("❌ Error recording engagement via API:", error);
             throw error;
         }
     },
