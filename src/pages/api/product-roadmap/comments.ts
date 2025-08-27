@@ -31,9 +31,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
   try {
+    console.log('🔍 [API] Starting handleGetComments...');
+    
     // Get auth token from request
     const authHeader = req.headers.authorization;
     if (!authHeader) {
+      console.log('❌ [API] No authorization header');
       return res.status(401).json({ error: 'Authentication required' });
     }
 
@@ -43,10 +46,14 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
     );
 
     if (authError || !user) {
+      console.log('❌ [API] Auth error:', authError?.message);
       return res.status(401).json({ error: 'Invalid authentication' });
     }
 
+    console.log('✅ [API] User authenticated:', user.id);
+
     // ✅ SIMPLIFIED: Direct staff check using supabaseAdmin (bypasses RLS)
+    console.log('🔍 [API] Checking user profile for role...');
     const { data: userProfile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('role')
@@ -54,15 +61,37 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
       .single();
 
     if (profileError) {
-      console.error('Profile check error:', profileError);
-      return res.status(500).json({ error: 'Profile verification failed' });
+      console.error('❌ [API] Profile check error:', profileError);
+      return res.status(500).json({ error: 'Profile verification failed', details: profileError.message });
     }
 
+    console.log('✅ [API] User profile found. Role:', userProfile?.role);
+
     if (!userProfile || userProfile.role !== 'otwstaff') {
+      console.log('❌ [API] Access denied. User role:', userProfile?.role);
       return res.status(403).json({ error: 'Staff access required' });
     }
 
-    // ✅ FIXED: Fetch comments using supabaseAdmin to bypass RLS
+    console.log('✅ [API] Staff access verified. Fetching comments...');
+
+    // ✅ FIXED: First try a simple query without join to test table existence
+    const { data: simpleComments, error: simpleError } = await supabaseAdmin
+      .from('product_roadmap_comments')
+      .select('id, auth_id, parent_comment_id, title, content, created_at, updated_at')
+      .limit(1);
+
+    if (simpleError) {
+      console.error('❌ [API] Simple query failed (table might not exist):', simpleError);
+      return res.status(500).json({ 
+        error: 'Database query failed', 
+        details: simpleError.message,
+        hint: 'The product_roadmap_comments table might not exist in your database'
+      });
+    }
+
+    console.log('✅ [API] Simple query successful. Table exists.');
+
+    // Now try the full query with join
     const { data: comments, error: commentsError } = await supabaseAdmin
       .from('product_roadmap_comments')
       .select(`
@@ -78,15 +107,29 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
       .order('created_at', { ascending: false });
 
     if (commentsError) {
-      console.error('Error fetching comments:', commentsError);
-      return res.status(500).json({ error: 'Failed to fetch comments', details: commentsError.message });
+      console.error('❌ [API] Full query with join failed:', commentsError);
+      return res.status(500).json({ 
+        error: 'Failed to fetch comments with user profiles', 
+        details: commentsError.message,
+        hint: 'There might be an issue with the join to user_profiles table or RLS policies'
+      });
     }
 
-    console.log('✅ Comments fetched successfully:', comments?.length || 0, 'comments');
+    console.log('✅ [API] Comments fetched successfully:', comments?.length || 0, 'comments');
+
+    // Handle the case where no comments exist yet
+    if (!comments || comments.length === 0) {
+      console.log('ℹ️ [API] No comments found in database');
+      return res.status(200).json({ comments: [] });
+    }
 
     // Filter out comments without valid user profiles and organize into threads
     const validComments = comments?.filter(comment => comment.user_profiles) || [];
-    console.log('✅ Valid comments with profiles:', validComments.length);
+    console.log('✅ [API] Valid comments with profiles:', validComments.length);
+    
+    if (validComments.length < comments.length) {
+      console.warn('⚠️ [API] Some comments filtered out due to missing user profiles');
+    }
     
     const commentMap = new Map<number, Comment>();
     const topLevelComments: Comment[] = [];
@@ -128,11 +171,17 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
       }
     });
 
+    console.log('✅ [API] Comments organized into', topLevelComments.length, 'top-level threads');
+
     return res.status(200).json({ comments: topLevelComments });
 
   } catch (error) {
-    console.error('API Error:', error);
-    return res.status(500).json({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' });
+    console.error('🚨 [API] Unexpected error:', error);
+    return res.status(500).json({ 
+      error: 'Internal server error', 
+      details: error instanceof Error ? error.message : 'Unknown error',
+      type: 'unexpected_error'
+    });
   }
 }
 
