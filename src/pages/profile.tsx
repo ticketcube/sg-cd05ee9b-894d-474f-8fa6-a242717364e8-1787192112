@@ -400,11 +400,12 @@ export default function ProfilePage() {
                                     >
                                         Submit Content
                                     </Button>
-                                    <Link href="/product-roadmap">
-                                        <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                                            Product Roadmap
-                                        </Button>
-                                    </Link>
+                                    <Button
+                                        onClick={() => window.location.href = "/product-roadmap"}
+                                        className="w-full bg-purple-600 hover:bg-purple-700"
+                                    >
+                                        Product Roadmap
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>
