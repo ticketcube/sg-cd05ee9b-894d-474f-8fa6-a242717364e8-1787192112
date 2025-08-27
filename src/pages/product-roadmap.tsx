@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Edit, Trash2, Reply } from 'lucide-react';
 import AuthGuard from '@/components/AuthGuard';
-import { supabase } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Comment {
   id: number;
