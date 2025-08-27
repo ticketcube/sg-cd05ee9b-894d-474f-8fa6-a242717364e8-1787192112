@@ -19,6 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log("🚀 Starting resumable upload session:", { fileName, fileType, userName, fileSize });
 
+      // Step 1: Get upload URL from Brandfolder
       const uploadReq = await fetch("https://brandfolder.com/api/v4/upload_requests", {
         method: "GET",
         headers: {
@@ -36,32 +37,68 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const resumableInitUrl = uploadData.upload_url;
       const objectUrl = uploadData.object_url;
 
-      // Start resumable session
-      const startResumable = await fetch(resumableInitUrl, {
-        method: "POST",
-        headers: {
-          "x-goog-resumable": "start",
-          "Content-Type": fileType || "application/octet-stream"
+      console.log("📋 Upload request data:", { resumableInitUrl, objectUrl });
+
+      // Step 2: Initialize resumable session with proper Google Cloud headers
+      try {
+        const startResumable = await fetch(resumableInitUrl, {
+          method: "POST",
+          headers: {
+            "X-Goog-Resumable": "start",
+            "Content-Type": fileType || "application/octet-stream",
+            "Content-Length": "0"
+          }
+        });
+
+        console.log("📡 Resumable init response status:", startResumable.status);
+        console.log("📡 Response headers:", Object.fromEntries(startResumable.headers.entries()));
+
+        // Google Cloud returns 201 Created for successful resumable session initialization
+        if (startResumable.status !== 201) {
+          const responseText = await startResumable.text();
+          console.error("❌ Unexpected resumable init response:", {
+            status: startResumable.status,
+            statusText: startResumable.statusText,
+            body: responseText,
+            headers: Object.fromEntries(startResumable.headers.entries())
+          });
+          return res.status(500).json({ 
+            error: "Failed to initialize resumable upload",
+            details: `Expected status 201, got ${startResumable.status}: ${responseText}`
+          });
         }
-      });
 
-      const resumableUploadUrl = startResumable.headers.get("location");
+        const resumableUploadUrl = startResumable.headers.get("location");
 
-      if (!resumableUploadUrl) {
-        console.error("❌ Failed to get resumable upload URL");
-        return res.status(500).json({ error: "Failed to initialize resumable upload" });
+        if (!resumableUploadUrl) {
+          console.error("❌ No location header in resumable response");
+          console.error("Available headers:", Object.fromEntries(startResumable.headers.entries()));
+          return res.status(500).json({ 
+            error: "Failed to initialize resumable upload", 
+            details: "No location header returned from Google Cloud Storage"
+          });
+        }
+
+        console.log("✅ Resumable upload session started successfully");
+        console.log("📍 Resumable URL:", resumableUploadUrl);
+        
+        return res.status(200).json({
+          resumableUploadUrl,
+          objectUrl,
+          fileName,
+          fileType,
+          userName,
+          description,
+          fileSize
+        });
+
+      } catch (resumableError) {
+        console.error("💥 Error during resumable session initialization:", resumableError);
+        return res.status(500).json({ 
+          error: "Failed to initialize resumable upload",
+          details: resumableError instanceof Error ? resumableError.message : String(resumableError)
+        });
       }
-
-      console.log("✅ Resumable upload session started successfully");
-      return res.status(200).json({
-        resumableUploadUrl,
-        objectUrl,
-        fileName,
-        fileType,
-        userName,
-        description,
-        fileSize
-      });
     }
 
     // 🔍 Check upload status (for resumability)
@@ -70,18 +107,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log("🔍 Checking upload status for resumable URL");
 
-      const statusResponse = await fetch(resumableUploadUrl, {
-        method: "PUT",
-        headers: { 
-          "Content-Range": `bytes */${fileSize}` 
+      try {
+        const statusResponse = await fetch(resumableUploadUrl, {
+          method: "PUT",
+          headers: { 
+            "Content-Range": `bytes */${fileSize}`,
+            "Content-Length": "0"
+          }
+        });
+
+        console.log("📊 Status check response:", statusResponse.status);
+
+        // Google Cloud returns 308 Resume Incomplete if partially uploaded
+        // or 404/400 if the session is expired/invalid
+        if (statusResponse.status === 308) {
+          const range = statusResponse.headers.get("range");
+          const uploadedBytes = range ? parseInt(range.split("-")[1], 10) + 1 : 0;
+          console.log(`📊 Upload status: ${uploadedBytes}/${fileSize} bytes uploaded`);
+          return res.json({ uploadedBytes });
+        } else if (statusResponse.status === 404 || statusResponse.status === 400) {
+          // Session expired or invalid - start from beginning
+          console.log("⚠️ Upload session expired, starting from 0");
+          return res.json({ uploadedBytes: 0 });
+        } else {
+          const responseText = await statusResponse.text();
+          console.error("❌ Unexpected status response:", {
+            status: statusResponse.status,
+            body: responseText
+          });
+          return res.json({ uploadedBytes: 0 });
         }
-      });
 
-      const range = statusResponse.headers.get("range");
-      const uploadedBytes = range ? parseInt(range.split("-")[1], 10) + 1 : 0;
-
-      console.log(`📊 Upload status: ${uploadedBytes}/${fileSize} bytes uploaded`);
-      return res.json({ uploadedBytes });
+      } catch (statusError) {
+        console.error("💥 Error checking upload status:", statusError);
+        // If status check fails, assume starting from beginning
+        return res.json({ uploadedBytes: 0 });
+      }
     }
 
     // 2️⃣ Finalize & create asset in Brandfolder
@@ -107,47 +168,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         section_key: SECTION_ID
       };
 
-      const createAsset = await fetch(
-        `https://brandfolder.com/api/v4/brandfolders/${BRANDFOLDER_ID}/assets`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            Authorization: `Bearer ${brandfolderApiKey}`
-          },
-          body: JSON.stringify(assetPayload)
-        }
-      );
-
-      if (!createAsset.ok) {
-        const errorText = await createAsset.text();
-        console.error("❌ Failed to create asset:", createAsset.status, errorText);
-        
-        let errorMessage = "Failed to create asset in Brandfolder";
-        try {
-          const errorJson = JSON.parse(errorText);
-          if (errorJson.errors && Array.isArray(errorJson.errors)) {
-            errorMessage = errorJson.errors.map((err: any) => err.detail || err.title || 'Unknown error').join(', ');
+      try {
+        const createAsset = await fetch(
+          `https://brandfolder.com/api/v4/brandfolders/${BRANDFOLDER_ID}/assets`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              Authorization: `Bearer ${brandfolderApiKey}`
+            },
+            body: JSON.stringify(assetPayload)
           }
-        } catch (e) {
-          errorMessage = `Brandfolder error (${createAsset.status}): ${createAsset.statusText}`;
-        }
-        
-        return res.status(createAsset.status).json({ error: errorMessage });
-      }
+        );
 
-      const assetResult = await createAsset.json();
-      console.log("✅ Asset created successfully:", assetResult.data?.id);
-      
-      return res.status(200).json({ 
-        success: true, 
-        asset: assetResult,
-        assetId: assetResult.data?.id,
-        fileName: fileName,
-        assetName: assetResult.data?.attributes?.name,
-        assetUrl: assetResult.data?.attributes?.cdn_url
-      });
+        if (!createAsset.ok) {
+          const errorText = await createAsset.text();
+          console.error("❌ Failed to create asset:", createAsset.status, errorText);
+          
+          let errorMessage = "Failed to create asset in Brandfolder";
+          try {
+            const errorJson = JSON.parse(errorText);
+            if (errorJson.errors && Array.isArray(errorJson.errors)) {
+              errorMessage = errorJson.errors.map((err: any) => err.detail || err.title || 'Unknown error').join(', ');
+            }
+          } catch (e) {
+            errorMessage = `Brandfolder error (${createAsset.status}): ${createAsset.statusText}`;
+          }
+          
+          return res.status(createAsset.status).json({ error: errorMessage });
+        }
+
+        const assetResult = await createAsset.json();
+        console.log("✅ Asset created successfully:", assetResult.data?.[0]?.id);
+        
+        return res.status(200).json({ 
+          success: true, 
+          asset: assetResult,
+          assetId: assetResult.data?.[0]?.id,
+          fileName: fileName,
+          assetName: assetResult.data?.[0]?.attributes?.name,
+          assetUrl: assetResult.data?.[0]?.attributes?.cdn_url
+        });
+
+      } catch (createError) {
+        console.error("💥 Error creating asset:", createError);
+        return res.status(500).json({ 
+          error: "Failed to create asset",
+          details: createError instanceof Error ? createError.message : String(createError)
+        });
+      }
     }
 
     return res.status(405).json({ error: "Method not allowed" });
