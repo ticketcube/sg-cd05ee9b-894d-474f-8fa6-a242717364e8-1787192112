@@ -56,14 +56,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { error: voteError } = await supabaseAdmin
         .from('weekly_votes')
         .upsert({
-          user_auth_id: user.id,
-          artist_id: artistId,
-          week_id: weekId,
-          quadrant: quadrant,
-          position: position || null,
+          auth_id: user.id, // ✅ FIXED: Use auth_id instead of user_auth_id
+          artist_uuid: artistId,
+          week_identifier: weekId, // ✅ FIXED: Use week_identifier instead of week_id
+          vote_type: 'quadrant', // ✅ FIXED: Add vote_type field
+          quadrant_x: quadrant || null,
+          quadrant_y: quadrant || null,
+          ranking_position: position || null,
           created_at: new Date().toISOString()
         }, {
-          onConflict: 'user_auth_id,artist_id,week_id'
+          onConflict: 'auth_id,artist_uuid,week_identifier' // ✅ FIXED: Update conflict resolution
         });
 
       if (voteError) {
@@ -81,11 +83,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { error: engagementError } = await supabaseAdmin
       .from('user_engagements')
       .insert({
-        user_auth_id: user.id,
-        action_type: 'weekly_rating_completion',
+        auth_id: user.id, // ✅ FIXED: Use auth_id instead of user_auth_id
+        engagement_type: 'weekly_rating_completion', // ✅ FIXED: Use engagement_type instead of action_type
         points_earned: 10, // Base points for completing weekly ratings
+        week_identifier: weekId,
         metadata: {
-          week_id: weekId,
+          week_identifier: weekId,
           artists_rated: artistRatings.length,
           completion_time: completionTime,
           quadrant_positions: quadrantPositions
@@ -98,12 +101,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Don't fail the entire request for engagement tracking errors
     }
 
-    // Update user's total points using service role
+    // Update user's total points using service role - need to check RPC function parameters
     const { error: pointsUpdateError } = await supabaseAdmin.rpc(
       'increment_user_points',
       { 
-        user_auth_id_param: user.id, 
-        points_to_add: 10 
+        points_to_add: 10,
+        user_id_to_update: userProfile.id // ✅ FIXED: Use the numeric profile ID from user_profiles table
       }
     );
 
