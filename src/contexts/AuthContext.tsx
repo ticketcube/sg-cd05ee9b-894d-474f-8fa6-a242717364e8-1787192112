@@ -50,21 +50,16 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     /**
-     * ✅ CRITICAL FIX: Simplified and robust profile loading
-     * - Removes complex polling logic that was causing loops
-     * - Uses direct API calls with proper error handling
-     * - Clearly distinguishes between "profile doesn't exist" vs "temporary error"
+     * ✅ SIMPLIFIED: Streamlined profile loading with better error handling
      */
     const loadUserProfile = async (authUser: SupabaseUser) => {
         console.log(`🔍 [AuthContext] Loading profile for auth_id: ${authUser.id}`);
         
         try {
-            // ✅ CRITICAL FIX: Gracefully handle profile not found for new users
             const userProfile = await userProfileService.getUserProfile(authUser.id);
             
             if (userProfile) {
-                // ✅ SUCCESS: Profile found and loaded
-                console.log("✅ [AuthContext] Profile found and loaded:", userProfile.id, userProfile.username);
+                console.log("✅ [AuthContext] Profile found:", userProfile.username);
                 
                 const userData: User = {
                     auth_id: authUser.id,
@@ -78,11 +73,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                 setUser(userData);
                 setProfileExists(true);
                 localStorage.setItem("otwchart_user", JSON.stringify(userData));
-                console.log("🎉 [AuthContext] Profile loaded and state updated successfully");
                 return;
             } else {
-                // ✅ CRITICAL FIX: Profile doesn't exist - this is NORMAL for new users
-                console.log("ℹ️ [AuthContext] Profile doesn't exist - new user needs to complete profile setup");
+                console.log("ℹ️ [AuthContext] Profile doesn't exist - new user");
                 setUser(null);
                 setProfileExists(false);
                 localStorage.removeItem("otwchart_user");
@@ -90,86 +83,74 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
             }
             
         } catch (error) {
-            // ✅ CRITICAL FIX: Don't treat API errors as missing profiles
             console.error("❌ [AuthContext] Error loading profile:", error);
-            
-            // Check if it's specifically a "Profile not found" error from the API
             if (error instanceof Error && error.message.includes("Profile not found")) {
-                console.log("ℹ️ [AuthContext] Profile not found - new user needs profile setup");
                 setUser(null);
                 setProfileExists(false);
                 localStorage.removeItem("otwchart_user");
-                return;
             }
-            
-            // For other errors (network, server issues), don't change state
-            console.log("⚠️ [AuthContext] Non-profile error - keeping current state");
         }
     };
 
+    // ✅ SIMPLIFIED: Streamlined initialization - no more complex polling
     useEffect(() => {
+        let mounted = true;
+        
         const initializeAuth = async () => {
             try {
-                console.log("🚀 [AuthContext] Initializing auth...");
+                console.log("🚀 [AuthContext] Starting simple auth initialization...");
                 
                 const { data: { session }, error } = await supabase.auth.getSession();
                 
+                if (!mounted) return;
+                
                 if (error) {
-                    console.error("❌ [AuthContext] Error getting session:", error);
+                    console.error("❌ [AuthContext] Session error:", error);
                     setLoading(false);
                     return;
                 }
                 
                 if (session?.user) {
-                    console.log("✅ [AuthContext] Found existing session for:", session.user.id);
+                    console.log("✅ [AuthContext] Found session for:", session.user.id);
                     setSupabaseUser(session.user);
                     await loadUserProfile(session.user);
                 } else {
-                    console.log("ℹ️ [AuthContext] No existing session");
+                    console.log("ℹ️ [AuthContext] No session found");
                 }
             } catch (error) {
-                console.error("🚨 [AuthContext] Error initializing auth:", error);
+                console.error("🚨 [AuthContext] Init error:", error);
             } finally {
-                setLoading(false);
+                if (mounted) {
+                    setLoading(false);
+                }
             }
         };
 
         initializeAuth();
 
+        // ✅ SIMPLIFIED: Cleaner auth state change handler
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             async (event, session) => {
-                console.log("🔄 [AuthContext] Auth state changed:", event);
+                console.log("🔄 [AuthContext] Auth changed:", event);
                 
                 if (event === 'SIGNED_IN' && session?.user) {
-                    console.log("🔑 [AuthContext] User signed in:", session.user.id);
                     setSupabaseUser(session.user);
-                    setLoading(true);
                     await loadUserProfile(session.user);
-                    setLoading(false);
-                    return;
-                }
-                
-                if (event === 'SIGNED_OUT' || !session?.user) {
-                    console.log("👋 [AuthContext] User signed out or no session");
+                } else if (event === 'SIGNED_OUT' || !session?.user) {
                     setSupabaseUser(null);
                     setUser(null);
                     setProfileExists(false);
-                    setLoading(false);
                     localStorage.removeItem("otwchart_user");
-                    return;
                 }
                 
-                // ✅ For other events with valid session, try to load profile
-                if (session?.user) {
-                    setSupabaseUser(session.user);
-                    setLoading(true);
-                    await loadUserProfile(session.user);
-                    setLoading(false);
-                }
+                setLoading(false);
             }
         );
 
-        return () => subscription.unsubscribe();
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
     const refreshUserProfile = useCallback(async () => {
