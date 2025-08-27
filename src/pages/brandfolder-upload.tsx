@@ -39,6 +39,7 @@ export default function BrandfolderUploadPage() {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [description, setDescription] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const [statusMessage, setStatusMessage] = useState("");
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -76,53 +77,157 @@ export default function BrandfolderUploadPage() {
             return;
         }
 
+        const file = selectedFile.file;
+        const userName = user.username || "Unknown Uploader";
+        const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+
         setUploadStatus("uploading");
         setIsLoading(true);
+        setUploadProgress(0);
+        setStatusMessage("Initializing upload...");
 
         try {
-            const response = await fetch("/api/brandfolder/upload", {
+            // Step 1: Start resumable upload session
+            setStatusMessage("Starting resumable session...");
+
+            const startRes = await fetch("/api/brandfolder/upload?action=start", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    fileName: selectedFile.file.name,
-                    contentType: selectedFile.file.type,
-                    artistName: "General", 
-                    uploader: user.username || "Unknown Uploader", 
-                }),
+                    fileName: file.name,
+                    fileType: file.type,
+                    userName: userName,
+                    description: description || "",
+                    fileSize: file.size
+                })
             });
 
-            if (!response.ok) {
-                // Check if response is JSON before trying to parse
-                const contentType = response.headers.get("content-type");
-                let errorMessage = "Upload failed";
-
-                if (contentType && contentType.includes("application/json")) {
-                    try {
-                        const error = await response.json();
-                        errorMessage = error.error || error.message || "Upload failed";
-                    } catch (parseError) {
-                        console.error("Error parsing JSON response:", parseError);
-                        errorMessage = `Server error (${response.status}): ${response.statusText}`;
-                    }
-                } else {
-                    // Response is not JSON, likely an HTML error page
-                    const errorText = await response.text();
-                    console.error("Non-JSON response:", errorText.substring(0, 200));
-                    errorMessage = `Server error (${response.status}): ${response.statusText}`;
-                }
-
-                throw new Error(errorMessage);
+            if (!startRes.ok) {
+                const errorData = await startRes.json();
+                throw new Error(errorData.error || "Failed to start upload session");
             }
 
-            const result = await response.json();
-            console.log("Upload successful:", result);
+            const { resumableUploadUrl, objectUrl } = await startRes.json();
+
+            // Step 2: Check if any bytes have been uploaded previously (resumability)
+            setStatusMessage("Checking upload status...");
+
+            let uploadedBytes = 0;
+            try {
+                const statusRes = await fetch("/api/brandfolder/upload?action=status", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        resumableUploadUrl,
+                        fileSize: file.size
+                    })
+                });
+
+                if (statusRes.ok) {
+                    const statusData = await statusRes.json();
+                    uploadedBytes = statusData.uploadedBytes || 0;
+                }
+            } catch (statusError) {
+                console.log("Status check failed, starting from beginning:", statusError);
+                uploadedBytes = 0;
+            }
+
+            // Step 3: Upload file in chunks
+            const totalChunks = Math.ceil(file.size / chunkSize);
+            const startChunk = Math.floor(uploadedBytes / chunkSize);
+
+            setStatusMessage(`Uploading ${totalChunks} chunks...`);
+
+            for (let chunkIndex = startChunk; chunkIndex < totalChunks; chunkIndex++) {
+                const start = chunkIndex * chunkSize;
+                const end = Math.min(start + chunkSize, file.size);
+                const chunk = file.slice(start, end);
+                const isLastChunk = end === file.size;
+
+                setStatusMessage(`Uploading chunk ${chunkIndex + 1}/${totalChunks}...`);
+
+                // Retry logic for each chunk
+                let retries = 3;
+                let chunkUploaded = false;
+
+                while (retries > 0 && !chunkUploaded) {
+                    try {
+                        const chunkResponse = await fetch(resumableUploadUrl, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Range": `bytes ${start}-${end - 1}/${file.size}`,
+                                "Content-Type": file.type
+                            },
+                            body: chunk
+                        });
+
+                        // Accept both 200 (final chunk) and 308 (resume incomplete) as success
+                        if (chunkResponse.ok || chunkResponse.status === 308) {
+                            chunkUploaded = true;
+                            uploadedBytes = end;
+
+                            // Update progress
+                            const progressPercent = (uploadedBytes / file.size) * 100;
+                            setUploadProgress(progressPercent);
+
+                            console.log(`✅ Chunk ${chunkIndex + 1}/${totalChunks} uploaded successfully (${start}-${end - 1}/${file.size})`);
+
+                            if (isLastChunk && chunkResponse.ok) {
+                                console.log("🎉 All chunks uploaded successfully!");
+                            }
+                        } else {
+                            throw new Error(`Chunk upload failed with status ${chunkResponse.status}: ${chunkResponse.statusText}`);
+                        }
+                    } catch (chunkError) {
+                        retries--;
+                        console.error(`❌ Chunk ${chunkIndex + 1} upload attempt failed:`, chunkError);
+
+                        if (retries === 0) {
+                            throw new Error(`Failed to upload chunk ${chunkIndex + 1} after 3 attempts: ${chunkError instanceof Error ? chunkError.message : String(chunkError)}`);
+                        }
+
+                        // Exponential backoff: wait 1s, 2s, 4s between retries
+                        const delay = 1000 * (4 - retries);
+                        setStatusMessage(`Retrying chunk ${chunkIndex + 1} in ${delay/1000}s... (${3 - retries}/3)`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
+            }
+
+            // Step 4: Finalize asset creation in Brandfolder
+            setStatusMessage("Creating asset in Brandfolder...");
+
+            const finalizeRes = await fetch("/api/brandfolder/upload?action=create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    userName: userName,
+                    description: description || "",
+                    objectUrl: objectUrl
+                })
+            });
+
+            if (!finalizeRes.ok) {
+                const errorData = await finalizeRes.json();
+                throw new Error(errorData.error || "Failed to create asset in Brandfolder");
+            }
+
+            const result = await finalizeRes.json();
+
+            setStatusMessage("Upload complete!");
+            setUploadProgress(100);
             setUploadStatus("success");
+
+            console.log("🎉 Chunked upload completed successfully:", result);
+
         } catch (error) {
-            console.error("Upload error:", error);
+            console.error("💥 Chunked upload error:", error);
+            const errorMsg = error instanceof Error ? error.message : "Upload failed";
+            
             setUploadStatus("error");
-            setErrorMessage(error instanceof Error ? error.message : "Upload failed");
+            setErrorMessage(errorMsg);
+            setStatusMessage("");
             setUploadProgress(0);
         } finally {
             setIsLoading(false);
@@ -135,6 +240,7 @@ export default function BrandfolderUploadPage() {
         setUploadProgress(0);
         setDescription("");
         setErrorMessage("");
+        setStatusMessage("");
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
@@ -186,7 +292,7 @@ export default function BrandfolderUploadPage() {
                                         Upload Successful!
                                     </h2>
                                     <p className="text-gray-400 mb-6">
-                                        Your file has been uploaded successfully.
+                                        Your file has been uploaded successfully using chunked resumable upload.
                                     </p>
                                     <div className="space-y-3">
                                         <Button
@@ -228,7 +334,7 @@ export default function BrandfolderUploadPage() {
                                                 Browse Files
                                             </h3>
                                             <p className="text-gray-400 text-sm">
-                                                Select images or videos up to 100MB
+                                                Select images or videos up to 100MB (now with chunked upload support!)
                                             </p>
                                             <input
                                                 ref={fileInputRef}
@@ -302,9 +408,11 @@ export default function BrandfolderUploadPage() {
                                                 <span className="text-sm text-gray-400">{Math.round(uploadProgress)}%</span>
                                             </div>
                                             <Progress value={uploadProgress} className="h-2 bg-gray-800" />
-                                            <p className="text-sm text-gray-400 text-center">
-                                                Uploading your favorite...
-                                            </p>
+                                            {statusMessage && (
+                                                <p className="text-sm text-blue-400 text-center">
+                                                    {statusMessage}
+                                                </p>
+                                            )}
                                         </div>
                                     )}
 
@@ -326,7 +434,7 @@ export default function BrandfolderUploadPage() {
                                         {uploadStatus === "uploading" ? (
                                             "Uploading..."
                                         ) : selectedFile ? (
-                                            "Upload"
+                                            "Upload with Chunked Resume"
                                         ) : (
                                             "Select a file first"
                                         )}
@@ -336,6 +444,8 @@ export default function BrandfolderUploadPage() {
                                     <div className="text-xs text-gray-500 space-y-1 pt-2 border-t border-gray-800">
                                         <p>• Supported formats: Images and Videos</p>
                                         <p>• Maximum file size: 100MB</p>
+                                        <p>• Uses chunked resumable upload for reliability</p>
+                                        <p>• Upload automatically resumes if interrupted</p>
                                         <p>• Files will be uploaded to our content library</p>
                                         <p>• By uploading, you confirm you own the rights to this content</p>
                                     </div>
