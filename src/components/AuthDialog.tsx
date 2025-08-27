@@ -205,7 +205,8 @@ export default function AuthDialog({
                     {isSignUp && (
                         <div className="text-center">
                             <div className="text-sm text-gray-500 space-y-2 mb-4">
-                              
+                                <div>• Earn points for watching,  Vote on your favorite artists, Unlock exclusive Merch, Tickets & Access</div>
+                            </div>
                         </div>
                     )}
 
