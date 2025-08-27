@@ -211,8 +211,15 @@ const userProfileService = {
         if (error) throw error;
 
         const weeklyMap = new Map < string, UserEngagementSummary> ();
+        let calculatedTotalPoints = 0; // ✅ NEW: Track the real total from engagements
+        
         engagements?.forEach(e => {
             const weekId = e.week_identifier || "unknown";
+            const pointsEarned = e.points_earned || 0;
+            
+            // ✅ NEW: Add to the real calculated total
+            calculatedTotalPoints += pointsEarned;
+            
             if (!weeklyMap.has(weekId)) {
                 weeklyMap.set(weekId, {
                     week_identifier: weekId,
@@ -223,7 +230,7 @@ const userProfileService = {
                 });
             }
             const summary = weeklyMap.get(weekId)!;
-            summary.total_points += e.points_earned || 0;
+            summary.total_points += pointsEarned;
             summary.engagement_count += 1;
             if (e.engagement_type === "video_view") summary.video_views += 1;
             if (["vote_submission", "artist_rating", "quadrant"].includes(e.engagement_type)) summary.votes_submitted += 1;
@@ -232,7 +239,7 @@ const userProfileService = {
         return {
             user_profile: userProfile,
             weekly_summaries: Array.from(weeklyMap.values()).sort((a, b) => b.week_identifier.localeCompare(a.week_identifier)),
-            total_points: userProfile.total_points || 0,
+            total_points: calculatedTotalPoints, // ✅ FIXED: Use calculated total from user_engagements!
         };
     },
 

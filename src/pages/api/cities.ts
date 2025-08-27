@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '@/integrations/supabase/client';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,7 +12,7 @@ export default async function handler(
   try {
     const { search } = req.query;
     
-    let query = supabase
+    let query = supabaseAdmin
       .from('city_latlong')
       .select('id, name, normalized_name, country_code, state_code')
       .order('normalized_name');
