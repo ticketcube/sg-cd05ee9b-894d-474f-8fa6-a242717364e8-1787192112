@@ -163,7 +163,7 @@ export default function HomePage() {
         isOpen={isAuthDialogOpen} 
         onClose={handleAuthClose}
         title="Join OnesToWatch"
-        description="Create your account to vote on discoveries and earn rewards!"
+        
       />
       
       {/* Promotional Popup for new users */}
