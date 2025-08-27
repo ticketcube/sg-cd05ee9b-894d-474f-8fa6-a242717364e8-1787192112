@@ -386,12 +386,12 @@ export default function ProfilePage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-white">
                                     <Settings className="w-5 h-5 text-blue-500" />
-                                    OTW Staff Portal
+                                    OTW Staff Private View
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <p className="text-gray-400 text-sm">
-                                    Access exclusive staff tools and content management features.
+                                    Features in Development
                                 </p>
                                 <div className="flex flex-col gap-3">
                                     <Button
@@ -400,13 +400,7 @@ export default function ProfilePage() {
                                     >
                                         Submit Content
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => window.location.href = "/discovery-charts"}
-                                        className="w-full bg-transparent text-white hover:bg-gray-800"
-                                    >
-                                        Engagement Pipeline
-                                    </Button>
+                                   
                                 </div>
                             </CardContent>
                         </Card>
