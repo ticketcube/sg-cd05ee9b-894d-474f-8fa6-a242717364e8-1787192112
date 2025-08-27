@@ -251,7 +251,7 @@ function WeeklyRatingsPageContent() {
                       >
                         <div className={`select-none transition-opacity ${hasVoted ? 'opacity-50' : ''} relative`}>
                           {artist.artist_image ? (
-                            <Image src={artist.artist_image}  className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white" />
+                            <Image src={artist.artist_image} alt={artist.artist_name} width={48} height={48} className="w-12 h-12 rounded-full object-cover mx-auto border-2 border-white" />
                           ) : (
                             <div className="w-12 h-12 rounded-full bg-gray-600 border-2 border-white flex items-center justify-center mx-auto"><User className="w-6 h-6" /></div>
                           )}
