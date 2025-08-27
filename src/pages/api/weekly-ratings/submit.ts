@@ -57,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const ticketInterest = sliderValues?.ticket || 0;
       const shareInterest = sliderValues?.share || 0;
       
-      // Insert or update the weekly vote using service role - SAVE ORIGINAL SLIDER VALUES
+      // Insert or update the weekly vote using service role - USE EXISTING DATABASE FIELDS
       const { error: voteError } = await supabaseAdmin
         .from('weekly_votes')
         .upsert({
@@ -65,9 +65,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           artist_uuid: artistId,
           week_identifier: weekId,
           vote_type: 'quadrant',
-          ticket_interest: ticketInterest, // ✅ FIXED: Save actual ticket slider value (-1 to 1)
-          share_interest: shareInterest,   // ✅ FIXED: Save actual share slider value (-1 to 1)
-          quadrant: quadrant,              // ✅ Keep quadrant for compatibility (1-4)
+          quadrant_x: ticketInterest,  // ✅ FIXED: Use existing quadrant_x field for ticket interest
+          quadrant_y: shareInterest,   // ✅ FIXED: Use existing quadrant_y field for share interest
           ranking_position: position || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
