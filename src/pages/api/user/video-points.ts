@@ -120,34 +120,34 @@ export default async function handler(
 
     // Update user's total points using service role
     if (pointsEarned > 0) {
-      // Use RPC function to increment points atomically
-      const { error: pointsUpdateError } = await supabaseAdmin.rpc('increment_user_points', {
-        user_auth_id: authId,
-        points_to_add: pointsEarned
-      });
+      try {
+        // Get current points first
+        const { data: userProfile, error: fetchError } = await supabaseAdmin
+          .from("user_profiles")
+          .select("total_points")
+          .eq("auth_id", authId)
+          .single();
 
-      if (pointsUpdateError) {
-        console.error("Error updating user points:", pointsUpdateError);
-        // Try alternative method if RPC fails
-        try {
-          // Get current points first
-          const { data: userProfile, error: fetchError } = await supabaseAdmin
+        if (fetchError) {
+          console.error("Error fetching user profile for points update:", fetchError);
+        } else if (userProfile) {
+          // Update total points atomically
+          const newTotal = (userProfile.total_points || 0) + pointsEarned;
+          const { error: updateError } = await supabaseAdmin
             .from("user_profiles")
-            .select("total_points")
-            .eq("auth_id", authId)
-            .single();
+            .update({ total_points: newTotal })
+            .eq("auth_id", authId);
 
-          if (!fetchError && userProfile) {
-            const newTotal = (userProfile.total_points || 0) + pointsEarned;
-            await supabaseAdmin
-              .from("user_profiles")
-              .update({ total_points: newTotal })
-              .eq("auth_id", authId);
+          if (updateError) {
+            console.error("Error updating user total points:", updateError);
+            // Don't fail the request - engagement is already recorded
+          } else {
+            console.log(`✅ Updated user ${authId} total points to ${newTotal}`);
           }
-        } catch (fallbackError) {
-          console.error("Fallback points update also failed:", fallbackError);
-          // Don't fail the request - engagement is already recorded
         }
+      } catch (pointsUpdateError) {
+        console.error("Error updating user points:", pointsUpdateError);
+        // Don't fail the request - engagement is already recorded
       }
     }
 
