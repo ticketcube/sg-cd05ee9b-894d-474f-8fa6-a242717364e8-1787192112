@@ -123,7 +123,8 @@ export default function BrandfolderUploadPage() {
                     })
                 });
 
-                if (statusRes.ok) {
+                // FIXED: Accept both 200 and 308 status codes (Google Cloud returns 308 for Resume Incomplete)
+                if (statusRes.status === 200 || statusRes.status === 308) {
                     const statusData = await statusRes.json();
                     uploadedBytes = statusData.uploadedBytes || 0;
                 }
@@ -136,7 +137,12 @@ export default function BrandfolderUploadPage() {
             const totalChunks = Math.ceil(file.size / chunkSize);
             const startChunk = Math.floor(uploadedBytes / chunkSize);
 
-            setStatusMessage(`Uploading ${totalChunks} chunks...`);
+            // FIXED: Better UX message for small files
+            if (totalChunks === 1) {
+                setStatusMessage("Uploading file...");
+            } else {
+                setStatusMessage(`Uploading ${totalChunks} chunks...`);
+            }
 
             for (let chunkIndex = startChunk; chunkIndex < totalChunks; chunkIndex++) {
                 const start = chunkIndex * chunkSize;
@@ -144,7 +150,11 @@ export default function BrandfolderUploadPage() {
                 const chunk = file.slice(start, end);
                 const isLastChunk = end === file.size;
 
-                setStatusMessage(`Uploading chunk ${chunkIndex + 1}/${totalChunks}...`);
+                if (totalChunks === 1) {
+                    setStatusMessage("Uploading file...");
+                } else {
+                    setStatusMessage(`Uploading chunk ${chunkIndex + 1}/${totalChunks}...`);
+                }
 
                 // Retry logic for each chunk
                 let retries = 3;
@@ -156,7 +166,8 @@ export default function BrandfolderUploadPage() {
                             method: "PUT",
                             headers: {
                                 "Content-Range": `bytes ${start}-${end - 1}/${file.size}`,
-                                "Content-Type": file.type
+                                // FIXED: Consistent Content-Type - use same file.type from initialization
+                                "Content-Type": file.type || "application/octet-stream"
                             },
                             body: chunk
                         });
@@ -186,8 +197,9 @@ export default function BrandfolderUploadPage() {
                             throw new Error(`Failed to upload chunk ${chunkIndex + 1} after 3 attempts: ${chunkError instanceof Error ? chunkError.message : String(chunkError)}`);
                         }
 
-                        // Exponential backoff: wait 1s, 2s, 4s between retries
-                        const delay = 1000 * (4 - retries);
+                        // FIXED: Proper exponential backoff calculation (1s, 2s, 4s)
+                        const attempt = 3 - retries; // 0, 1, 2
+                        const delay = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s
                         setStatusMessage(`Retrying chunk ${chunkIndex + 1} in ${delay/1000}s... (${3 - retries}/3)`);
                         await new Promise(resolve => setTimeout(resolve, delay));
                     }
@@ -227,7 +239,8 @@ export default function BrandfolderUploadPage() {
             
             setUploadStatus("error");
             setErrorMessage(errorMsg);
-            setStatusMessage("");
+            // FIXED: Better error context - don't clear statusMessage completely
+            setStatusMessage("Upload failed. See error above.");
             setUploadProgress(0);
         } finally {
             setIsLoading(false);
@@ -235,6 +248,11 @@ export default function BrandfolderUploadPage() {
     };
 
     const resetUpload = () => {
+        // FIXED: Revoke object URL to prevent memory leaks
+        if (selectedFile?.preview) {
+            URL.revokeObjectURL(selectedFile.preview);
+        }
+        
         setSelectedFile(null);
         setUploadStatus("idle");
         setUploadProgress(0);
