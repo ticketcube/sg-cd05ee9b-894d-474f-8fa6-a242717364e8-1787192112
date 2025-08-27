@@ -381,12 +381,7 @@ export default function ProfilePage() {
                     </Tabs>
 
                     {/* OTW Staff Portal */}
-                    {console.log("🔍 DEBUG: Checking staff role access:", { 
-                        userId: user?.auth_id, 
-                        userRole: user?.role, 
-                        userObject: user,
-                        userHistoryProfile: userHistory?.user_profile
-                    }) || user?.role === 'otwstaff' && (
+                    {user?.role === 'otwstaff' && (
                         <Card className="bg-gray-900 border-gray-700 border-l-4 border-l-blue-500">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-white">
