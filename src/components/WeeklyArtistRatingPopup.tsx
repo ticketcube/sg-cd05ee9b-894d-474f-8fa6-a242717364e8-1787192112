@@ -13,7 +13,7 @@ import weeklyVotingService, { SubmissionResult } from "@/services/weeklyVotingSe
 import { pointsConfigService } from "@/services/pointsConfigService";
 import { usePointsNotifications } from "@/components/points/PointsNotification";
 import type { Artist } from "@/types/artists";
-import { supabase } from "@/utils/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WeeklyArtistRatingPopupProps {
   artist: Artist;
