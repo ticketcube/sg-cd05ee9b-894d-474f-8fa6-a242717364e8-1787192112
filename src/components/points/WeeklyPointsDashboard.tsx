@@ -67,10 +67,8 @@ export default function WeeklyPointsDashboard({
       const userVotes = await weeklyVotingService.getUserVotes(user.auth_id, weekIdentifier); // ✅ ALREADY CORRECT: Uses user.auth_id (string)
       const artistsRated = userVotes.length;
 
-      // Get total points earned this week - ✅ FIXED: Need to convert auth_id to numeric user ID
-      // First get user profile to get numeric ID
-      const userProfile = await userProfileService.getUserProfile(user.auth_id);
-      const weeklyStats = await userProfileService.getWeeklyStats(userProfile.id, weekIdentifier); // ✅ FIXED: Use numeric ID for getWeeklyStats
+      // Get total points earned this week - ✅ FIXED: Use auth_id directly
+      const weeklyStats = await userProfileService.getWeeklyStats(user.auth_id, weekIdentifier);
       const pointsEarned = weeklyStats.total_points || 0;
 
       // Calculate completion bonus (assuming it's awarded when all artists are rated)
