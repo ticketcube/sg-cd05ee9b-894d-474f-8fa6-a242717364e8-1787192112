@@ -50,7 +50,7 @@ async function handleUpdateComment(req: NextApiRequest, res: NextApiResponse, co
       .eq('auth_id', user.id)
       .single();
 
-    if (profileError || !userProfile || userProfile.role !== 'staff') {
+    if (profileError || !userProfile || userProfile.role !== 'otwstaff') {
       return res.status(403).json({ error: 'Staff access required' });
     }
 
@@ -124,7 +124,7 @@ async function handleDeleteComment(req: NextApiRequest, res: NextApiResponse, co
       .eq('auth_id', user.id)
       .single();
 
-    if (profileError || !userProfile || userProfile.role !== 'staff') {
+    if (profileError || !userProfile || userProfile.role !== 'otwstaff') {
       return res.status(403).json({ error: 'Staff access required' });
     }
 
