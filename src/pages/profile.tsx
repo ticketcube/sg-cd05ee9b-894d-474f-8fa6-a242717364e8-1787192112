@@ -384,7 +384,8 @@ export default function ProfilePage() {
                     {console.log("🔍 DEBUG: Checking staff role access:", { 
                         userId: user?.auth_id, 
                         userRole: user?.role, 
-                        userObject: user 
+                        userObject: user,
+                        userHistoryProfile: userHistory?.user_profile
                     }) || user?.role === 'otwstaff' && (
                         <Card className="bg-gray-900 border-gray-700 border-l-4 border-l-blue-500">
                             <CardHeader>
