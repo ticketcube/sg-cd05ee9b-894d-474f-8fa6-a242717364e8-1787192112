@@ -44,6 +44,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log("📋 Upload request data:", { resumableInitUrl, objectUrl });
 
+        // After you call Brandfolder's upload request endpoint:
+        const bfRes = await fetch(`https://brandfolder.com/api/v5/...`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${process.env.BRANDFOLDER_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ ...payload })
+        });
+
+        if (!bfRes.ok) {
+            const errText = await bfRes.text();
+            console.error("🔥 Brandfolder upload start failed:", bfRes.status, errText);
+            return res.status(bfRes.status).json({ error: errText });
+        }
+
+        const data = await bfRes.json();
+        res.status(200).json(data);
+
+
       // Step 2: Initialize resumable session (FIXED: Remove Content-Length, accept 200/201)
       try {
         const startResumable = await fetch(resumableInitUrl, {
