@@ -63,9 +63,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           quadrant_x: quadrant?.x || null, // ✅ FIXED: Extract X coordinate properly
           quadrant_y: quadrant?.y || null, // ✅ FIXED: Extract Y coordinate properly
           ranking_position: position || null,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString() // ✅ ADD: Include updated_at for upserts
         }, {
-          onConflict: 'auth_id,artist_uuid,week_identifier'
+          onConflict: 'auth_id,artist_uuid,week_identifier', // ✅ This should work now with the unique index
+          ignoreDuplicates: false // ✅ Ensure we update existing records
         });
 
       if (voteError) {
