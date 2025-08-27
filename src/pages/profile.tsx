@@ -450,14 +450,13 @@ function FeaturedActivityModule({ isNewUser = false }: { isNewUser?: boolean }) 
               <div className="flex items-start gap-3">
                 <Target className="w-8 h-8 text-green-400 mt-1 flex-shrink-0" />
                 <div className="flex-1">
-                  <h4 className="font-semibold text-white mb-2">Start Your Discovery Journey</h4>
+                  <h4 className="font-semibold text-white mb-2">September Discovery Reward</h4>
                   <p className="text-sm text-gray-300 mb-3">
-                    Rate emerging artists weekly, watch their videos, and earn points toward exclusive rewards. 
-                    Each activity gets you closer to amazing prizes!
+                    Earn 180 points by watching videos and rating artists and you'll receive all nine OntesToWatch Zines! 
                   </p>
                   <Link href="/weekly-ratings">
                     <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold">
-                      Watch & Rate This Week's Artists
+                      START HERE
                     </Button>
                   </Link>
                 </div>
@@ -501,9 +500,7 @@ function SeptemberReward({ totalPoints }: { totalPoints: number }) {
                     <h3 className="font-bold text-white text-lg mb-1">September Discovery Reward</h3>
                     {!isComplete ? (
                         <>
-                            <p className="text-sm text-gray-200 mb-3">
-                                Earn {goal} points this month and we'll mail you all 9 OnesToWatch zines!
-                            </p>
+                           
                             <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden mb-2">
                                 <div
                                     className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 transition-all duration-500 ease-out"
