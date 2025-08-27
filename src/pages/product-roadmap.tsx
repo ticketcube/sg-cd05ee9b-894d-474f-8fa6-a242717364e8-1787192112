@@ -1,0 +1,446 @@
+
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { MessageSquare, Edit, Trash2, Reply } from 'lucide-react';
+import AuthGuard from '@/components/AuthGuard';
+
+interface Comment {
+  id: number;
+  auth_id: string;
+  parent_comment_id: number | null;
+  title: string | null;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  user_profile?: {
+    username: string;
+    role: string;
+  };
+  replies?: Comment[];
+}
+
+export default function ProductRoadmap() {
+  const { user, supabaseUser } = useAuth();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [newPostTitle, setNewPostTitle] = useState("");
+  const [newPostContent, setNewPostContent] = useState("");
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [editingComment, setEditingComment] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  // Check if user is staff
+  const isStaff = user?.role === 'staff';
+
+  useEffect(() => {
+    if (isStaff) {
+      loadComments();
+    }
+  }, [isStaff]);
+
+  const getAuthToken = async () => {
+    const { data: { session } } = await supabaseUser?.getSession() || { data: { session: null } };
+    return session?.access_token;
+  };
+
+  const loadComments = async () => {
+    try {
+      setLoading(true);
+      const token = await getAuthToken();
+      
+      if (!token) {
+        setError("Authentication required");
+        return;
+      }
+
+      const response = await fetch('/api/product-roadmap/comments', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load comments');
+      }
+
+      const data = await response.json();
+      setComments(data.comments);
+    } catch (err) {
+      setError('Failed to load comments');
+      console.error('Error loading comments:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitNewPost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPostContent.trim()) return;
+
+    setSubmitting(true);
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetch('/api/product-roadmap/comments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: newPostTitle.trim() || null,
+          content: newPostContent.trim()
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create post');
+      }
+
+      setNewPostTitle("");
+      setNewPostContent("");
+      await loadComments();
+    } catch (err) {
+      setError('Failed to create post');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const submitReply = async (parentId: number) => {
+    if (!replyContent.trim()) return;
+
+    setSubmitting(true);
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetch('/api/product-roadmap/comments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          content: replyContent.trim(),
+          parent_comment_id: parentId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create reply');
+      }
+
+      setReplyingTo(null);
+      setReplyContent("");
+      await loadComments();
+    } catch (err) {
+      setError('Failed to create reply');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const updateComment = async (commentId: number) => {
+    if (!editContent.trim()) return;
+
+    setSubmitting(true);
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetch(`/api/product-roadmap/comments/${commentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: editTitle.trim() || null,
+          content: editContent.trim()
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update comment');
+      }
+
+      setEditingComment(null);
+      setEditTitle("");
+      setEditContent("");
+      await loadComments();
+    } catch (err) {
+      setError('Failed to update comment');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const deleteComment = async (commentId: number) => {
+    if (!confirm('Are you sure you want to delete this comment? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = await getAuthToken();
+      
+      const response = await fetch(`/api/product-roadmap/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete comment');
+      }
+
+      await loadComments();
+    } catch (err) {
+      setError('Failed to delete comment');
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const renderComment = (comment: Comment, isReply = false) => {
+    const isOwner = comment.auth_id === supabaseUser?.id;
+    const isEditing = editingComment === comment.id;
+
+    return (
+      <Card key={comment.id} className={`${isReply ? 'ml-8 mt-4' : 'mb-6'}`}>
+        <CardContent className="pt-4">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">{comment.user_profile?.username}</Badge>
+              <span className="text-sm text-gray-500">
+                {formatDate(comment.created_at)}
+                {comment.updated_at !== comment.created_at && " (edited)"}
+              </span>
+            </div>
+            {isOwner && (
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setEditingComment(comment.id);
+                    setEditTitle(comment.title || "");
+                    setEditContent(comment.content);
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => deleteComment(comment.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {isEditing ? (
+            <div className="space-y-3">
+              {comment.parent_comment_id === null && (
+                <Input
+                  placeholder="Title (optional)"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                />
+              )}
+              <Textarea
+                placeholder="Edit your comment..."
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={3}
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => updateComment(comment.id)}
+                  disabled={submitting}
+                >
+                  Save
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditingComment(null);
+                    setEditTitle("");
+                    setEditContent("");
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              {comment.title && (
+                <h3 className="text-lg font-semibold mb-2">{comment.title}</h3>
+              )}
+              <p className="whitespace-pre-wrap text-gray-700">{comment.content}</p>
+              
+              {!isReply && (
+                <div className="mt-3 pt-3 border-t">
+                  {replyingTo === comment.id ? (
+                    <div className="space-y-3">
+                      <Textarea
+                        placeholder="Write a reply..."
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        rows={3}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => submitReply(comment.id)}
+                          disabled={submitting}
+                        >
+                          Reply
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setReplyingTo(null);
+                            setReplyContent("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setReplyingTo(comment.id)}
+                    >
+                      <Reply className="h-4 w-4 mr-1" />
+                      Reply
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+
+        {/* Render replies */}
+        {comment.replies && comment.replies.length > 0 && (
+          <div>
+            {comment.replies.map(reply => renderComment(reply, true))}
+          </div>
+        )}
+      </Card>
+    );
+  };
+
+  if (!isStaff) {
+    return (
+      <AuthGuard>
+        <div className="container mx-auto px-4 py-8">
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <h1 className="text-2xl font-bold mb-4">Access Restricted</h1>
+              <p className="text-gray-600">
+                This page is only accessible to OTW staff members.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </AuthGuard>
+    );
+  }
+
+  return (
+    <AuthGuard>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 mb-8">
+            <MessageSquare className="h-8 w-8 text-blue-600" />
+            <div>
+              <h1 className="text-3xl font-bold">Product Roadmap</h1>
+              <p className="text-gray-600">OTW Staff Discussion & Suggestions</p>
+            </div>
+          </div>
+
+          {error && (
+            <Card className="mb-6 border-red-200">
+              <CardContent className="pt-6">
+                <p className="text-red-600">{error}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* New Post Form */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Create New Post</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={submitNewPost} className="space-y-4">
+                <Input
+                  placeholder="Title (optional)"
+                  value={newPostTitle}
+                  onChange={(e) => setNewPostTitle(e.target.value)}
+                />
+                <Textarea
+                  placeholder="Share your thoughts, suggestions, or feedback..."
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  rows={4}
+                  required
+                />
+                <Button type="submit" disabled={submitting || !newPostContent.trim()}>
+                  {submitting ? 'Posting...' : 'Post'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Comments List */}
+          {loading ? (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <p>Loading comments...</p>
+              </CardContent>
+            </Card>
+          ) : comments.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <p className="text-gray-500">
+                  No posts yet. Be the first to start a discussion!
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div>
+              {comments.map(comment => renderComment(comment))}
+            </div>
+          )}
+        </div>
+      </div>
+    </AuthGuard>
+  );
+}
