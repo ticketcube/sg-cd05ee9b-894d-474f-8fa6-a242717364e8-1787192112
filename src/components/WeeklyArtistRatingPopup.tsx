@@ -13,6 +13,7 @@ import weeklyVotingService, { SubmissionResult } from "@/services/weeklyVotingSe
 import { pointsConfigService } from "@/services/pointsConfigService";
 import { usePointsNotifications } from "@/components/points/PointsNotification";
 import type { Artist } from "@/types/artists";
+import { supabase } from "@/utils/supabase";
 
 interface WeeklyArtistRatingPopupProps {
   artist: Artist;
@@ -214,28 +215,74 @@ export default function WeeklyArtistRatingPopup({
       const ticketValue = (ticketInterest - 50) / 50;
       const shareValue = (shareInterest - 50) / 50;
       
-      const result = await weeklyVotingService.submitQuadrantVote(
-        user.auth_id, 
-        weekIdentifier,
-        weeklyListId || 1, 
-        artist.uuid,
-        ticketValue,
-        shareValue
-      );
+      // Get the user's session token for API authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No valid session found');
+      }
+
+      // Call the new API route instead of direct database operations
+      const response = await fetch('/api/weekly-ratings/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          weekId: weekIdentifier,
+          artistRatings: [{
+            artistId: artist.uuid,
+            quadrant: ticketValue >= 0 && shareValue >= 0 ? 1 : 
+                     ticketValue >= 0 && shareValue < 0 ? 2 :
+                     ticketValue < 0 && shareValue < 0 ? 3 : 4,
+            position: null // Position can be null for basic voting
+          }],
+          quadrantPositions: {
+            [artist.uuid]: {
+              ticket: ticketValue,
+              share: shareValue
+            }
+          },
+          completionTime: Date.now()
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Rating submitted successfully:', result);
+
+      // Create a mock SubmissionResult for compatibility with existing code
+      const submissionResult: SubmissionResult = {
+        success: true,
+        pointsEarned: result.pointsEarned || 10,
+        message: result.message || 'Rating submitted successfully',
+        voteId: `${user.auth_id}-${artist.uuid}-${weekIdentifier}` // Generate a mock vote ID
+      };
 
       if (onSubmissionSuccess) {
-        onSubmissionSuccess(result);
+        onSubmissionSuccess(submissionResult);
       }
 
       // Update parent component
       onRatingComplete(artist.uuid, ticketValue, shareValue);
       onClose();
     } catch (error) {
-      // ✅ Handle duplicate vote error gracefully
-      if (error instanceof Error && error.message.includes("already voted")) {
-        alert("You have already voted for this artist this week.");
+      console.error("❌ Error submitting rating:", error);
+      
+      // Handle specific error cases
+      if (error instanceof Error) {
+        if (error.message.includes("already voted") || error.message.includes("duplicate")) {
+          alert("You have already voted for this artist this week.");
+        } else if (error.message.includes("No valid session")) {
+          alert("Please sign in again to submit your rating.");
+        } else {
+          alert(`Failed to submit rating: ${error.message}`);
+        }
       } else {
-        console.error("❌ Error submitting rating:", error);
         alert("Failed to submit rating. Please try again.");
       }
     } finally {
