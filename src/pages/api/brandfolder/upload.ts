@@ -14,116 +14,95 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { action } = req.query;
 
     // 1️⃣ Start resumable upload session
-    if (req.method === "POST" && action === "start") {
-      const { fileName, fileType, userName, description, fileSize } = req.body;
+      if (req.method === "POST" && action === "start") {
+          const { fileName, fileType, userName, description, fileSize } = req.body;
 
-      console.log("🚀 Starting resumable upload session:", { fileName, fileType, userName, fileSize });
+          console.log("🚀 Starting resumable upload session:", { fileName, fileType, userName, fileSize });
 
-      // Step 1: Get upload URL from Brandfolder (FIXED: POST with JSON body)
-      const uploadReq = await fetch("https://brandfolder.com/api/v4/upload_requests", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${brandfolderApiKey}`,
-          Accept: "application/json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          filename: fileName,
-          mimetype: fileType
-        })
-      });
+          // Step 1: Ask Brandfolder for upload request
+          const uploadReq = await fetch("https://brandfolder.com/api/v4/upload_requests", {
+              method: "POST",
+              headers: {
+                  Authorization: `Bearer ${brandfolderApiKey}`,
+                  Accept: "application/json",
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                  filename: fileName,
+                  mimetype: fileType
+              })
+          });
 
-      if (!uploadReq.ok) {
-        console.error("❌ Failed to get upload request:", uploadReq.status, uploadReq.statusText);
-        return res.status(uploadReq.status).json({ error: "Failed to get upload request" });
-      }
-
-      const uploadData = await uploadReq.json();
-      const resumableInitUrl = uploadData.upload_url;
-      const objectUrl = uploadData.object_url;
-
-      console.log("📋 Upload request data:", { resumableInitUrl, objectUrl });
-
-        // After you call Brandfolder's upload request endpoint:
-        const bfRes = await fetch(`https://brandfolder.com/api/v5/...`, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${process.env.BRANDFOLDER_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ ...payload })
-        });
-
-        if (!bfRes.ok) {
-            const errText = await bfRes.text();
-            console.error("🔥 Brandfolder upload start failed:", bfRes.status, errText);
-            return res.status(bfRes.status).json({ error: errText });
-        }
-
-        const data = await bfRes.json();
-        res.status(200).json(data);
-
-
-      // Step 2: Initialize resumable session (FIXED: Remove Content-Length, accept 200/201)
-      try {
-        const startResumable = await fetch(resumableInitUrl, {
-          method: "POST",
-          headers: {
-            "X-Goog-Resumable": "start",
-            "Content-Type": fileType || "application/octet-stream"
+          if (!uploadReq.ok) {
+              const errText = await uploadReq.text();
+              console.error("❌ Failed to get upload request:", uploadReq.status, errText);
+              return res.status(uploadReq.status).json({ error: errText });
           }
-        });
 
-        console.log("📡 Resumable init response status:", startResumable.status);
-        console.log("📡 Response headers:", Object.fromEntries(startResumable.headers.entries()));
+          const uploadData = await uploadReq.json();
+          const resumableInitUrl = uploadData.upload_url;
+          const objectUrl = uploadData.object_url;
 
-        // FIXED: Accept both 200 and 201 status codes
-        if (![200, 201].includes(startResumable.status)) {
-          const responseText = await startResumable.text();
-          console.error("❌ Unexpected resumable init response:", {
-            status: startResumable.status,
-            statusText: startResumable.statusText,
-            body: responseText,
-            headers: Object.fromEntries(startResumable.headers.entries())
-          });
-          return res.status(500).json({ 
-            error: "Failed to initialize resumable upload",
-            details: `Expected status 200/201, got ${startResumable.status}: ${responseText}`
-          });
-        }
+          console.log("📋 Upload request data:", { resumableInitUrl, objectUrl });
 
-        const resumableUploadUrl = startResumable.headers.get("location");
+          // Step 2: Initialize resumable session
+          try {
+              const startResumable = await fetch(resumableInitUrl, {
+                  method: "POST",
+                  headers: {
+                      "X-Goog-Resumable": "start",
+                      "Content-Type": fileType || "application/octet-stream"
+                  }
+              });
 
-        if (!resumableUploadUrl) {
-          console.error("❌ No location header in resumable response");
-          console.error("Available headers:", Object.fromEntries(startResumable.headers.entries()));
-          return res.status(500).json({ 
-            error: "Failed to initialize resumable upload", 
-            details: "No location header returned from Google Cloud Storage"
-          });
-        }
+              console.log("📡 Resumable init response status:", startResumable.status);
+              console.log("📡 Response headers:", Object.fromEntries(startResumable.headers.entries()));
 
-        console.log("✅ Resumable upload session started successfully");
-        console.log("📍 Resumable URL:", resumableUploadUrl);
-        
-        return res.status(200).json({
-          resumableUploadUrl,
-          objectUrl,
-          fileName,
-          fileType,
-          userName,
-          description,
-          fileSize
-        });
+              if (![200, 201].includes(startResumable.status)) {
+                  const responseText = await startResumable.text();
+                  console.error("❌ Unexpected resumable init response:", {
+                      status: startResumable.status,
+                      statusText: startResumable.statusText,
+                      body: responseText,
+                      headers: Object.fromEntries(startResumable.headers.entries())
+                  });
+                  return res.status(500).json({
+                      error: "Failed to initialize resumable upload",
+                      details: `Expected 200/201, got ${startResumable.status}: ${responseText}`
+                  });
+              }
 
-      } catch (resumableError) {
-        console.error("💥 Error during resumable session initialization:", resumableError);
-        return res.status(500).json({ 
-          error: "Failed to initialize resumable upload",
-          details: resumableError instanceof Error ? resumableError.message : String(resumableError)
-        });
+              const resumableUploadUrl = startResumable.headers.get("location");
+              if (!resumableUploadUrl) {
+                  console.error("❌ No location header in resumable response");
+                  return res.status(500).json({
+                      error: "Failed to initialize resumable upload",
+                      details: "No location header from Google Cloud Storage"
+                  });
+              }
+
+              console.log("✅ Resumable upload session started successfully");
+              console.log("📍 Resumable URL:", resumableUploadUrl);
+
+              return res.status(200).json({
+                  resumableUploadUrl,
+                  objectUrl,
+                  fileName,
+                  fileType,
+                  userName,
+                  description,
+                  fileSize
+              });
+
+          } catch (resumableError) {
+              console.error("💥 Error during resumable session initialization:", resumableError);
+              return res.status(500).json({
+                  error: "Failed to initialize resumable upload",
+                  details: resumableError instanceof Error ? resumableError.message : String(resumableError)
+              });
+          }
       }
-    }
+
 
     // 🔍 Check upload status (for resumability)
     if (req.method === "PUT" && action === "status") {
