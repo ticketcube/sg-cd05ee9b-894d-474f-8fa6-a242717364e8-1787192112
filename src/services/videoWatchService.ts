@@ -16,40 +16,37 @@ export const videoWatchService = {
    */
   async recordVideoView(data: VideoViewData): Promise<{ pointsEarned: number; eligible: boolean }> {
     try {
-      // Get dynamic configuration
-      const minWatchTime = await pointsConfigService.getMinValue('video_view');
-      const videoViewPoints = await pointsConfigService.getPoints('video_view');
-      
-      // Check if user is eligible for points (once per artist per week)
-      const eligible = await pointsConfigService.checkEligibility(
-        'video_view',
-        data.userId, // ✅ Now uses string auth_id
-        data.artistUuid,
-        data.weekIdentifier
-      );
+      // Get the user's session token for API authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No valid session found');
+      }
 
-      // Check if watch time meets minimum requirement
-      const meetsWatchTime = data.watchTimeSeconds >= minWatchTime;
-      
-      const pointsEarned = (eligible && meetsWatchTime) ? videoViewPoints : 0;
+      // Call the new video-points API route
+      const response = await fetch('/api/user/video-points', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          artistUuid: data.artistUuid,
+          weekIdentifier: data.weekIdentifier,
+          watchTimeSeconds: data.watchTimeSeconds
+        })
+      });
 
-      // Record the engagement using auth_id
-      await userProfileService.recordEngagement(
-        data.userId, // ✅ Now uses string auth_id
-        "video_view",
-        pointsEarned,
-        data.weekIdentifier,
-        data.artistUuid,
-        {
-          watch_time_seconds: data.watchTimeSeconds,
-          points_eligible: eligible,
-          meets_watch_time: meetsWatchTime
-        }
-      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Video points API response:', result);
 
       return {
-        pointsEarned,
-        eligible: eligible && meetsWatchTime
+        pointsEarned: result.pointsEarned,
+        eligible: result.eligible
       };
     } catch (error) {
       console.error("Error recording video view:", error);
