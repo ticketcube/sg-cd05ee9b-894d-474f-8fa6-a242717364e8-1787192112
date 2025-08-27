@@ -191,7 +191,7 @@ export default function AuthDialog({
             >
                 <DialogHeader>
                     <DialogTitle className="text-center text-blue-600">
-                        {isSignUp ? "Create Account" : "Sign In"}
+                        {isSignUp ? "Register for Rewards" : "Sign In"}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -205,10 +205,7 @@ export default function AuthDialog({
                     {isSignUp && (
                         <div className="text-center">
                             <div className="text-sm text-gray-500 space-y-2 mb-4">
-                                <div>• Earn points for watching videos</div>
-                                <div>• Vote on your favorite artists</div>
-                                <div>• Unlock exclusive features</div>
-                                <div>• Exchange points for Tickets & Access</div>
+                                <div>• Earn points for watching,  Vote on your favorite artists, Unlock exclusive Merch, Tickets & Access</div>
                             </div>
                         </div>
                     )}
