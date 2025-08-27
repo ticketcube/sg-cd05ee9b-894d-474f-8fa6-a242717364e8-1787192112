@@ -46,18 +46,23 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
       return res.status(401).json({ error: 'Invalid authentication' });
     }
 
-    // Check if user is staff
+    // ✅ SIMPLIFIED: Direct staff check using supabaseAdmin (bypasses RLS)
     const { data: userProfile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('role')
       .eq('auth_id', user.id)
       .single();
 
-    if (profileError || !userProfile || userProfile.role !== 'otwstaff') {
+    if (profileError) {
+      console.error('Profile check error:', profileError);
+      return res.status(500).json({ error: 'Profile verification failed' });
+    }
+
+    if (!userProfile || userProfile.role !== 'otwstaff') {
       return res.status(403).json({ error: 'Staff access required' });
     }
 
-    // Fetch all comments with user profile info
+    // ✅ FIXED: Fetch comments using supabaseAdmin to bypass RLS
     const { data: comments, error: commentsError } = await supabaseAdmin
       .from('product_roadmap_comments')
       .select(`
@@ -74,7 +79,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
 
     if (commentsError) {
       console.error('Error fetching comments:', commentsError);
-      return res.status(500).json({ error: 'Failed to fetch comments' });
+      return res.status(500).json({ error: 'Failed to fetch comments', details: commentsError.message });
     }
 
     // Organize comments into threads
@@ -122,7 +127,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
 
   } catch (error) {
     console.error('API Error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' });
   }
 }
 
