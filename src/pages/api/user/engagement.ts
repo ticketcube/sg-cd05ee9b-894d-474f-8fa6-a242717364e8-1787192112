@@ -50,8 +50,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Update user points atomically
     const { error: pointsError } = await supabaseAdmin.rpc('increment_user_points', {
-      user_id_to_update: userId,
-      points_to_add: pointsEarned
+      points_to_add: pointsEarned,
+      user_auth_id: userId
     });
 
     if (pointsError) throw pointsError;
