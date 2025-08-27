@@ -120,16 +120,34 @@ export default async function handler(
 
     // Update user's total points using service role
     if (pointsEarned > 0) {
-      const { error: pointsUpdateError } = await supabaseAdmin
-        .from("user_profiles")
-        .update({ 
-          total_points: supabaseAdmin.raw(`total_points + ${pointsEarned}`) 
-        })
-        .eq("auth_id", authId);
+      // Use RPC function to increment points atomically
+      const { error: pointsUpdateError } = await supabaseAdmin.rpc('increment_user_points', {
+        user_auth_id: authId,
+        points_to_add: pointsEarned
+      });
 
       if (pointsUpdateError) {
         console.error("Error updating user points:", pointsUpdateError);
-        // Don't fail the request if points update fails - engagement is already recorded
+        // Try alternative method if RPC fails
+        try {
+          // Get current points first
+          const { data: userProfile, error: fetchError } = await supabaseAdmin
+            .from("user_profiles")
+            .select("total_points")
+            .eq("auth_id", authId)
+            .single();
+
+          if (!fetchError && userProfile) {
+            const newTotal = (userProfile.total_points || 0) + pointsEarned;
+            await supabaseAdmin
+              .from("user_profiles")
+              .update({ total_points: newTotal })
+              .eq("auth_id", authId);
+          }
+        } catch (fallbackError) {
+          console.error("Fallback points update also failed:", fallbackError);
+          // Don't fail the request - engagement is already recorded
+        }
       }
     }
 
