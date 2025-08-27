@@ -136,14 +136,37 @@ export default function ProductRoadmap() {
 
       console.log('🔍 [Frontend] Parsing response as JSON...');
       const data = await response.json();
-      console.log('✅ [Frontend] Response parsed successfully. Comments count:', data.comments?.length || 0);
+      console.log('✅ [Frontend] Response parsed successfully. Raw data:', data);
+      console.log('✅ [Frontend] Comments array:', data.comments);
+      console.log('✅ [Frontend] Comments count:', data.comments?.length || 0);
       
+      // Add validation for the response structure
+      if (!data || typeof data !== 'object') {
+        console.error('❌ [Frontend] Invalid response structure:', data);
+        setError('Server returned invalid data format');
+        return;
+      }
+      
+      if (!Array.isArray(data.comments)) {
+        console.error('❌ [Frontend] Comments is not an array:', data.comments);
+        setError('Server returned invalid comments format');
+        return;
+      }
+      
+      console.log('🔍 [Frontend] Setting comments state...');
       setComments(data.comments || []);
       setError(null);
       console.log('✅ [Frontend] Comments state updated successfully');
       
+      // Verify state was actually set
+      setTimeout(() => {
+        console.log('🔍 [Frontend] State check - comments length:', comments.length);
+      }, 100);
+      
     } catch (err) {
       console.error('🚨 [Frontend] Unexpected error in loadComments:', err);
+      console.error('🚨 [Frontend] Error name:', (err as Error)?.name);
+      console.error('🚨 [Frontend] Error message:', (err as Error)?.message);
       console.error('🚨 [Frontend] Error stack:', (err as Error)?.stack);
       
       // Provide more detailed error information
@@ -151,10 +174,13 @@ export default function ProductRoadmap() {
         setError('Network error: Could not connect to server. Check your internet connection.');
       } else if (err instanceof SyntaxError) {
         setError('Server response format error. The server returned invalid JSON.');
+      } else if (err instanceof Error) {
+        setError(`Failed to load comments: ${err.message}`);
       } else {
-        setError(`Failed to load comments: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setError('Failed to load comments: Unknown error occurred');
       }
     } finally {
+      console.log('🔍 [Frontend] Setting loading to false...');
       setLoading(false);
       console.log('🏁 [Frontend] loadComments completed');
     }
