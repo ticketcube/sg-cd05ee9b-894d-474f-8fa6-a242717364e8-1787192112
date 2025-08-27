@@ -58,7 +58,7 @@ export default function PromotionPopup({ onRegisterClick }: PromotionPopupProps)
             Limited Time Offer! 🎵
           </DialogTitle>
           <DialogDescription className="text-center text-lg">
-            Register now and complete one discovery activity to receive{" "}
+            Register now and complete one discovery activity to enter a drawing for {" "}
             <span className="font-bold text-primary">2 FREE tickets</span> to upcoming shows!
           </DialogDescription>
         </DialogHeader>
