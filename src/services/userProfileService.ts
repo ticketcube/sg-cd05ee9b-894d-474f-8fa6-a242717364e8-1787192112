@@ -110,9 +110,18 @@ const userProfileService = {
     async addPoints(authId: string, pointsToAdd: number): Promise<UserProfile> {
         if (pointsToAdd === 0) return this.getUserProfile(authId);
 
-        // Call RPC using auth_id instead of numeric ID
-        const { error } = await supabase.rpc("increment_user_points_by_auth_id", {
-            auth_id_to_update: authId,
+        // First get the numeric user ID from the auth_id
+        const { data: profile, error: profileError } = await supabase
+            .from("user_profiles")
+            .select("id")
+            .eq("auth_id", authId)
+            .single();
+
+        if (profileError) throw profileError;
+
+        // Call RPC using numeric user ID
+        const { error } = await supabase.rpc("increment_user_points", {
+            user_id_to_update: profile.id,
             points_to_add: pointsToAdd,
         });
 
