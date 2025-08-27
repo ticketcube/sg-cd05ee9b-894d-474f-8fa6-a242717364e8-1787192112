@@ -52,7 +52,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const votingPromises = artistRatings.map(async (rating: any) => {
       const { artistId, quadrant, position } = rating;
       
-      // Insert or update the weekly vote using service role
+      // Get the actual slider values from quadrantPositions
+      const sliderValues = quadrantPositions?.[artistId];
+      const ticketInterest = sliderValues?.ticket || 0;
+      const shareInterest = sliderValues?.share || 0;
+      
+      // Insert or update the weekly vote using service role - SAVE ORIGINAL SLIDER VALUES
       const { error: voteError } = await supabaseAdmin
         .from('weekly_votes')
         .upsert({
@@ -60,14 +65,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           artist_uuid: artistId,
           week_identifier: weekId,
           vote_type: 'quadrant',
-          quadrant_x: quadrant?.x || null, // ✅ FIXED: Extract X coordinate properly
-          quadrant_y: quadrant?.y || null, // ✅ FIXED: Extract Y coordinate properly
+          ticket_interest: ticketInterest, // ✅ FIXED: Save actual ticket slider value (-1 to 1)
+          share_interest: shareInterest,   // ✅ FIXED: Save actual share slider value (-1 to 1)
+          quadrant: quadrant,              // ✅ Keep quadrant for compatibility (1-4)
           ranking_position: position || null,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString() // ✅ ADD: Include updated_at for upserts
+          updated_at: new Date().toISOString()
         }, {
-          onConflict: 'auth_id,artist_uuid,week_identifier', // ✅ This should work now with the unique index
-          ignoreDuplicates: false // ✅ Ensure we update existing records
+          onConflict: 'auth_id,artist_uuid,week_identifier',
+          ignoreDuplicates: false
         });
 
       if (voteError) {
@@ -81,16 +87,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Wait for all votes to be processed
     const voteResults = await Promise.all(votingPromises);
     
-    // Record user engagement using service role
+    // ✅ FIXED: Record proper user engagement - just "quadrant" not "weekly_rating_completion"
     const { error: engagementError } = await supabaseAdmin
       .from('user_engagements')
       .insert({
         auth_id: user.id,
-        engagement_type: 'weekly_rating_completion',
+        engagement_type: 'quadrant', // ✅ FIXED: Use standard "quadrant" engagement type
         points_earned: 10,
         week_identifier: weekId,
+        artist_uuid: artistRatings[0]?.artistId || null, // ✅ FIXED: Include artist_uuid for single votes
         metadata: {
-          week_identifier: weekId,
           artists_rated: artistRatings.length,
           completion_time: completionTime,
           quadrant_positions: quadrantPositions
