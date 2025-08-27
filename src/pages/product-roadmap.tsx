@@ -40,7 +40,7 @@ export default function ProductRoadmap() {
   const [submitting, setSubmitting] = useState(false);
 
   // Check if user is staff
-  const isStaff = user?.role === 'staff';
+  const isStaff = user?.role === 'otwstaff';
 
   useEffect(() => {
     if (isStaff) {
