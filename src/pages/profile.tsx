@@ -394,12 +394,7 @@ export default function ProfilePage() {
                                     Features in Development
                                 </p>
                                 <div className="flex flex-col gap-3">
-                                    <Button
-                                        onClick={() => window.location.href = "/brandfolder-upload"}
-                                        className="w-full bg-blue-600 hover:bg-blue-700"
-                                    >
-                                        Submit Content
-                                    </Button>
+                                  
                                     <Button
                                         onClick={() => window.location.href = "/product-roadmap"}
                                         className="w-full bg-purple-600 hover:bg-purple-700"
