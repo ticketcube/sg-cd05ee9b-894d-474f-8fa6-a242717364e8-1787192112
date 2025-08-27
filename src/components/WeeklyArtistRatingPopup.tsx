@@ -215,7 +215,7 @@ export default function WeeklyArtistRatingPopup({
       const shareValue = (shareInterest - 50) / 50;
       
       const result = await weeklyVotingService.submitQuadrantVote(
-        user.auth_id (string),
+        user.auth_id, 
         weekIdentifier,
         weeklyListId || 1, 
         artist.uuid,
