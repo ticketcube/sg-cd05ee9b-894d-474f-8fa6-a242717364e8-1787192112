@@ -19,13 +19,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log("🚀 Starting resumable upload session:", { fileName, fileType, userName, fileSize });
 
-      // Step 1: Get upload URL from Brandfolder
+      // Step 1: Get upload URL from Brandfolder (FIXED: POST with JSON body)
       const uploadReq = await fetch("https://brandfolder.com/api/v4/upload_requests", {
-        method: "GET",
+        method: "POST",
         headers: {
           Authorization: `Bearer ${brandfolderApiKey}`,
-          Accept: "application/json"
-        }
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          filename: fileName,
+          mimetype: fileType
+        })
       });
 
       if (!uploadReq.ok) {
@@ -39,22 +44,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       console.log("📋 Upload request data:", { resumableInitUrl, objectUrl });
 
-      // Step 2: Initialize resumable session with proper Google Cloud headers
+      // Step 2: Initialize resumable session (FIXED: Remove Content-Length, accept 200/201)
       try {
         const startResumable = await fetch(resumableInitUrl, {
           method: "POST",
           headers: {
             "X-Goog-Resumable": "start",
-            "Content-Type": fileType || "application/octet-stream",
-            "Content-Length": "0"
+            "Content-Type": fileType || "application/octet-stream"
           }
         });
 
         console.log("📡 Resumable init response status:", startResumable.status);
         console.log("📡 Response headers:", Object.fromEntries(startResumable.headers.entries()));
 
-        // Google Cloud returns 201 Created for successful resumable session initialization
-        if (startResumable.status !== 201) {
+        // FIXED: Accept both 200 and 201 status codes
+        if (![200, 201].includes(startResumable.status)) {
           const responseText = await startResumable.text();
           console.error("❌ Unexpected resumable init response:", {
             status: startResumable.status,
@@ -64,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           });
           return res.status(500).json({ 
             error: "Failed to initialize resumable upload",
-            details: `Expected status 201, got ${startResumable.status}: ${responseText}`
+            details: `Expected status 200/201, got ${startResumable.status}: ${responseText}`
           });
         }
 
@@ -111,8 +115,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const statusResponse = await fetch(resumableUploadUrl, {
           method: "PUT",
           headers: { 
-            "Content-Range": `bytes */${fileSize}`,
-            "Content-Length": "0"
+            "Content-Range": `bytes */${fileSize}`
           }
         });
 
@@ -122,6 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // or 404/400 if the session is expired/invalid
         if (statusResponse.status === 308) {
           const range = statusResponse.headers.get("range");
+          // FIXED: Add +1 for correct byte counting (0-5242879 means 5,242,880 bytes)
           const uploadedBytes = range ? parseInt(range.split("-")[1], 10) + 1 : 0;
           console.log(`📊 Upload status: ${uploadedBytes}/${fileSize} bytes uploaded`);
           return res.json({ uploadedBytes });
@@ -155,15 +159,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ? `${description} (Uploaded by ${userName} via OTWChart)`
         : `User-submitted content by ${userName} via OTWChart`;
 
+      // FIXED: Correct payload structure - attributes as object, not array
       const assetPayload = {
         data: {
-          attributes: [
-            {
-              name: `${userName} Upload - ${fileName}`,
-              description: finalDescription,
-              attachments: [{ url: objectUrl, filename: fileName }]
-            }
-          ]
+          attributes: {
+            name: `${userName} Upload - ${fileName}`,
+            description: finalDescription,
+            attachments: [{ url: objectUrl, filename: fileName }]
+          }
         },
         section_key: SECTION_ID
       };
@@ -200,15 +203,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         const assetResult = await createAsset.json();
-        console.log("✅ Asset created successfully:", assetResult.data?.[0]?.id);
+        console.log("✅ Asset created successfully:", assetResult.data?.id);
         
         return res.status(200).json({ 
           success: true, 
           asset: assetResult,
-          assetId: assetResult.data?.[0]?.id,
+          assetId: assetResult.data?.id,
           fileName: fileName,
-          assetName: assetResult.data?.[0]?.attributes?.name,
-          assetUrl: assetResult.data?.[0]?.attributes?.cdn_url
+          assetName: assetResult.data?.attributes?.name,
+          assetUrl: assetResult.data?.attributes?.cdn_url
         });
 
       } catch (createError) {
