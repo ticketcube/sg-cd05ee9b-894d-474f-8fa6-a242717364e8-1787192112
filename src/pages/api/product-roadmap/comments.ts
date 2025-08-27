@@ -91,7 +91,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
 
     console.log('✅ [API] Simple query successful. Table exists.');
 
-    // Now try the full query with join
+    // Now try the full query with left join (more resilient)
     const { data: comments, error: commentsError } = await supabaseAdmin
       .from('product_roadmap_comments')
       .select(`
@@ -102,16 +102,16 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
         content,
         created_at,
         updated_at,
-        user_profiles(username, role)
+        user_profiles!left(username, role)
       `)
       .order('created_at', { ascending: false });
 
     if (commentsError) {
-      console.error('❌ [API] Full query with join failed:', commentsError);
+      console.error('❌ [API] Full query with left join failed:', commentsError);
       return res.status(500).json({ 
-        error: 'Failed to fetch comments with user profiles', 
+        error: 'Failed to fetch comments', 
         details: commentsError.message,
-        hint: 'There might be an issue with the join to user_profiles table or RLS policies'
+        hint: 'Database query failed even with left join'
       });
     }
 
@@ -123,19 +123,22 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
       return res.status(200).json({ comments: [] });
     }
 
-    // Filter out comments without valid user profiles and organize into threads
-    const validComments = comments?.filter(comment => comment.user_profiles) || [];
-    console.log('✅ [API] Valid comments with profiles:', validComments.length);
+    // Handle comments with missing user profiles more gracefully
+    const processedComments = comments.map((comment: any) => ({
+      ...comment,
+      user_profile: comment.user_profiles || {
+        username: 'Unknown User',
+        role: 'unknown'
+      }
+    }));
     
-    if (validComments.length < comments.length) {
-      console.warn('⚠️ [API] Some comments filtered out due to missing user profiles');
-    }
+    console.log('✅ [API] All comments processed. Valid comments:', processedComments.length);
     
     const commentMap = new Map<number, Comment>();
     const topLevelComments: Comment[] = [];
 
     // First pass: create comment objects
-    validComments.forEach((comment: any) => {
+    processedComments.forEach((comment: any) => {
       const commentObj: Comment = {
         id: comment.id,
         auth_id: comment.auth_id,
@@ -144,7 +147,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
         content: comment.content,
         created_at: comment.created_at,
         updated_at: comment.updated_at,
-        user_profile: comment.user_profiles,
+        user_profile: comment.user_profile,
         replies: []
       };
       commentMap.set(comment.id, commentObj);

@@ -53,6 +53,42 @@ export default function ProductRoadmap() {
     return session?.access_token;
   };
 
+  const testConnection = async () => {
+    console.log('🧪 [Frontend] Testing API connection...');
+    try {
+      // First test - simple fetch without auth
+      const testResponse = await fetch('/api/product-roadmap/comments');
+      console.log('🧪 [Frontend] No-auth test response status:', testResponse.status);
+      
+      if (testResponse.status === 401) {
+        console.log('✅ [Frontend] API endpoint is reachable (got expected 401)');
+      }
+      
+      // Second test - with auth
+      const token = await getAuthToken();
+      console.log('🧪 [Frontend] Auth token for test:', token ? `${token.substring(0, 20)}...` : 'null');
+      
+      if (token) {
+        const authResponse = await fetch('/api/product-roadmap/comments', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        console.log('🧪 [Frontend] Auth test response status:', authResponse.status);
+        console.log('🧪 [Frontend] Auth test response ok:', authResponse.ok);
+        
+        const responseText = await authResponse.text();
+        console.log('🧪 [Frontend] Auth test response text:', responseText.substring(0, 200));
+      }
+      
+    } catch (err) {
+      console.error('🚨 [Frontend] Connection test failed:', err);
+    }
+  };
+
+  // Add test button in the UI temporarily
+  const debugMode = true; // Set to false to hide test button
+
   const loadComments = async () => {
     try {
       console.log('🔍 [Frontend] Starting loadComments...');
@@ -73,12 +109,14 @@ export default function ProductRoadmap() {
       
       const response = await fetch('/api/product-roadmap/comments', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       console.log('✅ [Frontend] Fetch response received. Status:', response.status);
       console.log('🔍 [Frontend] Response ok:', response.ok);
+      console.log('🔍 [Frontend] Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -88,10 +126,10 @@ export default function ProductRoadmap() {
         try {
           const errorJson = JSON.parse(errorText);
           console.error('❌ [Frontend] Parsed error details:', errorJson);
-          setError(`Failed to load comments: ${errorJson.error || errorJson.message || 'Unknown error'}`);
+          setError(`Failed to load comments: ${errorJson.error || errorJson.message || 'Unknown error'} (Status: ${response.status})`);
         } catch (parseError) {
           console.error('❌ [Frontend] Could not parse error response as JSON');
-          setError(`Failed to load comments (Status: ${response.status})`);
+          setError(`Failed to load comments (Status: ${response.status}): ${errorText}`);
         }
         return;
       }
@@ -100,18 +138,19 @@ export default function ProductRoadmap() {
       const data = await response.json();
       console.log('✅ [Frontend] Response parsed successfully. Comments count:', data.comments?.length || 0);
       
-      setComments(data.comments);
+      setComments(data.comments || []);
       setError(null);
       console.log('✅ [Frontend] Comments state updated successfully');
       
     } catch (err) {
       console.error('🚨 [Frontend] Unexpected error in loadComments:', err);
+      console.error('🚨 [Frontend] Error stack:', (err as Error)?.stack);
       
       // Provide more detailed error information
       if (err instanceof TypeError && err.message.includes('fetch')) {
-        setError('Network error: Could not connect to server');
+        setError('Network error: Could not connect to server. Check your internet connection.');
       } else if (err instanceof SyntaxError) {
-        setError('Server response format error');
+        setError('Server response format error. The server returned invalid JSON.');
       } else {
         setError(`Failed to load comments: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
