@@ -73,7 +73,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
         content,
         created_at,
         updated_at,
-        user_profiles!inner(username, role)
+        user_profiles(username, role)
       `)
       .order('created_at', { ascending: false });
 
@@ -82,12 +82,17 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
       return res.status(500).json({ error: 'Failed to fetch comments', details: commentsError.message });
     }
 
-    // Organize comments into threads
+    console.log('✅ Comments fetched successfully:', comments?.length || 0, 'comments');
+
+    // Filter out comments without valid user profiles and organize into threads
+    const validComments = comments?.filter(comment => comment.user_profiles) || [];
+    console.log('✅ Valid comments with profiles:', validComments.length);
+    
     const commentMap = new Map<number, Comment>();
     const topLevelComments: Comment[] = [];
 
     // First pass: create comment objects
-    comments?.forEach((comment: any) => {
+    validComments.forEach((comment: any) => {
       const commentObj: Comment = {
         id: comment.id,
         auth_id: comment.auth_id,
