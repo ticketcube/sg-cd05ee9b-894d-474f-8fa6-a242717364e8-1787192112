@@ -56,16 +56,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { error: voteError } = await supabaseAdmin
         .from('weekly_votes')
         .upsert({
-          auth_id: user.id, // ✅ FIXED: Use auth_id instead of user_auth_id
+          auth_id: user.id,
           artist_uuid: artistId,
-          week_identifier: weekId, // ✅ FIXED: Use week_identifier instead of week_id
-          vote_type: 'quadrant', // ✅ FIXED: Add vote_type field
-          quadrant_x: quadrant || null,
-          quadrant_y: quadrant || null,
+          week_identifier: weekId,
+          vote_type: 'quadrant',
+          quadrant_x: quadrant?.x || null, // ✅ FIXED: Extract X coordinate properly
+          quadrant_y: quadrant?.y || null, // ✅ FIXED: Extract Y coordinate properly
           ranking_position: position || null,
           created_at: new Date().toISOString()
         }, {
-          onConflict: 'auth_id,artist_uuid,week_identifier' // ✅ FIXED: Update conflict resolution
+          onConflict: 'auth_id,artist_uuid,week_identifier'
         });
 
       if (voteError) {
@@ -83,9 +83,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { error: engagementError } = await supabaseAdmin
       .from('user_engagements')
       .insert({
-        auth_id: user.id, // ✅ FIXED: Use auth_id instead of user_auth_id
-        engagement_type: 'weekly_rating_completion', // ✅ FIXED: Use engagement_type instead of action_type
-        points_earned: 10, // Base points for completing weekly ratings
+        auth_id: user.id,
+        engagement_type: 'weekly_rating_completion',
+        points_earned: 10,
         week_identifier: weekId,
         metadata: {
           week_identifier: weekId,
@@ -101,14 +101,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Don't fail the entire request for engagement tracking errors
     }
 
-    // Update user's total points using service role - need to check RPC function parameters
-    const { error: pointsUpdateError } = await supabaseAdmin.rpc(
-      'increment_user_points',
-      { 
-        points_to_add: 10,
-        user_id_to_update: userProfile.id // ✅ FIXED: Use the numeric profile ID from user_profiles table
-      }
-    );
+    // ✅ FIXED: Remove the failing RPC call - handle points update directly
+    // Update user's total points directly using service role
+    const { error: pointsUpdateError } = await supabaseAdmin
+      .from('user_profiles')
+      .update({ 
+        total_points: userProfile.total_points + 10,
+        updated_at: new Date().toISOString()
+      })
+      .eq('auth_id', user.id);
 
     if (pointsUpdateError) {
       console.error('❌ Error updating user points:', pointsUpdateError);
