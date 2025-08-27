@@ -91,7 +91,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
 
     console.log('✅ [API] Simple query successful. Table exists.');
 
-    // Now try the full query with left join (more resilient)
+    // Now try the full query with correct Supabase left join syntax
     const { data: comments, error: commentsError } = await supabaseAdmin
       .from('product_roadmap_comments')
       .select(`
@@ -102,20 +102,114 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
         content,
         created_at,
         updated_at,
-        user_profiles!left(username, role)
+        user_profiles (username, role)
       `)
       .order('created_at', { ascending: false });
 
     if (commentsError) {
-      console.error('❌ [API] Full query with left join failed:', commentsError);
-      return res.status(500).json({ 
-        error: 'Failed to fetch comments', 
-        details: commentsError.message,
-        hint: 'Database query failed even with left join'
+      console.error('❌ [API] Full query with join failed:', commentsError);
+      
+      // If join fails, fallback to separate queries
+      console.log('🔄 [API] Trying fallback approach with separate queries...');
+      
+      // Get comments without join first
+      const { data: rawComments, error: rawError } = await supabaseAdmin
+        .from('product_roadmap_comments')
+        .select('id, auth_id, parent_comment_id, title, content, created_at, updated_at')
+        .order('created_at', { ascending: false });
+        
+      if (rawError) {
+        console.error('❌ [API] Even basic query failed:', rawError);
+        return res.status(500).json({ 
+          error: 'Failed to fetch comments', 
+          details: rawError.message,
+          hint: 'Both JOIN and basic queries failed'
+        });
+      }
+      
+      console.log('✅ [API] Raw comments fetched:', rawComments?.length || 0);
+      
+      if (!rawComments || rawComments.length === 0) {
+        return res.status(200).json({ comments: [] });
+      }
+      
+      // Get user profiles separately
+      const uniqueAuthIds = [...new Set(rawComments.map(c => c.auth_id))];
+      const { data: profiles, error: profilesError } = await supabaseAdmin
+        .from('user_profiles')
+        .select('auth_id, username, role')
+        .in('auth_id', uniqueAuthIds);
+        
+      console.log('✅ [API] User profiles fetched:', profiles?.length || 0);
+      
+      // Merge the data
+      const mergedComments = rawComments.map(comment => {
+        const profile = profiles?.find(p => p.auth_id === comment.auth_id);
+        return {
+          ...comment,
+          user_profiles: profile ? {
+            username: profile.username,
+            role: profile.role
+          } : {
+            username: 'Unknown User',
+            role: 'unknown'
+          }
+        };
       });
+      
+      // Use the merged comments
+      const processedComments = mergedComments.map((comment: any) => ({
+        ...comment,
+        user_profile: comment.user_profiles
+      }));
+      
+      console.log('✅ [API] Fallback approach successful');
+      
+      const commentMap = new Map<number, Comment>();
+      const topLevelComments: Comment[] = [];
+
+      // Process comments into threads
+      processedComments.forEach((comment: any) => {
+        const commentObj: Comment = {
+          id: comment.id,
+          auth_id: comment.auth_id,
+          parent_comment_id: comment.parent_comment_id,
+          title: comment.title,
+          content: comment.content,
+          created_at: comment.created_at,
+          updated_at: comment.updated_at,
+          user_profile: comment.user_profile,
+          replies: []
+        };
+        commentMap.set(comment.id, commentObj);
+      });
+
+      // Organize into threads
+      commentMap.forEach((comment) => {
+        if (comment.parent_comment_id === null) {
+          topLevelComments.push(comment);
+        } else {
+          const parent = commentMap.get(comment.parent_comment_id);
+          if (parent) {
+            parent.replies!.push(comment);
+          }
+        }
+      });
+
+      // Sort replies
+      topLevelComments.forEach((comment) => {
+        if (comment.replies) {
+          comment.replies.sort((a, b) => 
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+        }
+      });
+
+      console.log('✅ [API] Comments organized (fallback):', topLevelComments.length, 'top-level threads');
+      return res.status(200).json({ comments: topLevelComments });
     }
 
-    console.log('✅ [API] Comments fetched successfully:', comments?.length || 0, 'comments');
+    console.log('✅ [API] Comments fetched successfully with JOIN:', comments?.length || 0, 'comments');
 
     // Handle the case where no comments exist yet
     if (!comments || comments.length === 0) {
