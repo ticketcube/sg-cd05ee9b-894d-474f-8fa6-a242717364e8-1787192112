@@ -257,10 +257,10 @@ export default function WeeklyArtistRatingPopup({
 
       // Create a mock SubmissionResult for compatibility with existing code
       const submissionResult: SubmissionResult = {
-        success: true,
-        pointsEarned: result.pointsEarned || 10,
-        message: result.message || 'Rating submitted successfully',
-        voteId: `${user.auth_id}-${artist.uuid}-${weekIdentifier}` // Generate a mock vote ID
+        totalPointsEarned: result.pointsEarned || 10,
+        completionBonus: 0,
+        ratedArtists: 1,
+        message: result.message || 'Rating submitted successfully'
       };
 
       if (onSubmissionSuccess) {
