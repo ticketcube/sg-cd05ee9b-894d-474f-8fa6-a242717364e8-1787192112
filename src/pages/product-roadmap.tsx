@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Edit, Trash2, Reply } from 'lucide-react';
 import AuthGuard from '@/components/AuthGuard';
+import { supabase } from '@/utils/supabase';
 
 interface Comment {
   id: number;
@@ -48,7 +49,7 @@ export default function ProductRoadmap() {
   }, [isStaff]);
 
   const getAuthToken = async () => {
-    const { data: { session } } = await supabaseUser?.getSession() || { data: { session: null } };
+    const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token;
   };
 
