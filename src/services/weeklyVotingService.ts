@@ -10,8 +10,8 @@ export interface ArtistVote {
     user_id: number;
     artist_uuid: string;
     week_identifier: string;
-    ticket_interest: number; // ✅ FIXED: Restore original ticket slider value
-    share_interest: number;  // ✅ FIXED: Restore original share slider value
+    quadrant_x: number; // ✅ FIXED: Use existing quadrant_x field (ticket interest)
+    quadrant_y: number; // ✅ FIXED: Use existing quadrant_y field (share interest)
     quadrant: number;        // ✅ Keep quadrant for compatibility
     created_at: string;
 }
@@ -35,8 +35,8 @@ const weeklyVotingService = {
     weekIdentifier: string,
     weeklyListId: number,
     artistUuid: string,
-    ticketInterest: number,  // ✅ FIXED: Restore original ticket interest (-1 to 1)
-    shareInterest: number,   // ✅ FIXED: Restore original share interest (-1 to 1)
+    ticketInterest: number,  // ✅ This will be saved as quadrant_x
+    shareInterest: number,   // ✅ This will be saved as quadrant_y
   ): Promise<SubmissionResult> {
     if (!authId) throw new Error("Auth ID is required to record a vote.");
 
@@ -58,7 +58,7 @@ const weeklyVotingService = {
                       ticketInterest >= 0 && shareInterest < 0 ? 2 :
                       ticketInterest < 0 && shareInterest < 0 ? 3 : 4;
       
-      // Record engagement with proper ticket/share metadata
+      // Record engagement with quadrant_x/quadrant_y metadata
       const engagement = await userProfileService.recordEngagement(
         authId,
         "quadrant",
@@ -66,9 +66,9 @@ const weeklyVotingService = {
         weekIdentifier,
         artistUuid,
         { 
-          ticket_interest: ticketInterest,  // ✅ FIXED: Save original slider values
-          share_interest: shareInterest,    // ✅ FIXED: Save original slider values
-          quadrant: quadrant,               // ✅ Keep quadrant for compatibility
+          quadrant_x: ticketInterest,  // ✅ FIXED: Use quadrant_x for ticket slider
+          quadrant_y: shareInterest,   // ✅ FIXED: Use quadrant_y for share slider
+          quadrant: quadrant,          // ✅ Keep quadrant for compatibility
           weekly_list_id: weeklyListId 
         }
       );
@@ -94,46 +94,42 @@ const weeklyVotingService = {
       return [];
     }
 
-    const { data, error } = await supabase
-      .from("user_engagements")
-      .select(`*`)
+    // ✅ FIXED: Query both user_engagements AND weekly_votes to get complete data
+    // First get from weekly_votes table (the actual votes)
+    const { data: weeklyVotesData, error: weeklyVotesError } = await supabase
+      .from("weekly_votes")
+      .select("*")
       .eq("auth_id", authId)
       .eq("week_identifier", weekIdentifier)
-      .eq("engagement_type", "quadrant");
+      .eq("vote_type", "quadrant");
 
-    if (error) {
-      console.error(`Error fetching votes for auth_id ${authId} and week ${weekIdentifier}:`, error);
-      throw error;
+    if (weeklyVotesError) {
+      console.error(`Error fetching weekly votes for auth_id ${authId} and week ${weekIdentifier}:`, weeklyVotesError);
+      throw weeklyVotesError;
     }
 
-    // Transform user_engagements data to ArtistVote format with proper slider values
-    return (data || []).map(engagement => {
-      // Safely parse metadata which could be string, null, or object
-      let metadata: any = null;
-      try {
-        if (engagement.metadata && typeof engagement.metadata === 'object') {
-          metadata = engagement.metadata;
-        } else if (typeof engagement.metadata === 'string') {
-          metadata = JSON.parse(engagement.metadata);
-        }
-      } catch (error) {
-        console.warn('Failed to parse metadata:', engagement.metadata);
-        metadata = {};
-      }
+    // Transform weekly_votes data to ArtistVote format
+    return (weeklyVotesData || []).map(vote => {
+      // Calculate quadrant from quadrant_x and quadrant_y values
+      const quadrant_x = vote.quadrant_x || 0;
+      const quadrant_y = vote.quadrant_y || 0;
+      const quadrant = quadrant_x >= 0 && quadrant_y >= 0 ? 1 : 
+                      quadrant_x >= 0 && quadrant_y < 0 ? 2 :
+                      quadrant_x < 0 && quadrant_y < 0 ? 3 : 4;
 
-      // ✅ FIXED: Create proper ArtistVote object with restored slider values
-      const vote: ArtistVote = {
-        id: engagement.id,
+      // ✅ FIXED: Create proper ArtistVote object using existing database fields
+      const transformedVote: ArtistVote = {
+        id: vote.id,
         user_id: 0, // Placeholder for backward compatibility
-        artist_uuid: engagement.artist_uuid || '',
-        week_identifier: engagement.week_identifier || '',
-        ticket_interest: metadata?.ticket_interest || 0,  // ✅ FIXED: Use actual ticket interest
-        share_interest: metadata?.share_interest || 0,    // ✅ FIXED: Use actual share interest
-        quadrant: metadata?.quadrant || 1,                // ✅ Keep quadrant for compatibility
-        created_at: engagement.created_at
+        artist_uuid: vote.artist_uuid || '',
+        week_identifier: vote.week_identifier || '',
+        quadrant_x: quadrant_x,  // ✅ FIXED: Use actual quadrant_x from database
+        quadrant_y: quadrant_y,  // ✅ FIXED: Use actual quadrant_y from database
+        quadrant: quadrant,      // ✅ Calculated quadrant for compatibility
+        created_at: vote.created_at
       };
       
-      return vote;
+      return transformedVote;
     }) as ArtistVote[];
   },
 
