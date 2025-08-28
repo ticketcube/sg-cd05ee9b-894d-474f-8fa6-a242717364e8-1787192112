@@ -1,18 +1,5 @@
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
-
-// Create admin client with service role key
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -28,6 +15,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     console.log(`[API] Getting profile for auth_id: ${auth_id}`);
 
+    // Validate environment variables before creating client
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl) {
+      console.error('[API] Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
+      return res.status(500).json({ 
+        error: 'Server configuration error: Missing Supabase URL' 
+      });
+    }
+
+    if (!supabaseServiceKey) {
+      console.error('[API] Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
+      return res.status(500).json({ 
+        error: 'Server configuration error: Missing service role key' 
+      });
+    }
+
+    // Create admin client with service role key
+    console.log(`[API] Creating Supabase admin client...`);
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
+    console.log(`[API] Querying user_profiles table for auth_id: ${auth_id}`);
+    
     // Use service role to get profile - bypasses RLS
     const { data: profile, error } = await supabaseAdmin
       .from('user_profiles')
@@ -36,22 +52,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .single();
 
     if (error) {
+      console.error('[API] Supabase query error:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+
       if (error.code === 'PGRST116') {
         console.log(`[API] Profile not found for auth_id: ${auth_id}`);
         return res.status(404).json({ error: 'Profile not found' });
       }
-      console.error('[API] Database error:', error);
-      throw error;
+      
+      // Return more specific error information
+      return res.status(500).json({ 
+        error: 'Database query failed',
+        code: error.code,
+        message: error.message,
+        details: error.details
+      });
     }
 
-    console.log(`[API] Profile found: ${profile.id} - ${profile.username}`);
+    if (!profile) {
+      console.log(`[API] No profile data returned for auth_id: ${auth_id}`);
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    console.log(`[API] Profile found successfully: ${profile.id} - ${profile.username}`);
     return res.status(200).json(profile);
 
   } catch (error) {
-    console.error('[API] Error getting profile:', error);
-    return res.status(500).json({ 
+    console.error('[API] Unexpected error in profile-by-auth-id:', error);
+    
+    // Return detailed error information for debugging
+    const errorResponse = {
       error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    };
+    
+    return res.status(500).json(errorResponse);
   }
 }
