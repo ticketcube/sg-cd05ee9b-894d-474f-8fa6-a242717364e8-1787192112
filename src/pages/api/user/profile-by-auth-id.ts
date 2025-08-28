@@ -16,11 +16,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log(`[API] Getting profile for auth_id: ${auth_id}`);
 
     // Validate environment variables before creating client
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl) {
-      console.error('[API] Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
+        console.error('[API] Missing SUPABASE_URL environment variable');
       return res.status(500).json({ 
         error: 'Server configuration error: Missing Supabase URL' 
       });
