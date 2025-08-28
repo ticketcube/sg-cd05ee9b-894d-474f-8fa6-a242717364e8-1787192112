@@ -8,7 +8,8 @@ interface User {
     auth_id: string;
     username: string;
     email: string;
-    city?: string;
+    raw_city_input?: string;
+    created_at?: string;
     points: number;
     role?: string;
 }
@@ -62,7 +63,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                     auth_id: authUser.id,
                     username: userProfile.username,
                     email: userProfile.email,
-                    city: userProfile.raw_city_input || undefined,
+                    raw_city_input: userProfile.raw_city_input || undefined,
+                    created_at: userProfile.created_at,
                     points: userProfile.total_points || 0,
                     role: userProfile.role || undefined
                 };
@@ -208,7 +210,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
                 auth_id: currentUser.id,
                 username: userProfile.username,
                 email: userProfile.email,
-                city: userProfile.raw_city_input || undefined,
+                raw_city_input: userProfile.raw_city_input || undefined,
+                created_at: userProfile.created_at,
                 points: userProfile.total_points || 0,
                 role: userProfile.role || undefined
             };
