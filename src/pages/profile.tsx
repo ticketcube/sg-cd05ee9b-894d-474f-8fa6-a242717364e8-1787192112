@@ -213,30 +213,31 @@ export default function ProfilePage() {
             <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-blue-50">
                 <div className="max-w-4xl mx-auto px-4 py-4">
                     {/* Page Header - Made much more compact */}
-                    <div className="mb-4 flex items-start justify-between">
+                    <div className="mb-3 md:mb-4 flex flex-col sm:flex-row items-start justify-between gap-2">
                         <div>
-                            <h1 className="text-2xl font-bold text-neutral-800 mb-1">My Profile</h1>
-                            <p className="text-sm text-neutral-600">Manage your account and track your music interests</p>
+                            <h1 className="text-xl md:text-2xl font-bold text-neutral-800 mb-1">My Profile</h1>
+                            <p className="text-xs md:text-sm text-neutral-600">Manage your account and track your music interests</p>
                         </div>
                         <Button
                             onClick={() => window.location.href = "/discovery-dashboard"}
                             variant="outline"
-                            className="bg-white/80 hover:bg-white border-neutral-200 text-neutral-700 hover:text-neutral-800 px-4 py-2 shadow-sm hover:shadow-md transition-all"
+                            className="bg-white/80 hover:bg-white border-neutral-200 text-neutral-700 hover:text-neutral-800 px-3 md:px-4 py-2 shadow-sm hover:shadow-md transition-all text-xs md:text-sm"
                         >
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Return to Discovery Dashboard
+                            <ArrowLeft className="w-3 md:w-4 h-3 md:h-4 mr-1 md:mr-2" />
+                            <span className="hidden sm:inline">Return to Discovery Dashboard</span>
+                            <span className="sm:hidden">Dashboard</span>
                         </Button>
                     </div>
 
-                    {/* Compact Profile Header - Avatar/Name Left, Details Right */}
-                    <div className="mb-6">
+                    {/* Compact Profile Header - Made even more mobile friendly */}
+                    <div className="mb-4 md:mb-6">
                         <Card className="bg-white/80 backdrop-blur-sm border-neutral-200/60 shadow-sm hover:shadow-md transition-all">
-                            <CardContent className="p-4">
-                                <div className="flex items-center gap-6">
+                            <CardContent className="p-3 md:p-4">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-6">
                                     {/* Left: Avatar and Name */}
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3 md:gap-4">
                                         <div className="relative group">
-                                            <Avatar className="w-16 h-16 border-2 border-blue-100">
+                                            <Avatar className="w-12 md:w-16 h-12 md:h-16 border-2 border-blue-100">
                                                 {userProfile?.avatar_url ? (
                                                     <img 
                                                         src={userProfile.avatar_url} 
@@ -244,7 +245,7 @@ export default function ProfilePage() {
                                                         className="w-full h-full object-cover rounded-full"
                                                     />
                                                 ) : (
-                                                    <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xl font-bold">
+                                                    <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg md:text-xl font-bold">
                                                         {userProfile?.username?.charAt(0).toUpperCase() || 'U'}
                                                     </AvatarFallback>
                                                 )}
@@ -263,39 +264,39 @@ export default function ProfilePage() {
                                                 className={`absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${uploadingAvatar ? 'opacity-100' : ''}`}
                                             >
                                                 {uploadingAvatar ? (
-                                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                    <div className="w-4 md:w-5 h-4 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                                 ) : (
-                                                    <Upload className="w-5 h-5 text-white" />
+                                                    <Upload className="w-4 md:w-5 h-4 md:h-5 text-white" />
                                                 )}
                                             </label>
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-bold text-neutral-800">{userProfile?.username || 'User'}</h2>
-                                            <p className="text-sm text-neutral-600">Music Enthusiast</p>
+                                            <h2 className="text-lg md:text-xl font-bold text-neutral-800">{userProfile?.username || 'User'}</h2>
+                                            <p className="text-xs md:text-sm text-neutral-600">Music Enthusiast</p>
                                         </div>
                                     </div>
 
-                                    {/* Right: User Details Grid */}
-                                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {/* Right: User Details Grid - More compact on mobile */}
+                                    <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                                         <div className="flex items-center gap-2">
-                                            <Mail className="w-4 h-4 text-blue-600" />
+                                            <Mail className="w-3 md:w-4 h-3 md:h-4 text-blue-600 flex-shrink-0" />
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-xs font-medium text-neutral-700">Email</p>
-                                                <p className="text-sm text-neutral-600 truncate">{userProfile?.email || supabaseUser?.email}</p>
+                                                <p className="text-xs md:text-sm text-neutral-600 truncate">{userProfile?.email || supabaseUser?.email}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <MapPin className="w-4 h-4 text-green-600" />
+                                            <MapPin className="w-3 md:w-4 h-3 md:h-4 text-green-600 flex-shrink-0" />
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-xs font-medium text-neutral-700">Location</p>
-                                                <p className="text-sm text-neutral-600">{userProfile?.raw_city_input || 'Not specified'}</p>
+                                                <p className="text-xs md:text-sm text-neutral-600">{userProfile?.raw_city_input || 'Not specified'}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Calendar className="w-4 h-4 text-purple-600" />
+                                            <Calendar className="w-3 md:w-4 h-3 md:h-4 text-purple-600 flex-shrink-0" />
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-xs font-medium text-neutral-700">Member Since</p>
-                                                <p className="text-sm text-neutral-600">
+                                                <p className="text-xs md:text-sm text-neutral-600">
                                                     {userProfile?.created_at ? formatDate(userProfile.created_at) : 'Recently'}
                                                 </p>
                                             </div>
@@ -306,12 +307,12 @@ export default function ProfilePage() {
                         </Card>
                     </div>
 
-                    {/* Event Interests Table - Now full width */}
+                    {/* Event Interests Table - Mobile optimized with removed columns */}
                     <div>
                         <Card className="bg-white/80 backdrop-blur-sm border-neutral-200/60 shadow-sm hover:shadow-md transition-all">
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-lg text-neutral-800 flex items-center gap-2">
-                                    <Heart className="w-4 h-4 text-red-500" />
+                            <CardHeader className="pb-2 md:pb-3">
+                                <CardTitle className="text-base md:text-lg text-neutral-800 flex items-center gap-2">
+                                    <Heart className="w-3 md:w-4 h-3 md:h-4 text-red-500" />
                                     My Event Interests
                                 </CardTitle>
                                 <p className="text-xs text-neutral-600">
@@ -324,11 +325,12 @@ export default function ProfilePage() {
                                         <Table>
                                             <TableHeader>
                                                 <TableRow className="bg-neutral-50/50">
-                                                    <TableHead className="font-semibold text-neutral-700">Event</TableHead>
-                                                    <TableHead className="font-semibold text-neutral-700">Date & Venue</TableHead>
-                                                    <TableHead className="text-center font-semibold text-neutral-700">Want Tickets</TableHead>
-                                                    <TableHead className="text-center font-semibold text-neutral-700">Share</TableHead>
-                                                    <TableHead className="text-center font-semibold text-neutral-700">Action</TableHead>
+                                                    <TableHead className="font-semibold text-neutral-700 text-xs md:text-sm">Event</TableHead>
+                                                    <TableHead className="font-semibold text-neutral-700 text-xs md:text-sm">Date and Time</TableHead>
+                                                    {/* Hide Want Tickets and Share columns on mobile */}
+                                                    <TableHead className="text-center font-semibold text-neutral-700 text-xs md:text-sm hidden md:table-cell">Want Tickets</TableHead>
+                                                    <TableHead className="text-center font-semibold text-neutral-700 text-xs md:text-sm hidden md:table-cell">Share</TableHead>
+                                                    <TableHead className="text-center font-semibold text-neutral-700 text-xs md:text-sm">Action</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -336,7 +338,7 @@ export default function ProfilePage() {
                                                     <TableRow key={index} className="hover:bg-blue-50/30 transition-colors">
                                                         <TableCell className="font-medium">
                                                             <div>
-                                                                <p className="text-neutral-800 font-semibold text-sm">
+                                                                <p className="text-neutral-800 font-semibold text-xs md:text-sm">
                                                                     {event.event_name}
                                                                 </p>
                                                                 <p className="text-xs text-neutral-600 mt-1">
@@ -345,10 +347,10 @@ export default function ProfilePage() {
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <div className="flex items-start gap-2">
-                                                                <Calendar className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                                            <div className="flex items-start gap-1 md:gap-2">
+                                                                <Calendar className="w-3 md:w-4 h-3 md:h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                                                                 <div>
-                                                                    <p className="text-sm font-medium text-neutral-700">
+                                                                    <p className="text-xs md:text-sm font-medium text-neutral-700">
                                                                         {formatDate(event.event_date)}
                                                                     </p>
                                                                     {event.event_time && (
@@ -359,7 +361,8 @@ export default function ProfilePage() {
                                                                 </div>
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell className="text-center">
+                                                        {/* Hide Want Tickets column on mobile */}
+                                                        <TableCell className="text-center hidden md:table-cell">
                                                             <div className="flex justify-center">
                                                                 <Badge 
                                                                     className={`${
@@ -374,7 +377,8 @@ export default function ProfilePage() {
                                                                 </Badge>
                                                             </div>
                                                         </TableCell>
-                                                        <TableCell className="text-center">
+                                                        {/* Hide Share column on mobile */}
+                                                        <TableCell className="text-center hidden md:table-cell">
                                                             <div className="flex justify-center">
                                                                 <Badge 
                                                                     className={`${
@@ -394,7 +398,7 @@ export default function ProfilePage() {
                                                                 <Button
                                                                     asChild
                                                                     size="sm"
-                                                                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-xs h-8"
+                                                                    className="bg-blue-600 hover:bg-blue-700 text-white px-2 md:px-3 py-1 text-xs h-6 md:h-8"
                                                                 >
                                                                     <a 
                                                                         href={event.event_url} 
@@ -402,7 +406,8 @@ export default function ProfilePage() {
                                                                         rel="noopener noreferrer"
                                                                         className="flex items-center gap-1"
                                                                     >
-                                                                        Get Tickets
+                                                                        <span className="hidden sm:inline">Get Tickets</span>
+                                                                        <span className="sm:hidden">Tickets</span>
                                                                         <ExternalLink className="w-3 h-3" />
                                                                     </a>
                                                                 </Button>
