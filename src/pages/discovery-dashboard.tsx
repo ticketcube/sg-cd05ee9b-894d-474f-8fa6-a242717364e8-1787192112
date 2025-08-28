@@ -11,6 +11,7 @@ import { Trophy, Calendar, Star, TrendingUp, Award, Eye, BarChart, ArrowLeft, Sp
 import userProfileService from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
 import Link from "next/link";
+import StaffPortalTab from "@/components/StaffPortalTab";
 
 export default function DiscoveryDashboard() {
     const router = useRouter();
