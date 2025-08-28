@@ -49,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('user_profiles')
       .select('*')
       .eq('auth_id', auth_id)
-      .single();
+     .maybeSingle();
 
     if (error) {
       console.error('[API] Supabase query error:', {
