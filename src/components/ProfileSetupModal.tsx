@@ -19,7 +19,7 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
   const [formData, setFormData] = useState({
     username: user?.username || supabaseUser?.email?.split('@')[0] || '',
     email: user?.email || supabaseUser?.email || '',
-    city: user?.city || ''
+    city: user?.raw_city_input || ''
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
