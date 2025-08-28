@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Mail, MapPin, Calendar, ExternalLink, Heart, Share2, Ticket } from "lucide-react";
+import { User, Mail, MapPin, Calendar, ExternalLink, Heart, Share2, Ticket, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface EventInterest {
@@ -24,6 +24,7 @@ export default function ProfilePage() {
     const { user, supabaseUser, profileExists, loading: authLoading } = useAuth();
     const [eventInterests, setEventInterests] = useState<EventInterest[]>([]);
     const [loading, setLoading] = useState(true);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -36,6 +37,52 @@ export default function ProfilePage() {
 
         fetchEventInterests();
     }, [supabaseUser, profileExists, authLoading]);
+
+    const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !supabaseUser) return;
+
+        try {
+            setUploadingAvatar(true);
+            
+            // Create a unique file name
+            const fileExt = file.name.split('.').pop();
+            const fileName = `avatar-${supabaseUser.id}-${Date.now()}.${fileExt}`;
+            const filePath = `avatars/${fileName}`;
+
+            // Upload the file to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('user-uploads')
+                .upload(filePath, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (uploadError) throw uploadError;
+
+            // Get the public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('user-uploads')
+                .getPublicUrl(filePath);
+
+            // Update user profile with new avatar URL
+            const { error: updateError } = await supabase
+                .from('user_profiles')
+                .update({ avatar_url: publicUrl })
+                .eq('auth_user_id', supabaseUser.id);
+
+            if (updateError) throw updateError;
+
+            // Refresh the page to show the new avatar
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            setError(error instanceof Error ? error.message : 'Failed to upload avatar');
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
 
     const fetchEventInterests = async () => {
         try {
@@ -179,12 +226,17 @@ export default function ProfilePage() {
                                                 accept="image/*"
                                                 onChange={handleAvatarUpload}
                                                 className="hidden"
+                                                disabled={uploadingAvatar}
                                             />
                                             <label
                                                 htmlFor="avatar-upload"
-                                                className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                                className={`absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${uploadingAvatar ? 'opacity-100' : ''}`}
                                             >
-                                                <User className="w-5 h-5 text-white" />
+                                                {uploadingAvatar ? (
+                                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                ) : (
+                                                    <Upload className="w-5 h-5 text-white" />
+                                                )}
                                             </label>
                                         </div>
                                         <div>
