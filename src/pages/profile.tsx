@@ -23,6 +23,7 @@ interface EventInterest {
 export default function ProfilePage() {
     const { user, supabaseUser, profileExists, loading: authLoading } = useAuth();
     const [eventInterests, setEventInterests] = useState<EventInterest[]>([]);
+    const [userProfile, setUserProfile] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -35,8 +36,26 @@ export default function ProfilePage() {
             return;
         }
 
+        fetchUserProfile();
         fetchEventInterests();
     }, [supabaseUser, profileExists, authLoading]);
+
+    const fetchUserProfile = async () => {
+        if (!supabaseUser) return;
+        
+        try {
+            const { data: profile, error: profileError } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('auth_id', supabaseUser.id)
+                .single();
+
+            if (profileError) throw profileError;
+            setUserProfile(profile);
+        } catch (err) {
+            console.error('Error fetching user profile:', err);
+        }
+    };
 
     const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -69,12 +88,12 @@ export default function ProfilePage() {
             const { error: updateError } = await supabase
                 .from('user_profiles')
                 .update({ avatar_url: publicUrl })
-                .eq('auth_user_id', supabaseUser.id);
+                .eq('auth_id', supabaseUser.id);
 
             if (updateError) throw updateError;
 
-            // Refresh the page to show the new avatar
-            window.location.reload();
+            // Update local state instead of reloading
+            setUserProfile(prev => ({ ...prev, avatar_url: publicUrl }));
 
         } catch (error) {
             console.error('Error uploading avatar:', error);
@@ -207,15 +226,15 @@ export default function ProfilePage() {
                                     <div className="flex items-center gap-4">
                                         <div className="relative group">
                                             <Avatar className="w-16 h-16 border-2 border-blue-100">
-                                                {user?.avatar_url ? (
+                                                {userProfile?.avatar_url ? (
                                                     <img 
-                                                        src={user.avatar_url} 
-                                                        alt={user.username || 'Profile'} 
+                                                        src={userProfile.avatar_url} 
+                                                        alt={userProfile?.username || 'Profile'} 
                                                         className="w-full h-full object-cover rounded-full"
                                                     />
                                                 ) : (
                                                     <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xl font-bold">
-                                                        {user?.username?.charAt(0).toUpperCase() || 'U'}
+                                                        {userProfile?.username?.charAt(0).toUpperCase() || 'U'}
                                                     </AvatarFallback>
                                                 )}
                                             </Avatar>
@@ -240,7 +259,7 @@ export default function ProfilePage() {
                                             </label>
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-bold text-neutral-800">{user?.username || 'User'}</h2>
+                                            <h2 className="text-xl font-bold text-neutral-800">{userProfile?.username || 'User'}</h2>
                                             <p className="text-sm text-neutral-600">Music Enthusiast</p>
                                         </div>
                                     </div>
@@ -251,14 +270,14 @@ export default function ProfilePage() {
                                             <Mail className="w-4 h-4 text-blue-600" />
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-xs font-medium text-neutral-700">Email</p>
-                                                <p className="text-sm text-neutral-600 truncate">{user?.email || supabaseUser?.email}</p>
+                                                <p className="text-sm text-neutral-600 truncate">{userProfile?.email || supabaseUser?.email}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <MapPin className="w-4 h-4 text-green-600" />
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-xs font-medium text-neutral-700">Location</p>
-                                                <p className="text-sm text-neutral-600">{user?.raw_city_input || 'Not specified'}</p>
+                                                <p className="text-sm text-neutral-600">{userProfile?.raw_city_input || 'Not specified'}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -266,7 +285,7 @@ export default function ProfilePage() {
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-xs font-medium text-neutral-700">Member Since</p>
                                                 <p className="text-sm text-neutral-600">
-                                                    {user?.created_at ? formatDate(user.created_at) : 'Recently'}
+                                                    {userProfile?.created_at ? formatDate(userProfile.created_at) : 'Recently'}
                                                 </p>
                                             </div>
                                         </div>
