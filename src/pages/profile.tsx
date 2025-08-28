@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Calendar, Star, TrendingUp, Award, Eye, BarChart, Settings, ChevronDown, ChevronUp, Sparkles, Target, Gift } from "lucide-react";
+import { Trophy, Calendar, Star, TrendingUp, Award, Eye, BarChart, Settings, ChevronDown, ChevronUp, Sparkles, Target, Gift, Compass, Zap } from "lucide-react";
 import userProfileService from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
 import Link from "next/link";
@@ -237,148 +237,64 @@ export default function ProfilePage() {
                     {/* September Reward Module */}
                     <SeptemberReward totalPoints={total_points} />
 
-                    {/* Tabs for detailed information */}
-                    <Tabs defaultValue="activity" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 bg-gray-800">
-                            <TabsTrigger value="activity" className="text-white data-[state=active]:bg-blue-600">
-                                Discovery Activities
-                            </TabsTrigger>
-                            <TabsTrigger value="achievements" className="text-white data-[state=active]:bg-blue-600">
-                                Rewards & Achievements
-                            </TabsTrigger>
-                        </TabsList>
-
-                        {/* Discovery Activities Tab */}
-                        <TabsContent value="activity" className="space-y-4">
-                            <Card className="bg-gray-900 border-gray-700">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-white">
-                                        <Calendar className="w-5 h-5" />
-                                        Current Activities
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <Link href="/weekly-ratings" className="block group">
-                                        <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-lg p-4 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] cursor-pointer">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center group-hover:bg-green-500 transition-colors">
-                                                    <Star className="w-7 h-7 text-white" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h3 className="font-bold text-white text-lg group-hover:text-green-300 transition-colors">
-                                                        Weekly Artist Ratings
-                                                    </h3>
-                                                    <p className="text-sm text-gray-300 mb-2">Watch & Rate emerging artists and earn points for each</p>
-                                                    <div className="flex items-center gap-2">
-                                                        <Badge className="bg-green-600 text-white">10 per rating</Badge>
-                                                        <Badge variant="outline" className="border-green-500 text-green-400">5 per video</Badge>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
-
-                                    <Link href="/vibes" className="block group">
-                                        <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 rounded-lg p-4 border border-purple-500/30 hover:border-purple-400/50 transition-all hover:scale-[1.02] cursor-pointer">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-14 h-14 rounded-full bg-purple-600 flex items-center justify-center group-hover:bg-purple-500 transition-colors">
-                                                    <TrendingUp className="w-7 h-7 text-white" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h3 className="font-bold text-white text-lg group-hover:text-purple-300 transition-colors">
-                                                        Global Vibes Chart
-                                                    </h3>
-                                                    <p className="text-sm text-gray-300 mb-2">Explore artists by mood and discover new sounds</p>
-                                                    <Badge variant="outline" className="border-purple-500 text-purple-400">Exploration</Badge>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
-
-                                    <Link href="/discovery-charts" className="block group">
-                                        <div className="bg-gradient-to-r from-orange-900/40 to-red-900/40 rounded-lg p-4 border border-orange-500/30 hover:border-orange-400/50 transition-all hover:scale-[1.02] cursor-pointer">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-14 h-14 rounded-full bg-orange-600 flex items-center justify-center group-hover:bg-orange-500 transition-colors">
-                                                    <BarChart className="w-7 h-7 text-white" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h3 className="font-bold text-white text-lg group-hover:text-orange-300 transition-colors">
-                                                        Discovery Charts
-                                                    </h3>
-                                                    <p className="text-sm text-gray-300 mb-2">Interactive lists and trending artist rankings</p>
-                                                    <Badge variant="outline" className="border-orange-500 text-orange-400">Rankings</Badge>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        {/* Achievements Tab */}
-                        <TabsContent value="achievements" className="space-y-4">
-                            <Card className="bg-gray-900 border-gray-700">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-white">
-                                        <Award className="w-5 h-5" />
-                                        Your Achievements
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    {/* Current Monthly Reward */}
-                                    <SeptemberReward totalPoints={total_points} />
-
-                                    {/* Achievement Badges */}
-                                    {weeksActive >= 3 && (
-                                        <div className="bg-gray-800 rounded-lg p-4 border border-green-500/30">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center">
-                                                    <Star className="w-6 h-6 text-white" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-semibold text-white">Consistent Explorer</h3>
-                                                    <p className="text-sm text-gray-400">
-                                                        Active for {weeksActive} weeks - keep it up!
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {totalVideos >= 10 && (
-                                        <div className="bg-gray-800 rounded-lg p-4 border border-purple-500/30">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center">
-                                                    <Eye className="w-6 h-6 text-white" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-semibold text-white">Music Discoverer</h3>
-                                                    <p className="text-sm text-gray-400">
-                                                        Watched {totalVideos} artist videos
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Coming Soon Achievement */}
-                                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-600/50 opacity-60">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center">
-                                                <Award className="w-6 h-6 text-gray-400" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold text-gray-400">More rewards coming soon...</h3>
-                                                <p className="text-sm text-gray-500">
-                                                    Keep discovering to unlock new achievements!
-                                                </p>
-                                            </div>
+                    {/* Discovery Action Buttons */}
+                    <div className="space-y-4">
+                        <div className="text-center mb-2">
+                            <p className="text-sm text-gray-400">Ready to discover more?</p>
+                        </div>
+                        
+                        {/* Discover More Button */}
+                        <Link href="/discovery-dashboard" className="block group">
+                            <div className="bg-gradient-to-r from-blue-900/60 to-indigo-900/60 rounded-2xl p-6 border border-blue-500/30 hover:border-blue-400/60 transition-all hover:scale-[1.02] cursor-pointer backdrop-blur-sm shadow-lg shadow-blue-900/20">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center group-hover:from-blue-400 group-hover:to-indigo-400 transition-all shadow-lg shadow-blue-500/25 group-hover:scale-110">
+                                        <Compass className="w-8 h-8 text-white" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-bold text-white text-xl group-hover:text-blue-300 transition-colors mb-2">
+                                            Discover More
+                                        </h3>
+                                        <p className="text-gray-300 mb-3 group-hover:text-blue-100 transition-colors">
+                                            Explore all discovery activities, artist ratings, and interactive charts in one place
+                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+                                            <span className="text-sm text-blue-300 font-medium">Weekly Artists • Global Vibes • Live Charts</span>
                                         </div>
                                     </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                    </Tabs>
+                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all group-hover:translate-x-1">
+                                        <Zap className="w-4 h-4 text-white" />
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+
+                        {/* More Rewards Button */}
+                        <Link href="/discovery-dashboard" className="block group">
+                            <div className="bg-gradient-to-r from-purple-900/60 to-pink-900/60 rounded-2xl p-6 border border-purple-500/30 hover:border-purple-400/60 transition-all hover:scale-[1.02] cursor-pointer backdrop-blur-sm shadow-lg shadow-purple-900/20">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center group-hover:from-purple-400 group-hover:to-pink-400 transition-all shadow-lg shadow-purple-500/25 group-hover:scale-110">
+                                        <Gift className="w-8 h-8 text-white" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-bold text-white text-xl group-hover:text-purple-300 transition-colors mb-2">
+                                            More Rewards
+                                        </h3>
+                                        <p className="text-gray-300 mb-3 group-hover:text-purple-100 transition-colors">
+                                            Track your achievements, progress towards rewards, and unlock exclusive content
+                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></div>
+                                            <span className="text-sm text-purple-300 font-medium">Achievements • Progress • Exclusive Rewards</span>
+                                        </div>
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all group-hover:translate-x-1">
+                                        <Trophy className="w-4 h-4 text-white" />
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+                    </div>
 
                     {/* OTW Staff Portal */}
                     {user?.role === 'otwstaff' && (
