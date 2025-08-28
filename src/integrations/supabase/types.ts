@@ -491,6 +491,7 @@ export type Database = {
       user_profiles: {
         Row: {
           auth_id: string
+          avatar_url: string | null
           city_id: number | null
           created_at: string
           email: string
@@ -503,6 +504,7 @@ export type Database = {
         }
         Insert: {
           auth_id: string
+          avatar_url?: string | null
           city_id?: number | null
           created_at?: string
           email: string
@@ -515,6 +517,7 @@ export type Database = {
         }
         Update: {
           auth_id?: string
+          avatar_url?: string | null
           city_id?: number | null
           created_at?: string
           email?: string
