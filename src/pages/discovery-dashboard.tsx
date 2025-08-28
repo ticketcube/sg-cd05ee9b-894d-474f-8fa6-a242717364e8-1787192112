@@ -131,7 +131,7 @@ export default function DiscoveryDashboard() {
                             </p>
 
                             {/* Stats Cards - Mobile Optimized */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-6 max-w-3xl mx-auto">
+                            <div className="grid grid-cols-4 gap-3 md:gap-6 max-w-3xl mx-auto">
 
                                 <div className="bg-white/5 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
                                     <div className="w-8 md:w-12 h-8 md:h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-2 md:mb-3">
