@@ -33,7 +33,7 @@ export default function AuthDialog({
     title = "Sign In or Register",
     description = ""
 }: AuthDialogProps) {
-    const [isSignUp, setIsSignUp] = useState(true);
+    const [isSignUp, setIsSignUp] = useState(false);
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -94,7 +94,7 @@ export default function AuthDialog({
                         onClose();
                     }
 
-                  await router.push("/profile");
+                  await router.push("/discovery-dashboard");
 
                 } catch (profileError) {
                     console.error("Profile creation error:", profileError);
@@ -147,7 +147,7 @@ export default function AuthDialog({
                 if (onClose) {
                     onClose();
                 }
-              await router.push("/profile");
+              await router.push("/discovery-dashboard");
             }
 
         } catch (error) {
@@ -191,7 +191,7 @@ export default function AuthDialog({
             >
                 <DialogHeader>
                     <DialogTitle className="text-center text-blue-600">
-                        {isSignUp ? "We Reward Discovery" : "Sign In"}
+                        {isSignUp ? "We Reward Discovery" : "Welcome Back"}
                     </DialogTitle>
                 </DialogHeader>
 

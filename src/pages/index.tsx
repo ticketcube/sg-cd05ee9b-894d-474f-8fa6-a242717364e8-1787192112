@@ -140,17 +140,6 @@ export default function HomePage() {
         title="Join OnesToWatch"
         
       />
-      
-      {/* Promotional Popup for new users */}
-      <PromotionPopup onRegisterClick={handleRegisterClick} />
-      
-      {/* Auth Dialog for the promotional popup */}
-      <AuthDialog 
-        isOpen={showPromotionAuthDialog} 
-        onClose={handlePromotionAuthClose}
-        title="Get Local Events & Rewards"
-        description="Register to see events in your city and earn rewards!"
-      />
     </div>
   );
 }
