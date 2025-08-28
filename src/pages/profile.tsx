@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Mail, MapPin, Calendar, ExternalLink, Heart, Share2, Ticket, Upload } from "lucide-react";
+import { User, Mail, MapPin, Calendar, ExternalLink, Heart, Share2, Ticket, Upload, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface EventInterest {
@@ -213,9 +213,19 @@ export default function ProfilePage() {
             <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-blue-50">
                 <div className="max-w-4xl mx-auto px-4 py-4">
                     {/* Page Header - Made much more compact */}
-                    <div className="mb-4">
-                        <h1 className="text-2xl font-bold text-neutral-800 mb-1">My Profile</h1>
-                        <p className="text-sm text-neutral-600">Manage your account and track your music interests</p>
+                    <div className="mb-4 flex items-start justify-between">
+                        <div>
+                            <h1 className="text-2xl font-bold text-neutral-800 mb-1">My Profile</h1>
+                            <p className="text-sm text-neutral-600">Manage your account and track your music interests</p>
+                        </div>
+                        <Button
+                            onClick={() => window.location.href = "/discovery-dashboard"}
+                            variant="outline"
+                            className="bg-white/80 hover:bg-white border-neutral-200 text-neutral-700 hover:text-neutral-800 px-4 py-2 shadow-sm hover:shadow-md transition-all"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Return to Discovery Dashboard
+                        </Button>
                     </div>
 
                     {/* Compact Profile Header - Avatar/Name Left, Details Right */}
