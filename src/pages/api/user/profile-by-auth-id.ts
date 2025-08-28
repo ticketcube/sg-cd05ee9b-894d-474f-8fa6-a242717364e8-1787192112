@@ -32,6 +32,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         error: 'Server configuration error: Missing service role key' 
       });
     }
+      console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log("Supabase Key:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.slice(0, 10) + "...");
+
 
     // Create admin client with service role key
     console.log(`[API] Creating Supabase admin client...`);
