@@ -114,14 +114,7 @@ export default function DiscoveryDashboard() {
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
                     
                     <div className="relative max-w-4xl mx-auto px-4 py-12">
-                        <div className="flex items-center gap-4 mb-8">
-                            <Link href="/profile">
-                                <Button variant="outline" size="sm" className="bg-white/5 border-white/20 text-white hover:bg-white/10 transition-all hover:scale-105">
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
-                                    Back to Profile
-                                </Button>
-                            </Link>
-                        </div>
+                       
 
                         <div className="text-center mb-12">
                             <div className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-full px-6 py-3 mb-6 border border-white/10">
