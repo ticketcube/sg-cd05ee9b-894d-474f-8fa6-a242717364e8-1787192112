@@ -113,6 +113,7 @@ export default function ProfilePage() {
                 .from('ticketmaster_events')
                 .select('event_name, venue_name, venue_city, event_date, event_time, event_url')
                 .eq('venue_city', 'Los Angeles')
+                .gt('event_date', new Date().toISOString())
                 .or('event_name.ilike.%Addison Rae%,event_name.ilike.%Laufey%,event_name.ilike.%Japanese Breakfast%')
                 .order('event_date', { ascending: true });
 
