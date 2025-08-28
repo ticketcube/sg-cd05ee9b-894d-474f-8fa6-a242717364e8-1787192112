@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Calendar, Star, TrendingUp, Award, Eye, BarChart, ArrowLeft, Sparkles, Target, Gift, Music, Zap, Compass } from "lucide-react";
+import { Trophy, Calendar, Star, TrendingUp, Award, Eye, BarChart, ArrowLeft, Sparkles, Target, Gift, Music, Zap, Compass, Settings, Upload, Map } from "lucide-react";
 import userProfileService from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
 import Link from "next/link";
@@ -203,6 +203,19 @@ export default function DiscoveryDashboard() {
                                     <Gift className="w-4 h-4 inline mr-2" />
                                     More Rewards
                                 </button>
+                                {user?.role === 'otwstaff' && (
+                                    <button
+                                        onClick={() => setActiveTab("staff")}
+                                        className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                                            activeTab === "staff"
+                                                ? "bg-orange-600 text-white shadow-lg shadow-orange-600/25"
+                                                : "text-gray-400 hover:text-white hover:bg-white/5"
+                                        }`}
+                                    >
+                                        <Settings className="w-4 h-4 inline mr-2" />
+                                        Staff Portal
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -210,6 +223,7 @@ export default function DiscoveryDashboard() {
                     {/* Tab Content */}
                     {activeTab === "discover" && <DiscoverMoreTab />}
                     {activeTab === "rewards" && <MoreRewardsTab totalPoints={total_points} weeksActive={weeksActive} totalVideos={totalVideos} />}
+                    {activeTab === "staff" && user?.role === 'otwstaff' && <StaffPortalTab />}
                 </div>
             </div>
         </AuthGuard>

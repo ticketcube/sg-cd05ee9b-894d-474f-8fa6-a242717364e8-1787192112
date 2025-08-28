@@ -296,31 +296,6 @@ export default function ProfilePage() {
                         </Link>
                     </div>
 
-                    {/* OTW Staff Portal */}
-                    {user?.role === 'otwstaff' && (
-                        <Card className="bg-gray-900 border-gray-700 border-l-4 border-l-blue-500">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-white">
-                                    <Settings className="w-5 h-5 text-blue-500" />
-                                    OTW Staff Private View
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <p className="text-gray-400 text-sm">
-                                    Features in Development
-                                </p>
-                                <div className="flex flex-col gap-3">
-                                  
-                                    <Button
-                                        onClick={() => window.location.href = "/product-roadmap"}
-                                        className="w-full bg-purple-600 hover:bg-purple-700"
-                                    >
-                                        Product Roadmap
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
                 </div>
             </div>
         </AuthGuard>
