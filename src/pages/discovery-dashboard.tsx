@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/router';
 import { useAuth } from "@/contexts/AuthContext";
 import AuthGuard from "@/components/AuthGuard";
 import { Button } from "@/components/ui/button";
@@ -12,11 +13,22 @@ import type { UserEngagementHistory } from "@/services/userProfileService";
 import Link from "next/link";
 
 export default function DiscoveryDashboard() {
+    const router = useRouter();
     const { user, supabaseUser, profileExists, loading: authLoading } = useAuth();
     const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("discover");
+
+    useEffect(() => {
+        // Set initial tab based on URL parameter
+        const { tab } = router.query;
+        if (tab === 'rewards') {
+            setActiveTab('rewards');
+        } else {
+            setActiveTab('discover');
+        }
+    }, [router.query]);
 
     useEffect(() => {
         if (authLoading) return;

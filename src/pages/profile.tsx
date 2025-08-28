@@ -270,7 +270,7 @@ export default function ProfilePage() {
                         </Link>
 
                         {/* More Rewards Button */}
-                        <Link href="/discovery-dashboard" className="block group">
+                        <Link href="/discovery-dashboard?tab=rewards" className="block group">
                             <div className="bg-gradient-to-r from-purple-900/60 to-pink-900/60 rounded-2xl p-6 border border-purple-500/30 hover:border-purple-400/60 transition-all hover:scale-[1.02] cursor-pointer backdrop-blur-sm shadow-lg shadow-purple-900/20">
                                 <div className="flex items-center gap-6">
                                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center group-hover:from-purple-400 group-hover:to-pink-400 transition-all shadow-lg shadow-purple-500/25 group-hover:scale-110">
