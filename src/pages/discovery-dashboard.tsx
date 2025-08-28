@@ -308,7 +308,7 @@ function DiscoverMoreTab() {
 
 // More Rewards Tab Component - Mobile Optimized
 function MoreRewardsTab({ totalPoints, weeksActive, totalVideos }: { totalPoints: number; weeksActive: number; totalVideos: number }) {
-    const goal = 180;
+    const goal = 240;
     const isComplete = totalPoints >= goal;
     const progress = Math.min((totalPoints / goal) * 100, 100);
 
@@ -332,7 +332,7 @@ function MoreRewardsTab({ totalPoints, weeksActive, totalVideos }: { totalPoints
 
                     <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-white text-lg md:text-xl mb-1 md:mb-2">September Discovery Reward</h3>
-                        <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">Earn 180 points to receive all nine OnesToWatch Zines!</p>
+                        <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">Earn 240 points to receive all nine OnesToWatch Zines!</p>
                         
                         {!isComplete ? (
                             <>
