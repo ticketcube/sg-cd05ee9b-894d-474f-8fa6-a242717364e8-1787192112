@@ -1,29 +1,29 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-// Proxy chunk upload to Brandfolder signed URL
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== "PUT") {
-        return res.status(405).json({ error: "Method not allowed" });
-    }
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+    const { filename, filesize, mimetype } = req.body;
 
     try {
-        const { url, start, end, total, chunk } = req.body;
-
-        // Forward the chunk to Brandfolder
-        const bfRes = await fetch(url, {
-            method: "PUT",
+        const bfRes = await fetch("https://brandfolder.com/api/v2/upload_sessions", {
+            method: "POST",
             headers: {
-                "Content-Length": `${chunk.length}`,
-                "Content-Range": `bytes ${start}-${end - 1}/${total}`,
+                "Authorization": `Bearer ${process.env.BRANDFOLDER_API_KEY}`, // 🔑 Secure in env
+                "Content-Type": "application/json",
             },
-            body: Buffer.from(chunk, "base64"), // frontend must send base64
+            body: JSON.stringify({
+                brandfolder_id: process.env.BRANDFOLDER_ID,       // 👈 here
+                section_id: process.env.BRANDFOLDER_SECTION_ID,   // 👈 here
+                filename,
+                filesize,
+                mimetype,
+            }),
         });
 
-        const text = await bfRes.text();
-
-        res.status(bfRes.status).json({ status: bfRes.status, response: text });
+        const data = await bfRes.json();
+        res.status(200).json(data);
     } catch (err: any) {
-        console.error("Proxy upload error:", err);
-        res.status(500).json({ error: "Upload failed", details: err.message });
+        res.status(500).json({ error: err.message });
     }
 }
