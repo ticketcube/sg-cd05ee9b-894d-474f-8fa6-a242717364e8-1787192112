@@ -28,7 +28,7 @@ export default class BrandfolderUpload {
     }
 
     async startResumableUpload(): Promise<string> {
-        const res = await fetch("https://brandfolder.com/api/v4/upload_requests", {
+        const res = await fetch("https://api.brandfolder.com/v2/resumable_uploads", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
