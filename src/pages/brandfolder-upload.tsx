@@ -173,22 +173,25 @@ export default function BrandfolderUploadPage() {
                 let retries = 3;
                 let chunkUploaded = false;
 
-                console.log("🚀 Sending chunk", {
-                    url: resumableUploadUrl,
-                    method: "PUT",
-                    headers: {
-                        "Content-Range": `bytes ${start}-${end - 1}/${file.size}`,
-                        "Content-Type": file.type || "application/octet-stream"
-                    },
-                    chunkSize: chunk.size,
-                    start,
-                    end,
-                    lastByteExpected: file.size - 1
-                });
-
-
                 while (retries > 0 && !chunkUploaded) {
                     try {
+
+                        console.log(
+                            `🚀 Sending chunk ${chunkIndex + 1}/${totalChunks}`,
+                            {
+                                start,
+                                end,
+                                chunkSize: chunk.size,
+                                totalSize: file.size,
+                                headers: {
+                                    "Content-Range": `bytes ${start}-${end - 1}/${file.size}`,
+                                    "Content-Type": file.type || "application/octet-stream",
+                                    "Content-Length": `${chunk.size}`,
+                                },
+                                url: resumableUploadUrl
+                            }
+                        );
+
                         const chunkResponse = await fetch(resumableUploadUrl, {
                             method: "PUT",
                             headers: {
