@@ -137,30 +137,20 @@ export default function BrandfolderUploadPage() {
                 uploadedBytes = 0;
             }
 
-            // Step 3: Upload file in chunks
-            const totalChunks = Math.ceil(file.size / chunkSize);
-            const startChunk = Math.floor(uploadedBytes / chunkSize);
-
-            // FIXED: Better UX message for small files
-            if (totalChunks === 1) {
-                setStatusMessage("Uploading file...");
-            } else {
-                setStatusMessage(`Uploading ${totalChunks} chunks...`);
-            }
-
+            // Step 3: Upload file in chunks (safe Content-Range math)
             for (let chunkIndex = startChunk; chunkIndex < totalChunks; chunkIndex++) {
                 const start = chunkIndex * chunkSize;
+                // Ensure last chunk always ends at file.size - 1
                 const end = (chunkIndex === totalChunks - 1) ? file.size : Math.min(start + chunkSize, file.size);
                 const chunk = file.slice(start, end);
                 const isLastChunk = (chunkIndex === totalChunks - 1);
 
-                // ✅ Log Content-Range math before each chunk upload
+                // ✅ Log Content-Range for debugging
                 console.log(
                     `Uploading chunk ${chunkIndex + 1}/${totalChunks}`,
                     `Range: bytes ${start}-${end - 1}/${file.size}`,
                     `Last byte expected: ${file.size - 1}`
                 );
-
 
                 if (totalChunks === 1) {
                     setStatusMessage("Uploading file...");
@@ -178,13 +168,11 @@ export default function BrandfolderUploadPage() {
                             method: "PUT",
                             headers: {
                                 "Content-Range": `bytes ${start}-${end - 1}/${file.size}`,
-                                // FIXED: Consistent Content-Type - use same file.type from initialization
                                 "Content-Type": file.type || "application/octet-stream"
                             },
                             body: chunk
                         });
 
-                        // Accept both 200 (final chunk) and 308 (resume incomplete) as success
                         if (chunkResponse.ok || chunkResponse.status === 308) {
                             chunkUploaded = true;
                             uploadedBytes = end;
@@ -209,10 +197,9 @@ export default function BrandfolderUploadPage() {
                             throw new Error(`Failed to upload chunk ${chunkIndex + 1} after 3 attempts: ${chunkError instanceof Error ? chunkError.message : String(chunkError)}`);
                         }
 
-                        // FIXED: Proper exponential backoff calculation (1s, 2s, 4s)
-                        const attempt = 3 - retries; // 0, 1, 2
-                        const delay = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s
-                        setStatusMessage(`Retrying chunk ${chunkIndex + 1} in ${delay/1000}s... (${3 - retries}/3)`);
+                        const attempt = 3 - retries;
+                        const delay = 1000 * Math.pow(2, attempt);
+                        setStatusMessage(`Retrying chunk ${chunkIndex + 1} in ${delay / 1000}s... (${3 - retries}/3)`);
                         await new Promise(resolve => setTimeout(resolve, delay));
                     }
                 }
