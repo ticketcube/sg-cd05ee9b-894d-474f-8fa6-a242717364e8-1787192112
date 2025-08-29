@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import { Settings, Map, Upload, BarChart } from "lucide-react";
+import { Settings, Map, Upload, BarChart, TrendingUp } from "lucide-react";
 
 export default function StaffPortalTab() {
     return (
