@@ -70,37 +70,72 @@ export default function BrandfolderUploadPage() {
 
     const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
 
-    async function handleUpload(file: File) {
+    const handleUpload = async () => {
+        if (!selectedFile || !user) {
+            toast({
+                title: "Authentication Error",
+                description: "You must be logged in to upload files.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const file = selectedFile.file;
+        setStatusMessage("Creating upload session...");
+
         try {
-            // Step 1: Create upload session
-            const sessionRes = await fetch("/api/brandfoler/upload", {
+            // Step 1: Create an upload session from your Next.js API route
+            const res = await fetch("/api/brandfolder/upload", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    filename: file.name,
-                    filesize: file.size,
-                    mimetype: file.type,
+                    fileName: file.name,
+                    fileSize: file.size,
+                    fileType: file.type,
                 }),
             });
 
-            const sessionData = await sessionRes.json();
-            const resumableUploadUrl = sessionData.upload.url; // ✅ Brandfolder gives this back
+            if (!res.ok) {
+                console.error("❌ Failed to create upload session:", res.status, await res.text());
+                toast({ title: "Upload Error", description: "Could not create upload session.", variant: "destructive" });
+                return;
+            }
 
-            if (!resumableUploadUrl) throw new Error("Upload session URL missing");
+            const { resumableUploadUrl } = await res.json();
+            if (!resumableUploadUrl) {
+                console.error("❌ No resumableUploadUrl returned!");
+                return;
+            }
 
-            // Step 2: Upload chunks
+            // Step 2: Check if any bytes already uploaded (resume logic)
+            setStatusMessage("Checking upload status...");
             let uploadedBytes = 0;
-            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
-            for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-                const start = chunkIndex * CHUNK_SIZE;
-                const end = Math.min(start + CHUNK_SIZE, file.size);
+            const statusRes = await fetch("/api/brandfolder/upload?action=status", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ resumableUploadUrl, fileSize: file.size }),
+            });
+
+            if (statusRes.ok) {
+                const statusData = await statusRes.json();
+                uploadedBytes = statusData.uploadedBytes || 0;
+            } else {
+                const errText = await statusRes.text();
+                console.warn("⚠️ Status check failed:", statusRes.status, errText);
+                uploadedBytes = 0;
+            }
+
+            // Step 3: Upload chunks
+            const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+            const totalChunks = Math.ceil(file.size / chunkSize);
+
+            while (uploadedBytes < file.size) {
+                const start = uploadedBytes;
+                const end = Math.min(start + chunkSize, file.size);
                 const chunk = file.slice(start, end);
 
-                console.log(
-                    `Uploading chunk ${chunkIndex + 1}/${totalChunks}`,
-                    `Range: bytes ${start}-${end - 1}/${file.size}`
-                );
+                console.log(`Uploading chunk ${Math.ceil(end / chunkSize)}/${totalChunks}`, `Range: bytes ${start}-${end - 1}/${file.size}`);
 
                 const chunkRes = await fetch(resumableUploadUrl, {
                     method: "PUT",
@@ -112,20 +147,25 @@ export default function BrandfolderUploadPage() {
                     body: chunk,
                 });
 
-                if (!chunkRes.ok && chunkRes.status !== 308) {
-                    throw new Error(`Chunk upload failed: ${chunkRes.statusText}`);
+                if (chunkRes.ok || chunkRes.status === 308) {
+                    uploadedBytes = end;
+                } else {
+                    const errText = await chunkRes.text();
+                    console.error("❌ Chunk upload failed:", chunkRes.status, errText);
+                    toast({ title: "Upload Failed", description: "Check logs for details.", variant: "destructive" });
+                    return;
                 }
-
-                uploadedBytes = end;
             }
 
-            // Step 3: Finalize upload (Brandfolder auto-finalizes when last chunk is uploaded)
-            console.log("✅ Upload complete!");
+            setStatusMessage("✅ Upload complete!");
+            toast({ title: "Success", description: "Your file was uploaded successfully." });
 
         } catch (err) {
-            console.error("Upload failed:", err);
+            console.error("❌ Unexpected upload error:", err);
+            toast({ title: "Upload Error", description: "Unexpected failure. Check console logs.", variant: "destructive" });
         }
-    }
+    };
+
 
     const resetUpload = () => {
         // FIXED: Revoke object URL to prevent memory leaks
