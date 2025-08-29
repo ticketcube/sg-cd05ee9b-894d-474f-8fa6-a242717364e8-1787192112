@@ -75,8 +75,9 @@ export default function HomePage() {
         >
           {/* Weekly Rewards Card */}
                   <Card
-                      className="relative overflow-hidden bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 border-0 rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.03] transition-all duration-500 cursor-pointer group"
+                      className="relative overflow-hidden border-0 rounded-2xl shadow-xl bg-transparent hover:shadow-2xl hover:scale-[1.03] transition-all duration-500 cursor-pointer group"
                       onClick={() => handleNavigation("/discovery-dashboard")}
+
                   >
                       {/* Animated glow orbs */}
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.15),transparent),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.1),transparent)] animate-pulse" />
