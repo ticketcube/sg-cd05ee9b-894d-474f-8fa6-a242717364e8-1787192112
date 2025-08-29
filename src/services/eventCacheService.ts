@@ -276,9 +276,8 @@ export class EventCacheService {
       const artistEventCounts = new Map<string, { artist_name: string; artist_image: string | null; count: number }>();
       
       data?.forEach(item => {
-        // Fix the type casting - item.artists is an array from the join
-        const artistsArray = item.artists as { artist_name: string | null; artist_image: string | null; attractionId: any; }[];
-        const artist = artistsArray?.[0]; // Get the first (and should be only) artist
+        // Fix the type casting - item.artists is a single object from the join, not an array
+        const artist = item.artists as { artist_name: string | null; artist_image: string | null; attractionId: any; } | null;
         if (artist && artist.artist_name) {
           const existing = artistEventCounts.get(item.artist_uuid);
           if (existing) {
