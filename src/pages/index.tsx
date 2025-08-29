@@ -58,7 +58,7 @@ export default function HomePage() {
   
   return (
     <div className="flex-grow bg-black text-white">
-      <div className="container mx-auto px-4 py-8">
+    
         {/* Welcome message for logged in users */}
         {user && (
           <div className="text-center mb-8">
