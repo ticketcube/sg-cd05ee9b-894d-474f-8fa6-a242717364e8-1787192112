@@ -74,37 +74,52 @@ export default function HomePage() {
             } gap-4 md:gap-8`}
         >
           {/* Weekly Rewards Card */}
-                  <Card
-                      className="relative overflow-hidden bg-transparent border-0 rounded-3xl shadow-lg hover:rotate-1 hover:scale-105 transition-transform duration-500 cursor-pointer group"
-                      onClick={() => handleNavigation("/discovery-dashboard")}
-                  >
-                      {/* Gradient background */}
-                      <div className="absolute inset-0 bg-gradient-to-tr from-pink-500 via-orange-400 to-yellow-300" />
+          <Card
+            className="bg-gradient-to-br from-green-600 to-blue-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group"
+            onClick={() => handleNavigation("/discovery-dashboard")}
+          >
+            <CardContent className="p-4 md:p-8 h-full flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/20 rounded-full mb-3 md:mb-6 mx-auto group-hover:scale-110 transition-transform">
+                  <Trophy className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                </div>
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-2 md:mb-4">
+                  We Reward Discovery
+                </h2>
+                <p className="text-center text-white/90 mb-4 md:mb-6 text-sm md:text-base">
+                  Vote on weekly artist discoveries and earn points for exclusive rewards
+                </p>
+              </div>
+              <Button className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg">
+                {user ? "Earn More Rewards!" : "Start Earning Rewards!"}
+              </Button>
+            </CardContent>
+          </Card>
 
-                      {/* Paint splatter texture */}
-                      <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/paint.png')] mix-blend-overlay" />
-
-                      <CardContent className="relative p-6 md:p-10 h-full flex flex-col justify-between z-10">
-                          <div>
-                              <div className="flex items-center justify-center w-14 h-14 md:w-20 md:h-20 bg-white/40 rounded-full mb-5 mx-auto group-hover:rotate-12 transition-transform">
-                                  <Trophy className="w-7 h-7 md:w-10 md:h-10 text-purple-900" />
-                              </div>
-                              <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-center mb-3 text-purple-900 drop-shadow-md">
-                                  We Reward Discovery
-                              </h2>
-                              <p className="text-center text-purple-800/80 mb-6 text-base md:text-lg italic">
-                                  Cast your vote for emerging artists and unlock creative rewards.
-                              </p>
-                          </div>
-                          <Button className="w-full bg-purple-900 text-yellow-300 font-bold py-3 md:py-4 text-lg rounded-xl hover:bg-purple-800 hover:scale-105 transition">
-                              {user ? "Fuel Your Creativity 🎭" : "Start Creating 🎨"}
-                          </Button>
-                      </CardContent>
-                  </Card>
-
-
-          
-
+          {/* Discovery Charts Card (only if enabled) */}
+          {showDiscoveryCharts && (
+            <Card
+              className="bg-gradient-to-br from-purple-600 to-pink-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group"
+              onClick={() => handleNavigation("/discovery-charts")}
+            >
+              <CardContent className="p-4 md:p-8 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/20 rounded-full mb-3 md:mb-6 mx-auto group-hover:scale-110 transition-transform">
+                    <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                  </div>
+                  <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-2 md:mb-4">
+                    Discovery Charts
+                  </h2>
+                  <p className="text-center text-white/90 mb-4 md:mb-6 text-sm md:text-base">
+                    Explore comprehensive artist rankings and genre-based charts
+                  </p>
+                </div>
+                <Button className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg">
+                  Explore Charts
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Bottom Section */}
