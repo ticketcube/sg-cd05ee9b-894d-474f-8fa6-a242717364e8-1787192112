@@ -101,7 +101,7 @@ export default function HomePage() {
 
           
 
-        </div>
+       
 
         {/* Bottom Section */}
         <div className="text-center mt-8 md:mt-16">
@@ -110,7 +110,7 @@ export default function HomePage() {
             <span className="text-gray-400 text-sm md:text-base">Powered by community votes and engagement</span>
           </div>
         </div>
-      </div>
+     </div>
 
          
       
