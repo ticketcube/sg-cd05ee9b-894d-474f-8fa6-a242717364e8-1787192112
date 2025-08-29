@@ -83,8 +83,8 @@ export default function BrandfolderUploadPage() {
 
         setUploadStatus("uploading");
         setIsLoading(true);
-        setUploadProgress(0);
-        setStatusMessage("Initializing upload...");
+        setUploadProgress((uploadedBytes / file.size) * 100);
+        setStatusMessage("Upload failed. You can retry.");
 
         try {
             // Step 1: Start resumable upload session
@@ -208,6 +208,9 @@ export default function BrandfolderUploadPage() {
 
             // Step 4: Finalize asset creation in Brandfolder
             setStatusMessage("Creating asset in Brandfolder...");
+
+            const finalDescription = description.trim() || `Upload from ${userName}`;
+
 
             const finalizeRes = await fetch("/api/brandfolder/upload?action=create", {
                 method: "POST",
