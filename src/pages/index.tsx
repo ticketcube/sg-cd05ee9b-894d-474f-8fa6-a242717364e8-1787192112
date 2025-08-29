@@ -15,7 +15,6 @@ export default function HomePage() {
         }
     };
 
-
     return (
         <div className="relative min-h-screen flex flex-col bg-gradient-to-br from-black via-indigo-950 to-black text-white overflow-hidden">
             {/* Animated stars / gradient blobs */}
@@ -71,7 +70,6 @@ export default function HomePage() {
                     </div>
                 </div>
             </div>
-
 
             {/* Auth Dialog */}
             <AuthDialog
