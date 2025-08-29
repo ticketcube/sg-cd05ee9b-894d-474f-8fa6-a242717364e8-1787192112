@@ -73,7 +73,7 @@ export default function BrandfolderUploadPage() {
     async function handleUpload(file: File) {
         try {
             // Step 1: Create upload session
-            const sessionRes = await fetch("/api/upload", {
+            const sessionRes = await fetch("/api/brandfoler/upload", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
