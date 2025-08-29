@@ -150,9 +150,9 @@ export default function BrandfolderUploadPage() {
 
             for (let chunkIndex = startChunk; chunkIndex < totalChunks; chunkIndex++) {
                 const start = chunkIndex * chunkSize;
-                const end = Math.min(start + chunkSize, file.size);
+                const end = (chunkIndex === totalChunks - 1) ? file.size : Math.min(start + chunkSize, file.size);
                 const chunk = file.slice(start, end);
-                const isLastChunk = end === file.size;
+                const isLastChunk = (chunkIndex === totalChunks - 1);
 
                 // ✅ Log Content-Range math before each chunk upload
                 console.log(
