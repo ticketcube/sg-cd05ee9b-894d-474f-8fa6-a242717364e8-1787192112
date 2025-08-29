@@ -156,6 +156,13 @@ export default function BrandfolderUploadPage() {
                 const chunk = file.slice(start, end);
                 const isLastChunk = (chunkIndex === totalChunks - 1);
 
+                if (end - 1 > file.size - 1) {
+                    throw new Error(
+                        `Invalid Content-Range: end(${end - 1}) > lastByte(${file.size - 1})`
+                    );
+                }
+
+
                 // ✅ Log Content-Range for debugging
                 console.log(
                     `Uploading chunk ${chunkIndex + 1}/${totalChunks}`,
