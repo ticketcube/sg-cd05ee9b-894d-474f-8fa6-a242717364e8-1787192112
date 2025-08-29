@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const bfRes = await fetch("https://brandfolder.com/api/v2/upload_sessions", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${process.env.BRANDFOLDER_API_KEY}`, // 🔑 Secure in env
+                "Authorization": `Bearer ${process.env.BF_API_KEY}`, // 🔑 Secure in env
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
