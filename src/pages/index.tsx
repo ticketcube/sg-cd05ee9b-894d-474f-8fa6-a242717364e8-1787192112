@@ -75,7 +75,7 @@ export default function HomePage() {
         >
           {/* Weekly Rewards Card */}
           <Card
-            className="bg-gradient-to-br from-green-600 to-blue-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group"
+           
             onClick={() => handleNavigation("/discovery-dashboard")}
           >
             <CardContent className="p-4 md:p-8 h-full flex flex-col justify-between">
@@ -90,7 +90,7 @@ export default function HomePage() {
                   Vote on weekly artist discoveries and earn points for exclusive rewards
                 </p>
               </div>
-                          <Button className="w-full bg-gradient-to-r from-pink-500 to-yellow-400 text-blue-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg">
+                          <Button className="w-full bg-gradient-to-r from-white-500 to-yellow-400 text-blue-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg">
                 {user ? "Earn More Rewards!" : "Start Earning Rewards!"}
               </Button>
             </CardContent>
