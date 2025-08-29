@@ -10,6 +10,22 @@ import PromotionPopup from "@/components/PromotionPopup";
 
 const showDiscoveryCharts = false;
 
+export default function VideoSwiper() {
+    const videos = [
+        "https://YOUR-SUPABASE-URL/video1.mp4",
+        "https://YOUR-SUPABASE-URL/video2.mp4",
+        "https://YOUR-SUPABASE-URL/video3.mp4",
+    ];
+
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const scrollLeft = e.currentTarget.scrollLeft;
+        const width = e.currentTarget.clientWidth;
+        const index = Math.round(scrollLeft / width);
+        setActiveIndex(index);
+    };
+
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -98,23 +114,8 @@ export default function HomePage() {
 
                 
 
-                  export default function VideoSwiper() {
-  const videos = [
-                  "https://YOUR-SUPABASE-URL/video1.mp4",
-                  "https://YOUR-SUPABASE-URL/video2.mp4",
-                  "https://YOUR-SUPABASE-URL/video3.mp4",
-                  ];
+                 
 
-                  const [activeIndex, setActiveIndex] = useState(0);
-
-                  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const scrollLeft = e.currentTarget.scrollLeft;
-                      const width = e.currentTarget.clientWidth;
-                      const index = Math.round(scrollLeft / width);
-                      setActiveIndex(index);
-  };
-
-                      return (
                       <section className="relative w-full h-[80vh] overflow-hidden">
                           {/* Swipeable container */}
                           <div
@@ -154,7 +155,7 @@ export default function HomePage() {
                               ))}
                           </div>
                       </section>
-                      );
+                    
 }
 
 
