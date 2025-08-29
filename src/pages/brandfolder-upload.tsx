@@ -45,9 +45,9 @@ export default function BrandfolderUploadPage() {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // Validate file size (100MB limit)
-        if (file.size > 100 * 1024 * 1024) {
-            setErrorMessage("File size must be less than 100MB");
+        // Validate file size (15GB limit)
+        if (file.size > 15 * 1024 * 1024 * 1024) {
+            setErrorMessage("File size must be less than 15GB");
             return;
         }
 
