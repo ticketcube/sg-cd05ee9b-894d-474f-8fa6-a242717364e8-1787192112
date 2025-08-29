@@ -112,7 +112,7 @@ export default function BrandfolderUploadPage() {
             // Step 2: Check if any bytes have been uploaded previously (resumability)
             setStatusMessage("Checking upload status...");
 
-            let uploadedBytes = 0;
+            const uploadedBytes = 0;
             try {
                 const statusRes = await fetch("/api/brandfolder/upload?action=status", {
                     method: "PUT",
