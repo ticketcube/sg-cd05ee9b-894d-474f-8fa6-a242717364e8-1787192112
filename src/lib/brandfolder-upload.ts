@@ -88,4 +88,8 @@ export default class BrandfolderUpload {
 
         return true;
     }
+    async upload() {
+        const uploadUrl = await this.startResumableUpload();
+        return await this.uploadChunks(uploadUrl);
+    }
 }
