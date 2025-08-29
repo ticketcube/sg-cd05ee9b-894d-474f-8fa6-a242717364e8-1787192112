@@ -71,65 +71,143 @@ export default function BrandfolderUploadPage() {
 
     const chunkSize = 5 * 1024 * 1024; // 5MB
 
-    export default function BrandfolderUpload() {
-        const [uploadProgress, setUploadProgress] = useState(0);
-        const [statusMessage, setStatusMessage] = useState("");
+    import { useState, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import {
+  Upload,
+  CheckCircle,
+  AlertCircle,
+  ArrowLeft,
+  File,
+  Image as ImageIcon,
+  Video,
+  X
+} from "lucide-react";
+import { useRouter } from "next/router";
+import AuthGuard from "@/components/AuthGuard";
+import { useToast } from "@/hooks/use-toast";
+import BrandfolderUpload from "@/lib/brandfolder-upload"; 
 
-        const handleUpload = async () => {
-            if (!selectedFile || !user) {
-                toast({
-                    title: "Authentication Error",
-                    description: "You must be logged in to upload files.",
-                    variant: "destructive",
-                });
-                return;
-            }
+type UploadStatus = "idle" | "uploading" | "success" | "error";
 
-            setUploadStatus("uploading");
-            setIsLoading(true);
-            setUploadProgress(0);
-            setErrorMessage("");
-            setStatusMessage("");
+interface FilePreview {
+  file: File;
+  preview: string;
+  type: "image" | "video" | "other";
+}
 
-            try {
-                // Create an instance of the BrandfolderUpload class
-                const uploader = new BrandfolderUpload({
-                    file: selectedFile.file,
-                    description,
-                    userName: user.username || "Unknown Uploader",
-                    onProgress: (percent, chunkIndex, totalChunks) => {
-                        setUploadProgress(percent);
-                        setStatusMessage(`Uploading chunk ${chunkIndex + 1}/${totalChunks} (${Math.round(percent)}%)`);
-                    }
-                });
+export default function BrandfolderUploadPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
-                // Start upload
-                const result = await uploader.upload();
+  const [selectedFile, setSelectedFile] = useState<FilePreview | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [description, setDescription] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
 
-                setUploadProgress(100);
-                setUploadStatus("success");
-                setStatusMessage("Upload complete!");
-                console.log("🎉 Upload completed:", result);
+  const chunkSize = 5 * 1024 * 1024; // 5MB
 
-            } catch (error) {
-                console.error("💥 Upload error:", error);
-                setUploadStatus("error");
-                setErrorMessage(error instanceof Error ? error.message : "Upload failed");
-                setStatusMessage("Upload failed. See error above.");
-                setUploadProgress(0);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-        return (
-            <div>
-                <input type="file" onChange={e => e.target.files?.[0] && handleUpload(e.target.files[0])} />
-                <div>Progress: {uploadProgress.toFixed(2)}%</div>
-                <div>Status: {statusMessage}</div>
-            </div>
-        );
+    if (file.size > 15 * 1024 * 1024 * 1024) {
+      setErrorMessage("File size must be less than 15GB");
+      return;
     }
+
+    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+      setErrorMessage("Please select an image or video file");
+      return;
+    }
+
+    setErrorMessage("");
+
+    const preview = URL.createObjectURL(file);
+    const type = file.type.startsWith("image/") ? "image" :
+                 file.type.startsWith("video/") ? "video" : "other";
+
+    setSelectedFile({ file, preview, type });
+  };
+
+  const resetUpload = () => {
+    if (selectedFile?.preview) URL.revokeObjectURL(selectedFile.preview);
+
+    setSelectedFile(null);
+    setUploadStatus("idle");
+    setUploadProgress(0);
+    setDescription("");
+    setErrorMessage("");
+    setStatusMessage("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const getFileIcon = (type: string) => {
+    if (type === "image") return <ImageIcon className="w-6 h-6" />;
+    if (type === "video") return <Video className="w-6 h-6" />;
+    return <File className="w-6 h-6" />;
+  };
+
+  const formatFileSize = (bytes: number) => {
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    if (bytes === 0) return "0 Bytes";
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + " " + sizes[i];
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile || !user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to upload files.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadStatus("uploading");
+    setIsLoading(true);
+    setUploadProgress(0);
+    setErrorMessage("");
+    setStatusMessage("");
+
+    try {
+      const uploader = new BrandfolderUpload({
+        file: selectedFile.file,
+        description,
+        userName: user.username || "Unknown Uploader",
+        chunkSize,
+        onProgress: (percent, chunkIndex, totalChunks) => {
+          setUploadProgress(percent);
+          setStatusMessage(`Uploading chunk ${chunkIndex + 1}/${totalChunks} (${Math.round(percent)}%)`);
+        }
+      });
+
+      const result = await uploader.upload();
+
+      setUploadProgress(100);
+      setUploadStatus("success");
+      setStatusMessage("Upload complete!");
+      console.log("🎉 Upload completed:", result);
+    } catch (error) {
+      console.error("💥 Upload error:", error);
+      setUploadStatus("error");
+      setErrorMessage(error instanceof Error ? error.message : "Upload failed");
+      setStatusMessage("Upload failed. See error above.");
+      setUploadProgress(0);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
     return (
         <AuthGuard>
