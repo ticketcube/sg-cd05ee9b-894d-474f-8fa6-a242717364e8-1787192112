@@ -33,6 +33,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           const uploadData = await uploadReq.json();
           const resumableInitUrl = uploadData.resumable_upload_url;
+          if (!resumableInitUrl) {
+              return res.status(500).json({ error: "Brandfolder did not return a resumable_upload_url" });
+          }
           const objectUrl = uploadData.object_url;
 
           console.log("📋 Upload request data:", { resumableInitUrl, objectUrl });
