@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Initialize resumable upload
             const { filename, file_size, mimetype } = req.body;
 
-            const initRes = await fetch("https://api.brandfolder.com/v2/resumable_uploads", {
+            const initRes = await fetch("https://brandfolder.com/api/v4/upload_requests", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
