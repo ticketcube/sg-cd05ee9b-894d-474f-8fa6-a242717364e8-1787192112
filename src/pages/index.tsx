@@ -78,31 +78,28 @@ export default function HomePage() {
             className="bg-gradient-to-br from-green-600 to-blue-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group"
             onClick={() => handleNavigation("/discovery-dashboard")}
           >
-            <CardContent className="p-4 md:p-8 h-full flex flex-col justify-between">
-              <div>
-                              <section className="relative w-full h-screen flex flex-col items-center justify-center text-center">
-                                  <video
-                                      className="absolute inset-0 w-full h-full object-cover"
-                                      src="/intro-discovery.mp4"
-                                      autoPlay
-                                      loop
-                                      muted
-                                      playsInline
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/90" />
-                                  <div className="relative z-10 px-6">
-                                      <h1 className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">
-                                          Discover Tomorrow’s Stars
-                                      </h1>
-                                      <p className="text-gray-200 text-base md:text-xl mb-8">
-                                          Explore fresh talent. Vote. Earn rewards. Be the first to spot what’s next.
-                                      </p>
-                                      <Button className="bg-gradient-to-r from-pink-500 to-yellow-400 text-black font-bold px-8 py-4 text-lg rounded-2xl shadow-lg hover:scale-105 transition-transform">
-                                          Start Discovering
-                                      </Button>
-                                  </div>
-            </CardContent>
-          </Card>
+                      <section className="relative w-full h-screen flex flex-col items-center justify-center text-center">
+                          <video
+                              className="absolute inset-0 w-full h-full object-cover"
+                              src="/intro-discovery.mp4"
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/90" />
+                          <div className="relative z-10 px-6">
+                              <h1 className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">
+                                  Discover Tomorrow’s Stars
+                              </h1>
+                              <p className="text-gray-200 text-base md:text-xl mb-8">
+                                  Explore fresh talent. Vote. Earn rewards. Be the first to spot what’s next.
+                              </p>
+                              <Button className="bg-gradient-to-r from-pink-500 to-yellow-400 text-black font-bold px-8 py-4 text-lg rounded-2xl shadow-lg hover:scale-105 transition-transform">
+                                  Start Discovering
+                              </Button>
+                          </div>
+                      </section>
 
           
         </div>
