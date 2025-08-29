@@ -137,6 +137,17 @@ export default function BrandfolderUploadPage() {
                 uploadedBytes = 0;
             }
 
+            // Step 3: Upload file in chunks
+            const totalChunks = Math.ceil(file.size / chunkSize);
+            const startChunk = Math.floor(uploadedBytes / chunkSize);
+
+            // FIXED: Better UX message for small files
+            if (totalChunks === 1) {
+                setStatusMessage("Uploading file...");
+            } else {
+                setStatusMessage(`Uploading ${totalChunks} chunks...`);
+            }
+
             // Step 3: Upload file in chunks (safe Content-Range math)
             for (let chunkIndex = startChunk; chunkIndex < totalChunks; chunkIndex++) {
                 const start = chunkIndex * chunkSize;
