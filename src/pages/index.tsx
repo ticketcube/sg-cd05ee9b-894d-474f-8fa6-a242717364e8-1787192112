@@ -94,7 +94,69 @@ export default function HomePage() {
                 {user ? "Earn More Rewards!" : "Start Earning Rewards!"}
               </Button>
             </CardContent>
-          </Card>
+                  </Card>
+
+                
+
+                  export default function VideoSwiper() {
+  const videos = [
+                  "https://YOUR-SUPABASE-URL/video1.mp4",
+                  "https://YOUR-SUPABASE-URL/video2.mp4",
+                  "https://YOUR-SUPABASE-URL/video3.mp4",
+                  ];
+
+                  const [activeIndex, setActiveIndex] = useState(0);
+
+                  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollLeft = e.currentTarget.scrollLeft;
+                      const width = e.currentTarget.clientWidth;
+                      const index = Math.round(scrollLeft / width);
+                      setActiveIndex(index);
+  };
+
+                      return (
+                      <section className="relative w-full h-[80vh] overflow-hidden">
+                          {/* Swipeable container */}
+                          <div
+                              className="flex overflow-x-scroll snap-x snap-mandatory w-full h-full scroll-smooth"
+                              onScroll={handleScroll}
+                          >
+                              {videos.map((src, i) => (
+                                  <div
+                                      key={i}
+                                      className="relative flex-shrink-0 w-full h-full snap-center"
+                                  >
+                                      {/* Video */}
+                                      <video
+                                          src={src}
+                                          className="w-full h-full object-cover"
+                                          autoPlay
+                                          loop
+                                          muted
+                                          playsInline
+                                      />
+                                      {/* Text overlay */}
+                                      <div className="absolute bottom-4 left-4 bg-black/70 text-white text-xs md:text-sm px-3 py-1 rounded-lg">
+                                          Video {i + 1} of {videos.length}
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+
+                          {/* Swipe indicator (dots) */}
+                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                              {videos.map((_, i) => (
+                                  <span
+                                      key={i}
+                                      className={`w-2 h-2 rounded-full ${i === activeIndex ? "bg-white" : "bg-gray-500"
+                                          }`}
+                                  />
+                              ))}
+                          </div>
+                      </section>
+                      );
+}
+
 
           {/* Discovery Charts Card (only if enabled) */}
           {showDiscoveryCharts && (
