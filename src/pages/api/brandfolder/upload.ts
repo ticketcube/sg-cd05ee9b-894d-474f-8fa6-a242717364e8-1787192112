@@ -77,6 +77,7 @@ if (req.method === "PUT" && req.query.action === "status") {
         console.error("❌ Status check error:", error);
         return res.status(500).json({ error: error.message || "Unexpected error" });
     }
+}
 
 
 return res.status(405).json({ error: "Method not allowed" });
