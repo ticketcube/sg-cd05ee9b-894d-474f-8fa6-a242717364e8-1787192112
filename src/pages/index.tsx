@@ -74,7 +74,7 @@ export default function HomePage() {
             } gap-4 md:gap-8`}
         >
           {/* Weekly Rewards Card */}
-                  <Card
+                 <div
                       className="relative overflow-hidden bg-black border-0 rounded-2xl shadow-xl hover:scale-[1.01] transition-transform duration-500 cursor-pointer"
                       onClick={() => handleNavigation("/discovery-dashboard")}
                   >
@@ -100,8 +100,7 @@ export default function HomePage() {
                           <Button className="bg-gradient-to-r from-pink-500 to-yellow-400 text-black font-bold px-6 py-3 md:px-8 md:py-4 text-lg rounded-2xl shadow-lg hover:scale-105 transition-transform">
                               Start Discovering
                           </Button>
-                      </CardContent>
-                  </Card>
+                    </div>
 
 
           {/* Discovery Charts Card (only if enabled) */}
