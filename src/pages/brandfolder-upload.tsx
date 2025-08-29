@@ -154,6 +154,14 @@ export default function BrandfolderUploadPage() {
                 const chunk = file.slice(start, end);
                 const isLastChunk = end === file.size;
 
+                // ✅ Log Content-Range math before each chunk upload
+                console.log(
+                    `Uploading chunk ${chunkIndex + 1}/${totalChunks}`,
+                    `Range: bytes ${start}-${end - 1}/${file.size}`,
+                    `Last byte expected: ${file.size - 1}`
+                );
+
+
                 if (totalChunks === 1) {
                     setStatusMessage("Uploading file...");
                 } else {
