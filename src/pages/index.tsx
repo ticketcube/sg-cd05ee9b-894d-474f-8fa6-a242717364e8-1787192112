@@ -79,30 +79,21 @@ export default function HomePage() {
             onClick={() => handleNavigation("/discovery-dashboard")}
           >
             <CardContent className="p-4 md:p-8 h-full flex flex-col justify-between">
-                          <main className="min-h-screen bg-black text-white overflow-x-hidden">
-                              {/* Section 1: Video Hero / Intro */}
-                              <section className="relative w-full h-screen flex flex-col items-center justify-center text-center">
-                                  <video
-                                      className="absolute inset-0 w-full h-full object-cover"
-                                      src="/intro-discovery.mp4"
-                                      autoPlay
-                                      loop
-                                      muted
-                                      playsInline
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/90" />
-                                  <div className="relative z-10 px-6">
-                                      <h1 className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">
-                                          Discover Tomorrow’s Stars
-                                      </h1>
-                                      <p className="text-gray-200 text-base md:text-xl mb-8">
-                                          Explore fresh talent. Vote. Earn rewards. Be the first to spot what’s next.
-                                      </p>
-                                      <Button className="bg-gradient-to-r from-pink-500 to-yellow-400 text-black font-bold px-8 py-4 text-lg rounded-2xl shadow-lg hover:scale-105 transition-transform">
-                                          Start Discovering
-                                      </Button>
-                                  </div>
-                              </section>
+              <div>
+                <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/20 rounded-full mb-3 md:mb-6 mx-auto group-hover:scale-110 transition-transform">
+                  <Trophy className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                </div>
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-2 md:mb-4">
+                  We Reward Discovery
+                </h2>
+                <p className="text-center text-white/90 mb-4 md:mb-6 text-sm md:text-base">
+                  Vote on weekly artist discoveries and earn points for exclusive rewards
+                </p>
+              </div>
+              <Button className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg">
+                {user ? "Earn More Rewards!" : "Start Earning Rewards!"}
+              </Button>
+            </CardContent>
           </Card>
 
           
