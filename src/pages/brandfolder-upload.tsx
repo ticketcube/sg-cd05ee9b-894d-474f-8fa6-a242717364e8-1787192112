@@ -179,7 +179,8 @@ export default function BrandfolderUploadPage() {
                             method: "PUT",
                             headers: {
                                 "Content-Range": `bytes ${start}-${end - 1}/${file.size}`,
-                                "Content-Type": file.type || "application/octet-stream"
+                                "Content-Type": file.type || "application/octet-stream",
+                                "Content-Length": `${chunk.size}`
                             },
                             body: chunk
                         });
