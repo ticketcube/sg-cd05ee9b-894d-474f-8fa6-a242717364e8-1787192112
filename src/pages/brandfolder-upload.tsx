@@ -26,7 +26,7 @@ interface FilePreview {
     preview: string;
     type: "image" | "video" | "other";
 }
-let uploadedBytes = 0;
+
 
 export default function BrandfolderUploadPage() {
     const { user } = useAuth();
