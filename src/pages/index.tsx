@@ -10,21 +10,7 @@ import PromotionPopup from "@/components/PromotionPopup";
 
 const showDiscoveryCharts = false;
 
-export default function VideoSwiper() {
-    const videos = [
-        "https://YOUR-SUPABASE-URL/video1.mp4",
-        "https://YOUR-SUPABASE-URL/video2.mp4",
-        "https://YOUR-SUPABASE-URL/video3.mp4",
-    ];
 
-    const [activeIndex, setActiveIndex] = useState(0);
-
-    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-        const scrollLeft = e.currentTarget.scrollLeft;
-        const width = e.currentTarget.clientWidth;
-        const index = Math.round(scrollLeft / width);
-        setActiveIndex(index);
-    };
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -70,7 +56,21 @@ export default function HomePage() {
     setShowPromotionAuthDialog(false);
   };
 
- 
+    export default function VideoSwiper() {
+        const videos = [
+            "https://YOUR-SUPABASE-URL/video1.mp4",
+            "https://YOUR-SUPABASE-URL/video2.mp4",
+            "https://YOUR-SUPABASE-URL/video3.mp4",
+        ];
+
+        const [activeIndex, setActiveIndex] = useState(0);
+
+        const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+            const scrollLeft = e.currentTarget.scrollLeft;
+            const width = e.currentTarget.clientWidth;
+            const index = Math.round(scrollLeft / width);
+            setActiveIndex(index);
+        };
   
   return (
     <div className="flex-grow bg-black text-white">
