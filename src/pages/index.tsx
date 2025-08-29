@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button"; import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; import { Trophy, TrendingUp, Music, Settings, BarChart } from "lucide-react"; import { useRouter } from "next/router"; import { useAuth } from "@/contexts/AuthContext"; import AuthDialog from "@/components/AuthDialog"; import { useState, useEffect } from "react"; import PromotionPopup from "@/components/PromotionPopup"; const showDiscoveryCharts = false; 
+
 export default function HomePage() {
     const { user, loading } = useAuth();
     const router = useRouter();
