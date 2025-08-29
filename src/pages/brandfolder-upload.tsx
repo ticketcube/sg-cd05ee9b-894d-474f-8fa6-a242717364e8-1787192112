@@ -26,6 +26,7 @@ interface FilePreview {
     preview: string;
     type: "image" | "video" | "other";
 }
+let uploadedBytes = 0;
 
 export default function BrandfolderUploadPage() {
     const { user } = useAuth();
@@ -109,13 +110,13 @@ export default function BrandfolderUploadPage() {
 
             const { resumableUploadUrl, objectUrl } = await startRes.json();
 
-            let uploadedBytes = 0;
-
+            
             // Step 2: Check if any bytes have been uploaded previously (resumability)
             setStatusMessage("Checking upload status...");
 
-            
+          
             try {
+                uploadedBytes = 0;
                 const statusRes = await fetch("/api/brandfolder/upload?action=status", {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
