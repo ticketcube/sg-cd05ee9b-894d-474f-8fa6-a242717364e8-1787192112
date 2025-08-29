@@ -97,7 +97,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 
     // 🔍 Check upload status (for resumability)
-    if (req.method === "PUT" && action === "status") {
+      if (req.method === "POST" && action === "status") {
       const { resumableUploadUrl, fileSize } = req.body;
 
       console.log("🔍 Checking upload status for resumable URL");
