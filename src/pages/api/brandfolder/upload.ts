@@ -21,16 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           // Step 1: Ask Brandfolder for upload request
           const uploadReq = await fetch("https://brandfolder.com/api/v4/upload_requests", {
-              method: "POST",
-              headers: {
-                  Authorization: `Bearer ${brandfolderApiKey}`,
-                  Accept: "application/json",
-                  "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                  filename: fileName,
-                  mimetype: fileType
-              })
+              method: "GET",
+              headers: { Authorization: `Bearer ${brandfolderApiKey}` }
           });
 
           if (!uploadReq.ok) {
@@ -40,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
 
           const uploadData = await uploadReq.json();
-          const resumableInitUrl = uploadData.upload_url;
+          const resumableInitUrl = uploadData.resumable_upload_url;
           const objectUrl = uploadData.object_url;
 
           console.log("📋 Upload request data:", { resumableInitUrl, objectUrl });
@@ -159,16 +151,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         : `User-submitted content by ${userName} via OTWChart`;
 
       // FIXED: Correct payload structure - attributes as object, not array
-      const assetPayload = {
-        data: {
-          attributes: {
+        const assetPayload = {
             name: `${userName} Upload - ${fileName}`,
             description: finalDescription,
-            attachments: [{ url: objectUrl, filename: fileName }]
-          }
-        },
-        section_key: SECTION_ID
-      };
+            attachments: [{ url: objectUrl, filename: fileName }],
+            section_key: SECTION_ID
+        };
 
       try {
         const createAsset = await fetch(
