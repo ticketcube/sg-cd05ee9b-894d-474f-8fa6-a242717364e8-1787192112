@@ -6,7 +6,7 @@ export interface UploadOptions {
 export default class BrandfolderUpload {
     file: File;
     onProgress?: UploadOptions["onProgress"];
-    chunkSize = 5 * 1024 * 1024; // 5MB default
+    chunkSize = 2 * 1024 * 1024; // 5MB default
 
     constructor(options: UploadOptions) {
         this.file = options.file;
