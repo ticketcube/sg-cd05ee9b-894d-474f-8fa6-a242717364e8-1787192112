@@ -58,7 +58,7 @@ export default function HomePage() {
   
   return (
     <div className="flex-grow bg-black text-white">
-    
+      <div className="container mx-auto px-4 py-8">
         {/* Welcome message for logged in users */}
         {user && (
           <div className="text-center mb-8">
@@ -101,7 +101,31 @@ export default function HomePage() {
 
           
 
-       
+          {/* Discovery Charts Card (only if enabled) */}
+          {showDiscoveryCharts && (
+            <Card
+              className="bg-gradient-to-br from-purple-600 to-pink-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group"
+              onClick={() => handleNavigation("/discovery-charts")}
+            >
+              <CardContent className="p-4 md:p-8 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/20 rounded-full mb-3 md:mb-6 mx-auto group-hover:scale-110 transition-transform">
+                    <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-white" />
+                  </div>
+                  <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-2 md:mb-4">
+                    Discovery Charts
+                  </h2>
+                  <p className="text-center text-white/90 mb-4 md:mb-6 text-sm md:text-base">
+                    Explore comprehensive artist rankings and genre-based charts
+                  </p>
+                </div>
+                <Button className="w-full bg-white text-purple-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg">
+                  Explore Charts
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         {/* Bottom Section */}
         <div className="text-center mt-8 md:mt-16">
@@ -110,7 +134,7 @@ export default function HomePage() {
             <span className="text-gray-400 text-sm md:text-base">Powered by community votes and engagement</span>
           </div>
         </div>
-     </div>
+      </div>
 
          
       
