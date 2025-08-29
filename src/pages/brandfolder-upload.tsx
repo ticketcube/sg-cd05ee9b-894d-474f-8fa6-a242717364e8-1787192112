@@ -18,6 +18,7 @@ import {
 import { useRouter } from "next/router";
 import AuthGuard from "@/components/AuthGuard";
 import { useToast } from "@/hooks/use-toast";
+import BrandfolderUpload from "@/lib/brandfolder-upload"; 
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
@@ -74,67 +75,50 @@ export default function BrandfolderUploadPage() {
         const [uploadProgress, setUploadProgress] = useState(0);
         const [statusMessage, setStatusMessage] = useState("");
 
-        const handleUpload = async (file: File) => {
+        const handleUpload = async () => {
+            if (!selectedFile || !user) {
+                toast({
+                    title: "Authentication Error",
+                    description: "You must be logged in to upload files.",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            setUploadStatus("uploading");
+            setIsLoading(true);
+            setUploadProgress(0);
+            setErrorMessage("");
+            setStatusMessage("");
+
             try {
-                // Step 1: Initialize resumable upload via API
-                const initRes = await fetch("/api/brandfolder/upload", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        filename: file.name,
-                        file_size: file.size,
-                        mimetype: file.type || "application/octet-stream",
-                        resumable: true,
-                    }),
+                // Create an instance of the BrandfolderUpload class
+                const uploader = new BrandfolderUpload({
+                    file: selectedFile.file,
+                    description,
+                    userName: user.username || "Unknown Uploader",
+                    onProgress: (percent, chunkIndex, totalChunks) => {
+                        setUploadProgress(percent);
+                        setStatusMessage(`Uploading chunk ${chunkIndex + 1}/${totalChunks} (${Math.round(percent)}%)`);
+                    }
                 });
 
-                const data = await initRes.json();
-                const resumableUploadUrl = data.resumableUploadUrl;
+                // Start upload
+                const result = await uploader.upload();
 
-                // Step 2: Determine chunks
-                const totalChunks = Math.ceil(file.size / chunkSize);
+                setUploadProgress(100);
+                setUploadStatus("success");
+                setStatusMessage("Upload complete!");
+                console.log("🎉 Upload completed:", result);
 
-                for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-                    const start = chunkIndex * chunkSize;
-                    const end = Math.min(start + chunkSize, file.size);
-                    const chunk = file.slice(start, end);
-                    const isLastChunk = chunkIndex === totalChunks - 1;
-
-                    console.log(
-                        `Uploading chunk ${chunkIndex + 1}/${totalChunks}`,
-                        `Range: bytes ${start}-${end - 1}/${file.size}`,
-                        `Last byte expected: ${file.size - 1}`
-                    );
-
-                    // Retry logic
-                    let retries = 3;
-                    let uploaded = false;
-
-                    while (!uploaded && retries > 0) {
-                        try {
-                            const res = await fetch("/api/brandfolder/upload", {
-                                method: "PUT",
-                                headers: { "Content-Range": `bytes ${start}-${end - 1}/${file.size}` },
-                                body: chunk,
-                            });
-
-                            if (!res.ok && res.status !== 308) throw new Error(`Chunk failed with status ${res.status}`);
-
-                            uploaded = true;
-                            setUploadProgress(((chunkIndex + 1) / totalChunks) * 100);
-
-                            if (isLastChunk) console.log("🎉 All chunks uploaded!");
-                        } catch (err) {
-                            retries--;
-                            console.error(`❌ Chunk ${chunkIndex + 1} failed, retries left: ${retries}`, err);
-                            if (retries === 0) throw err;
-                            await new Promise(r => setTimeout(r, 1000 * (4 - retries))); // exponential backoff
-                        }
-                    }
-                }
             } catch (error) {
-                console.error("💥 Upload failed:", error);
-                setStatusMessage(`Upload failed: ${error instanceof Error ? error.message : error}`);
+                console.error("💥 Upload error:", error);
+                setUploadStatus("error");
+                setErrorMessage(error instanceof Error ? error.message : "Upload failed");
+                setStatusMessage("Upload failed. See error above.");
+                setUploadProgress(0);
+            } finally {
+                setIsLoading(false);
             }
         };
 
