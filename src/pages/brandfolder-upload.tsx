@@ -109,7 +109,7 @@ export default function BrandfolderUploadPage() {
 
             const { resumableUploadUrl, objectUrl } = await startRes.json();
 
-            const uploadedBytes = 0;
+            let uploadedBytes = 0;
 
             // Step 2: Check if any bytes have been uploaded previously (resumability)
             setStatusMessage("Checking upload status...");
