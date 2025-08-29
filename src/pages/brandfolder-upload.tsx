@@ -77,6 +77,7 @@ export default function BrandfolderUploadPage() {
             });
             return;
         }
+        let uploadedBytes = 0;
 
         const file = selectedFile.file;
         const userName = user.username || "Unknown Uploader";
