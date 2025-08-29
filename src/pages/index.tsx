@@ -74,28 +74,31 @@ export default function HomePage() {
             } gap-4 md:gap-8`}
         >
           {/* Weekly Rewards Card */}
-          <Card
-            className="bg-gradient-to-br from-green-600 to-blue-600 border-0 hover:scale-105 transition-transform duration-300 cursor-pointer group"
-            onClick={() => handleNavigation("/discovery-dashboard")}
-          >
-            <CardContent className="p-4 md:p-8 h-full flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white/20 rounded-full mb-3 md:mb-6 mx-auto group-hover:scale-110 transition-transform">
-                  <Trophy className="w-6 h-6 md:w-8 md:h-8 text-white" />
-                </div>
-                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-center mb-2 md:mb-4">
-                  We Reward Discovery
-                </h2>
-                <p className="text-center text-white/90 mb-4 md:mb-6 text-sm md:text-base">
-                  Vote on weekly artist discoveries and earn points for exclusive rewards
-                </p>
-              </div>
-              <Button className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold py-2 md:py-4 text-base md:text-lg">
-                {user ? "Earn More Rewards!" : "Start Earning Rewards!"}
-              </Button>
-            </CardContent>
+                  <Card
+                      className="relative overflow-hidden bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 border-0 rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.03] transition-all duration-500 cursor-pointer group"
+                      onClick={() => handleNavigation("/discovery-dashboard")}
+                  >
+                      {/* Animated glow orbs */}
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.15),transparent),radial-gradient(circle_at_80%_70%,rgba(255,255,255,0.1),transparent)] animate-pulse" />
+
+                      <CardContent className="relative p-6 md:p-10 h-full flex flex-col justify-between z-10">
+                          <div>
+                              <div className="flex items-center justify-center w-14 h-14 md:w-20 md:h-20 bg-white/10 backdrop-blur-lg rounded-full mb-6 mx-auto group-hover:scale-110 transition-transform">
+                                  <Trophy className="w-7 h-7 md:w-10 md:h-10 text-yellow-300 drop-shadow-lg" />
+                              </div>
+                              <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-center mb-3 bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 to-pink-200">
+                                  Discover. Vote. Shine.
+                              </h2>
+                              <p className="text-center text-white/80 mb-6 text-base md:text-lg font-light">
+                                  Join a cosmic journey of discovery. Vote weekly and unlock rewards across the galaxy.
+                              </p>
+                          </div>
+                          <Button className="w-full bg-yellow-300 text-indigo-900 font-bold py-3 md:py-4 text-lg rounded-xl hover:bg-yellow-400 hover:scale-105 transition">
+                              {user ? "Keep Exploring ✨" : "Begin Your Journey 🚀"}
+                          </Button>
+                      </CardContent>
                   </Card>
-          
+
           
 
           {/* Discovery Charts Card (only if enabled) */}
