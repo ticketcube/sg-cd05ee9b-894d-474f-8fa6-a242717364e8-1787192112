@@ -15,6 +15,7 @@ import {
     Video,
     X
 } from "lucide-react";
+
 import { useRouter } from "next/router";
 import AuthGuard from "@/components/AuthGuard";
 import { useToast } from "@/hooks/use-toast";
@@ -43,78 +44,10 @@ export default function BrandfolderUploadPage() {
     const [errorMessage, setErrorMessage] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
 
-    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        // Validate file size (15GB limit)
-        if (file.size > 15 * 1024 * 1024 * 1024) {
-            setErrorMessage("File size must be less than 15GB");
-            return;
-        }
-
-        // Validate file type
-        if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
-            setErrorMessage("Please select an image or video file");
-            return;
-        }
-
-        setErrorMessage("");
-
-        // Create preview
-        const preview = URL.createObjectURL(file);
-        const type = file.type.startsWith("image/") ? "image" :
-            file.type.startsWith("video/") ? "video" : "other";
-
-        setSelectedFile({ file, preview, type });
-    };
-
+    
     const chunkSize = 5 * 1024 * 1024; // 5MB
 
-    import { useState, useRef } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
-import {
-  Upload,
-  CheckCircle,
-  AlertCircle,
-  ArrowLeft,
-  File,
-  Image as ImageIcon,
-  Video,
-  X
-} from "lucide-react";
-import { useRouter } from "next/router";
-import AuthGuard from "@/components/AuthGuard";
-import { useToast } from "@/hooks/use-toast";
-import BrandfolderUpload from "@/lib/brandfolder-upload"; 
-
-type UploadStatus = "idle" | "uploading" | "success" | "error";
-
-interface FilePreview {
-  file: File;
-  preview: string;
-  type: "image" | "video" | "other";
-}
-
-export default function BrandfolderUploadPage() {
-  const { user } = useAuth();
-  const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-
-  const [selectedFile, setSelectedFile] = useState<FilePreview | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
-  const [isLoading, setIsLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [description, setDescription] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [statusMessage, setStatusMessage] = useState("");
-
-  const chunkSize = 5 * 1024 * 1024; // 5MB
+    
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
