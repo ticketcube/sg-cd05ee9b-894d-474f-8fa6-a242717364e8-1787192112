@@ -67,7 +67,6 @@ export default function HomePage() {
             </p>
           </div>
         )}
-          </div> <main className="min-h-screen bg-black text-white overflow-x-hidden">
               {/* Section 1: Video Hero / Intro */}
               <section className="relative w-full h-screen flex flex-col items-center justify-center text-center">
                   <video
