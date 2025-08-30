@@ -49,7 +49,7 @@ export default function HomePage() {
               />
         
       </div>
-        )}
+       
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
           <Button
             onClick={handleRegisterClick}
@@ -58,7 +58,7 @@ export default function HomePage() {
             Register to Discover Rewards
           </Button>
         </div>
-      
+       )}
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-3 md:px-4 py-8 md:py-12">
