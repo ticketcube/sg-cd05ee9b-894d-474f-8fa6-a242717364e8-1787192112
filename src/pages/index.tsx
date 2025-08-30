@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthDialog from "@/components/AuthDialog";
 import { Button } from "@/components/ui/button";
-import { Gift, Compass, BarChart, Music, Star, TrendingUp, Zap } from "lucide-react";
+import { Trophy, Gift, Compass, BarChart, Music, Star, TrendingUp, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { supabase } from "@/integrations/supabase/client"; // make sure this exists
@@ -209,10 +209,25 @@ function MoreRewardsTab({
   totalVideos: number;
 }) {
   return (
-    <div className="text-center text-gray-300">
-      <h2 className="text-2xl font-bold text-white mb-4">Rewards Preview</h2>
-      <p className="mb-2">Earn points by discovering artists!</p>
-      <p className="mb-2">Sign up to unlock rewards.</p>
-    </div>
+    <Link href="/weekly-ratings" className="block group">
+      <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
+            <Trophy className="w-10 h-10 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-white text-xl group-hover:text-green-300 transition-colors mb-2">
+              September Discovery Reward
+            </h3>
+            <Badge
+              variant="outline"
+              className="border-green-500 text-green-400 px-3 py-1"
+            >
+              Earn 240 Points to receive all nine OnesToWatch Zines!
+            </Badge>
+
+          
+      </div>
+    </Link>
   );
 }
