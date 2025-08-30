@@ -15,7 +15,6 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState("discover");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
-  // Fetch video dynamically from Supabase
     useEffect(() => {
         const fetchVideo = async () => {
             const { data, error } = await supabase
@@ -24,15 +23,17 @@ export default function HomePage() {
                 .eq("artist_name", "otw")
                 .single();
 
-      if (error) {
-        console.error("Error fetching video:", error.message);
-      } else if (data && data.length > 0) {
-        setVideoUrl(data[0].artist_videolink);
-      }
-    };
+            if (error) {
+                console.error("Error fetching video:", error.message);
+            } else if (data?.artist_videolink) {
+                setVideoUrl(data.artist_videolink);
+            } else {
+                console.warn("No video found for artist 'otw'");
+            }
+        };
 
-    fetchVideo();
-  }, []);
+        fetchVideo();
+    }, []);
 
   const handleRegisterClick = () => {
     if (user) {
