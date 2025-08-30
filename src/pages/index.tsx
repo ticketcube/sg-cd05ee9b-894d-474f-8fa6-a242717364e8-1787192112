@@ -44,13 +44,12 @@ export default function HomePage() {
     w-full         /* always takes 100% of screen width */
     h-auto         /* height adjusts automatically */
     max-h-[80vh]   /* prevent it from getting too tall */
-    object-cover   /* fill the box */
-    object-center  /* keep center in focus */
+    object-contain bg-black   
   "
   src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
   autoPlay
   loop
-          muted={false}
+  muted={false}
   controls
   playsInline
 />
