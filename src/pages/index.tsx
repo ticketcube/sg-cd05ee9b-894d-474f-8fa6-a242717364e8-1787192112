@@ -228,11 +228,14 @@ function MoreRewardsTab() {
                 >
                   Earn 240 Points for all Nine OnesToWatch Zines!
                 </Badge>
-              </div> {/* ✅ closed inner flex-1 div */}
-            </div>   {/* ✅ closed flex items-center div */}
-          </div>     {/* ✅ closed card div */}
+              </div>
+            </div> 
+          </div>    
         </Link>
-      </div>         {/* ✅ closed grid */}
-    </div>           {/* ✅ closed main container */ }
+      </div>       
   );
 }
+
+
+
+
