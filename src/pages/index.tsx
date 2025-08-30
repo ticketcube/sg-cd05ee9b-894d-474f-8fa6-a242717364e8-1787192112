@@ -129,7 +129,6 @@ function DiscoverMoreTab() {
       </div>
 
       <div className="grid gap-6">
-        <Link href="/weekly-ratings" className="block group">
           <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
             <div className="flex items-center gap-6">
               <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
@@ -150,9 +149,7 @@ function DiscoverMoreTab() {
               <TrendingUp className="w-4 h-4 text-white" />
             </div>
           </div>
-        </Link>
 
-        <Link href="/vibes" className="block group">
           <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 rounded-xl p-6 border border-purple-500/30 hover:border-purple-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
             <div className="flex items-center gap-6">
               <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/25">
@@ -173,9 +170,7 @@ function DiscoverMoreTab() {
               <Zap className="w-4 h-4 text-white" />
             </div>
           </div>
-        </Link>
 
-        <Link href="/discovery-charts" className="block group">
           <div className="bg-gradient-to-r from-orange-900/40 to-red-900/40 rounded-xl p-6 border border-orange-500/30 hover:border-orange-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
             <div className="flex items-center gap-6">
               <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/25">
@@ -196,7 +191,6 @@ function DiscoverMoreTab() {
               <TrendingUp className="w-4 h-4 text-white" />
             </div>
           </div>
-        </Link>
       </div>
     </div>
   );
@@ -216,7 +210,6 @@ function MoreRewardsTab() {
       </div>
 
       <div className="grid gap-6">
-        <Link href="/weekly-ratings" className="block group">
           <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
             <div className="flex items-center gap-6">
               <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
@@ -235,7 +228,6 @@ function MoreRewardsTab() {
               </div>
             </div>
           </div>
-        </Link>
       </div>
     </div>
   );
