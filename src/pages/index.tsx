@@ -39,14 +39,19 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       {/* Hero Video Header */}
       <div className="relative overflow-hidden">
-        <video
-          className="w-full h-[60vh] object-cover"
-          src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-        />
+       <video
+  className="
+    w-full 
+    h-[60vh] md:h-[80vh] lg:h-[90vh] 
+    object-cover 
+    object-center
+  "
+  src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
+  autoPlay
+  loop
+  muted
+  playsInline
+/>
       </div>
 
       {/* Button below video with padding */}
