@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthDialog from "@/components/AuthDialog";
@@ -17,8 +17,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState("discover");
   const [isMuted, setIsMuted] = useState(true);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-
-  
+  const videoRef = useRef < HTMLVideoElement > (null);
 
   const handleRegisterClick = () => {
     if (user) {
