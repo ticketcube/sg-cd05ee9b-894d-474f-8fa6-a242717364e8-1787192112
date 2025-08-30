@@ -135,9 +135,12 @@ function DiscoverMoreTab() {
                 <h3 className="font-bold text-white text-xl group-hover:text-green-300 transition-colors mb-2">
                   Weekly Artist Ratings
                 </h3>
-                <p className="text-gray-300 mb-4">
-                  Watch & Rate emerging artists and earn points
-                </p>
+                <Badge
+                  variant="outline"
+                  className="border-green-500 text-green-400 px-3 py-1"
+                >
+                  Watch & Rate for Points
+                </Badge>
                
               </div>
               <TrendingUp className="w-4 h-4 text-white" />
