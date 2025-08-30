@@ -39,25 +39,26 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       {/* Hero Video Header */}
       <div className="relative overflow-hidden">
-              <video
-                  className="w-full h-[60vh] object-cover"
-                  src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-              />
-        
+        <video
+          className="w-full h-[60vh] object-cover"
+          src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
       </div>
-       
-        <div className="bg-black/40 flex items-center justify-center">
-          <Button
-            onClick={handleRegisterClick}
-            className="bg-blue-600 hover:bg-blue-700 text-lg px-6 py-3 rounded-xl shadow-lg"
-          >
-            Register to Discover Rewards
-          </Button>
-        </div>
+
+      {/* Button below video with padding */}
+      <div className="flex justify-center mt-10"> {/* ⬅ adds vertical spacing */}
+        <Button
+          onClick={handleRegisterClick}
+          className="bg-red-600 hover:bg-red-700 text-lg px-6 py-3 rounded-xl shadow-lg text-white"
+        >
+          Register to Discover Rewards
+        </Button>
+      </div>
+    </div>
        
 
       {/* Main Content */}
