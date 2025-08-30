@@ -57,16 +57,14 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       {/* Hero Video Header */}
       <div className="relative overflow-hidden">
-        {videoUrl ? (
-          <video
-            className="w-full h-[60vh] object-cover"
-            src={videoUrl}
-            autoPlay
-            loop
-            muted
-            playsInline
-            poster="/video-poster.jpg" // optional
-          />
+              <video
+                  className="w-full h-[60vh] object-cover"
+                  src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+              />
         ) : (
           <div className="w-full h-[60vh] bg-black flex items-center justify-center text-gray-400">
             Loading video...
