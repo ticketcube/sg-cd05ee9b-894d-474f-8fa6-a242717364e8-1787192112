@@ -66,7 +66,7 @@ export default function HomePage() {
                   {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
               </button>
           </div>
-      </div>
+      
 
       {/* Button below video with padding */}
       <div className="flex justify-center mt-10">
