@@ -47,7 +47,7 @@ export default function HomePage() {
                   muted
                   playsInline
               />
-        ) 
+        
          
         )}
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
