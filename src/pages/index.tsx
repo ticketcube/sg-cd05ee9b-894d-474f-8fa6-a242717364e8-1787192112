@@ -51,6 +51,7 @@ export default function HomePage() {
   loop
   muted
   playsInline
+  controls
 />
       </div>
 
