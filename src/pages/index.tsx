@@ -16,13 +16,13 @@ export default function HomePage() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
   // Fetch video dynamically from Supabase
-  useEffect(() => {
-    const fetchVideo = async () => {
-      const { data, error } = await supabase
-        .from("artists")
-        .select("artist_videolink")
-        .order("artist_otwcreateddate", { ascending: false }) // fetch most recent
-        .limit(1);
+    useEffect(() => {
+        const fetchVideo = async () => {
+            const { data, error } = await supabase
+                .from("artists")
+                .select("artist_videolink")
+                .eq("artist_name", "otw")
+                .single();
 
       if (error) {
         console.error("Error fetching video:", error.message);
