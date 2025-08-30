@@ -50,7 +50,7 @@ export default function HomePage() {
   src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
   autoPlay
   loop
-          unmuted
+          muted={false}
   controls
   playsInline
 />
