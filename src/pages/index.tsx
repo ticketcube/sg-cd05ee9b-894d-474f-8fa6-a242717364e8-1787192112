@@ -41,17 +41,18 @@ export default function HomePage() {
       <div className="relative overflow-hidden">
        <video
   className="
-    w-full 
-    h-[60vh] md:h-[80vh] lg:h-[90vh] 
-    object-cover 
-    object-center
+    w-full         /* always takes 100% of screen width */
+    h-auto         /* height adjusts automatically */
+    max-h-[80vh]   /* prevent it from getting too tall */
+    object-cover   /* fill the box */
+    object-center  /* keep center in focus */
   "
   src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
   autoPlay
   loop
-  muted
-  playsInline
+          unmuted
   controls
+  playsInline
 />
       </div>
 
