@@ -138,17 +138,7 @@ function DiscoverMoreTab() {
                 <p className="text-gray-300 mb-4">
                   Watch & Rate emerging artists and earn points
                 </p>
-                <div className="flex gap-3 flex-wrap">
-                  <Badge className="bg-green-600 text-white px-3 py-1">
-                    10 per rating
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="border-green-500 text-green-400 px-3 py-1"
-                  >
-                    5 per video
-                  </Badge>
-                </div>
+               
               </div>
               <TrendingUp className="w-4 h-4 text-white" />
             </div>
@@ -165,9 +155,7 @@ function DiscoverMoreTab() {
                 <h3 className="font-bold text-white text-xl group-hover:text-purple-300 transition-colors mb-2">
                   Global Vibes Chart
                 </h3>
-                <p className="text-gray-300 mb-4">
-                  Explore artists by mood and discover new sounds
-                </p>
+               
                 <Badge
                   variant="outline"
                   className="border-purple-500 text-purple-400 px-3 py-1"
@@ -190,9 +178,7 @@ function DiscoverMoreTab() {
                 <h3 className="font-bold text-white text-xl group-hover:text-orange-300 transition-colors mb-2">
                   Discovery Charts
                 </h3>
-                <p className="text-gray-300 mb-4">
-                  Interactive lists and trending artist rankings
-                </p>
+               
                 <Badge
                   variant="outline"
                   className="border-orange-500 text-orange-400 px-3 py-1"
