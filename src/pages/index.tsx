@@ -230,8 +230,9 @@ function MoreRewardsTab() {
                 </Badge>
               </div>
             </div> 
-          </div>    
+            
         </Link>
+      </div> 
       </div>       
   );
 }
