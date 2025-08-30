@@ -91,10 +91,7 @@ export default function HomePage() {
 
         {/* Tab Content */}
         {activeTab === "discover" && <DiscoverMoreTab />}
-        {activeTab === "rewards" && (
-          <MoreRewardsTab totalPoints={0} weeksActive={0} totalVideos={0} />
-        )}
-      </div>
+        {activeTab === "rewards" && <MoreRewardsTab />}      </div>
 
       {/* Signup Dialog */}
       <AuthDialog
