@@ -3,11 +3,20 @@ import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthDialog from "@/components/AuthDialog";
 import { Button } from "@/components/ui/button";
-import { Gift, Compass, BarChart, Music, Star, TrendingUp, Zap, Trophy } from "lucide-react";
+import { Volume2, VolumeX, Gift, Compass, BarChart, Music, Star, TrendingUp, Zap, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { supabase } from "@/integrations/supabase/client"; // make sure this exists
+export default function HeroVideo() {
+    const videoRef = useRef < HTMLVideoElement > (null);
+    const [isMuted, setIsMuted] = useState(true);
 
+    const toggleMute = () => {
+        if (videoRef.current) {
+            videoRef.current.muted = !videoRef.current.muted;
+            setIsMuted(videoRef.current.muted);
+        }
+    };
 export default function HomePage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -39,20 +48,24 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
       {/* Hero Video Header */}
       <div className="relative overflow-hidden">
-       <video
-  className="
-    w-full         /* always takes 100% of screen width */
-    h-auto         /* height adjusts automatically */
-    max-h-[80vh]   /* prevent it from getting too tall */
-    object-contain bg-black   
-  "
-  src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
-  autoPlay
-  loop
-  muted={false}
-  controls
-  playsInline
-/>
+              <video
+                  ref={videoRef}
+                  className="w-full h-auto max-h-[80vh] object-cover"
+                  src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+              />
+
+              {/* Custom Unmute/Mute Button */}
+              <button
+                  onClick={toggleMute}
+                  className="absolute bottom-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition"
+              >
+                  {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+              </button>
+          </div>
       </div>
 
       {/* Button below video with padding */}
