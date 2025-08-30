@@ -168,7 +168,7 @@ export default function HomePage() {
                 {activeTab === "rewards" && <MoreRewardsTab totalPoints={total_points} weeksActive={weeksActive} totalVideos={totalVideos} />}
                 {activeTab === "staff" && user?.role === 'otwstaff' && <StaffPortalTab />}
             </div>
-        </div>
+        
         </AuthGuard >
     );
 }
