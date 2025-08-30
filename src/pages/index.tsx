@@ -7,21 +7,15 @@ import { Volume2, VolumeX, Gift, Compass, BarChart, Music, Star, TrendingUp, Zap
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { supabase } from "@/integrations/supabase/client"; // make sure this exists
-export default function HeroVideo() {
-    const videoRef = useRef < HTMLVideoElement > (null);
-    const [isMuted, setIsMuted] = useState(true);
 
-    const toggleMute = () => {
-        if (videoRef.current) {
-            videoRef.current.muted = !videoRef.current.muted;
-            setIsMuted(videoRef.current.muted);
-        }
-    };
+
+   
 export default function HomePage() {
   const { user } = useAuth();
   const router = useRouter();
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("discover");
+  const [isMuted, setIsMuted] = useState(true);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
   
@@ -33,6 +27,13 @@ export default function HomePage() {
       setAuthDialogOpen(true);
     }
   };
+
+    const toggleMute = () => {
+        if (videoRef.current) {
+            videoRef.current.muted = !videoRef.current.muted;
+            setIsMuted(videoRef.current.muted);
+        }
+    };
 
   const handleAuthClose = () => {
     setAuthDialogOpen(false);
