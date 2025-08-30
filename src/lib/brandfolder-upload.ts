@@ -73,7 +73,7 @@ export default class BrandfolderUpload {
 
                     if (res.ok || res.status === 308) {
                         uploadedBytes = end;
-                        this.onProgress?.((uploadedBytes / this.file.size) * 100, i, totalChunks);
+                        this.onProgress?.((uploadedBytes / this.file.size) * 100);
                         break;
                     } else {
                         throw new Error(`Chunk upload failed with status ${res.status}`);

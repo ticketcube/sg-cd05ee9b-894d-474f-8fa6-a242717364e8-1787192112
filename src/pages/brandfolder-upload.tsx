@@ -116,12 +116,12 @@ export default function BrandfolderUploadPage() {
     try {
       const uploader = new BrandfolderUpload({
         file: selectedFile.file,
+        fileName: selectedFile.file.name,
+        fileType: selectedFile.file.type,
         description,
-        userName: user.username || "Unknown Uploader",
-        chunkSize,
-        onProgress: (percent, chunkIndex, totalChunks) => {
+        onProgress: (percent: number) => {
           setUploadProgress(percent);
-          setStatusMessage(`Uploading chunk ${chunkIndex + 1}/${totalChunks} (${Math.round(percent)}%)`);
+          setStatusMessage(`Uploading... ${Math.round(percent)}%`);
         }
       });
 
