@@ -15,25 +15,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState("discover");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchVideo = async () => {
-            const { data, error } = await supabase
-                .from("artists")
-                .select("artist_videolink")
-                .eq("artist_name", "otw")
-                .single();
-
-            if (error) {
-                console.error("Error fetching video:", error.message);
-            } else if (data?.artist_videolink) {
-                setVideoUrl(data.artist_videolink);
-            } else {
-                console.warn("No video found for artist 'otw'");
-            }
-        };
-
-        fetchVideo();
-    }, []);
+  
 
   const handleRegisterClick = () => {
     if (user) {
@@ -49,7 +31,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (user && isAuthDialogOpen === false) {
-      router.push("/discoverydashboard");
+      router.push("/discovery-dashboard");
     }
   }, [user, isAuthDialogOpen, router]);
 
@@ -65,10 +47,8 @@ export default function HomePage() {
                   muted
                   playsInline
               />
-        ) : (
-          <div className="w-full h-[60vh] bg-black flex items-center justify-center text-gray-400">
-            Loading video...
-          </div>
+        ) 
+         
         )}
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
           <Button
