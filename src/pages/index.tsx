@@ -37,7 +37,7 @@ export default function HomePage() {
 
   const handleRegisterClick = () => {
     if (user) {
-      router.push("/discoverydashboard");
+      router.push("/discovery-dashboard");
     } else {
       setAuthDialogOpen(true);
     }
