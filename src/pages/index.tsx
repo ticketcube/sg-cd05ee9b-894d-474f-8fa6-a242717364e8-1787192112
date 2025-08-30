@@ -199,9 +199,8 @@ function DiscoverMoreTab() {
 }
 
 // Rewards Tab
-
-  
-   return (
+function MoreRewardsTab() {
+  return (
   <div className="space-y-6">
     <div className="text-center mb-6">
       <h2 className="text-2xl font-bold text-white mb-2">
