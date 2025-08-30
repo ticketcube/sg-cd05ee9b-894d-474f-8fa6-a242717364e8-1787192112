@@ -50,7 +50,7 @@ export default function HomePage() {
       </div>
 
       {/* Button below video with padding */}
-      <div className="flex justify-center mt-10"> {/* ⬅ adds vertical spacing */}
+      <div className="flex justify-center mt-10">
         <Button
           onClick={handleRegisterClick}
           className="bg-red-600 hover:bg-red-700 text-lg px-6 py-3 rounded-xl shadow-lg text-white"
@@ -58,8 +58,6 @@ export default function HomePage() {
           Register to Discover Rewards
         </Button>
       </div>
-    </div>
-  );
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-3 md:px-4 py-8 md:py-12">
@@ -69,22 +67,20 @@ export default function HomePage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setActiveTab("discover")}
-                className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all text-base ${
-                  activeTab === "discover"
+                className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all text-base ${activeTab === "discover"
                     ? "bg-blue-600 text-white shadow-lg shadow-blue-600/25"
                     : "text-gray-400 hover:text-white hover:bg-white/5"
-                }`}
+                  }`}
               >
                 <Compass className="w-4 h-4 inline mr-2" />
                 Discover
               </button>
               <button
                 onClick={() => setActiveTab("rewards")}
-                className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all text-base ${
-                  activeTab === "rewards"
+                className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all text-base ${activeTab === "rewards"
                     ? "bg-purple-600 text-white shadow-lg shadow-purple-600/25"
                     : "text-gray-400 hover:text-white hover:bg-white/5"
-                }`}
+                  }`}
               >
                 <Gift className="w-4 h-4 inline mr-2" />
                 Rewards
@@ -108,6 +104,7 @@ export default function HomePage() {
       />
     </div>
   );
+
 }
 
 /* -------------------------------
