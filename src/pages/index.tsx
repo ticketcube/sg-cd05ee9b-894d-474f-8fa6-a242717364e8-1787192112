@@ -231,7 +231,8 @@ function MoreRewardsTab() {
               </div>
             </div>
           </div>
-        </Link></div>
+        </Link>
+      </div>
     </div>
   );
 }
