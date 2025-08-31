@@ -51,7 +51,7 @@ export default function HomePage() {
               <video
                   ref={videoRef}
                   className="w-full h-auto max-h-[80vh] object-cover"
-                  src="https://cdn.brandfolder.io/364H2QNG/as/2864cv8mh5ghmxqjq3kfq/OTW_FDP.mp4"
+                  src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
                   autoPlay
                   loop
                   muted
