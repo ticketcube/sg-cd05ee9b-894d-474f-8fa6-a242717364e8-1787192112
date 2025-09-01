@@ -75,7 +75,7 @@ export default function ArtistSubmissionPage() {
             // Step 1: Upload image to Supabase Storage
             const filePath = `artists/${Date.now()}_${selectedFile.name}`;
             const { error: uploadError } = await supabase.storage
-                .from("artists") // your bucket name
+                .from("artistscontent") // your bucket name
                 .upload(filePath, selectedFile, {
                     cacheControl: "3600",
                     upsert: false,
@@ -86,7 +86,7 @@ export default function ArtistSubmissionPage() {
             // Step 2: Get public URL for the image
             const {
                 data: { publicUrl },
-            } = supabase.storage.from("artists").getPublicUrl(filePath);
+            } = supabase.storage.from("artistscontent").getPublicUrl(filePath);
 
             // Step 3: Call the RPC function
             const { data, error } = await supabase.rpc(
