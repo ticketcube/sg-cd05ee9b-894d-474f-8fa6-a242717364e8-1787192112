@@ -3,7 +3,10 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import "@/styles/globals.css";
 
-import AuthProvider from "@/contexts/AuthContext";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
+
+
 import { Toaster } from "@/components/ui/toaster";
 import AppLayout from "@/components/layout/AppLayout";
 
@@ -11,18 +14,19 @@ import AppLayout from "@/components/layout/AppLayout";
 import { initPosthog } from "@/lib/posthog";
 
 export default function App({ Component, pageProps }: AppProps) {
-  const router = useRouter();
+    const router = useRouter();
+    const supabase = createBrowserSupabaseClient();
 
-  useEffect(() => {
-    initPosthog();
-  }, []);
+    useEffect(() => {
+        initPosthog();
+    }, []);
 
-  return (
-    <AuthProvider>
-      <AppLayout>
-        <Component {...pageProps} />
-      </AppLayout>
-      <Toaster />
-    </AuthProvider>
-  );
+    return (
+        <SessionContextProvider supabaseClient={supabase}>
+            <AppLayout>
+                <Component {...pageProps} />
+            </AppLayout>
+            <Toaster />
+        </SessionContextProvider>
+    );
 }
