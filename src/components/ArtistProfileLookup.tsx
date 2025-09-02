@@ -16,6 +16,7 @@ export default function ArtistProfileLookup() {
             setError(null);
             return;
         }
+
         setLoading(true);
         setError(null);
         setArtist(null);
@@ -29,12 +30,13 @@ export default function ArtistProfileLookup() {
         if (error) {
             setError(error.message);
         } else {
-            setArtist(data?.[0] ?? null);
+            setArtist(data?.[0] ?? null); // ✅ Grab first row
         }
+
         setLoading(false);
     };
 
-    // 🔎 Search-as-you-type with debounce
+    // 🔎 Search-as-you-type with 400ms debounce
     useEffect(() => {
         const timer = setTimeout(() => {
             fetchArtist(query);
@@ -56,16 +58,13 @@ export default function ArtistProfileLookup() {
             <p className="text-gray-300 text-lg">Staff-only tools and dashboards</p>
 
             {/* Input + Button */}
-            <form
-                onSubmit={handleSubmit}
-                className="flex space-x-2 mb-6 max-w-md"
-            >
+            <form onSubmit={handleSubmit} className="flex space-x-2 mb-6 max-w-md">
                 <input
                     type="text"
                     placeholder="Enter artist name..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="flex-1 border rounded-lg px-3 py-2 text-black placeholder-gray-500"
+                    className="flex-1 border rounded-lg px-3 py-2 text-black placeholder-gray-500 bg-white"
                 />
                 <button
                     type="submit"
