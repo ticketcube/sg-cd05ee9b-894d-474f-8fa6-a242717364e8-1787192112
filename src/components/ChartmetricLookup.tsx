@@ -2,9 +2,16 @@
 
 import { useState } from 'react';
 
+interface ChartmetricArtist {
+  name: string;
+  id: string;
+  sp_followers?: number;
+  image_url?: string;
+}
+
 export default function ChartmetricLookup() {
   const [artistName, setArtistName] = useState('');
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<ChartmetricArtist | null>(null);
   const [error, setError] = useState('');
 
   const lookup = async () => {
