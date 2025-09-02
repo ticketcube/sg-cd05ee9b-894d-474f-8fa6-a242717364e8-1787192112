@@ -3,21 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Loader2, Database, RefreshCw, Calendar, Users, ListPlus, UserPlus, Search } from "lucide-react";
+import { withAdminGuard } from "@/components/guards/withAdminGuard";
 import { eventCacheService } from "@/services/eventCacheService";
 import { weeklyListService } from "@/services/weeklyListService";
 import { adminArtistService, Artist } from "@/services/adminArtistService";
 
-// Mock admin check - in a real app, this would involve a secure check
-const checkAdminAccess = async (email: string): Promise<boolean> => {
-  // Allow specific admin emails
-  const adminEmails = ["admin@otw.com", "alan@alanrakov.com"];
-  return adminEmails.includes(email.toLowerCase());
-};
-
-export default function AdminPage() {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(true);
+function AdminPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({ totalEvents: 0, activeArtists: 0, lastUpdated: null as string | null });
   const [refreshResult, setRefreshResult] = useState<string | null>(null);
@@ -32,16 +23,14 @@ export default function AdminPage() {
   const [artistResult, setArtistResult] = useState<string | null>(null);
   const [existingArtist, setExistingArtist] = useState<Artist | null>(null);
 
-  useEffect(() => {
-    // In a real app, you might check a token from localStorage here
-    setLoading(false);
-  }, []);
+  // API Stats
+  const [apiStats, setApiStats] = useState({ totalUsers: 0, totalEngagements: 0 });
+  const [loadingApiStats, setLoadingApiStats] = useState(false);
 
   useEffect(() => {
-    if (isAdmin) {
-      loadStats();
-    }
-  }, [isAdmin]);
+    loadStats();
+    loadApiStats();
+  }, []);
 
   const loadStats = async () => {
     try {
@@ -52,13 +41,56 @@ export default function AdminPage() {
     }
   };
 
-  const handleVerify = async () => {
-    setLoading(true);
-    const adminStatus = await checkAdminAccess(email);
-    setIsAdmin(adminStatus);
-    setLoading(false);
-    if (!adminStatus) {
-      alert("Access Denied. Please check the email and try again.");
+  const loadApiStats = async () => {
+    setLoadingApiStats(true);
+    try {
+      const response = await fetch("/api/admin/protected", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.stats) {
+          setApiStats(data.stats);
+        }
+      } else {
+        console.error("Failed to load API stats:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error loading API stats:", error);
+    } finally {
+      setLoadingApiStats(false);
+    }
+  };
+
+  const testAdminApi = async () => {
+    setLoadingApiStats(true);
+    try {
+      const response = await fetch("/api/admin/protected", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          operation: "admin_test"
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`✅ Admin API Test Successful!\n\nUser ID: ${data.user_id}\nRole: ${data.role}\nMessage: ${data.message}`);
+      } else {
+        const errorData = await response.json();
+        alert(`❌ Admin API Test Failed: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("Error testing admin API:", error);
+      alert(`❌ Admin API Test Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setLoadingApiStats(false);
     }
   };
 
@@ -187,51 +219,21 @@ export default function AdminPage() {
     setExistingArtist(null);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="p-8 max-w-md mx-auto mt-10">
-        <h1 className="text-2xl font-bold mb-4">Admin Access</h1>
-        <div className="space-y-4">
-          <Input
-            type="email"
-            placeholder="Enter admin email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleVerify()}
-          />
-          <Button onClick={handleVerify} className="w-full">
-            Verify Access
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-          <p className="text-muted-foreground mb-8">Welcome, Admin! Manage event cache and system operations.</p>
+      <h1 className="text-3xl font-bold mb-6">🔒 OTW Staff Admin Dashboard</h1>
+      <p className="text-muted-foreground mb-8">Welcome to the admin control panel! Manage events, artists, and system operations.</p>
 
-
-      
-      {/* Event Cache Stats */}
+      {/* API Stats */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Database className="w-5 h-5" />
-            Event Cache Statistics
+            System Statistics
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-blue-500" />
@@ -248,7 +250,20 @@ export default function AdminPage() {
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
-                <RefreshCw className="w-4 h-4 text-purple-500" />
+                <Users className="w-4 h-4 text-purple-500" />
+                <span className="text-sm text-muted-foreground">Total Users</span>
+              </div>
+              <div className="text-2xl font-bold">
+                {loadingApiStats ? (
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                ) : (
+                  apiStats.totalUsers
+                )}
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <RefreshCw className="w-4 h-4 text-orange-500" />
                 <span className="text-sm text-muted-foreground">Last Updated</span>
               </div>
               <div className="text-sm">
@@ -258,6 +273,38 @@ export default function AdminPage() {
                 }
               </div>
             </div>
+          </div>
+          
+          <div className="flex gap-2 mt-4">
+            <Button 
+              onClick={loadApiStats}
+              disabled={loadingApiStats}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              {loadingApiStats ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4" />
+              )}
+              Refresh Stats
+            </Button>
+            
+            <Button 
+              onClick={testAdminApi}
+              disabled={loadingApiStats}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              {loadingApiStats ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Database className="w-4 h-4" />
+              )}
+              Test Admin API
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -529,3 +576,6 @@ export default function AdminPage() {
     </div>
   );
 }
+
+// Export the page wrapped with the admin guard HOC
+export default withAdminGuard(AdminPage);

@@ -1,6 +1,6 @@
-
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect, useCallback } from "react";
+import { useUser } from "@supabase/auth-helpers-react";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 import { weeklyListService, EnrichedWeeklyListArtist, WeeklyListWithEnrichedArtists } from "@/services/weeklyListService";
 import weeklyVotingService, { SubmissionResult } from "@/services/weeklyVotingService";
 import { videoWatchService } from "@/services/videoWatchService";
@@ -32,7 +32,8 @@ interface VideoWatchStatus {
 }
 
 function WeeklyRatingsPageContent() {
-  const { user, loading: authLoading } = useAuth();
+  const user = useUser();
+  const { profile, loading: profileLoading } = useUserProfile();
   const [weeklyList, setWeeklyList] = useState<WeeklyListWithEnrichedArtists | null>(null);
   const [allWeeklyLists, setAllWeeklyLists] = useState<WeeklyList[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>("");
@@ -77,13 +78,13 @@ function WeeklyRatingsPageContent() {
   };
 
   const loadSpecificWeeklyList = useCallback(async (weekIdentifier: string) => {
-    if (!user) return;
+    if (!user || !profile) return;
 
     try {
       setLoadingSpecificList(true);
       setListError(null);
       
-      const list = await weeklyListService.getWeeklyListForUser(weekIdentifier, user.auth_id);
+      const list = await weeklyListService.getWeeklyListForUser(weekIdentifier, user.id);
       if (!list) {
         setListError("Selected weekly list not found");
         setWeeklyList(null);
@@ -92,7 +93,7 @@ function WeeklyRatingsPageContent() {
       setWeeklyList(list);
 
       // Load existing user votes
-      const userVotes = await weeklyVotingService.getUserVotes(user.auth_id, weekIdentifier); // ✅ FIXED: Use auth_id (string) instead of user.id
+      const userVotes = await weeklyVotingService.getUserVotes(user.id, weekIdentifier);
       const initialRatings = userVotes.map(vote => ({
         artistUuid: vote.artist_uuid,
         ticketInterest: (vote.quadrant_x || 0) * 50 + 50,
@@ -105,7 +106,7 @@ function WeeklyRatingsPageContent() {
       const watchStatuses: VideoWatchStatus[] = [];
       for (const artistData of list.artists) {
         try {
-          const watchData = await videoWatchService.getWatchStatus(user.auth_id, artistData.artist.uuid, weekIdentifier); // ✅ FIXED: Use artistData.artist.uuid instead of undefined artist.uuid
+          const watchData = await videoWatchService.getWatchStatus(user.id, artistData.artist.uuid, weekIdentifier);
           watchStatuses.push({
             artistUuid: artistData.artist.uuid,
             hasWatched: watchData.length > 0,
@@ -126,13 +127,13 @@ function WeeklyRatingsPageContent() {
       setLoading(false);
       setLoadingSpecificList(false);
     }
-  }, [user]);
+  }, [user, profile]);
 
   useEffect(() => {
-    if (selectedListId && user) {
+    if (selectedListId && user && profile) {
       loadSpecificWeeklyList(selectedListId);
     }
-  }, [selectedListId, user, loadSpecificWeeklyList]);
+  }, [selectedListId, user, profile, loadSpecificWeeklyList]);
 
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem('hasSeenPointsOnboarding');
@@ -190,7 +191,7 @@ function WeeklyRatingsPageContent() {
     return videoWatchStatuses.find(status => status.artistUuid === artistUuid);
   };
 
-  if (authLoading || loading) return (
+  if (profileLoading || loading) return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center">
       <Loader2 className="w-8 h-8 animate-spin" />
     </div>

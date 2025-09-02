@@ -1,13 +1,13 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { User, Loader2, Mail, Lock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 import SimpleCityInput from "@/components/SimpleCityInput";
 import { useRouter } from "next/router";
+import userProfileService from "@/services/userProfileService";
 
 interface City {
     id: number;
@@ -24,9 +24,6 @@ interface AuthDialogProps {
     description?: string;
 }
 
-
-
-
 export default function AuthDialog({
     isOpen,
     onClose,
@@ -37,10 +34,12 @@ export default function AuthDialog({
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [selectedCity, setSelectedCity] = useState < City | null > (null);
+    const [selectedCity, setSelectedCity] = useState<City | null>(null);
     const [customCity, setCustomCity] = useState("");
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
+    
+    const supabase = useSupabaseClient();
+    const { refreshProfile } = useUserProfile();
     const router = useRouter();
 
     const handleCityChange = (city: City | null, customInput?: string) => {
@@ -68,36 +67,50 @@ export default function AuthDialog({
         try {
             const cityName = selectedCity ? selectedCity.normalized_name : customCity.trim();
 
-            // Create account with Supabase
+            console.log("🔑 [AuthDialog] Creating account with Supabase Auth...");
+            
+            // Step 1: Create account with Supabase Auth
             const { data: authData, error: signUpError } = await supabase.auth.signUp({
                 email: email.trim(),
                 password: password.trim()
             });
 
             if (signUpError) {
-                console.error("Supabase sign-up error:", signUpError);
+                console.error("❌ [AuthDialog] Supabase sign-up error:", signUpError);
                 throw new Error(signUpError.message || "Failed to create account. Please try again.");
             }
 
             if (authData.user && authData.session) {
-                console.log("✅ Account created successfully with session");
+                console.log("✅ [AuthDialog] Account created successfully with session");
 
                 // Wait a moment to ensure auth state is consistent
                 await new Promise(resolve => setTimeout(resolve, 300));
 
                 try {
-                    // Create user profile - login function will get session directly if needed
-                    await login(username.trim(), email.trim(), cityName);
-                    console.log("✅ Profile created successfully");
+                    console.log("📝 [AuthDialog] Creating user profile...");
+                    
+                    // Step 2: Create user profile using the service
+                    await userProfileService.createUserProfile(
+                        authData.user.id, // auth_id
+                        username.trim(),
+                        email.trim(),
+                        cityName
+                    );
+                    
+                    console.log("✅ [AuthDialog] Profile created successfully");
+                    
+                    // Step 3: Refresh the profile context
+                    await refreshProfile();
 
                     if (onClose) {
                         onClose();
                     }
 
-                  await router.push("/discovery-dashboard");
+                    // Navigate to discovery dashboard
+                    await router.push("/discovery-dashboard");
 
                 } catch (profileError) {
-                    console.error("Profile creation error:", profileError);
+                    console.error("❌ [AuthDialog] Profile creation error:", profileError);
                     // Still close dialog since account was created
                     alert("Account created but there was an issue setting up your profile. Please try signing in.");
                     if (onClose) {
@@ -106,7 +119,7 @@ export default function AuthDialog({
                 }
             } else if (authData.user && !authData.session) {
                 // Handle case where email confirmation might be required
-                console.log("Account created but no session - email confirmation may be required");
+                console.log("ℹ️ [AuthDialog] Account created but no session - email confirmation may be required");
                 alert("Account created! Please check your email to confirm your account.");
                 if (onClose) {
                     onClose();
@@ -116,7 +129,7 @@ export default function AuthDialog({
             }
 
         } catch (error) {
-            console.error("Sign-up error:", error);
+            console.error("❌ [AuthDialog] Sign-up error:", error);
             alert(error instanceof Error ? error.message : "Failed to create account. Please try again.");
         } finally {
             setLoading(false);
@@ -131,27 +144,36 @@ export default function AuthDialog({
 
         setLoading(true);
         try {
-            // Sign in with Supabase
+            console.log("🔑 [AuthDialog] Signing in with Supabase Auth...");
+            
+            // Sign in with Supabase Auth
             const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
                 email: email.trim(),
                 password: password.trim()
             });
 
             if (signInError) {
-                console.error("Supabase sign-in error:", signInError);
+                console.error("❌ [AuthDialog] Supabase sign-in error:", signInError);
                 throw new Error(signInError.message || "Failed to sign in. Please check your credentials.");
             }
 
             if (authData.user) {
-                // The AuthContext will handle loading the user profile
+                console.log("✅ [AuthDialog] Successfully signed in");
+                
+                // The UserProfileContext will automatically load the profile
+                // when the user state changes, but we can trigger a refresh
+                await refreshProfile();
+                
                 if (onClose) {
                     onClose();
                 }
-              await router.push("/discovery-dashboard");
+                
+                // Navigate to discovery dashboard
+                await router.push("/discovery-dashboard");
             }
 
         } catch (error) {
-            console.error("Sign-in error:", error);
+            console.error("❌ [AuthDialog] Sign-in error:", error);
             alert(error instanceof Error ? error.message : "Failed to sign in. Please try again.");
         } finally {
             setLoading(false);
@@ -201,8 +223,6 @@ export default function AuthDialog({
                             <p className="text-sm text-gray-600">{description}</p>
                         </div>
                     )}
-
-                    
 
                     {/* Authentication Form */}
                     <div className="space-y-3">

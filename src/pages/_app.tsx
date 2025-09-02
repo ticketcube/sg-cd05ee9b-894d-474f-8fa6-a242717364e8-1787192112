@@ -7,6 +7,9 @@ import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { UserProfileProvider } from "@/contexts/UserProfileContext";
 
+// DEPRECATED: Keep during migration period for components not yet updated
+import AuthProvider from "@/contexts/AuthContext";
+
 import { Toaster } from "@/components/ui/toaster";
 import AppLayout from "@/components/layout/AppLayout";
 
@@ -25,10 +28,13 @@ export default function App({ Component, pageProps }: AppProps) {
     return (
         <SessionContextProvider supabaseClient={supabase}>
             <UserProfileProvider>
-                <AppLayout>
-                    <Component {...pageProps} />
-                </AppLayout>
-                <Toaster />
+                {/* MIGRATION NOTICE: AuthProvider is deprecated but kept for backward compatibility */}
+                <AuthProvider>
+                    <AppLayout>
+                        <Component {...pageProps} />
+                    </AppLayout>
+                    <Toaster />
+                </AuthProvider>
             </UserProfileProvider>
         </SessionContextProvider>
     );
