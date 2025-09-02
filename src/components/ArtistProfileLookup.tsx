@@ -29,11 +29,16 @@ export default function ArtistProfileLookup() {
     }
   };
 
-  return (
-    <div className="bg-white shadow p-6 rounded-xl">
-      <h2 className="text-xl font-semibold mb-4">OTW Artist Profile Database</h2>
+    return (
 
-      <form onSubmit={handleSearch} className="flex space-x-2 mb-4">
+      <div className="space-y-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-white">OTW Artist Profile Database</h2>
+            <p className="text-gray-300 text-lg">
+                Staff-only tools and dashboards
+            </p>
+
+            <div className="grid gap-6 md:grid-cols-2">
+                <form onSubmit={handleSearch} className="flex space-x-2 mb-4">
         <input
           type="text"
           placeholder="Enter artist name..."
@@ -86,6 +91,8 @@ export default function ArtistProfileLookup() {
           </div>
         </div>
       )}
-    </div>
+            </div>
+        </div>
+   
   );
 }
