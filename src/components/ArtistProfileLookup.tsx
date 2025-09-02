@@ -90,14 +90,14 @@ export default function ArtistProfileLookup() {
             {/* Result */}
             {artist && (
                 <div className="p-4 bg-gray-800 rounded-lg space-y-2 shadow-md">
-                    <h3 className="text-xl font-bold text-white">{artist.artist_name}</h3>
+                    <h3 className="text-xl font-bold text-white">{artists.artist_name}</h3>
                     <p className="text-gray-300">
-                        <strong>Home:</strong> {artist.artist_home || "N/A"}
+                        <strong>Home:</strong> {artists.artist_home || "N/A"}
                     </p>
                     <p className="text-gray-300">
-                        <strong>Genre:</strong> {artist.artist_genre || "N/A"}
+                        <strong>Genre:</strong> {artists.artist_genre || "N/A"}
                     </p>
-                    {artist.artist_videolink && (
+                    {artists.artist_videolink && (
                         <button
                             onClick={() => setShowVideo(true)}
                             className="text-blue-400 underline hover:text-blue-500"
