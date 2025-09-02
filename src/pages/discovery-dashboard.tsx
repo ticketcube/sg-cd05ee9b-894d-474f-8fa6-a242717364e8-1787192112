@@ -1,8 +1,7 @@
-
-
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/router';
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@supabase/auth-helpers-react";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 import AuthGuard from "@/components/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +15,8 @@ import StaffPortalTab from "@/components/StaffPortalTab";
 
 export default function DiscoveryDashboard() {
     const router = useRouter();
-    const { user, supabaseUser, profileExists, loading: authLoading } = useAuth();
+    const user = useUser();
+    const { profile, role, loading: profileLoading } = useUserProfile();
     const [userHistory, setUserHistory] = useState<UserEngagementHistory | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -33,27 +33,27 @@ export default function DiscoveryDashboard() {
     }, [router.query]);
 
     useEffect(() => {
-        if (authLoading) return;
+        if (profileLoading) return;
 
-        if (!supabaseUser) {
+        if (!user) {
             setError("Please sign in to access the discovery dashboard.");
             setLoading(false);
             return;
         }
 
-        if (profileExists === false) {
+        if (!profile) {
             setUserHistory(null);
-            setError(null);
+            setError("Please complete your profile setup first.");
             setLoading(false);
             return;
         }
 
-        if (profileExists === true && user?.auth_id && !userHistory) {
+        if (profile && user?.id && !userHistory) {
             const fetchUserHistory = async () => {
                 setLoading(true);
                 setError(null);
                 try {
-                    const history = await userProfileService.getUserEngagementHistory(user.auth_id);
+                    const history = await userProfileService.getUserEngagementHistory(user.id);
                     setUserHistory(history);
                 } catch (err) {
                     setError(err instanceof Error ? err.message : "Failed to load dashboard data");
@@ -66,9 +66,9 @@ export default function DiscoveryDashboard() {
         } else {
             setLoading(false);
         }
-    }, [supabaseUser, profileExists, authLoading, user?.auth_id]);
+    }, [user, profile, profileLoading, userHistory]);
 
-    if (authLoading || loading) {
+    if (profileLoading || loading) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
                 <div className="text-center">
@@ -80,7 +80,7 @@ export default function DiscoveryDashboard() {
         );
     }
 
-    if (!supabaseUser || error || !userHistory) {
+    if (!user || error || !userHistory) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
                 <div className="text-center max-w-md mx-auto p-4 md:p-6">
@@ -199,7 +199,7 @@ export default function DiscoveryDashboard() {
                                     <span className="hidden sm:inline">More Rewards</span>
                                     <span className="sm:hidden">Rewards</span>
                                 </button>
-                                {user?.role === 'otwstaff' && (
+                                {role === 'otwstaff' && (
                                     <button
                                         onClick={() => setActiveTab("staff")}
                                         className={`flex-1 px-3 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-medium transition-all text-sm md:text-base ${
@@ -220,7 +220,7 @@ export default function DiscoveryDashboard() {
                     {/* Tab Content */}
                     {activeTab === "discover" && <DiscoverMoreTab />}
                     {activeTab === "rewards" && <MoreRewardsTab totalPoints={total_points} weeksActive={weeksActive} totalVideos={totalVideos} />}
-                    {activeTab === "staff" && user?.role === 'otwstaff' && <StaffPortalTab />}
+                    {activeTab === "staff" && role === 'otwstaff' && <StaffPortalTab />}
                 </div>
             </div>
         </AuthGuard>
@@ -418,4 +418,3 @@ function MoreRewardsTab({ totalPoints, weeksActive, totalVideos }: { totalPoints
         </div>
     );
 }
-

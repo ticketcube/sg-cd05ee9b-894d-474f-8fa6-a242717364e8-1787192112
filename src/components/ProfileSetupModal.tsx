@@ -1,12 +1,12 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 import { Loader2, User, Mail, MapPin, CheckCircle } from "lucide-react";
+import userProfileService from "@/services/userProfileService";
 
 interface ProfileSetupModalProps {
   isOpen: boolean;
@@ -15,11 +15,14 @@ interface ProfileSetupModalProps {
 }
 
 export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: ProfileSetupModalProps) {
-  const { user, supabaseUser, login, refreshUserProfile } = useAuth();
+  const user = useUser();
+  const supabase = useSupabaseClient();
+  const { profile, refreshProfile } = useUserProfile();
+  
   const [formData, setFormData] = useState({
-    username: user?.username || supabaseUser?.email?.split('@')[0] || '',
-    email: user?.email || supabaseUser?.email || '',
-    city: user?.raw_city_input || ''
+    username: profile?.username || user?.email?.split('@')[0] || '',
+    email: profile?.email || user?.email || '',
+    city: profile?.raw_city_input || ''
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -33,13 +36,20 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
       return;
     }
 
+    if (!user?.id) {
+      setError("User authentication required");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
       console.log("🔧 Starting profile setup with form data:", formData);
       
-      await login(
+      // Create or update user profile
+      await userProfileService.createUserProfile(
+        user.id, // auth_id
         formData.username.trim(),
         formData.email.trim(),
         formData.city.trim() || undefined
@@ -52,19 +62,17 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
       setTimeout(async () => {
         try {
           console.log("🔄 Refreshing user profile after creation...");
-          await refreshUserProfile();
+          await refreshProfile();
           console.log("✅ Profile refresh call completed");
           
-          // Poll the auth context to ensure profileExists becomes true
+          // Poll the database to ensure profile exists
           let attempts = 0;
           const maxAttempts = 10; // 5 seconds total
           
-          const checkAuthState = async () => {
+          const checkProfileState = async () => {
             attempts++;
-            console.log(`🔍 Checking auth state (attempt ${attempts}/10)...`);
+            console.log(`🔍 Checking profile state (attempt ${attempts}/10)...`);
             
-            // Get fresh auth state by re-checking the auth context
-            // We need to check the actual auth context, not the closure variables
             try {
               // Get current session to verify auth state
               const { data: { session } } = await supabase.auth.getSession();
@@ -74,32 +82,27 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
                 return;
               }
 
-              // Make a quick API call to check if profile exists
-              const response = await fetch('/api/user/profile', {
-                method: 'GET',
-                headers: {
-                  'Authorization': `Bearer ${session.access_token}`,
-                  'Content-Type': 'application/json',
-                },
-              });
+              // Check if profile exists in database
+              const { data: profileData, error: profileError } = await supabase
+                .from('user_profiles')
+                .select('id, username, email')
+                .eq('auth_id', session.user.id)
+                .single();
 
-              if (response.ok) {
-                const result = await response.json();
-                if (result.profile?.id) {
-                  console.log("✅ Profile confirmed to exist in database - triggering success callback");
-                  if (onSuccess) {
-                    onSuccess();
-                  } else {
-                    onClose();
-                  }
-                  return;
+              if (!profileError && profileData?.id) {
+                console.log("✅ Profile confirmed to exist in database - triggering success callback");
+                if (onSuccess) {
+                  onSuccess();
+                } else {
+                  onClose();
                 }
+                return;
               }
 
               // Profile not ready yet
               if (attempts < maxAttempts) {
                 console.log(`⏳ Profile state not ready, retrying... (${attempts}/${maxAttempts})`);
-                setTimeout(checkAuthState, 500);
+                setTimeout(checkProfileState, 500);
               } else {
                 console.warn("⚠️ Max attempts reached, profile should be ready - triggering success");
                 if (onSuccess) {
@@ -110,9 +113,9 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
               }
 
             } catch (pollingError) {
-              console.error("❌ Error during auth state polling:", pollingError);
+              console.error("❌ Error during profile state polling:", pollingError);
               if (attempts < maxAttempts) {
-                setTimeout(checkAuthState, 500);
+                setTimeout(checkProfileState, 500);
               } else {
                 if (onSuccess) {
                   onSuccess();
@@ -123,8 +126,8 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
             }
           };
           
-          // Start checking auth state
-          await checkAuthState();
+          // Start checking profile state
+          await checkProfileState();
           
         } catch (refreshError) {
           console.error("❌ Profile refresh failed, falling back to success callback:", refreshError);
