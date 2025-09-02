@@ -21,7 +21,7 @@ export default function ArtistProfileLookup() {
       .select("artist_name, artist_home, artist_genre, artist_videolink")
       .ilike("artist_name", `%${query}%`)
       .limit(1)
-      .single();
+      .maybesingle();
 
     if (error) {
       setError(error.message);
