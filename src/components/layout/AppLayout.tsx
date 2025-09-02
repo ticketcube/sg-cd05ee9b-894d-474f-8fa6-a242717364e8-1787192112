@@ -1,8 +1,7 @@
 
 import { ReactNode, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, LogIn } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react"; import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -14,8 +13,13 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-  const { user, loading, logout } = useAuth();
-  const router = useRouter();
+
+    const supabase = useSupabaseClient();
+    const user = useUser();
+    const [loading, setLoading] = useState(false);
+
+
+    const router = useRouter();
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
 
   // Global error handler to redirect to home on any errors
@@ -46,8 +50,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   const handleSignOut = async () => {
     try {
-      await logout();
-      router.push("/");
+
+        setLoading(true);
+        await supabase.auth.signOut();
+        setLoading(false);
+
+        router.push("/");
     } catch (error) {
       console.error("Error signing out:", error);
       // On any error, redirect to index page
