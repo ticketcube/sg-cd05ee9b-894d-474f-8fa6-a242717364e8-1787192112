@@ -55,7 +55,6 @@ export default function ArtistLookupPage() {
         <div className="min-h-screen bg-gray-900 text-white">
             <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ArtistProfileLookup />
-                <ChartmetricLookup />
             </div>
         </div>
     );
