@@ -20,7 +20,29 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
 
     const router = useRouter();
-  const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
+    const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
+
+    const [profileRole, setProfileRole] = useState < string | null > (null);
+
+    useEffect(() => {
+        if (!user) {
+            setProfileRole(null);
+            return;
+        }
+
+        const fetchRole = async () => {
+            const { data, error } = await supabase
+                .from("user_profiles")
+                .select("role")
+                .eq("auth_id", user.id)
+                .single();
+
+            if (!error && data) setProfileRole(data.role);
+        };
+
+        fetchRole();
+    }, [user, supabase]);
+  
 
   // Global error handler to redirect to home on any errors
   useEffect(() => {
@@ -102,7 +124,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               className="h-8 md:h-10 w-auto"
               priority
                       />
-                      {user?.role === "otwstaff" && (
+                      {profileRole === "otwstaff" && (
                           <Badge variant="secondary" className="bg-blue-600 text-white text-xs ml-2">
                               OTW Staff
                           </Badge>
