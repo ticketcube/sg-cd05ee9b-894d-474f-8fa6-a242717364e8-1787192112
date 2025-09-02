@@ -73,7 +73,8 @@ export default function ArtistSubmissionPage() {
 
         try {
             // Step 1: Upload image to Supabase Storage
-            const filePath = `artists/${Date.now()}_${selectedFile.name}`;
+            const rawFileName = `${Date.now()}_${selectedFile.name}`;
+            const filePath = `artists/${encodeURIComponent(rawFileName)}`;
             const { error: uploadError } = await supabase.storage
                 .from("artistscontent") // your bucket name
                 .upload(filePath, selectedFile, {
