@@ -1,44 +1,53 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 export default function ArtistProfileLookup() {
   const supabase = createClientComponentClient();
   const [query, setQuery] = useState("");
-  const [artist, setArtist] = useState<any | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [artist, setArtist] = useState < any | null > (null);
+  const [error, setError] = useState < string | null > (null);
   const [showVideo, setShowVideo] = useState(false);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-
-    setError(null);
-    setArtist(null);
-
-    const { data, error } = await supabase
-      .from("artists")
-      .select("artist_name, artist_home, artist_genre, artist_videolink")
-      .ilike("artist_name", `%${query}%`)
-      .limit(1);
-
-    if (error) {
-      setError(error.message);
-    } else {
-      setArtist(data);
+  // 🔎 Search-as-you-type with debounce
+  useEffect(() => {
+    if (!query.trim()) {
+      setArtist(null);
+      setError(null);
+      return;
     }
-  };
 
-    return (
+    const timer = setTimeout(async () => {
+      setError(null);
+      setArtist(null);
 
-      <div className="space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-white">OTW Artist Profile Database</h2>
-            <p className="text-gray-300 text-lg">
-                Staff-only tools and dashboards
-            </p>
+      const { data, error } = await supabase
+        .from("artists")
+        .select("artist_name, artist_home, artist_genre, artist_videolink")
+        .ilike("artist_name", `%${query}%`)
+        .limit(1);
 
-            <div className="grid gap-6 md:grid-cols-2">
-                <form onSubmit={handleSearch} className="flex space-x-2 mb-4">
+      if (error) {
+        setError(error.message);
+      } else {
+        setArtist(data?.[0] ?? null);
+      }
+    }, 400); // 400ms debounce
+
+    return () => clearTimeout(timer);
+  }, [query, supabase]);
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl md:text-3xl font-bold text-white">
+        OTW Artist Profile Database
+      </h2>
+      <p className="text-gray-300 text-lg">
+        Staff-only tools and dashboards
+      </p>
+
+      {/* Input */}
+      <div className="flex space-x-2 mb-6 max-w-md">
         <input
           type="text"
           placeholder="Enter artist name..."
@@ -46,25 +55,34 @@ export default function ArtistProfileLookup() {
           onChange={(e) => setQuery(e.target.value)}
           className="flex-1 border rounded-lg px-3 py-2"
         />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-purple-600 text-black rounded-lg hover:bg-purple-700"
-        >
-          Search
-        </button>
-      </form>
+      </div>
 
-      {error && <p className="text-red-600">{error}</p>}
+      {/* Show query */}
+      {query && (
+        <p className="text-gray-400 italic">
+          Searching for: <span className="font-semibold">{query}</span>
+        </p>
+      )}
 
+      {/* Error */}
+      {error && <p className="text-red-500">{error}</p>}
+
+      {/* Result */}
       {artist && (
-        <div className="space-y-2">
-          <h3 className="text-lg font-bold">{artist.artist_name}</h3>
-          <p><strong>Home:</strong> {artist.artist_home || "N/A"}</p>
-          <p><strong>Genre:</strong> {artist.artist_genre || "N/A"}</p>
+        <div className="p-4 bg-gray-800 rounded-lg space-y-2 shadow-md">
+          <h3 className="text-xl font-bold text-white">
+            {artist.artist_name}
+          </h3>
+          <p className="text-gray-300">
+            <strong>Home:</strong> {artist.artist_home || "N/A"}
+          </p>
+          <p className="text-gray-300">
+            <strong>Genre:</strong> {artist.artist_genre || "N/A"}
+          </p>
           {artist.artist_videolink && (
             <button
               onClick={() => setShowVideo(true)}
-              className="text-blue-600 underline"
+              className="text-blue-400 underline hover:text-blue-500"
             >
               Watch Video
             </button>
@@ -74,10 +92,10 @@ export default function ArtistProfileLookup() {
 
       {/* Video Popup */}
       {showVideo && artist?.artist_videolink && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-4 max-w-lg w-full relative">
             <button
-              className="absolute top-2 right-2 text-gray-600"
+              className="absolute top-2 right-2 text-gray-600 hover:text-black"
               onClick={() => setShowVideo(false)}
             >
               ✕
@@ -91,8 +109,6 @@ export default function ArtistProfileLookup() {
           </div>
         </div>
       )}
-            </div>
-        </div>
-   
+    </div>
   );
 }
