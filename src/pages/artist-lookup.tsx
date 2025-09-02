@@ -16,7 +16,7 @@ export default function ArtistLookupPage() {
       const { data, error } = await supabase
         .from("staff_modules")
         .select("is_active")
-        .eq("slug", "artist_lookup")
+        .eq("slug", "artist-lookup")
         .single();
 
       if (error) {
