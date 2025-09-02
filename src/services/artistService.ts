@@ -44,7 +44,7 @@ export class ArtistService {
     const { data, error, count } = await supabase
       .from('artists')
       .select('*', { count: 'exact' })
-      .order('artist_name', { ascending: true })
+        .order('artist_otwcreateddate', { ascending: true })
       .range(from, to);
 
     if (error) {
