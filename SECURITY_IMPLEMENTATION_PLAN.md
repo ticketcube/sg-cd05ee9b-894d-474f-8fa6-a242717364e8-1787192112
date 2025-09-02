@@ -1,7 +1,7 @@
 # Complete Security Implementation Plan for OTWChart
 
 ## Overview
-This document outlines the complete security implementation plan to properly secure the OTWChart application using Row Level Security (RLS) policies while maintaining full functionality.
+This document outlines the complete security implementation plan to properly secure the OTWChart application using Row Level Security (RLS) policies and a secure API pattern for administrative actions.
 
 ## Current Status ✅
 - ✅ All user references converted to `auth_id` (UUID)
@@ -10,231 +10,138 @@ This document outlines the complete security implementation plan to properly sec
 - ✅ API endpoints properly configured
 - ✅ Deployment blocking TypeScript errors resolved
 
-## Security Implementation Steps
+---
 
-### Step 1: Enable RLS on Critical Tables
+## 1. API Security Strategy: The Admin Role Check Pattern
+
+This is the most critical part of our backend security. The `service_role` key bypasses all RLS policies, so it must only be used after verifying the user is an administrator. The user role is stored in the `user_profiles` table under the `role` column (e.g., `'otwstaff'`).
+
+**The Correct Pattern for Admin-Only API Routes:**
+
+1.  **Authenticate User**: Use `@supabase/auth-helpers-nextjs` to get the user from the secure cookie.
+2.  **Authorize User**: Using the **standard client**, query the `user_profiles` table to check if the user's role is `'otwstaff'`.
+3.  **Execute with Privileged Client**: Only if both checks pass, use the `supabaseAdmin` client (with the `service_role` key) to perform the action.
+
+**Example Admin API Route (`/pages/api/admin/some-action.ts`):**
+
+```typescript
+import { NextApiRequest, NextApiResponse } from 'next';
+import { createPagesServerClient } from '@supabase/auth-helpers-nextjs';
+import { supabaseAdmin } from '@/lib/supabaseAdmin'; // The privileged client
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // 1. Authenticate the user
+  const supabase = createPagesServerClient({ req, res });
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return res.status(401).json({ error: 'Unauthorized: You must be logged in.' });
+  }
+
+  // 2. Authorize the user by checking their role
+  const { data: profile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('auth_id', user.id)
+    .single();
+
+  if (profileError || !profile) {
+    return res.status(403).json({ error: 'Forbidden: User profile not found.' });
+  }
+
+  if (profile.role !== 'otwstaff') {
+    return res.status(403).json({ error: 'Forbidden: You do not have administrative privileges.' });
+  }
+
+  // 3. Execute privileged action
+  // Now it is safe to use the admin client
+  try {
+    const { data, error } = await supabaseAdmin.from('some_table').select('*');
+    if (error) throw error;
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error('Admin API error:', error);
+    return res.status(500).json({ error: 'Internal server error during admin operation.' });
+  }
+}
+```
+
+---
+
+## 2. Row-Level Security (RLS) Policies
+
+These policies apply to all queries made with the standard, non-admin Supabase client.
+
+### Step 2.1: Enable RLS on Critical Tables
 
 ```sql
--- Enable RLS on user-facing tables
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_engagements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE weekly_votes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE weekly_ratings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE top25_votes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_streaks ENABLE ROW LEVEL SECURITY;
-
--- Public read-only tables (no RLS needed)
--- artists, weekly_lists, weekly_list_artists, points_config
 ```
 
-### Step 2: User Profiles Policies
-
+### Step 2.2: `user_profiles` Policies
 ```sql
--- Users can only see and modify their own profile
+-- Users can view their own profile.
 CREATE POLICY "Users can view own profile" ON user_profiles
     FOR SELECT USING (auth.uid() = auth_id);
 
+-- Users can insert their own profile.
 CREATE POLICY "Users can insert own profile" ON user_profiles
     FOR INSERT WITH CHECK (auth.uid() = auth_id);
 
+-- Users can update their own profile.
 CREATE POLICY "Users can update own profile" ON user_profiles
     FOR UPDATE USING (auth.uid() = auth_id);
-
--- Service role bypass (for API endpoints)
-CREATE POLICY "Service role full access" ON user_profiles
-    FOR ALL USING (auth.role() = 'service_role');
 ```
 
-### Step 3: User Engagements Policies
-
+### Step 2.3: `user_engagements` Policies
 ```sql
--- Users can only see their own engagements
-CREATE POLICY "Users can view own engagements" ON user_engagements
-    FOR SELECT USING (auth.uid() = auth_id);
-
-CREATE POLICY "Users can insert own engagements" ON user_engagements
-    FOR INSERT WITH CHECK (auth.uid() = auth_id);
-
--- Service role bypass
-CREATE POLICY "Service role full access" ON user_engagements
-    FOR ALL USING (auth.role() = 'service_role');
+-- Users can manage their own engagements.
+CREATE POLICY "Users can manage own engagements" ON user_engagements
+    FOR ALL USING (auth.uid() = auth_id);
 ```
 
-### Step 4: Voting Tables Policies
-
+### Step 2.4: Voting & Ratings Tables Policies
 ```sql
--- Weekly votes
-CREATE POLICY "Users can view own votes" ON weekly_votes
-    FOR SELECT USING (auth.uid() = auth_id);
+-- Users can manage their own weekly votes.
+CREATE POLICY "Users can manage own weekly_votes" ON weekly_votes
+    FOR ALL USING (auth.uid() = auth_id);
 
-CREATE POLICY "Users can insert own votes" ON weekly_votes
-    FOR INSERT WITH CHECK (auth.uid() = auth_id);
-
-CREATE POLICY "Service role full access" ON weekly_votes
-    FOR ALL USING (auth.role() = 'service_role');
-
--- Top25 votes (same pattern)
-CREATE POLICY "Users can view own top25 votes" ON top25_votes
-    FOR SELECT USING (auth.uid() = auth_id);
-
-CREATE POLICY "Users can insert own top25 votes" ON top25_votes
-    FOR INSERT WITH CHECK (auth.uid() = auth_id);
-
-CREATE POLICY "Service role full access" ON top25_votes
-    FOR ALL USING (auth.role() = 'service_role');
+-- Users can manage their own weekly ratings.
+CREATE POLICY "Users can manage own weekly_ratings" ON weekly_ratings
+    FOR ALL USING (auth.uid() = auth_id);
 ```
+*(Apply similar policies to `top25_votes`, `user_streaks`, etc.)*
 
-### Step 5: User Streaks Policies
+**Note:** The `service_role` does not need explicit `CREATE POLICY` statements because it automatically bypasses all RLS checks.
 
-```sql
-CREATE POLICY "Users can view own streaks" ON user_streaks
-    FOR SELECT USING (auth.uid() = auth_id);
+---
 
-CREATE POLICY "Users can insert own streaks" ON user_streaks
-    FOR INSERT WITH CHECK (auth.uid() = auth_id);
+## 3. Frontend Security Strategy
 
-CREATE POLICY "Service role full access" ON user_streaks
-    FOR ALL USING (auth.role() = 'service_role');
-```
+- **Client-Side Supabase Usage**: The frontend will always use the regular client with the `anon` key. RLS policies automatically filter all data, ensuring users only see what they are permitted to.
+- **Admin Operations**: Any administrative action (e.g., viewing all users, refreshing data) MUST be done by calling a dedicated admin API endpoint that implements the secure pattern described in Section 1.
 
-### Step 6: Public Read-Only Tables (No RLS)
+---
 
-These tables should remain public for read access:
-- `artists` - Public artist data
-- `weekly_lists` - Public weekly lists
-- `weekly_list_artists` - Public weekly list contents  
-- `points_config` - Public points configuration
+## 4. Testing & Rollback
 
-## API Security Strategy
+### Testing Strategy
+1.  **Admin API Tests**: Create tests to ensure non-admins are correctly blocked with a 403 error from admin endpoints.
+2.  **RLS Functional Tests**: As a logged-in user, attempt to fetch another user's data via the client-side API and confirm it fails.
+3.  **Positive Case Tests**: Confirm that users can still view and edit their own data and that admins can successfully perform privileged actions.
 
-### Current API Endpoints Status:
+### Rollback Plan
+If critical issues arise, RLS can be temporarily disabled on a per-table basis.
+`ALTER TABLE table_name DISABLE ROW LEVEL SECURITY;`
 
-#### ✅ Secure Endpoints (Using Service Role)
-- `/api/user/profile-by-auth-id.ts` - Uses service role properly
-- `/api/user/secure-profile.ts` - Uses service role properly
-- `/api/user/secure-profile-by-id.ts` - Uses service role properly
+---
+## Summary of Changes
 
-#### 🔧 Needs Review Endpoints
-- `/api/user/engagement.ts` - Needs service role configuration
-- `/api/voting/submit.ts` - Needs service role configuration
-- `/api/weekly-lists/active.ts` - Should use service role for consistency
-
-### Service Role Implementation Pattern
-
-```typescript
-// Correct pattern for API endpoints
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
-
-// Use supabaseAdmin for all database operations in API routes
-```
-
-## Frontend Security Strategy
-
-### Client-Side Supabase Usage
-- ✅ Frontend uses regular client with anon key
-- ✅ RLS policies will automatically filter data
-- ✅ Service role operations handled via API endpoints
-
-### Authentication Flow
-- ✅ User signs in via Supabase Auth
-- ✅ `auth.uid()` available in RLS policies
-- ✅ Client-side operations automatically secured
-
-## Testing Strategy
-
-### Step 1: Enable RLS Gradually
-1. Start with `user_profiles` table only
-2. Test profile creation and updates
-3. Verify service role bypass works
-4. Add remaining tables one by one
-
-### Step 2: Functional Testing
-1. User registration and profile creation
-2. Video watching and points earning
-3. Weekly ratings submission
-4. Profile viewing and updates
-5. Top100 voting
-
-### Step 3: Security Testing
-1. Attempt to access other users' data
-2. Test service role endpoints
-3. Verify RLS policy effectiveness
-4. Test with multiple users
-
-## Rollback Plan
-
-If issues arise during RLS implementation:
-
-```sql
--- Quick disable RLS
-ALTER TABLE user_profiles DISABLE ROW LEVEL SECURITY;
-ALTER TABLE user_engagements DISABLE ROW LEVEL SECURITY;
--- etc...
-
--- Remove specific problematic policies
-DROP POLICY "policy_name" ON table_name;
-```
-
-## Monitoring and Maintenance
-
-### Key Metrics to Monitor
-- User registration success rate
-- Profile creation success rate  
-- Points system functionality
-- Video watch tracking
-- Voting system operation
-
-### Performance Considerations
-- RLS policies may impact query performance
-- Monitor slow queries after implementation
-- Consider indexes on `auth_id` columns if not already present
-
-## Implementation Timeline
-
-### Phase 1: Core Security (Day 1)
-- Enable RLS on user_profiles
-- Test profile operations
-- Verify service role bypass
-
-### Phase 2: Engagement Security (Day 2) 
-- Enable RLS on user_engagements
-- Test points system
-- Verify video watching
-
-### Phase 3: Voting Security (Day 3)
-- Enable RLS on voting tables
-- Test all voting features
-- Complete security testing
-
-### Phase 4: Final Verification (Day 4)
-- End-to-end testing
-- Performance optimization
-- Documentation updates
-
-## Success Criteria
-
-- ✅ All user data properly secured with RLS
-- ✅ Service role operations work correctly
-- ✅ No functionality regression
-- ✅ Good application performance
-- ✅ Security policies properly tested
-
-## Next Steps
-
-1. **Review this plan** - Ensure all requirements covered
-2. **Set up test environment** - Clone production for testing
-3. **Implement Phase 1** - Start with user_profiles RLS
-4. **Progressive rollout** - Enable security incrementally
-5. **Monitor and adjust** - Watch for issues and performance impact
-
-The key to success is implementing RLS policies gradually while maintaining the service role bypass pattern for API endpoints. This ensures security without breaking functionality.
+-   This plan now mandates a **three-step check (Authenticate -> Authorize -> Execute)** for all API routes that use the `service_role` key.
+-   It provides a concrete code example for a secure admin API route.
+-   It clarifies that RLS policies are for standard users, and admins will use secure API endpoints to bypass them when necessary.
