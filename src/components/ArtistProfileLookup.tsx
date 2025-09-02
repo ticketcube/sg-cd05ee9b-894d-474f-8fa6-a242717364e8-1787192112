@@ -14,7 +14,7 @@ export default function ArtistProfileLookup() {
         if (!search.trim()) {
             setArtist(null);
             setError(null);
-            return;
+            return; 
         }
 
         setLoading(true);
