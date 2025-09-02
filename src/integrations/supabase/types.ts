@@ -280,6 +280,42 @@ export type Database = {
                     },
                 ]
             }
+            staff_modules: {
+                Row: {
+                    color: string | null
+                    created_at: string | null
+                    description: string | null
+                    icon: string | null
+                    id: string
+                    is_active: boolean | null
+                    name: string
+                    slug: string
+                    sort_order: number | null
+                }
+                Insert: {
+                    color?: string | null
+                    created_at?: string | null
+                    description?: string | null
+                    icon?: string | null
+                    id?: string
+                    is_active?: boolean | null
+                    name: string
+                    slug: string
+                    sort_order?: number | null
+                }
+                Update: {
+                    color?: string | null
+                    created_at?: string | null
+                    description?: string | null
+                    icon?: string | null
+                    id?: string
+                    is_active?: boolean | null
+                    name?: string
+                    slug?: string
+                    sort_order?: number | null
+                }
+                Relationships: []
+            }
             ticket_entries: {
                 Row: {
                     auth_id: string
@@ -306,6 +342,7 @@ export type Database = {
             }
             ticketcubes: {
                 Row: {
+                    auth_id: string
                     created_at: string | null
                     cube_type: string | null
                     description: string | null
@@ -319,10 +356,10 @@ export type Database = {
                     title: string
                     updated_at: string | null
                     updates_remaining: number | null
-                    user_id: string | null
                     venue: string | null
                 }
                 Insert: {
+                    auth_id: string
                     created_at?: string | null
                     cube_type?: string | null
                     description?: string | null
@@ -336,10 +373,10 @@ export type Database = {
                     title: string
                     updated_at?: string | null
                     updates_remaining?: number | null
-                    user_id?: string | null
                     venue?: string | null
                 }
                 Update: {
+                    auth_id?: string
                     created_at?: string | null
                     cube_type?: string | null
                     description?: string | null
@@ -353,7 +390,6 @@ export type Database = {
                     title?: string
                     updated_at?: string | null
                     updates_remaining?: number | null
-                    user_id?: string | null
                     venue?: string | null
                 }
                 Relationships: []
@@ -760,6 +796,21 @@ export type Database = {
             insert_ticket_entry: {
                 Args: { p_email: string; p_user_id?: string; p_username: string }
                 Returns: Json
+            }
+            is_otwstaff: {
+                Args: Record<PropertyKey, never>
+                Returns: boolean
+            }
+            upsert_artist_and_add_to_weekly_list: {
+                Args: {
+                    p_artist_genre: string
+                    p_artist_home: string
+                    p_artist_image: string
+                    p_artist_name: string
+                    p_artist_videolink: string
+                    p_weekly_list_id: number
+                }
+                Returns: string
             }
         }
         Enums: {
