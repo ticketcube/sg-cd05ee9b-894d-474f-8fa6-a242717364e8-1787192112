@@ -53,9 +53,9 @@ export default function ArtistLookupPage() {
     // Active module
     return (
         <div className="min-h-screen bg-gray-900 text-white">
-           
+            <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <ArtistProfileLookup />
-            
+            </div>
         </div>
     );
 }
