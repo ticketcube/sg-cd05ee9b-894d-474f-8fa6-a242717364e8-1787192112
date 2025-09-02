@@ -14,7 +14,7 @@ export default function ArtistLookupPage() {
   useEffect(() => {
     const checkModule = async () => {
       const { data, error } = await supabase
-        .from("otw_modules")
+        .from("staff_modules")
         .select("is_active")
         .eq("key", "artist_lookup")
         .single();
