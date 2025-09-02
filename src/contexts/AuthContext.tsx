@@ -1,3 +1,24 @@
+/**
+ * @deprecated ❌ THIS CONTEXT IS BEING REPLACED
+ * 
+ * =================================================================
+ * 🚨 MIGRATION NOTICE: THIS FILE IS BEING PHASED OUT 🚨
+ * =================================================================
+ * 
+ * This AuthContext is being replaced with Supabase Auth Helpers.
+ * 
+ * NEW PATTERN:
+ * - Use `useUser()` from '@supabase/auth-helpers-react' instead of `useAuth().supabaseUser`
+ * - Use `useUserProfile()` from '@/contexts/UserProfileContext' instead of `useAuth().user`
+ * - Use `useSupabaseClient()` from '@supabase/auth-helpers-react' for auth operations
+ * 
+ * MIGRATION GUIDE:
+ * Old: const { user, supabaseUser, isAuthenticated } = useAuth();
+ * New: const user = useUser(); const { profile, role } = useUserProfile();
+ * 
+ * DO NOT ADD NEW USAGE OF THIS CONTEXT!
+ * =================================================================
+ */
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
