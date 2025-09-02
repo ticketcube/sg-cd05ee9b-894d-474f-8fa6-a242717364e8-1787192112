@@ -1,7 +1,7 @@
 
 import { ReactNode, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react"; import { useAuth } from "@/contexts/AuthContext";
+import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react"; 
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
