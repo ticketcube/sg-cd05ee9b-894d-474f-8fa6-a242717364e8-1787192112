@@ -784,7 +784,6 @@ export type Database = {
                 Args: { user_id_to_update: string; points_to_add: number }
                 Returns: undefined
             }
-            }
             insert_ticket_entry: {
                 Args: { p_email: string; p_user_id?: string; p_username: string }
                 Returns: Json
