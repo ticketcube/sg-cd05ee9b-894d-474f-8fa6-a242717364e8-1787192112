@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     switch (req.method) {
       case 'GET':
-        // ✅ NEW: Handle GET requests with optional user_id parameter
+        // Handle GET requests with optional user_id parameter
         const requestedUserId = req.query.user_id as string;
         const targetUserId = requestedUserId || userId; // Use query param or current user
         
@@ -33,45 +33,88 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         if (!profile) {
-          return res.status(404).json({ error: 'Profile not found' });
+          return res.status(404).json({ 
+            error: 'Profile not found',
+            details: 'Profile should have been created automatically. Please contact support.'
+          });
         }
 
         return res.status(200).json(profile);
 
       case 'POST':
-        // ✅ EXISTING: Create profile functionality
-        const { username, email, city } = req.body;
-
-        if (!username || !email) {
-          return res.status(400).json({ error: 'Username and email are required' });
-        }
-
-        const { data: newProfile, error: createError } = await supabase
-          .from('user_profiles')
-          .insert({
-            user_id: userId,
-            username: username.trim(),
-            email: email.trim(),
-            raw_city_input: city?.trim() || null,
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          console.error('[API] Error creating profile:', createError);
-          return res.status(500).json({ error: 'Failed to create profile' });
-        }
-
-        return res.status(201).json({ profile: newProfile });
+        // ❌ REMOVED: Profile creation is now handled by database trigger
+        // This endpoint now only handles profile updates
+        return res.status(405).json({ 
+          error: 'Profile creation is handled automatically. Use PUT to update profile data.',
+          details: 'Profiles are created automatically when users sign up. Use PUT method to update profile information.'
+        });
 
       case 'PUT':
-        // ✅ EXISTING: Update profile functionality
+        // Update profile functionality - enhanced to work with trigger-created profiles
         const { username: updateUsername, email: updateEmail, city: updateCity } = req.body;
         
+        // First, check if profile exists (it should, thanks to the database trigger)
+        const { data: existingProfile, error: checkError } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+
+        if (checkError) {
+          if (checkError.code === 'PGRST116') {
+            console.error('[API] Profile not found for user_id:', userId);
+            return res.status(404).json({ 
+              error: 'Profile not found', 
+              details: 'Profile should have been created automatically. Please contact support.' 
+            });
+          }
+          console.error('[API] Error checking existing profile:', checkError);
+          return res.status(500).json({ error: 'Database error during profile check' });
+        }
+
+        if (!existingProfile) {
+          console.error('[API] No profile found for user_id:', userId);
+          return res.status(404).json({ 
+            error: 'Profile not found', 
+            details: 'Profile should have been created automatically. Please contact support.' 
+          });
+        }
+
+        // Handle city lookup if provided
+        let cityId: number | null = existingProfile.city_id;
+        if (updateCity && updateCity.trim()) {
+          const { data: cityData } = await supabase
+            .from('city_latlong')
+            .select('id')
+            .eq('normalized_name', updateCity.trim().toLowerCase())
+            .single();
+          
+          cityId = cityData?.id || null;
+        }
+
+        // Prepare update data - only update fields that are provided
         const updateData: any = {};
-        if (updateUsername !== undefined) updateData.username = updateUsername.trim();
-        if (updateEmail !== undefined) updateData.email = updateEmail.trim();
-        if (updateCity !== undefined) updateData.raw_city_input = updateCity?.trim() || null;
+        if (updateUsername !== undefined && updateUsername.trim()) {
+          updateData.username = updateUsername.trim();
+        }
+        if (updateEmail !== undefined && updateEmail.trim()) {
+          updateData.email = updateEmail.trim();
+        }
+        if (updateCity !== undefined) {
+          updateData.city_id = cityId;
+          updateData.raw_city_input = updateCity?.trim() || null;
+        }
+
+        // If no update data provided, just return the existing profile
+        if (Object.keys(updateData).length === 0) {
+          console.log('[API] No update data provided, returning existing profile');
+          return res.status(200).json({ 
+            profile: existingProfile,
+            message: 'No updates needed' 
+          });
+        }
+
+        console.log('[API] Updating profile with data:', updateData);
 
         const { data: updatedProfile, error: updateError } = await supabase
           .from('user_profiles')
@@ -82,13 +125,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (updateError) {
           console.error('[API] Error updating profile:', updateError);
-          return res.status(500).json({ error: 'Failed to update profile' });
+          return res.status(500).json({ 
+            error: 'Failed to update profile',
+            details: updateError.message
+          });
         }
 
-        return res.status(200).json({ profile: updatedProfile });
+        if (!updatedProfile) {
+          console.error('[API] No profile returned after update');
+          return res.status(500).json({ error: 'Profile update failed - no data returned' });
+        }
+
+        return res.status(200).json({ 
+          profile: updatedProfile,
+          message: 'Profile updated successfully'
+        });
 
       case 'DELETE':
-        // ✅ EXISTING: Delete profile functionality
+        // Delete profile functionality - keeping as is
         const { error: deleteError } = await supabase
           .from('user_profiles')
           .delete()
@@ -102,7 +156,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(204).end();
 
       default:
-        res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
+        res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
         return res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
