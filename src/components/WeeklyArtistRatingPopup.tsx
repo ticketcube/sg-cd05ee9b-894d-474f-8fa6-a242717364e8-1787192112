@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Timer, CheckCircle, Loader2, Eye, Ticket, Users } from "lucide-react";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@supabase/auth-helpers-react";
 import { videoWatchService } from "@/services/videoWatchService";
 import weeklyVotingService, { SubmissionResult } from "@/services/weeklyVotingService";
 import { pointsConfigService } from "@/services/pointsConfigService";
@@ -42,7 +42,7 @@ export default function WeeklyArtistRatingPopup({
   onVideoPointsAwarded,
   onSubmissionSuccess,
 }: WeeklyArtistRatingPopupProps) {
-  const { user } = useAuth();
+  const user = useUser();
   const [ticketInterest, setTicketInterest] = useState(50);
   const [shareInterest, setShareInterest] = useState(50);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);

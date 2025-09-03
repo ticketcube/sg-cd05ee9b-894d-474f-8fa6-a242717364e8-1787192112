@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Timer, Trophy, X } from "lucide-react";
 import ArtistVideoPlayer from "./ArtistVideoPlayer";
 import userProfileService from "@/services/userProfileService";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@supabase/auth-helpers-react";
 import type { Artist, VibeArtist } from "@/types/artists";
 
 interface WeeklyArtistPopupProps {
@@ -37,7 +37,7 @@ export function WeeklyArtistPopup({
   showBio = true,
   showVibes = false
 }: WeeklyArtistPopupProps) {
-  const { user } = useAuth();
+  const user = useUser();
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [watchTimer, setWatchTimer] = useState(0);
   const [isWatching, setIsWatching] = useState(false);

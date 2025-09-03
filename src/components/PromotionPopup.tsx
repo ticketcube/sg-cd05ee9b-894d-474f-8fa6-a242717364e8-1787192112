@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@supabase/auth-helpers-react";
 
 interface PromotionPopupProps {
   onRegisterClick: () => void;
@@ -17,7 +17,7 @@ interface PromotionPopupProps {
 
 export default function PromotionPopup({ onRegisterClick }: PromotionPopupProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useAuth();
+  const user = useUser();
 
   useEffect(() => {
     if (user) {
