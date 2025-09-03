@@ -9,13 +9,12 @@ import { UserProfileProvider } from "@/contexts/UserProfileContext";
 
 import { Toaster } from "@/components/ui/toaster";
 import AppLayout from "@/components/layout/AppLayout";
-import type { Database } from "@/integrations/supabase/types";
 
 // ✅ PostHog
 import { initPosthog } from "@/lib/posthog";
 
-// Create a singleton Supabase client instance
-const supabaseClient = createBrowserSupabaseClient<Database>();
+// Create a singleton Supabase client instance without explicit Database typing
+const supabaseClient = createBrowserSupabaseClient();
 
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
