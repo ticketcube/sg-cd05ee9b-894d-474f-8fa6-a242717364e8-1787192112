@@ -5,7 +5,7 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 interface Comment {
   id: number;
-  auth_id: string;
+  user_id: string;
   parent_comment_id: number | null;
   title: string | null;
   content: string;
@@ -57,7 +57,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
     const { data: userProfile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('role')
-      .eq('auth_id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (profileError) {
@@ -77,7 +77,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
     // ✅ FIXED: First try a simple query without join to test table existence
     const { data: simpleComments, error: simpleError } = await supabaseAdmin
       .from('product_roadmap_comments')
-      .select('id, auth_id, parent_comment_id, title, content, created_at, updated_at')
+      .select('id, user_id, parent_comment_id, title, content, created_at, updated_at')
       .limit(1);
 
     if (simpleError) {
@@ -96,7 +96,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
       .from('product_roadmap_comments')
       .select(`
         id,
-        auth_id,
+        user_id,
         parent_comment_id,
         title,
         content,
@@ -115,7 +115,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
       // Get comments without join first
       const { data: rawComments, error: rawError } = await supabaseAdmin
         .from('product_roadmap_comments')
-        .select('id, auth_id, parent_comment_id, title, content, created_at, updated_at')
+        .select('id, user_id, parent_comment_id, title, content, created_at, updated_at')
         .order('created_at', { ascending: false });
         
       if (rawError) {
@@ -134,17 +134,17 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
       }
       
       // Get user profiles separately
-      const uniqueAuthIds = [...new Set(rawComments.map(c => c.auth_id))];
+      const uniqueUserIds = [...new Set(rawComments.map(c => c.user_id))];
       const { data: profiles, error: profilesError } = await supabaseAdmin
         .from('user_profiles')
-        .select('auth_id, username, role')
-        .in('auth_id', uniqueAuthIds);
+        .select('user_id, username, role')
+        .in('user_id', uniqueUserIds);
         
       console.log('✅ [API] User profiles fetched:', profiles?.length || 0);
       
       // Merge the data
       const mergedComments = rawComments.map(comment => {
-        const profile = profiles?.find(p => p.auth_id === comment.auth_id);
+        const profile = profiles?.find(p => p.user_id === comment.user_id);
         return {
           ...comment,
           user_profiles: profile ? {
@@ -172,7 +172,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
       processedComments.forEach((comment: any) => {
         const commentObj: Comment = {
           id: comment.id,
-          auth_id: comment.auth_id,
+          user_id: comment.user_id,
           parent_comment_id: comment.parent_comment_id,
           title: comment.title,
           content: comment.content,
@@ -235,7 +235,7 @@ async function handleGetComments(req: NextApiRequest, res: NextApiResponse) {
     processedComments.forEach((comment: any) => {
       const commentObj: Comment = {
         id: comment.id,
-        auth_id: comment.auth_id,
+        user_id: comment.user_id,
         parent_comment_id: comment.parent_comment_id,
         title: comment.title,
         content: comment.content,
@@ -309,7 +309,7 @@ async function handleCreateComment(req: NextApiRequest, res: NextApiResponse) {
     const { data: userProfile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('role')
-      .eq('auth_id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (profileError || !userProfile || userProfile.role !== 'otwstaff') {
@@ -333,14 +333,14 @@ async function handleCreateComment(req: NextApiRequest, res: NextApiResponse) {
     const { data: newComment, error: insertError } = await supabaseAdmin
       .from('product_roadmap_comments')
       .insert({
-        auth_id: user.id,
+        user_id: user.id,
         title: parent_comment_id ? null : title, // Only top-level posts have titles
         content: content.trim(),
         parent_comment_id: parent_comment_id || null
       })
       .select(`
         id,
-        auth_id,
+        user_id,
         parent_comment_id,
         title,
         content,

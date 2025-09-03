@@ -25,11 +25,11 @@ export async function verifyUserOwnership(authId: string, resourceUserId: string
   
   const { data: profile } = await supabaseAdmin
     .from('user_profiles')
-    .select('auth_id')
+    .select('user_id')
     .eq('id', resourceUserId)
     .single();
     
-  return profile?.auth_id === authId;
+  return profile?.user_id === authId;
 }
 
 // Helper to verify admin access
@@ -48,7 +48,7 @@ export async function getUserProfileByAuthId(authId: string) {
   const { data: profile } = await supabaseAdmin
     .from('user_profiles')
     .select('*')
-    .eq('auth_id', authId)
+    .eq('user_id', authId)
     .single();
     
   return profile;

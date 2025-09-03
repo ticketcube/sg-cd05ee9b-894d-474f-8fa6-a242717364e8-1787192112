@@ -47,7 +47,7 @@ async function handleUpdateComment(req: NextApiRequest, res: NextApiResponse, co
     const { data: userProfile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('role')
-      .eq('auth_id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (profileError || !userProfile || userProfile.role !== 'otwstaff') {
@@ -57,7 +57,7 @@ async function handleUpdateComment(req: NextApiRequest, res: NextApiResponse, co
     // Verify the comment exists and belongs to the user
     const { data: existingComment, error: commentError } = await supabaseAdmin
       .from('product_roadmap_comments')
-      .select('auth_id, parent_comment_id')
+      .select('user_id, parent_comment_id')
       .eq('id', commentId)
       .single();
 
@@ -65,7 +65,7 @@ async function handleUpdateComment(req: NextApiRequest, res: NextApiResponse, co
       return res.status(404).json({ error: 'Comment not found' });
     }
 
-    if (existingComment.auth_id !== user.id) {
+    if (existingComment.user_id !== user.id) {
       return res.status(403).json({ error: 'You can only edit your own comments' });
     }
 
@@ -121,7 +121,7 @@ async function handleDeleteComment(req: NextApiRequest, res: NextApiResponse, co
     const { data: userProfile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('role')
-      .eq('auth_id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (profileError || !userProfile || userProfile.role !== 'otwstaff') {
@@ -131,7 +131,7 @@ async function handleDeleteComment(req: NextApiRequest, res: NextApiResponse, co
     // Verify the comment exists
     const { data: existingComment, error: commentError } = await supabaseAdmin
       .from('product_roadmap_comments')
-      .select('id, auth_id')
+      .select('id, user_id')
       .eq('id', commentId)
       .single();
 
@@ -142,7 +142,7 @@ async function handleDeleteComment(req: NextApiRequest, res: NextApiResponse, co
     // Allow deletion if user owns the comment OR if user has admin privileges
     // For now, we'll allow staff to delete their own comments
     // Admin deletion can be added later if needed
-    if (existingComment.auth_id !== user.id) {
+    if (existingComment.user_id !== user.id) {
       return res.status(403).json({ error: 'You can only delete your own comments' });
     }
 
