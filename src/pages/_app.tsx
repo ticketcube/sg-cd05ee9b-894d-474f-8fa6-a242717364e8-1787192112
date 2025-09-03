@@ -1,9 +1,9 @@
 import type { AppProps } from "next/app";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import "@/styles/globals.css";
 
-import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { UserProfileProvider } from "@/contexts/UserProfileContext";
 
@@ -13,11 +13,9 @@ import AppLayout from "@/components/layout/AppLayout";
 // ✅ PostHog
 import { initPosthog } from "@/lib/posthog";
 
-// Create a singleton Supabase client instance without explicit Database typing
-const supabaseClient = createBrowserSupabaseClient();
-
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
+    const [supabaseClient] = useState(() => createPagesBrowserClient());
 
     useEffect(() => {
         initPosthog();
