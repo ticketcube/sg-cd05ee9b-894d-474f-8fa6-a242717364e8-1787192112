@@ -11,7 +11,7 @@ import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
 
 type UserProfile = {
     id: string;
-    auth_id: string;
+    user_id: string;
     username?: string;
     role?: string;
     email?: string;
@@ -57,7 +57,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
             const { data, error } = await supabase
                 .from("user_profiles")
                 .select("*")
-                .eq("auth_id", user.id)
+                .eq("user_id", user.id)
                 .single();
 
             if (error) throw error;
