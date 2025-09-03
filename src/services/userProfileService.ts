@@ -132,7 +132,7 @@ const userProfileService = {
 
     /** Record a user engagement and add points - ✅ FIXED: Now uses API to ensure service role access */
     async recordEngagement(
-        authId: string,
+        userId: string, // ✅ FIXED: Changed from authId to userId
         engagementType: EngagementType,
         pointsEarned: number,
         weekIdentifier: string,
@@ -146,7 +146,7 @@ const userProfileService = {
                 throw new Error('No valid session found for recording engagement');
             }
 
-            // Call the engagement API endpoint which uses service role
+            // ✅ FIXED: Call the engagement API endpoint with userId
             const response = await fetch('/api/user/engagement', {
                 method: 'POST',
                 headers: {
@@ -154,7 +154,7 @@ const userProfileService = {
                     'Authorization': `Bearer ${session.access_token}`
                 },
                 body: JSON.stringify({
-                    authId,
+                    userId,  // ✅ FIXED: Use userId instead of authId
                     engagementType,
                     pointsEarned,
                     weekIdentifier,
@@ -174,7 +174,7 @@ const userProfileService = {
             // Return the engagement data in the expected format
             return {
                 id: result.engagement?.id || Date.now(), // Fallback ID
-                auth_id: authId,
+                user_id: userId,  // ✅ FIXED: Use user_id instead of auth_id
                 engagement_type: engagementType,
                 points_earned: pointsEarned,
                 week_identifier: weekIdentifier,
@@ -189,19 +189,19 @@ const userProfileService = {
     },
 
     /** Get user's engagement history with weekly summaries */
-    async getUserEngagementHistory(authId: string): Promise<UserEngagementHistory> {
-        const userProfile = await this.getUserProfile(authId);
+    async getUserEngagementHistory(userId: string): Promise<UserEngagementHistory> { // ✅ FIXED: Changed from authId to userId
+        const userProfile = await this.getUserProfile(userId);
         if (!userProfile) throw new Error("User profile not found");
 
         const { data: engagements, error } = await supabase
             .from("user_engagements")
             .select("*")
-            .eq("auth_id", authId)
+            .eq("user_id", userId)  // ✅ FIXED: Use user_id column
             .order("created_at", { ascending: false });
 
         if (error) throw error;
 
-        const weeklyMap = new Map < string, UserEngagementSummary> ();
+        const weeklyMap = new Map<string, UserEngagementSummary>();
         let calculatedTotalPoints = 0; // ✅ NEW: Track the real total from engagements
         
         engagements?.forEach(e => {
@@ -235,11 +235,11 @@ const userProfileService = {
     },
 
     /** Check if user is eligible for a video view */
-    async checkVideoViewEligibility(authId: string, artistUuid: string, weekIdentifier: string): Promise<boolean> {
+    async checkVideoViewEligibility(userId: string, artistUuid: string, weekIdentifier: string): Promise<boolean> { // ✅ FIXED: Changed from authId to userId
         const { data, error } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("auth_id", authId)
+            .eq("user_id", userId)  // ✅ FIXED: Use user_id column
             .eq("artist_uuid", artistUuid)
             .eq("week_identifier", weekIdentifier)
             .eq("engagement_type", "video_view")
@@ -250,11 +250,11 @@ const userProfileService = {
     },
 
     /** Check if user is eligible for vote submission */
-    async checkVoteSubmissionEligibility(authId: string, weekIdentifier: string): Promise<boolean> {
+    async checkVoteSubmissionEligibility(userId: string, weekIdentifier: string): Promise<boolean> { // ✅ FIXED: Changed from authId to userId
         const { data, error } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("auth_id", authId)
+            .eq("user_id", userId)  // ✅ FIXED: Use user_id column
             .eq("week_identifier", weekIdentifier)
             .in("engagement_type", ["vote_submission", "artist_rating"])
             .limit(1);
@@ -264,11 +264,11 @@ const userProfileService = {
     },
 
     /** Get total points for a given week */
-    async getWeeklyStats(authId: string, weekIdentifier: string): Promise<{ total_points: number }> {
+    async getWeeklyStats(userId: string, weekIdentifier: string): Promise<{ total_points: number }> { // ✅ FIXED: Changed from authId to userId
         const { data, error } = await supabase
             .from("user_engagements")
             .select("points_earned")
-            .eq("auth_id", authId)
+            .eq("user_id", userId)  // ✅ FIXED: Use user_id column
             .eq("week_identifier", weekIdentifier);
 
         if (error) throw error;
