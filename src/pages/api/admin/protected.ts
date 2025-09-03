@@ -25,10 +25,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log(`🔍 [Admin API] Authenticated user: ${user.id}`);
 
     // Step 2: AUTHORIZE - Check user role in user_profiles table
+    // ✅ FIXED: Use user_id column instead of auth_id
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('role')
-      .eq('auth_id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (profileError || !profile) {

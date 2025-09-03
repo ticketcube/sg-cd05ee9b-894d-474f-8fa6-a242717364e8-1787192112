@@ -1,4 +1,3 @@
-
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 
@@ -28,24 +27,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function handleGetProfile(req: NextApiRequest, res: NextApiResponse) {
     try {
-        const { auth_id } = req.query;
+        // ✅ FIXED: Accept both user_id and auth_id for backward compatibility
+        const user_id = req.query.user_id || req.query.auth_id;
         
-        if (!auth_id || typeof auth_id !== "string") {
-            return res.status(400).json({ error: "auth_id is required" });
+        if (!user_id || typeof user_id !== "string") {
+            return res.status(400).json({ error: "user_id is required" });
         }
         
-        console.log("🔍 [Secure Profile API] Looking up profile for auth_id:", auth_id);
+        console.log("🔍 [Secure Profile API] Looking up profile for user_id:", user_id);
         
-        // Use admin client to query user profile
+        // ✅ FIXED: Use admin client to query user profile with user_id column
         const { data: profile, error } = await supabaseAdmin
             .from("user_profiles")
             .select("*")
-            .eq("auth_id", auth_id)
+            .eq("user_id", user_id)
             .single();
         
         if (error) {
             if (error.code === "PGRST116") {
-                console.log("⚠️ [Secure Profile API] Profile not found for auth_id:", auth_id);
+                console.log("⚠️ [Secure Profile API] Profile not found for user_id:", user_id);
                 return res.status(404).json({ error: "Profile not found" });
             }
             console.error("❌ [Secure Profile API] Database error:", error);
@@ -53,7 +53,7 @@ async function handleGetProfile(req: NextApiRequest, res: NextApiResponse) {
         }
         
         if (!profile) {
-            console.log("⚠️ [Secure Profile API] No profile returned for auth_id:", auth_id);
+            console.log("⚠️ [Secure Profile API] No profile returned for user_id:", user_id);
             return res.status(404).json({ error: "Profile not found" });
         }
         
@@ -71,19 +71,21 @@ async function handleGetProfile(req: NextApiRequest, res: NextApiResponse) {
 
 async function handleCreateProfile(req: NextApiRequest, res: NextApiResponse) {
     try {
-        const { auth_id, username, email, city } = req.body;
+        // ✅ FIXED: Accept both user_id and auth_id for backward compatibility
+        const user_id = req.body.user_id || req.body.auth_id;
+        const { username, email, city } = req.body;
         
-        console.log("🔍 [Secure Profile API] Creating profile with data:", { auth_id, username, email, city });
+        console.log("🔍 [Secure Profile API] Creating profile with data:", { user_id, username, email, city });
         
-        if (!auth_id || !username || !email) {
-            return res.status(400).json({ error: "auth_id, username, and email are required" });
+        if (!user_id || !username || !email) {
+            return res.status(400).json({ error: "user_id, username, and email are required" });
         }
         
-        // First check if profile already exists
+        // ✅ FIXED: Check if profile already exists using user_id column
         const { data: existingProfile, error: checkError } = await supabaseAdmin
             .from("user_profiles")
             .select("id, username")
-            .eq("auth_id", auth_id)
+            .eq("user_id", user_id)
             .single();
         
         if (checkError && checkError.code !== "PGRST116") {
@@ -113,9 +115,9 @@ async function handleCreateProfile(req: NextApiRequest, res: NextApiResponse) {
         
         console.log("🏙️ [Secure Profile API] City lookup result:", { city, cityId });
         
-        // Create the profile - the database will automatically assign an ID
+        // ✅ FIXED: Create the profile using user_id column
         const profileData = {
-            auth_id,
+            user_id,  // ✅ Changed from auth_id to user_id
             username: username.trim(),
             email: email.trim(),
             city_id: cityId,
