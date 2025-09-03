@@ -1,5 +1,5 @@
 import type { AppProps } from "next/app";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/router";
 import "@/styles/globals.css";
 
@@ -14,10 +14,11 @@ import type { Database } from "@/integrations/supabase/types";
 // ✅ PostHog
 import { initPosthog } from "@/lib/posthog";
 
+// Create a singleton Supabase client instance
+const supabaseClient = createBrowserSupabaseClient<Database>();
+
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
-    // Create a singleton Supabase client instance with proper typing
-    const [supabase] = useState(() => createBrowserSupabaseClient<Database>());
 
     useEffect(() => {
         initPosthog();
@@ -25,7 +26,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
     return (
         <SessionContextProvider 
-            supabaseClient={supabase}
+            supabaseClient={supabaseClient}
             initialSession={pageProps.initialSession}
         >
             <UserProfileProvider>
