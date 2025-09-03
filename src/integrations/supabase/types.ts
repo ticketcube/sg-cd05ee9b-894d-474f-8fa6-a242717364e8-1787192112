@@ -526,7 +526,6 @@ export type Database = {
             }
             user_profiles: {
                 Row: {
-                    auth_id: string
                     avatar_url: string | null
                     city_id: number | null
                     created_at: string
@@ -536,10 +535,10 @@ export type Database = {
                     raw_city_input: string | null
                     role: string | null
                     total_points: number | null
+                    user_id: string
                     username: string
                 }
                 Insert: {
-                    auth_id: string
                     avatar_url?: string | null
                     city_id?: number | null
                     created_at?: string
@@ -549,10 +548,10 @@ export type Database = {
                     raw_city_input?: string | null
                     role?: string | null
                     total_points?: number | null
+                    user_id: string
                     username: string
                 }
                 Update: {
-                    auth_id?: string
                     avatar_url?: string | null
                     city_id?: number | null
                     created_at?: string
@@ -562,6 +561,7 @@ export type Database = {
                     raw_city_input?: string | null
                     role?: string | null
                     total_points?: number | null
+                    user_id?: string
                     username?: string
                 }
                 Relationships: [
