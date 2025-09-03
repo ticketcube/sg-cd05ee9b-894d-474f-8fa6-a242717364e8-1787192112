@@ -1,3 +1,4 @@
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 
@@ -19,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === "GET") {
         return handleGetProfile(req, res);
     } else if (req.method === "POST") {
-        return handleCreateProfile(req, res);
+        return handleUpdateProfile(req, res);
     } else {
         return res.status(405).json({ error: "Method not allowed" });
     }
@@ -27,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function handleGetProfile(req: NextApiRequest, res: NextApiResponse) {
     try {
-        // ✅ FIXED: Accept both user_id and auth_id for backward compatibility
+        // Accept both user_id and auth_id for backward compatibility
         const user_id = req.query.user_id || req.query.auth_id;
         
         if (!user_id || typeof user_id !== "string") {
@@ -36,7 +37,7 @@ async function handleGetProfile(req: NextApiRequest, res: NextApiResponse) {
         
         console.log("🔍 [Secure Profile API] Looking up profile for user_id:", user_id);
         
-        // ✅ FIXED: Use admin client to query user profile with user_id column
+        // Use admin client to query user profile with user_id column
         const { data: profile, error } = await supabaseAdmin
             .from("user_profiles")
             .select("*")
@@ -69,40 +70,49 @@ async function handleGetProfile(req: NextApiRequest, res: NextApiResponse) {
     }
 }
 
-async function handleCreateProfile(req: NextApiRequest, res: NextApiResponse) {
+async function handleUpdateProfile(req: NextApiRequest, res: NextApiResponse) {
     try {
-        // ✅ FIXED: Accept both user_id and auth_id for backward compatibility
+        // Accept both user_id and auth_id for backward compatibility
         const user_id = req.body.user_id || req.body.auth_id;
-        const { username, email, city } = req.body;
+        const { username, email, city, role } = req.body;
         
-        console.log("🔍 [Secure Profile API] Creating profile with data:", { user_id, username, email, city });
+        console.log("🔍 [Secure Profile API] Updating profile with data:", { user_id, username, email, city, role });
         
-        if (!user_id || !username || !email) {
-            return res.status(400).json({ error: "user_id, username, and email are required" });
+        if (!user_id) {
+            return res.status(400).json({ error: "user_id is required" });
         }
         
-        // ✅ FIXED: Check if profile already exists using user_id column
+        // Check if profile exists (it should, thanks to the database trigger)
         const { data: existingProfile, error: checkError } = await supabaseAdmin
             .from("user_profiles")
-            .select("id, username")
+            .select("*")
             .eq("user_id", user_id)
             .single();
         
-        if (checkError && checkError.code !== "PGRST116") {
+        if (checkError) {
+            if (checkError.code === "PGRST116") {
+                console.error("❌ [Secure Profile API] Profile not found for user_id:", user_id);
+                return res.status(404).json({ 
+                    error: "Profile not found", 
+                    details: "Profile should have been created automatically. Please contact support." 
+                });
+            }
             console.error("❌ [Secure Profile API] Error checking existing profile:", checkError);
             return res.status(500).json({ error: "Database error during profile check" });
         }
         
-        if (existingProfile) {
-            console.log("ℹ️ [Secure Profile API] Profile already exists:", existingProfile.id);
-            return res.status(200).json({ 
-                profile: existingProfile,
-                message: "Profile already exists" 
+        if (!existingProfile) {
+            console.error("❌ [Secure Profile API] No profile found for user_id:", user_id);
+            return res.status(404).json({ 
+                error: "Profile not found", 
+                details: "Profile should have been created automatically. Please contact support." 
             });
         }
         
+        console.log("✅ [Secure Profile API] Found existing profile:", existingProfile.id, existingProfile.username);
+        
         // Handle city lookup if provided
-        let cityId: number | null = null;
+        let cityId: number | null = existingProfile.city_id;
         if (city && city.trim()) {
             const { data: cityData } = await supabaseAdmin
                 .from("city_latlong")
@@ -115,42 +125,59 @@ async function handleCreateProfile(req: NextApiRequest, res: NextApiResponse) {
         
         console.log("🏙️ [Secure Profile API] City lookup result:", { city, cityId });
         
-        // ✅ FIXED: Create the profile using user_id column
-        const profileData = {
-            user_id,  // ✅ Changed from auth_id to user_id
-            username: username.trim(),
-            email: email.trim(),
-            city_id: cityId,
-            raw_city_input: city?.trim() || null,
-            total_points: 0,
-            role: null
-        };
+        // Prepare update data - only update fields that are provided
+        const updateData: any = {};
         
-        console.log("💾 [Secure Profile API] Inserting profile with data:", profileData);
+        if (username && username.trim()) {
+            updateData.username = username.trim();
+        }
+        if (email && email.trim()) {
+            updateData.email = email.trim();
+        }
+        if (city !== undefined) {
+            updateData.city_id = cityId;
+            updateData.raw_city_input = city?.trim() || null;
+        }
+        if (role !== undefined) {
+            updateData.role = role;
+        }
         
-        const { data: newProfile, error: insertError } = await supabaseAdmin
-            .from("user_profiles")
-            .insert(profileData)
-            .select("*")
-            .single();
-        
-        if (insertError) {
-            console.error("❌ [Secure Profile API] Insert error:", insertError);
-            return res.status(500).json({ 
-                error: "Failed to create profile", 
-                details: insertError.message 
+        // If no update data provided, just return the existing profile
+        if (Object.keys(updateData).length === 0) {
+            console.log("ℹ️ [Secure Profile API] No update data provided, returning existing profile");
+            return res.status(200).json({ 
+                profile: existingProfile,
+                message: "No updates needed" 
             });
         }
         
-        if (!newProfile) {
-            console.error("❌ [Secure Profile API] No profile returned after insert");
-            return res.status(500).json({ error: "Profile creation failed - no data returned" });
+        console.log("💾 [Secure Profile API] Updating profile with data:", updateData);
+        
+        // Update the profile
+        const { data: updatedProfile, error: updateError } = await supabaseAdmin
+            .from("user_profiles")
+            .update(updateData)
+            .eq("user_id", user_id)
+            .select("*")
+            .single();
+        
+        if (updateError) {
+            console.error("❌ [Secure Profile API] Update error:", updateError);
+            return res.status(500).json({ 
+                error: "Failed to update profile", 
+                details: updateError.message 
+            });
         }
         
-        console.log("✅ [Secure Profile API] Profile created successfully:", newProfile.id, newProfile.username);
-        return res.status(201).json({ 
-            profile: newProfile,
-            message: "Profile created successfully" 
+        if (!updatedProfile) {
+            console.error("❌ [Secure Profile API] No profile returned after update");
+            return res.status(500).json({ error: "Profile update failed - no data returned" });
+        }
+        
+        console.log("✅ [Secure Profile API] Profile updated successfully:", updatedProfile.id, updatedProfile.username);
+        return res.status(200).json({ 
+            profile: updatedProfile,
+            message: "Profile updated successfully" 
         });
         
     } catch (error) {
