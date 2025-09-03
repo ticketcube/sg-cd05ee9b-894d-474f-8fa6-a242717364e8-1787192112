@@ -79,7 +79,7 @@ export default async function handler(
       const { data: existingEngagement, error: eligibilityError } = await supabaseAdmin
         .from("user_engagements")
         .select("id")
-        .eq("auth_id", authId)
+        .eq("user_id", authId)
         .eq("engagement_type", "video_view")
         .eq("artist_uuid", artistUuid)
         .eq("week_identifier", weekIdentifier)
@@ -100,7 +100,7 @@ export default async function handler(
     const { error: engagementError } = await supabaseAdmin
       .from("user_engagements")
       .insert({
-        auth_id: authId,
+        user_id: authId,
         engagement_type: "video_view",
         points_earned: pointsEarned,
         week_identifier: weekIdentifier,
@@ -125,7 +125,7 @@ export default async function handler(
         const { data: userProfile, error: fetchError } = await supabaseAdmin
           .from("user_profiles")
           .select("total_points")
-          .eq("auth_id", authId)
+          .eq("user_id", authId)
           .single();
 
         if (fetchError) {
@@ -136,7 +136,7 @@ export default async function handler(
           const { error: updateError } = await supabaseAdmin
             .from("user_profiles")
             .update({ total_points: newTotal })
-            .eq("auth_id", authId);
+            .eq("user_id", authId);
 
           if (updateError) {
             console.error("Error updating user total points:", updateError);

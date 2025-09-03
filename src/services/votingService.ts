@@ -6,7 +6,7 @@ export class VotingService {
     try {
       const { error } = await supabase.from("top25_votes").insert([
         {
-          auth_id: userId.toString(), // ✅ FIXED: Use auth_id instead of user_id to match new database schema
+          user_id: userId.toString(),
           artist_uuid: artistId,
         },
       ]);
@@ -25,7 +25,7 @@ export class VotingService {
   }
 
   async submitVotes(
-    votes: { auth_id: string; artist_uuid: string }[] // ✅ FIXED: Use auth_id instead of user_id
+    votes: { user_id: string; artist_uuid: string }[]
   ): Promise<void> {
     const { error } = await supabase.from("top25_votes").insert(votes);
     
@@ -35,11 +35,11 @@ export class VotingService {
     }
   }
 
-  async getUserVotes(authId: string) { // ✅ FIXED: Parameter should be authId (string) instead of userId (number)
+  async getUserVotes(userId: string) {
     const { data, error } = await supabase
       .from("top25_votes")
       .select("*")
-      .eq("auth_id", authId); // ✅ FIXED: Use auth_id instead of user_id
+      .eq("user_id", userId);
 
     if (error) throw error;
     return data;

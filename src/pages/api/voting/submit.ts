@@ -21,12 +21,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    // ✅ FIXED: Properly map vote data to match database schema
-    const insertPromises = votes.map(async (vote: { auth_id: string; artist_uuid: string }) => {
+    // Map vote data to use user_id instead of auth_id
+    const insertPromises = votes.map(async (vote: { user_id: string; artist_uuid: string }) => {
       const { error } = await supabase
         .from('top25_votes')
         .insert([{
-          auth_id: vote.auth_id, // ✅ FIXED: Use auth_id instead of user_id
+          user_id: vote.user_id,
           artist_uuid: vote.artist_uuid
         }]);
       

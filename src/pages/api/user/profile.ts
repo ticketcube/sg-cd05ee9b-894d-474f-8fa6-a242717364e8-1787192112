@@ -38,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { data: profile, error: profileError } = await supabaseAdmin
         .from('user_profiles')
         .select('*')
-        .eq('auth_id', authUser.id)
+        .eq('user_id', authUser.id)
         .single();
 
       if (profileError) {
@@ -65,7 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { data: existingProfile } = await supabaseAdmin
         .from('user_profiles')
         .select('*')
-        .eq('auth_id', authUser.id)
+        .eq('user_id', authUser.id)
         .single();
 
       let profile;
@@ -80,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             raw_city_input: city?.trim() || null,
             last_active: new Date().toISOString()
           })
-          .eq('auth_id', authUser.id)
+          .eq('user_id', authUser.id)
           .select()
           .single();
 
@@ -96,7 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const { data: newProfile, error: createError } = await supabaseAdmin
           .from('user_profiles')
           .insert([{
-            auth_id: authUser.id,
+            user_id: authUser.id,
             username: username.trim(),
             email: email.trim(),
             raw_city_input: city?.trim() || null,

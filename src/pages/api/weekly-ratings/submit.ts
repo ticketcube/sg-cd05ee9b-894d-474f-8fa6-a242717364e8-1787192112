@@ -41,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data: userProfile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
-      .eq('auth_id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (profileError || !userProfile) {
@@ -57,21 +57,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const ticketInterest = sliderValues?.ticket || 0;
       const shareInterest = sliderValues?.share || 0;
       
-      // Insert or update the weekly vote using service role - USE EXISTING DATABASE FIELDS
+      // Insert or update the weekly vote using service role
       const { error: voteError } = await supabaseAdmin
         .from('weekly_votes')
         .upsert({
-          auth_id: user.id,
+          user_id: user.id,
           artist_uuid: artistId,
           week_identifier: weekId,
           vote_type: 'quadrant',
-          quadrant_x: ticketInterest,  // ✅ FIXED: Use existing quadrant_x field for ticket interest
-          quadrant_y: shareInterest,   // ✅ FIXED: Use existing quadrant_y field for share interest
+          quadrant_x: ticketInterest,
+          quadrant_y: shareInterest,
           ranking_position: position || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }, {
-          onConflict: 'auth_id,artist_uuid,week_identifier',
+          onConflict: 'user_id,artist_uuid,week_identifier',
           ignoreDuplicates: false
         });
 
@@ -86,15 +86,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Wait for all votes to be processed
     const voteResults = await Promise.all(votingPromises);
     
-    // ✅ FIXED: Record proper user engagement - just "quadrant" not "weekly_rating_completion"
+    // Record proper user engagement
     const { error: engagementError } = await supabaseAdmin
       .from('user_engagements')
       .insert({
-        auth_id: user.id,
-        engagement_type: 'quadrant', // ✅ FIXED: Use standard "quadrant" engagement type
+        user_id: user.id,
+        engagement_type: 'quadrant',
         points_earned: 10,
         week_identifier: weekId,
-        artist_uuid: artistRatings[0]?.artistId || null, // ✅ FIXED: Include artist_uuid for single votes
+        artist_uuid: artistRatings[0]?.artistId || null,
         metadata: {
           artists_rated: artistRatings.length,
           completion_time: completionTime,
@@ -108,7 +108,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Don't fail the entire request for engagement tracking errors
     }
 
-    // ✅ FIXED: Remove the failing RPC call - handle points update directly
     // Update user's total points directly using service role
     const { error: pointsUpdateError } = await supabaseAdmin
       .from('user_profiles')
@@ -116,7 +115,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         total_points: userProfile.total_points + 10,
         updated_at: new Date().toISOString()
       })
-      .eq('auth_id', user.id);
+      .eq('user_id', user.id);
 
     if (pointsUpdateError) {
       console.error('❌ Error updating user points:', pointsUpdateError);
