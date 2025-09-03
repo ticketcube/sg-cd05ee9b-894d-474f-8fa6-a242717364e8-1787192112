@@ -3,7 +3,7 @@ import { pointsConfigService } from "./pointsConfigService";
 import userProfileService from "./userProfileService";
 
 export interface VideoViewData {
-  userId: string; // ✅ FIXED: Changed from number to string (auth_id)
+  userId: string; // ✅ FIXED: Changed from number to string (user_id)
   artistUuid: string;
   weekIdentifier: string;
   watchTimeSeconds: number;
@@ -57,13 +57,13 @@ export const videoWatchService = {
   /**
    * Checks if a user has watched all videos in a given week.
    */
-  async hasWatchedAllVideosInWeek(authId: string, weekIdentifier: string, artistUuidsInWeek: string[]): Promise<boolean> {
+  async hasWatchedAllVideosInWeek(userId: string, weekIdentifier: string, artistUuidsInWeek: string[]): Promise<boolean> { // ✅ FIXED: Parameter name changed to userId
     const uniqueArtistUuids = [...new Set(artistUuidsInWeek)];
 
     const { data, error } = await supabase
       .from("user_engagements")
       .select("artist_uuid")
-      .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
+      .eq("user_id", userId) // ✅ FIXED: Use user_id instead of auth_id
       .eq("week_identifier", weekIdentifier)
       .eq("engagement_type", "video_view")
       .in("artist_uuid", uniqueArtistUuids);
@@ -81,11 +81,11 @@ export const videoWatchService = {
   /**
    * Gets the watch status for a user, artist, and week.
    */
-  async getWatchStatus(authId: string, artistUuid: string, weekIdentifier: string) { // ✅ FIXED: Changed parameter from userId to authId
+  async getWatchStatus(userId: string, artistUuid: string, weekIdentifier: string) { // ✅ FIXED: Parameter name changed to userId
     const { data, error } = await supabase
       .from("user_engagements")
       .select("created_at")
-      .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
+      .eq("user_id", userId) // ✅ FIXED: Use user_id instead of auth_id
       .eq("artist_uuid", artistUuid)
       .eq("week_identifier", weekIdentifier)
       .eq("engagement_type", "video_view")

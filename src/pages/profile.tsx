@@ -71,7 +71,7 @@ function ProfilePageContent() {
             const { error: updateError } = await supabase
                 .from('user_profiles')
                 .update({ avatar_url: publicUrl })
-                .eq('auth_id', user.id);
+                .eq('user_id', user.id); // ✅ FIXED: Use user_id instead of auth_id
 
             if (updateError) throw updateError;
 
