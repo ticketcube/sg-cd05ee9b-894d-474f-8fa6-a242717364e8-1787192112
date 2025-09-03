@@ -54,8 +54,8 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
             setLoading(true);
             setError(null);
 
-            // ✅ FIXED: Use the API endpoint instead of direct Supabase query to avoid 406 errors
-            const response = await fetch(`/api/user/profile-by-auth-id?user_id=${user.id}`);
+            // ✅ FIXED: Use consolidated /api/user/profile endpoint instead of profile-by-auth-id
+            const response = await fetch(`/api/user/profile?user_id=${user.id}`);
             
             if (response.status === 404) {
                 // Profile doesn't exist yet

@@ -51,7 +51,8 @@ const userProfileService = {
     async getUserProfile(userId: string): Promise<UserProfile | null> {
         try {
             console.log(`[UserProfileService] Getting profile for user_id: ${userId}`);
-            const response = await fetch(`/api/user/profile-by-auth-id?user_id=${userId}`); // ✅ FIXED: Use user_id parameter
+            // ✅ FIXED: Use consolidated /api/user/profile endpoint instead of profile-by-auth-id
+            const response = await fetch(`/api/user/profile?user_id=${userId}`);
 
             if (response.status === 404) return null;
             if (!response.ok) {
