@@ -777,11 +777,11 @@ export type Database = {
         Returns: Json
       }
       increment_user_points: {
-        Args: { points_to_add: number; user_auth_id: string }
+        Args: { points_to_add: number; user_id: string }
         Returns: undefined
       }
-      increment_user_points_by_auth_id: {
-        Args: { auth_id_to_update: string; points_to_add: number }
+      increment_user_points_by_user_id: {
+        Args: { user_id_to_update: string; points_to_add: number }
         Returns: undefined
       }
       insert_ticket_entry: {
