@@ -119,7 +119,7 @@ export default function ArtistProfileLookup() {
                             ✕
                         </button>
                         <iframe
-                            src={artists.artist_videolink}
+                            src={artist.artist_videolink}
                             className="w-full h-64 rounded-lg"
                             allow="autoplay; encrypted-media"
                             allowFullScreen

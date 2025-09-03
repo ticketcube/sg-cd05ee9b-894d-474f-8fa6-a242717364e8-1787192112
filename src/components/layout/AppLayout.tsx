@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,10 +15,8 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
     const supabase = useSupabaseClient();
-    const user = useUser();
-    const { profile, role, loading: profileLoading } = useUserProfile();
-    const [loading, setLoading] = useState(false);
-
+    const { profile, role, loading, user } = useUserProfile();
+    const [authLoading, setAuthLoading] = useState(false);
     const router = useRouter();
     const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
 
@@ -27,7 +25,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
         const handleError = (event: ErrorEvent) => {
             console.error("Global error caught:", event.error);
             router.push("/").catch(() => {
-                // If even the redirect fails, reload the page
                 window.location.href = "/";
             });
         };
@@ -50,13 +47,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
     const handleSignOut = async () => {
         try {
-            setLoading(true);
+            setAuthLoading(true);
             await supabase.auth.signOut();
-            setLoading(false);
+            setAuthLoading(false);
             router.push("/");
         } catch (error) {
             console.error("Error signing out:", error);
-            // On any error, redirect to index page
+            setAuthLoading(false);
             router.push("/").catch(() => {
                 window.location.href = "/";
             });
@@ -70,20 +67,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
     const handleAuthClose = () => {
         setAuthDialogOpen(false);
     };
-
-    // Auto-navigate to weekly-ratings after successful authentication from header
-    useEffect(() => {
-        if (user && !loading && isAuthDialogOpen) {
-            setAuthDialogOpen(false);
-            // Navigate to weekly-ratings page immediately after login
-            setTimeout(() => {
-                router.push("/weekly-ratings").catch((error) => {
-                    console.error("Navigation error after auth:", error);
-                    router.push("/");
-                });
-            }, 300);
-        }
-    }, [user, loading, isAuthDialogOpen, router]);
 
     return (
         <div className="min-h-screen flex flex-col bg-black text-white">
@@ -109,7 +92,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
                     {/* Auth Buttons */}
                     <div className="flex items-center gap-2">
-                        {loading || profileLoading ? (
+                        {loading || authLoading ? (
                             <div className="w-8 h-8 animate-pulse bg-gray-600 rounded"></div>
                         ) : user ? (
                             <div className="flex items-center gap-2">

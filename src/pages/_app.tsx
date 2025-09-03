@@ -15,7 +15,7 @@ import { initPosthog } from "@/lib/posthog";
 
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
-    // Create a singleton Supabase client instance
+    // Create a singleton Supabase client instance with proper typing
     const [supabase] = useState(() => createBrowserSupabaseClient());
 
     useEffect(() => {
@@ -23,7 +23,10 @@ export default function App({ Component, pageProps }: AppProps) {
     }, []);
 
     return (
-        <SessionContextProvider supabaseClient={supabase}>
+        <SessionContextProvider 
+            supabaseClient={supabase}
+            initialSession={pageProps.initialSession}
+        >
             <UserProfileProvider>
                 <AppLayout>
                     <Component {...pageProps} />

@@ -14,6 +14,12 @@ type UserProfile = {
     auth_id: string;
     username?: string;
     role?: string;
+    email?: string;
+    raw_city_input?: string;
+    avatar_url?: string;
+    created_at?: string;
+    city?: string;
+    state?: string;
     // add other fields from your user_profiles table
 };
 
