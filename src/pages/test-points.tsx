@@ -6,11 +6,11 @@ import { Loader2 } from "lucide-react";
 import { videoWatchService } from "@/services/videoWatchService";
 import { pointsConfigService } from "@/services/pointsConfigService";
 import pointsTestService from "@/services/pointsTestService";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@supabase/auth-helpers-react";
 import userProfileService from "@/services/userProfileService"; // ✅ FIXED: Use default import instead of named import
 
 export default function TestPointsPage() {
-  const { user } = useAuth();
+  const user = useUser();
   const [testResults, setTestResults] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export default function TestPointsPage() {
       const testWeekIdentifier = "2025-W30";
       
       const result = await userProfileService.recordEngagement(
-        user.auth_id, // ✅ FIXED: Use string auth_id instead of numeric user.id
+        user.id, // ✅ Use user.id for Supabase auth
         "video_view",
         10,
         testWeekIdentifier,
@@ -75,7 +75,7 @@ export default function TestPointsPage() {
       setTestResults({
         success: true,
         videoViewResult: result,
-        userId: user.auth_id, // ✅ FIXED: Use user.auth_id instead of user.id
+        userId: user.id, // ✅ Use user.id for Supabase auth
         artistUuid: testArtistUuid,
         weekIdentifier: testWeekIdentifier
       });
@@ -99,7 +99,7 @@ export default function TestPointsPage() {
     try {
       console.log('🚀 Running comprehensive test suite...');
       
-      const result = await pointsTestService.runComprehensiveTestSuite(user.auth_id); // ✅ FIXED: Use user.auth_id instead of user.id
+      const result = await pointsTestService.runComprehensiveTestSuite(user.id); // ✅ Use user.id for Supabase auth
       console.log('🎉 Test suite completed:', result);
       
       setTestResults(result);
@@ -119,7 +119,7 @@ export default function TestPointsPage() {
           <CardHeader>
             <CardTitle className="text-2xl text-center">Points System Diagnostic Tool</CardTitle>
             {user && (
-              <p className="text-center text-purple-200">Logged in as: {user.username} ({user.email})</p>
+              <p className="text-center text-purple-200">Logged in as: {user.email}</p>
             )}
           </CardHeader>
           
