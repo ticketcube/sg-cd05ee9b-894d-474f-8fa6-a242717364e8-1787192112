@@ -100,7 +100,7 @@ export default function WeeklyArtistRatingPopup({
       // Check if user is eligible for points
       const eligible = await pointsConfigService.checkEligibility(
         'video_view',
-        user.auth_id, // ✅ ALREADY CORRECT: Uses user.auth_id (string)
+        user.id, 
         artist.uuid,
         weekIdentifier
       );
@@ -148,13 +148,13 @@ export default function WeeklyArtistRatingPopup({
 
     try {
       console.log('🎯 Attempting to award video points...', {
-        user: user.auth_id,
+        user: user.id,
         artist: artist.uuid,
         watchTime: minWatchTime
       });
 
       const result = await videoWatchService.recordVideoView({
-        userId: user.auth_id, // ✅ ALREADY CORRECT: Uses user.auth_id (string)
+        userId: user.id, 
         artistUuid: artist.uuid,
         weekIdentifier: weekIdentifier,
         watchTimeSeconds: minWatchTime // Use minWatchTime instead of current watchTime
