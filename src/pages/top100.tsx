@@ -140,13 +140,13 @@ export default function Top100Page() {
       const { error: deleteError } = await supabase
         .from("top25_votes")
         .delete()
-        .eq("auth_id", user.id); // ✅ Use user.id for Supabase auth
+        .eq("user_id", user.id); // ✅ Use user.id for Supabase auth
       
       if (deleteError) throw deleteError;
       
       // Submit votes using the voting service
       const votes = selectedArtists.map(artistUuid => ({
-        auth_id: user.id, // ✅ Use user.id for Supabase auth
+        user_id: user.id, // ✅ Use user.id for Supabase auth
         artist_uuid: artistUuid
       }));
 
