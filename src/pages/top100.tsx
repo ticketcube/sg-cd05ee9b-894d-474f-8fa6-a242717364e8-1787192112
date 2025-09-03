@@ -9,14 +9,13 @@ import { cn } from "@/lib/utils";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { votingService } from "@/services/votingService";
 import { UnifiedArtistPopup } from "@/components/UnifiedArtistPopup";
-import AuthGuard from "@/components/AuthGuard";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const REQUIRED_PASSCODE = "otw10";
 
 export default function Top100Page() {
-  const { user } = useAuth();
+  const user = useUser();
   
   // Core state
   const [artists, setArtists] = useState<ArtistWithVoteCount[]>([]);
@@ -63,8 +62,8 @@ export default function Top100Page() {
     if (!user || !isUnlocked) return;
     
     try {
-      console.log("Loading existing votes for user:", user.auth_id);
-      const existingVotes = await votingService.getUserVotes(user.auth_id);
+      console.log("Loading existing votes for user:", user.id);
+      const existingVotes = await votingService.getUserVotes(user.id); // ✅ Use user.id for Supabase auth
       const artistUuids = existingVotes.map(vote => vote.artist_uuid);
       console.log(`Found ${artistUuids.length} existing votes`);
       setSelectedArtists(artistUuids);
@@ -141,13 +140,13 @@ export default function Top100Page() {
       const { error: deleteError } = await supabase
         .from("top25_votes")
         .delete()
-        .eq("auth_id", user.auth_id);
+        .eq("auth_id", user.id); // ✅ Use user.id for Supabase auth
       
       if (deleteError) throw deleteError;
       
       // Submit votes using the voting service
       const votes = selectedArtists.map(artistUuid => ({
-        auth_id: user.auth_id,
+        auth_id: user.id, // ✅ Use user.id for Supabase auth
         artist_uuid: artistUuid
       }));
 
@@ -174,7 +173,7 @@ export default function Top100Page() {
     }
 
     try {
-      await votingService.enterTicketDrawing(email, user.username);
+      await votingService.enterTicketDrawing(email, user.email || "Unknown User"); // ✅ Use user.email instead of user.username
       setIsSubmissionDialogOpen(false);
       setShowThankYou(true);
       setTimeout(() => {
@@ -197,6 +196,18 @@ export default function Top100Page() {
     setPopupOpen(false);
     setSelectedArtist(null);
   };
+
+  // Render login message if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Authentication Required</h1>
+          <p className="text-gray-400">Please log in to access the Top 100 artists list.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Thank you screen
   if (showThankYou) {
@@ -236,203 +247,201 @@ export default function Top100Page() {
   }
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen bg-black text-white">
-        {/* Header */}
-        <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-4 mb-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => window.location.href = "/profile"}
-                className="text-white hover:bg-gray-800"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-blue-500">Top 100 OTW Artists</h1>
-                <p className="text-sm text-gray-400">
-                  Showing {artists.length} artists
-                </p>
-              </div>
-            </div>
-            
-            {/* Vote Button */}
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <div className="sticky top-0 bg-black z-10 p-4 border-b border-gray-800">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-4 mb-4">
             <Button
-              className="w-full text-lg py-4 bg-white text-black hover:bg-gray-100"
-              onClick={handleVoteSubmit}
-              disabled={selectedArtists.length === 0}
+              variant="ghost"
+              size="sm"
+              onClick={() => window.location.href = "/profile"}
+              className="text-white hover:bg-gray-800"
             >
-              SUBMIT YOUR VOTES ({selectedArtists.length}/25)
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
             </Button>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold text-blue-500">Top 100 OTW Artists</h1>
+              <p className="text-sm text-gray-400">
+                Showing {artists.length} artists
+              </p>
+            </div>
           </div>
+          
+          {/* Vote Button */}
+          <Button
+            className="w-full text-lg py-4 bg-white text-black hover:bg-gray-100"
+            onClick={handleVoteSubmit}
+            disabled={selectedArtists.length === 0}
+          >
+            SUBMIT YOUR VOTES ({selectedArtists.length}/25)
+          </Button>
         </div>
+      </div>
 
-        {/* Artist List */}
-        <div className="p-4">
-          <div className="max-w-3xl mx-auto">
-            <div className="grid gap-2">
-              {artists.map((artist, index) => {
-                const isSelected = selectedArtists.includes(artist.uuid);
-                
-                return (
-                  <div
-                    key={artist.uuid}
-                    className={cn(
-                      "bg-gray-900 rounded-lg p-3 hover:bg-gray-800 transition-all duration-200",
-                      isSelected && "ring-2 ring-green-500 bg-gray-800",
-                      !isUnlocked && "opacity-50 pointer-events-none"
-                    )}
-                    onClick={isUnlocked ? () => handleRowClick(artist) : undefined}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="text-xl font-bold text-gray-500 w-8">
-                        {index + 1}
-                      </div>
-                      
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-base">
-                          {isUnlocked ? artist.artist_name : "••••••••••"}
-                        </h3>
-                        <div className="text-xs text-gray-400">
-                          <p>Class of {isUnlocked ? new Date(artist.artist_otwcreateddate || "").getFullYear() : "••••"}</p>
-                          {isUnlocked && artist.vote_count > 0 && (
-                            <p className="text-blue-400">{artist.vote_count} votes</p>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        {isUnlocked ? (
-                          <>
-                            <ArtistVideoPlayer 
-                              artist={artist}
-                              size="sm"
-                              className="hover:scale-105 transition-transform duration-200"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRowClick(artist);
-                              }}
-                            />
-                            
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleVote(artist.uuid);
-                              }}
-                              className={cn(
-                                "px-3 py-2 rounded text-sm font-semibold transition-all duration-200",
-                                isSelected 
-                                  ? "bg-green-500 hover:bg-green-600 text-white" 
-                                  : "bg-purple-500 hover:bg-purple-600 text-white"
-                              )}
-                            >
-                              {isSelected ? "✓ VOTED" : "VOTE"}
-                            </Button>
-                          </>
-                        ) : (
-                          <div className="w-20 h-8 bg-gray-700 rounded animate-pulse"></div>
+      {/* Artist List */}
+      <div className="p-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="grid gap-2">
+            {artists.map((artist, index) => {
+              const isSelected = selectedArtists.includes(artist.uuid);
+              
+              return (
+                <div
+                  key={artist.uuid}
+                  className={cn(
+                    "bg-gray-900 rounded-lg p-3 hover:bg-gray-800 transition-all duration-200",
+                    isSelected && "ring-2 ring-green-500 bg-gray-800",
+                    !isUnlocked && "opacity-50 pointer-events-none"
+                  )}
+                  onClick={isUnlocked ? () => handleRowClick(artist) : undefined}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="text-xl font-bold text-gray-500 w-8">
+                      {index + 1}
+                    </div>
+                    
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-base">
+                        {isUnlocked ? artist.artist_name : "••••••••••"}
+                      </h3>
+                      <div className="text-xs text-gray-400">
+                        <p>Class of {isUnlocked ? new Date(artist.artist_otwcreateddate || "").getFullYear() : "••••"}</p>
+                        {isUnlocked && artist.vote_count > 0 && (
+                          <p className="text-blue-400">{artist.vote_count} votes</p>
                         )}
                       </div>
                     </div>
+                    
+                    <div className="flex items-center gap-3">
+                      {isUnlocked ? (
+                        <>
+                          <ArtistVideoPlayer 
+                            artist={artist}
+                            size="sm"
+                            className="hover:scale-105 transition-transform duration-200"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRowClick(artist);
+                            }}
+                          />
+                          
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleVote(artist.uuid);
+                            }}
+                            className={cn(
+                              "px-3 py-2 rounded text-sm font-semibold transition-all duration-200",
+                              isSelected 
+                                ? "bg-green-500 hover:bg-green-600 text-white" 
+                                : "bg-purple-500 hover:bg-purple-600 text-white"
+                            )}
+                          >
+                            {isSelected ? "✓ VOTED" : "VOTE"}
+                          </Button>
+                        </>
+                      ) : (
+                        <div className="w-20 h-8 bg-gray-700 rounded animate-pulse"></div>
+                      )}
+                    </div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
+      </div>
 
-        {/* Artist Popup */}
-        {selectedArtist && isPopupOpen && (
-          <UnifiedArtistPopup 
-            artist={selectedArtist} 
-            isOpen={isPopupOpen}
-            onClose={handleClosePopup}
-            showGenre={true}
-            showBio={true}
-            showVibes={false}
-            actionButtons={
-              <Button
-                onClick={() => handleVote(selectedArtist.uuid)}
-                className={`w-full text-lg py-3 ${
-                  selectedArtists.includes(selectedArtist.uuid)
-                    ? "bg-green-500 hover:bg-green-600"
-                    : "bg-purple-500 hover:bg-purple-600"
-                }`}
-              >
-                {selectedArtists.includes(selectedArtist.uuid) ? "✓ Voted" : "Vote for this Artist"}
-              </Button>
-            }
-          />
-        )}
+      {/* Artist Popup */}
+      {selectedArtist && isPopupOpen && (
+        <UnifiedArtistPopup 
+          artist={selectedArtist} 
+          isOpen={isPopupOpen}
+          onClose={handleClosePopup}
+          showGenre={true}
+          showBio={true}
+          showVibes={false}
+          actionButtons={
+            <Button
+              onClick={() => handleVote(selectedArtist.uuid)}
+              className={`w-full text-lg py-3 ${
+                selectedArtists.includes(selectedArtist.uuid)
+                  ? "bg-green-500 hover:bg-green-600"
+                  : "bg-purple-500 hover:bg-purple-600"
+              }`}
+            >
+              {selectedArtists.includes(selectedArtist.uuid) ? "✓ Voted" : "Vote for this Artist"}
+            </Button>
+          }
+        />
+      )}
 
-        {/* Passcode Dialog */}
-        <Dialog open={isPasscodeDialogOpen} onOpenChange={setIsPasscodeDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Enter Access Passcode</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Enter the passcode to unlock the Top 100 artists list and voting.
-              </p>
+      {/* Passcode Dialog */}
+      <Dialog open={isPasscodeDialogOpen} onOpenChange={setIsPasscodeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enter Access Passcode</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Enter the passcode to unlock the Top 100 artists list and voting.
+            </p>
+            <Input
+              placeholder="Enter passcode"
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              type="password"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleUnlockAccess();
+                }
+              }}
+            />
+            <Button 
+              onClick={handleUnlockAccess} 
+              className="w-full"
+            >
+              Unlock List & Voting
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Submission Dialog */}
+      <Dialog open={isSubmissionDialogOpen} onOpenChange={setIsSubmissionDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Votes Submitted Successfully!</DialogTitle>
+          </DialogHeader>
+          <p className="mb-4">You voted for {selectedArtists.length} artists.</p>
+          
+          <div className="space-y-4">
+            <div>
               <Input
-                placeholder="Enter passcode"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                type="password"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleUnlockAccess();
-                  }
-                }}
+                placeholder="Enter your email for free tickets drawing"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
               />
               <Button 
-                onClick={handleUnlockAccess} 
-                className="w-full"
+                className="w-full mt-2 bg-green-500 hover:bg-green-600"
+                onClick={handleEnterDrawing}
               >
-                Unlock List & Voting
+                ENTER DRAWING FOR FREE TICKETS
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Submission Dialog */}
-        <Dialog open={isSubmissionDialogOpen} onOpenChange={setIsSubmissionDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Votes Submitted Successfully!</DialogTitle>
-            </DialogHeader>
-            <p className="mb-4">You voted for {selectedArtists.length} artists.</p>
             
-            <div className="space-y-4">
-              <div>
-                <Input
-                  placeholder="Enter your email for free tickets drawing"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  type="email"
-                />
-                <Button 
-                  className="w-full mt-2 bg-green-500 hover:bg-green-600"
-                  onClick={handleEnterDrawing}
-                >
-                  ENTER DRAWING FOR FREE TICKETS
-                </Button>
-              </div>
-              
-              <Button 
-                className="w-full bg-blue-500 hover:bg-blue-600"
-                onClick={() => setIsSubmissionDialogOpen(false)}
-              >
-                FINISH VOTING
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </AuthGuard>
+            <Button 
+              className="w-full bg-blue-500 hover:bg-blue-600"
+              onClick={() => setIsSubmissionDialogOpen(false)}
+            >
+              FINISH VOTING
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
