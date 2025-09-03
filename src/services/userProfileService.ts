@@ -47,11 +47,11 @@ export interface UserEngagementHistory {
 }
 
 const userProfileService = {
-    /** Get a user's profile by auth_id */
-    async getUserProfile(authId: string): Promise<UserProfile | null> {
+    /** Get a user's profile by user_id */
+    async getUserProfile(userId: string): Promise<UserProfile | null> {
         try {
-            console.log(`[UserProfileService] Getting profile for auth_id: ${authId}`);
-            const response = await fetch(`/api/user/profile-by-auth-id?auth_id=${authId}`);
+            console.log(`[UserProfileService] Getting profile for user_id: ${userId}`);
+            const response = await fetch(`/api/user/profile-by-auth-id?auth_id=${userId}`);
 
             if (response.status === 404) return null;
             if (!response.ok) {
@@ -67,13 +67,13 @@ const userProfileService = {
     },
 
     /** Create a new user profile */
-    async createUserProfile(authId: string, username: string, email: string, city?: string): Promise<UserProfile> {
+    async createUserProfile(userId: string, username: string, email: string, city?: string): Promise<UserProfile> {
         try {
             const response = await fetch("/api/user/secure-profile", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    auth_id: authId,
+                    auth_id: userId,  // Keep auth_id here as it matches the API endpoint parameter
                     username: username.trim(),
                     email: email.trim(),
                     city: city?.trim(),
@@ -94,11 +94,11 @@ const userProfileService = {
     },
 
     /** Update user's city/location */
-    async updateUserLocation(authId: string, cityId: number, rawCityInput: string): Promise<UserProfile> {
+    async updateUserLocation(userId: string, cityId: number, rawCityInput: string): Promise<UserProfile> {
         const { data, error } = await supabase
             .from("user_profiles")
             .update({ city_id: cityId, raw_city_input: rawCityInput })
-            .eq("auth_id", authId)
+            .eq("user_id", userId)  // ✅ FIXED: Use user_id column
             .select()
             .single();
 
@@ -106,26 +106,26 @@ const userProfileService = {
         return data;
     },
 
-    /** Add points to a user (uses auth_id directly) */
-    async addPoints(authId: string, pointsToAdd: number): Promise<UserProfile> {
-        if (pointsToAdd === 0) return this.getUserProfile(authId);
+    /** Add points to a user (uses user_id directly) */
+    async addPoints(userId: string, pointsToAdd: number): Promise<UserProfile> {
+        if (pointsToAdd === 0) return this.getUserProfile(userId);
 
-        // ✅ FIXED: Call RPC using auth_id directly (UUID)
+        // ✅ FIXED: Call RPC using user_id parameter
         const { error } = await supabase.rpc("increment_user_points", {
             points_to_add: pointsToAdd,
-            user_auth_id: authId
+            user_id: userId  // ✅ FIXED: Use user_id parameter name
         });
 
         if (error) throw error;
-        return this.getUserProfile(authId);
+        return this.getUserProfile(userId);
     },
 
     /** Update last active timestamp */
-    async updateLastActive(authId: string): Promise<void> {
+    async updateLastActive(userId: string): Promise<void> {
         const { error } = await supabase
             .from("user_profiles")
             .update({ last_active: new Date().toISOString() })
-            .eq("auth_id", authId);
+            .eq("user_id", userId);  // ✅ FIXED: Use user_id column
 
         if (error) throw error;
     },

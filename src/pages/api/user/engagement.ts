@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data: engagement, error } = await supabaseAdmin
       .from('user_engagements')
       .insert({
-        auth_id: userId,  // ✅ FIXED: Use auth_id instead of user_id to match new database schema
+        user_id: userId,  // ✅ FIXED: Use user_id instead of auth_id to match new database schema
         engagement_type: engagementType,
         points_earned: pointsEarned,
         week_identifier: weekIdentifier,
@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Update user points atomically
     const { error: pointsError } = await supabaseAdmin.rpc('increment_user_points', {
       points_to_add: pointsEarned,
-      user_auth_id: userId
+      user_id: userId  // ✅ FIXED: Use user_id parameter name
     });
 
     if (pointsError) throw pointsError;
