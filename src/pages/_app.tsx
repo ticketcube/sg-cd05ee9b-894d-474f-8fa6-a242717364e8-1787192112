@@ -16,8 +16,8 @@ import { initPosthog } from "@/lib/posthog";
 
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
-    // Create client without explicit typing to avoid version compatibility issues
-    const [supabaseClient] = useState(() => createBrowserSupabaseClient());
+    // Create client with proper typing
+    const [supabaseClient] = useState(() => createBrowserSupabaseClient<Database>());
 
     useEffect(() => {
         initPosthog();
@@ -25,7 +25,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
     return (
         <SessionContextProvider 
-            supabaseClient={supabaseClient}
+            supabaseClient={supabaseClient as any}
             initialSession={pageProps.initialSession}
         >
             <UserProfileProvider>
