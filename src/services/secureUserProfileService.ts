@@ -3,8 +3,80 @@ import { supabase } from '@/integrations/supabase/client';
 import type { EngagementType } from './userProfileService';
 
 export const secureUserProfileService = {
+  /**
+   * Get user profile using the secure API endpoint
+   * This uses the server-side admin client for enhanced security
+   */
+  async getUserProfile(userId: string) {
+    try {
+      console.log('[SecureUserProfileService] Getting profile for user_id:', userId);
+      
+      const response = await fetch(`/api/user/secure-profile?user_id=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 404) {
+        return null;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error ${response.status}`);
+      }
+
+      const { profile } = await response.json();
+      return profile;
+    } catch (error) {
+      console.error('[SecureUserProfileService] Error getting user profile:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update user profile using the secure API endpoint
+   * Note: Profile creation is now handled automatically by database trigger
+   */
+  async updateUserProfile(userId: string, profileData: {
+    username?: string;
+    email?: string;
+    city?: string;
+    role?: string;
+  }) {
+    try {
+      console.log('[SecureUserProfileService] Updating profile for user_id:', userId, profileData);
+      
+      const response = await fetch('/api/user/secure-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          ...profileData
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error ${response.status}`);
+      }
+
+      const { profile } = await response.json();
+      return profile;
+    } catch (error) {
+      console.error('[SecureUserProfileService] Error updating profile:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Record user engagement with authentication
+   */
   async recordEngagement(
-    userId: number,
+    userId: string, // ✅ FIXED: Changed from number to string to match user_id UUID type
     engagementType: EngagementType,
     pointsEarned: number,
     weekIdentifier: string,
@@ -24,7 +96,7 @@ export const secureUserProfileService = {
         'Authorization': `Bearer ${session.access_token}`
       },
       body: JSON.stringify({
-        userId,
+        userId, // ✅ FIXED: Now using string userId instead of number
         engagementType,
         pointsEarned,
         weekIdentifier,
@@ -41,7 +113,10 @@ export const secureUserProfileService = {
     return response.json();
   },
 
-  async submitVotes(userId: number, votes: any[], weekIdentifier: string) {
+  /**
+   * Submit votes with authentication
+   */
+  async submitVotes(userId: string, votes: any[], weekIdentifier: string) { // ✅ FIXED: Changed from number to string
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
@@ -65,6 +140,9 @@ export const secureUserProfileService = {
     return response.json();
   },
 
+  /**
+   * Get admin statistics (requires otwstaff role)
+   */
   async getAdminStats() {
     const { data: { session } } = await supabase.auth.getSession();
     
