@@ -17,7 +17,7 @@ export type EngagementType =
 
 export interface UserEngagement {
     id: number;
-    auth_id: string;
+    user_id: string; // ✅ FIXED: Changed from auth_id to user_id
     engagement_type: EngagementType;
     points_earned?: number | null;
     week_identifier?: string | null;
@@ -51,7 +51,7 @@ const userProfileService = {
     async getUserProfile(userId: string): Promise<UserProfile | null> {
         try {
             console.log(`[UserProfileService] Getting profile for user_id: ${userId}`);
-            const response = await fetch(`/api/user/profile-by-auth-id?auth_id=${userId}`);
+            const response = await fetch(`/api/user/profile-by-auth-id?user_id=${userId}`); // ✅ FIXED: Use user_id parameter
 
             if (response.status === 404) return null;
             if (!response.ok) {
@@ -73,7 +73,7 @@ const userProfileService = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    auth_id: userId,  // Keep auth_id here as it matches the API endpoint parameter
+                    user_id: userId,  // ✅ FIXED: Use user_id to match database schema
                     username: username.trim(),
                     email: email.trim(),
                     city: city?.trim(),
