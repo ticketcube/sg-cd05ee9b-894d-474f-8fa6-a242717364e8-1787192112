@@ -9,6 +9,7 @@ import { UserProfileProvider } from "@/contexts/UserProfileContext";
 
 import { Toaster } from "@/components/ui/toaster";
 import AppLayout from "@/components/layout/AppLayout";
+import type { Database } from "@/integrations/supabase/types";
 
 // ✅ PostHog
 import { initPosthog } from "@/lib/posthog";
@@ -16,7 +17,7 @@ import { initPosthog } from "@/lib/posthog";
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
     // Create a singleton Supabase client instance with proper typing
-    const [supabase] = useState(() => createBrowserSupabaseClient());
+    const [supabase] = useState(() => createBrowserSupabaseClient<Database>());
 
     useEffect(() => {
         initPosthog();

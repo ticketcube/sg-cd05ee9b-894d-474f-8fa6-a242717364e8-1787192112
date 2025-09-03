@@ -2,7 +2,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
 import Stripe from "stripe";
-import { supabase } from '@/integrations/supabase/client';
+import { createServerSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import type { Database } from "@/integrations/supabase/types";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   // apiVersion: "2024-06-20", // Use library default
@@ -20,11 +21,23 @@ export const config = {
 const PRO_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID;
 const COLLECTOR_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_COLLECTOR_PRICE_ID;
 
-async function updateCubeTier(cubeId: string, userId: string, priceId: string, paymentIntentId: string) {
-    const updates: any = {
+async function updateCubeTier(req: NextApiRequest, res: NextApiResponse, cubeId: string, userId: string, priceId: string, paymentIntentId: string) {
+    const supabase = createServerSupabaseClient<Database>({ req, res });
+    
+    const updates: {
+        is_secured: boolean;
+        stripe_payment_intent_id: string;
+        updated_at: string;
+        tier: string;
+        updates_remaining: number;
+        gifts_remaining: number;
+    } = {
         is_secured: true,
         stripe_payment_intent_id: paymentIntentId,
         updated_at: new Date().toISOString(),
+        tier: 'free',
+        updates_remaining: 0,
+        gifts_remaining: 0,
     };
 
     if (priceId === PRO_PRICE_ID) {
@@ -35,9 +48,6 @@ async function updateCubeTier(cubeId: string, userId: string, priceId: string, p
         updates.tier = 'collector';
         updates.updates_remaining = 9999; // Represents "unlimited"
         updates.gifts_remaining = 5;
-    } else {
-        // Handle free tier or other cases if necessary
-        updates.tier = 'free';
     }
 
     const { error } = await supabase
@@ -93,7 +103,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
       // Update the database with the new tier information
-      await updateCubeTier(cube_id, user_id, priceId, paymentIntentId);
+      await updateCubeTier(req, res, cube_id, user_id, priceId, paymentIntentId);
       console.log('Database updated successfully for cube:', cube_id);
     } catch (error) {
       console.error('Webhook handler failed to update database:', error);
