@@ -6,17 +6,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { auth_id } = req.query;
+  // ✅ FIXED: Accept both user_id and auth_id for backward compatibility during migration
+  const user_id = req.query.user_id || req.query.auth_id;
 
-  if (!auth_id || typeof auth_id !== 'string') {
-    return res.status(400).json({ error: 'auth_id parameter is required' });
+  if (!user_id || typeof user_id !== 'string') {
+    return res.status(400).json({ error: 'user_id parameter is required' });
   }
 
   try {
-    console.log(`[API] Getting profile for auth_id: ${auth_id}`);
+    console.log(`[API] Getting profile for user_id: ${user_id}`);
 
     // Validate environment variables before creating client
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl) {
@@ -32,9 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         error: 'Server configuration error: Missing service role key' 
       });
     }
-      console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-      console.log("Supabase Key:", process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10) + "...");
-
+    console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log("Supabase Key:", process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10) + "...");
 
     // Create admin client with service role key
     console.log(`[API] Creating Supabase admin client...`);
@@ -45,14 +45,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
 
-    console.log(`[API] Querying user_profiles table for auth_id: ${auth_id}`);
+    console.log(`[API] Querying user_profiles table for user_id: ${user_id}`);
     
-    // Use service role to get profile - bypasses RLS
+    // ✅ FIXED: Use user_id column instead of auth_id
     const { data: profile, error } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
-      .eq('auth_id', auth_id)
-     .maybeSingle();
+      .eq('user_id', user_id)
+      .maybeSingle();
 
     if (error) {
       console.error('[API] Supabase query error:', {
@@ -63,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       if (error.code === 'PGRST116') {
-        console.log(`[API] Profile not found for auth_id: ${auth_id}`);
+        console.log(`[API] Profile not found for user_id: ${user_id}`);
         return res.status(404).json({ error: 'Profile not found' });
       }
       
@@ -77,7 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (!profile) {
-      console.log(`[API] No profile data returned for auth_id: ${auth_id}`);
+      console.log(`[API] No profile data returned for user_id: ${user_id}`);
       return res.status(404).json({ error: 'Profile not found' });
     }
 
@@ -85,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json(profile);
 
   } catch (error) {
-    console.error('[API] Unexpected error in profile-by-auth-id:', error);
+    console.error('[API] Unexpected error in profile-by-user-id:', error);
     
     // Return detailed error information for debugging
     const errorResponse = {
