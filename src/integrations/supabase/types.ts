@@ -41,22 +41,22 @@ export type Database = {
         Tables: {
             admin_users: {
                 Row: {
-                    auth_id: string
                     created_at: string | null
                     email: string
                     id: string
+                    user_id: string
                 }
                 Insert: {
-                    auth_id: string
                     created_at?: string | null
                     email: string
                     id?: string
+                    user_id: string
                 }
                 Update: {
-                    auth_id?: string
                     created_at?: string | null
                     email?: string
                     id?: string
+                    user_id?: string
                 }
                 Relationships: []
             }
@@ -172,9 +172,9 @@ export type Database = {
                     created_at: string | null
                     face_number: number
                     face_title: string | null
-                    id: string
                     image_url: string | null
                     ticketcube_id: string | null
+                    user_id: string
                 }
                 Insert: {
                     content_text?: string | null
@@ -182,9 +182,9 @@ export type Database = {
                     created_at?: string | null
                     face_number: number
                     face_title?: string | null
-                    id?: string
                     image_url?: string | null
                     ticketcube_id?: string | null
+                    user_id?: string
                 }
                 Update: {
                     content_text?: string | null
@@ -192,9 +192,9 @@ export type Database = {
                     created_at?: string | null
                     face_number?: number
                     face_title?: string | null
-                    id?: string
                     image_url?: string | null
                     ticketcube_id?: string | null
+                    user_id?: string
                 }
                 Relationships: [
                     {
@@ -202,7 +202,7 @@ export type Database = {
                         columns: ["ticketcube_id"]
                         isOneToOne: false
                         referencedRelation: "ticketcubes"
-                        referencedColumns: ["id"]
+                        referencedColumns: ["cube_id"]
                     },
                 ]
             }
@@ -244,31 +244,31 @@ export type Database = {
             }
             product_roadmap_comments: {
                 Row: {
-                    auth_id: string
                     content: string
                     created_at: string | null
                     id: number
                     parent_comment_id: number | null
                     title: string | null
                     updated_at: string | null
+                    user_id: string
                 }
                 Insert: {
-                    auth_id: string
                     content: string
                     created_at?: string | null
                     id?: number
                     parent_comment_id?: number | null
                     title?: string | null
                     updated_at?: string | null
+                    user_id: string
                 }
                 Update: {
-                    auth_id?: string
                     content?: string
                     created_at?: string | null
                     id?: number
                     parent_comment_id?: number | null
                     title?: string | null
                     updated_at?: string | null
+                    user_id?: string
                 }
                 Relationships: [
                     {
@@ -318,78 +318,75 @@ export type Database = {
             }
             ticket_entries: {
                 Row: {
-                    auth_id: string
                     created_at: string | null
                     email: string
-                    user_id: string | null
+                    user_id: string
                     username: string | null
                 }
                 Insert: {
-                    auth_id?: string
                     created_at?: string | null
                     email: string
-                    user_id?: string | null
+                    user_id?: string
                     username?: string | null
                 }
                 Update: {
-                    auth_id?: string
                     created_at?: string | null
                     email?: string
-                    user_id?: string | null
+                    user_id?: string
                     username?: string | null
                 }
                 Relationships: []
             }
             ticketcubes: {
                 Row: {
-                    auth_id: string
                     created_at: string | null
+                    cube_id: string
                     cube_type: string | null
                     description: string | null
                     event_date: string | null
                     event_name: string | null
                     gifts_remaining: number | null
-                    id: string
                     is_secured: boolean | null
                     stripe_payment_intent_id: string | null
                     tier: string | null
                     title: string
                     updated_at: string | null
                     updates_remaining: number | null
+                    user_id: string
                     venue: string | null
                 }
                 Insert: {
-                    auth_id: string
                     created_at?: string | null
+                    cube_id?: string
                     cube_type?: string | null
                     description?: string | null
                     event_date?: string | null
                     event_name?: string | null
                     gifts_remaining?: number | null
-                    id?: string
                     is_secured?: boolean | null
                     stripe_payment_intent_id?: string | null
                     tier?: string | null
                     title: string
                     updated_at?: string | null
                     updates_remaining?: number | null
+                    user_id: string
                     venue?: string | null
                 }
                 Update: {
-                    auth_id?: string
                     created_at?: string | null
+                    cube_id?: string
                     cube_type?: string | null
                     description?: string | null
                     event_date?: string | null
                     event_name?: string | null
                     gifts_remaining?: number | null
-                    id?: string
                     is_secured?: boolean | null
                     stripe_payment_intent_id?: string | null
                     tier?: string | null
                     title?: string
                     updated_at?: string | null
                     updates_remaining?: number | null
+                    user_id?: string
                     venue?: string | null
                 }
                 Relationships: []
@@ -462,55 +459,52 @@ export type Database = {
             top25_votes: {
                 Row: {
                     artist_uuid: string
-                    auth_id: string
                     created_at: string | null
+                    user_id: string
                 }
                 Insert: {
                     artist_uuid: string
-                    auth_id: string
                     created_at?: string | null
+                    user_id: string
                 }
                 Update: {
                     artist_uuid?: string
-                    auth_id?: string
                     created_at?: string | null
+                    user_id?: string
                 }
                 Relationships: []
             }
             user_engagements: {
                 Row: {
                     artist_uuid: string | null
-                    auth_id: string
                     created_at: string
                     engagement_type: string
                     id: number
                     metadata: Json | null
                     points_earned: number | null
-                    user_auth_id: string | null
+                    user_id: string
                     week_identifier: string | null
                     weekly_list_id: number | null
                 }
                 Insert: {
                     artist_uuid?: string | null
-                    auth_id: string
                     created_at?: string
                     engagement_type: string
                     id?: number
                     metadata?: Json | null
                     points_earned?: number | null
-                    user_auth_id?: string | null
+                    user_id: string
                     week_identifier?: string | null
                     weekly_list_id?: number | null
                 }
                 Update: {
                     artist_uuid?: string | null
-                    auth_id?: string
                     created_at?: string
                     engagement_type?: string
                     id?: number
                     metadata?: Json | null
                     points_earned?: number | null
-                    user_auth_id?: string | null
+                    user_id?: string
                     week_identifier?: string | null
                     weekly_list_id?: number | null
                 }
@@ -576,37 +570,34 @@ export type Database = {
             }
             user_streaks: {
                 Row: {
-                    auth_id: string
                     created_at: string | null
                     current_streak: number | null
-                    id: number
                     last_activity_date: string | null
                     longest_streak: number | null
+                    streak_id: number
                     streak_type: string
                     updated_at: string | null
-                    user_id: number | null
+                    user_id: string
                 }
                 Insert: {
-                    auth_id: string
                     created_at?: string | null
                     current_streak?: number | null
-                    id?: number
                     last_activity_date?: string | null
                     longest_streak?: number | null
+                    streak_id?: number
                     streak_type: string
                     updated_at?: string | null
-                    user_id?: number | null
+                    user_id: string
                 }
                 Update: {
-                    auth_id?: string
                     created_at?: string | null
                     current_streak?: number | null
-                    id?: number
                     last_activity_date?: string | null
                     longest_streak?: number | null
+                    streak_id?: number
                     streak_type?: string
                     updated_at?: string | null
-                    user_id?: number | null
+                    user_id?: string
                 }
                 Relationships: []
             }
@@ -721,37 +712,37 @@ export type Database = {
             weekly_votes: {
                 Row: {
                     artist_uuid: string
-                    auth_id: string
                     created_at: string | null
                     id: number
                     quadrant_x: number | null
                     quadrant_y: number | null
                     ranking_position: number | null
                     updated_at: string | null
+                    user_id: string
                     vote_type: string
                     week_identifier: string
                 }
                 Insert: {
                     artist_uuid: string
-                    auth_id: string
                     created_at?: string | null
                     id?: number
                     quadrant_x?: number | null
                     quadrant_y?: number | null
                     ranking_position?: number | null
                     updated_at?: string | null
+                    user_id: string
                     vote_type: string
                     week_identifier: string
                 }
                 Update: {
                     artist_uuid?: string
-                    auth_id?: string
                     created_at?: string | null
                     id?: number
                     quadrant_x?: number | null
                     quadrant_y?: number | null
                     ranking_position?: number | null
                     updated_at?: string | null
+                    user_id?: string
                     vote_type?: string
                     week_identifier?: string
                 }
