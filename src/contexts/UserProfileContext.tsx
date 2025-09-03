@@ -54,14 +54,23 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
             setLoading(true);
             setError(null);
 
-            const { data, error } = await supabase
-                .from("user_profiles")
-                .select("*")
-                .eq("user_id", user.id)
-                .single();
+            // ✅ FIXED: Use the API endpoint instead of direct Supabase query to avoid 406 errors
+            const response = await fetch(`/api/user/profile-by-auth-id?user_id=${user.id}`);
+            
+            if (response.status === 404) {
+                // Profile doesn't exist yet
+                setProfile(null);
+                setLoading(false);
+                return;
+            }
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Failed to fetch profile' }));
+                throw new Error(errorData.error || `HTTP error ${response.status}`);
+            }
 
-            if (error) throw error;
-            setProfile(data);
+            const profileData = await response.json();
+            setProfile(profileData);
         } catch (err: any) {
             console.error("Error loading profile:", err.message);
             setError(err.message);
@@ -69,7 +78,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
         } finally {
             setLoading(false);
         }
-    }, [supabase, user]);
+    }, [user]);
 
     useEffect(() => {
         fetchProfile();
