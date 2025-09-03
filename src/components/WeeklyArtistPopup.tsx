@@ -54,7 +54,7 @@ export function WeeklyArtistPopup({
     
     try {
       await userProfileService.recordEngagement(
-        user.auth_id, // ✅ ALREADY CORRECT: Uses user.auth_id (string)
+        user.id, 
         "video_view", 
         10, 
         weekIdentifier,
