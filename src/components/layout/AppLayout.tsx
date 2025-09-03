@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,7 +15,8 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
     const supabase = useSupabaseClient();
-    const { profile, role, loading, user } = useUserProfile();
+    const user = useUser();
+    const { profile, role, loading } = useUserProfile();
     const [authLoading, setAuthLoading] = useState(false);
     const router = useRouter();
     const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
