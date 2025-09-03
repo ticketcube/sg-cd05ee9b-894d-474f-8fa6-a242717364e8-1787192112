@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@supabase/auth-helpers-react";
 import { videoWatchService } from "@/services/videoWatchService";
 
 interface VideoWatchStatusProps {
@@ -21,7 +21,7 @@ export default function VideoWatchStatus({
   weekIdentifier,
   className = "",
 }: VideoWatchStatusProps) {
-  const { user } = useAuth();
+  const user = useUser();
   const [watchStatus, setWatchStatus] = useState<WatchStatusData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +36,7 @@ export default function VideoWatchStatus({
 
     try {
       setLoading(true);
-      const watchData = await videoWatchService.getWatchStatus(user.auth_id, artistUuid, weekIdentifier); // ✅ ALREADY CORRECT: Uses user.auth_id (string)
+      const watchData = await videoWatchService.getWatchStatus(user.id, artistUuid, weekIdentifier);
       
       setWatchStatus({
         hasWatched: watchData.length > 0,

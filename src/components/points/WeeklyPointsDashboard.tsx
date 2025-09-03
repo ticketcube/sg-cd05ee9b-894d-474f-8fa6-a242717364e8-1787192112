@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Star, Trophy, TrendingUp, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@supabase/auth-helpers-react";
 import { weeklyListService } from "@/services/weeklyListService";
 import { videoWatchService } from "@/services/videoWatchService";
 import weeklyVotingService from "@/services/weeklyVotingService";
@@ -29,7 +29,7 @@ export default function WeeklyPointsDashboard({
   weekIdentifier,
   className = "",
 }: WeeklyPointsDashboardProps) {
-  const { user } = useAuth();
+  const user = useUser();
   const [progress, setProgress] = useState<WeeklyProgressData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +42,7 @@ export default function WeeklyPointsDashboard({
       setError(null);
 
       // Get the weekly list and its artists
-      const weeklyList = await weeklyListService.getWeeklyListForUser(weekIdentifier, user.auth_id); // ✅ ALREADY CORRECT: Uses user.auth_id (string)
+      const weeklyList = await weeklyListService.getWeeklyListForUser(weekIdentifier, user.id);
       if (!weeklyList) {
         throw new Error("Weekly list not found");
       }
@@ -54,7 +54,7 @@ export default function WeeklyPointsDashboard({
       let videosWatched = 0;
       for (const artistUuid of artistUuids) {
         try {
-          const watchData = await videoWatchService.getWatchStatus(user.auth_id, artistUuid, weekIdentifier); // ✅ ALREADY CORRECT: Uses user.auth_id (string)
+          const watchData = await videoWatchService.getWatchStatus(user.id, artistUuid, weekIdentifier);
           if (watchData.length > 0) {
             videosWatched++;
           }
@@ -64,15 +64,15 @@ export default function WeeklyPointsDashboard({
       }
 
       // Get user votes for this week
-      const userVotes = await weeklyVotingService.getUserVotes(user.auth_id, weekIdentifier); // ✅ ALREADY CORRECT: Uses user.auth_id (string)
+      const userVotes = await weeklyVotingService.getUserVotes(user.id, weekIdentifier);
       const artistsRated = userVotes.length;
 
-      // Get total points earned this week - ✅ FIXED: Use auth_id directly
-      const weeklyStats = await userProfileService.getWeeklyStats(user.auth_id, weekIdentifier);
+      // Get total points earned this week
+      const weeklyStats = await userProfileService.getWeeklyStats(user.id, weekIdentifier);
       const pointsEarned = weeklyStats.total_points || 0;
 
       // Calculate completion bonus (assuming it's awarded when all artists are rated)
-      const completionBonus = artistsRated === totalArtists ? 50 : 0; // This should match your points config
+      const completionBonus = artistsRated === totalArtists ? 50 : 0;
       const isComplete = artistsRated === totalArtists && videosWatched === totalArtists;
 
       setProgress({
