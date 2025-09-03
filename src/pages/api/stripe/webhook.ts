@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
 import Stripe from "stripe";
-import { createServerSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 import type { Database } from "@/integrations/supabase/types";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -22,7 +22,7 @@ const PRO_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID;
 const COLLECTOR_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_COLLECTOR_PRICE_ID;
 
 async function updateCubeTier(req: NextApiRequest, res: NextApiResponse, cubeId: string, userId: string, priceId: string, paymentIntentId: string) {
-    const supabase = createServerSupabaseClient<Database>({ req, res });
+    const supabase = createPagesServerClient<Database>({ req, res });
     
     const updates: {
         is_secured: boolean;
@@ -54,7 +54,7 @@ async function updateCubeTier(req: NextApiRequest, res: NextApiResponse, cubeId:
         .from('ticketcubes')
         .update(updates)
         .eq('id', cubeId)
-        .eq('user_id', userId);
+        .eq('auth_id', userId); // Note: using auth_id to match your database schema
 
     if (error) {
         console.error(`Failed to update cube ${cubeId} to tier ${updates.tier}:`, error);
