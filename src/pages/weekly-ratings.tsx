@@ -337,5 +337,5 @@ function WeeklyRatingsPageContent() {
 }
 
 export default function WeeklyRatingsPage() {
-  return <AuthGuard><WeeklyRatingsPageContent /></AuthGuard>;
+  return <WeeklyRatingsPageContent />;
 }
