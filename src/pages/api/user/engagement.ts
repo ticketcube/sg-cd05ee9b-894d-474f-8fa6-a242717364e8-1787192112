@@ -17,8 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const token = authHeader.split(' ')[1];
   
   try {
-    // Verify token with client-side supabase
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !user) {
       return res.status(401).json({ error: 'Invalid token' });
