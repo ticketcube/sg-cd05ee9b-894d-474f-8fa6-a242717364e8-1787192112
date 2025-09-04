@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, Gift, Compass, BarChart, Music, Star, TrendingUp, Zap, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useUserProfile } from "@/contexts/UserProfileContext";
+
 
 export default function HomePage() {
   const user = useUser();
