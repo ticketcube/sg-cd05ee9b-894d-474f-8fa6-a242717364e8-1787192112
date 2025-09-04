@@ -131,7 +131,7 @@ export class WeeklyListService {
     }
   }
 
-  async getWeeklyListForUser(weekIdentifier: string, user_id: string): Promise<WeeklyListWithEnrichedArtists | null> {
+  async getWeeklyListForUser(weekIdentifier: string, userId: string): Promise<WeeklyListWithEnrichedArtists | null> {
     try {
      
       
