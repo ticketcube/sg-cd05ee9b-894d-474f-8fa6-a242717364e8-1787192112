@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import "@/styles/globals.css";
 
-import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";  // ✅ FIXED
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";  //  FIXED
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { UserProfileProvider } from "@/contexts/UserProfileContext";
 
@@ -11,7 +11,7 @@ import { Toaster } from "@/components/ui/toaster";
 import AppLayout from "@/components/layout/AppLayout";
 import type { Database } from "@/integrations/supabase/types";
 
-// ✅ PostHog
+//  PostHog
 import { initPosthog } from "@/lib/posthog";
 
 const supabase = createPagesBrowserClient<Database>(); 
