@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Timer, CheckCircle, Loader2, Eye, Ticket, Users } from "lucide-react";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
-import { useUser } from "@supabase/auth-helpers-react";
+import { useUser, useSession } from "@supabase/auth-helpers-react";
 import { videoWatchService } from "@/services/videoWatchService";
 import weeklyVotingService, { SubmissionResult } from "@/services/weeklyVotingService";
 import { pointsConfigService } from "@/services/pointsConfigService";
@@ -234,32 +234,39 @@ export default function WeeklyArtistRatingPopup({
                 throw new Error('Please sign in again to submit your rating');
             }
 
-            // Prepare single artist rating data
-            const submissionData = {
-                weekId: weekIdentifier,
-                artistRatings: [{
-                    artistId: artist.uuid,
-                    position: 1, // Single artist, position 1
-                }],
-                quadrantPositions: {
-                    [artist.uuid]: {
-                        ticket: ticketInterest,
-                        share: shareInterest
-                    }
+            // Get quadrant points from points_config table
+            const quadrantPoints = await pointsConfigService.getPoints('quadrant');
+
+            // Prepare user engagement data for quadrant submission
+            const engagementData = {
+                user_id: session.user.id,
+                engagement_type: 'quadrant',
+                points_earned: quadrantPoints, // Points from points_config table
+                week_identifier: weekIdentifier,
+                artist_uuid: artist.uuid,
+                metadata: {
+                    quadrant_positions: {
+                        [artist.uuid]: {
+                            ticket: ticketInterest,
+                            share: shareInterest
+                        }
+                    },
+                    completion_time: Math.round(watchTime),
+                    artist_name: artist.artist_name
                 },
-                completionTime: Math.round(watchTime),
+                created_at: new Date().toISOString()
             };
 
-            console.log('📤 Submitting single artist rating:', submissionData);
+            console.log('📤 Submitting quadrant engagement:', engagementData);
 
-            // Make API call
-            const response = await fetch("/api/weekly-ratings/submit", {
+            // Submit to user_engagements via API
+            const response = await fetch("/api/user/engagement", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${session.access_token}`,
                 },
-                body: JSON.stringify(submissionData),
+                body: JSON.stringify(engagementData),
             });
 
             if (!response.ok) {
@@ -268,21 +275,24 @@ export default function WeeklyArtistRatingPopup({
             }
 
             const result = await response.json();
-            console.log('✅ Individual rating submitted successfully:', result);
+            console.log('✅ Quadrant engagement submitted successfully:', result);
 
-            // Call parent callback
+            // Call parent callback with the rating data
             onRatingComplete(artist.uuid, ticketInterest, shareInterest);
 
             // Success notification
             if (onSubmissionSuccess) {
-                onSubmissionSuccess(result);
+                onSubmissionSuccess({
+                    message: `Rating submitted! You earned ${quadrantPoints} points.`,
+                    pointsEarned: quadrantPoints
+                });
             }
 
             // Close popup
             onClose();
 
         } catch (error: any) {
-            console.error("❌ Individual rating submission failed:", error);
+            console.error("❌ Quadrant rating submission failed:", error);
             setError(`Failed to submit rating: ${error.message}`);
         } finally {
             setIsSubmitting(false);

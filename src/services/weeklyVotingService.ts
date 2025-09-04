@@ -22,11 +22,9 @@ export interface SubmissionBreakdown {
 }
 
 export interface SubmissionResult {
-    totalPointsEarned: number;
-    completionBonus: number;
-    ratedArtists: number;
-    message: string;
-    breakdown?: SubmissionBreakdown[];
+  message: string;
+  pointsEarned?: number;
+  success?: boolean;
 }
 
 const weeklyVotingService = {
