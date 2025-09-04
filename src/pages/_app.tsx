@@ -12,11 +12,14 @@ import { Toaster } from "@/components/ui/toaster";
 import AppLayout from "@/components/layout/AppLayout";
 import type { Database } from "@/integrations/supabase/types";
 
+// PostHog
 import { initPosthog } from "@/lib/posthog";
-
 
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
+    
+    // ✅ FIXED: Create client with consistent naming
+    const [supabaseClient] = useState(() => createPagesBrowserClient<Database>());
 
     useEffect(() => {
         initPosthog();
@@ -24,7 +27,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
     return (
         <SessionContextProvider 
-            supabaseClient={supabaseClient}
+            supabaseClient={supabaseClient}  {/* ✅ FIXED: Use consistent variable name */}
             initialSession={pageProps.initialSession}
         >
             <UserProfileProvider>
