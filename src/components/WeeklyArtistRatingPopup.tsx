@@ -100,7 +100,6 @@ export default function WeeklyArtistRatingPopup({
       // Check if user is eligible for points
       const eligible = await pointsConfigService.checkEligibility(
         'video_view',
-        user.id, 
         artist.uuid,
         weekIdentifier
       );
@@ -143,56 +142,51 @@ export default function WeeklyArtistRatingPopup({
     }
   };
 
-  const awardVideoPoints = async () => {
-    if (!user || hasEarnedPoints || !isEligibleForPoints) return;
+    const awardVideoPoints = async () => {
+        if (!user || hasEarnedPoints || !isEligibleForPoints) return;
 
-    try {
-      console.log('🎯 Attempting to award video points...', {
-        user: user.id,
-        artist: artist.uuid,
-        watchTime: minWatchTime
-      });
+        try {
+            console.log('🎯 Attempting to award video points...', {
+                user: user.id,
+                artist: artist.uuid,
+                watchTime: minWatchTime
+            });
 
-      const result = await videoWatchService.recordVideoView({
-        userId: user.id, 
-        artistUuid: artist.uuid,
-        weekIdentifier: weekIdentifier,
-        watchTimeSeconds: minWatchTime // Use minWatchTime instead of current watchTime
-      });
+            // Use the new API-first points service
+            const result = await pointsConfigService.awardPoints(
+                'video_view',
+                artist.uuid,
+                weekIdentifier,
+                { watchTimeSeconds: minWatchTime }
+            );
 
-      console.log('✅ Video points result:', result);
+            console.log('✅ Video points result:', result);
 
-      if (result.pointsEarned > 0) {
-        setHasEarnedPoints(true);
-        stopTimer(); // Stop timer after points are awarded
-        
-        // Notify parent component
-        if (onVideoPointsAwarded) {
-          onVideoPointsAwarded(artist.uuid, result.pointsEarned);
+            if (result.success && result.pointsAwarded && result.pointsAwarded > 0) {
+                setHasEarnedPoints(true);
+                stopTimer(); // Stop timer after points are awarded
+
+                // Notify parent component
+                if (onVideoPointsAwarded) {
+                    onVideoPointsAwarded(artist.uuid, result.pointsAwarded);
+                }
+
+                console.log(`🎉 Successfully awarded ${result.pointsAwarded} points for watching ${artist.artist_name}!`);
+            } else {
+                console.log('ℹ️ No points awarded - user may have already watched this video this week');
+                setHasEarnedPoints(true); // Still mark as "processed" to stop timer
+                stopTimer();
+            }
+        } catch (error) {
+            console.error('❌ Error awarding video points:', error);
+
+            if (error instanceof Error) {
+                console.error('Video points error details:', error.message);
+            }
+
+            stopTimer();
         }
-
-        // Show success message
-        console.log(`🎉 Successfully awarded ${result.pointsEarned} points for watching ${artist.artist_name}!`);
-      } else {
-        console.log('ℹ️ No points awarded - user may have already watched this video this week');
-        setHasEarnedPoints(true); // Still mark as "processed" to stop timer
-        stopTimer();
-      }
-    } catch (error) {
-      console.error('❌ Error awarding video points:', error);
-      
-      // Show error to user (you could add a toast/notification here)
-      if (error instanceof Error) {
-        console.error('Video points error details:', error.message);
-      }
-      
-      // Still stop the timer to prevent infinite attempts
-      stopTimer();
-      
-      // Optionally show an error state to the user
-      // You could add setErrorMessage(error.message) here if you add error state
-    }
-  };
+    };
 
   // Start timer automatically when popup opens (autoplay behavior)
   useEffect(() => {
