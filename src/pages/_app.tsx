@@ -14,6 +14,8 @@ import type { Database } from "@/integrations/supabase/types";
 // ✅ PostHog
 import { initPosthog } from "@/lib/posthog";
 
+const supabase = createPagesBrowserClient(); 
+
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
     // Create client with proper typing
