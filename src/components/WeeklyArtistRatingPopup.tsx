@@ -376,7 +376,13 @@ export default function WeeklyArtistRatingPopup({
               <DialogTitle className="text-2xl font-bold">{artist.artist_name}</DialogTitle>
               {artist.artist_genre && (
                 <p className="text-gray-400 text-sm">{artist.artist_genre}</p>
-              )}
+                          )}
+
+                          {error && (
+                              <div className="bg-red-600 px-3 py-2 rounded text-sm mt-2">
+                                  {error}
+                              </div>
+                          )}
               
               {/* Timer and Points Display - Centered below artist name */}
               <div className="flex justify-center mt-3">
