@@ -170,7 +170,7 @@ export class PointsConfigService {
           const { data: artistEngagement, error: artistError } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("auth_id", authId) 
+            .eq("user_id", authId) 
             .eq("engagement_type", actionName)
             .eq("artist_uuid", artistUuid)
             .gt("points_earned", 0)
