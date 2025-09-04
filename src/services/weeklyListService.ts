@@ -133,7 +133,7 @@ export class WeeklyListService {
 
   async getWeeklyListForUser(weekIdentifier: string, userAuthId: string): Promise<WeeklyListWithEnrichedArtists | null> {
     try {
-      console.log(`✅ CRITICAL FIX: Getting weekly list for user auth_id: ${userAuthId}, week: ${weekIdentifier}`);
+     
       
       // Get the basic weekly list
       const weeklyList = await this.getWeeklyList(weekIdentifier);
@@ -142,11 +142,11 @@ export class WeeklyListService {
         return null;
       }
 
-      // ✅ CRITICAL FIX: Get user's votes for this week using auth_id directly
+      
       const { data: userVotes, error: votesError } = await supabase
         .from("user_engagements")  // ✅ Use user_engagements table
         .select("artist_uuid")
-          .eq("auth_id", userAuthId) // ✅ FIXED: Use auth_id directly instead of numeric user_id
+          .eq("user_id", userAuthId) // ✅ FIXED: 
         .eq("week_identifier", weekIdentifier)
         .eq("engagement_type", "quadrant");  // ✅ Use "quadrant" engagement type
 
@@ -157,11 +157,11 @@ export class WeeklyListService {
       const votedArtistUuids = new Set(userVotes?.map(v => v.artist_uuid) || []);
       console.log(`✅ Found ${votedArtistUuids.size} voted artists for user`);
 
-      // ✅ CRITICAL FIX: Get user's video watch status for this week using auth_id directly
+      //
       const { data: userEngagements, error: engagementsError } = await supabase
         .from("user_engagements")
         .select("artist_uuid")
-          .eq("auth_id", userAuthId) // ✅ FIXED: Use auth_id directly instead of numeric user_id
+          .eq("user_id", userAuthId) // 
         .eq("week_identifier", weekIdentifier)
         .eq("engagement_type", "video_view");
 
