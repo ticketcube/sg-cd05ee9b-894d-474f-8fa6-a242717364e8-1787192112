@@ -229,11 +229,10 @@ export default function WeeklyArtistRatingPopup({
             setError(null);
 
             // Get session
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          if (!session?.access_token) {
 
-            if (sessionError || !session?.access_token) {
-                throw new Error('Please sign in again to submit your rating');
-            }
+            throw new Error('Please sign in again to submit your rating');
+          }
 
             // Get quadrant points from points_config table
             const quadrantPoints = await pointsConfigService.getPoints('quadrant');
