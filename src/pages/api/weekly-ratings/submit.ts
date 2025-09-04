@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser(token);
+       } = await supabaseAdmin.auth.getUser(token); // ✅ Using admin supabase
 
     if (userError || !user) {
       return res.status(401).json({ error: "Invalid or expired token" });
