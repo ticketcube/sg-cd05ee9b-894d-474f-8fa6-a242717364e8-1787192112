@@ -9,13 +9,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Get the user's session from the Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'No authorization header' });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
+    // 
+      const userId = req.headers['x-user-id'];
+      if (!userId) {
+          return res.status(401).json({ error: 'User ID required' });
+      }
     
     // Verify the user's session using the regular supabase client
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
