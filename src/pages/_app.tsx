@@ -1,3 +1,4 @@
+import React from "react";
 import type { AppProps } from "next/app";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -13,7 +14,6 @@ import type { Database } from "@/integrations/supabase/types";
 
 import { initPosthog } from "@/lib/posthog";
 
-const [supabaseClient] = useState(() => createPagesBrowserClient < Database > ());
 
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
