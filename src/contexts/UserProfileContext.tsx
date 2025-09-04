@@ -9,20 +9,23 @@ import {
 } from "react";
 import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
 
+
+
 type UserProfile = {
-    id: string;
-    user_id: string;
-    username?: string;
-    role?: string;
-    email?: string;
-    raw_city_input?: string;
-    avatar_url?: string;
-    created_at?: string;
-    city?: string;
-    state?: string;
-    totalpoints?: string;
-    // add other fields from your user_profiles table
+    id: number;                    // ✅ FIXED: integer, not string
+    user_id: string;              // ✅ CORRECT: uuid
+    username: string;             // ✅ CORRECT: required text
+    role?: string;                // ✅ CORRECT: optional text
+    email: string;                // ✅ CORRECT: required text
+    raw_city_input?: string;      // ✅ CORRECT: optional text
+    avatar_url?: string;          // ✅ CORRECT: optional text
+    created_at: string;           // ✅ CORRECT: required timestamp
+    total_points?: number;        // ✅ FIXED: number, not string, and correct name
+    last_active?: string;         // ✅ ADDED: missing field
+    city_id?: number;             // ✅ ADDED: missing bigint field
+    // ❌ REMOVED: city and state (not in database)
 };
+
 
 type UserProfileContextType = {
     profile: UserProfile | null;
