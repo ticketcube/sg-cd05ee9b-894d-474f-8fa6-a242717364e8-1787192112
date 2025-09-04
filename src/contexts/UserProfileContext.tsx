@@ -9,8 +9,6 @@ import {
 } from "react";
 import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
 
-
-
 type UserProfile = {
     id: number;                    // ✅ FIXED: integer, not string
     user_id: string;              // ✅ CORRECT: uuid
@@ -23,9 +21,7 @@ type UserProfile = {
     total_points?: number;        // ✅ FIXED: number, not string, and correct name
     last_active?: string;         // ✅ ADDED: missing field
     city_id?: number;             // ✅ ADDED: missing bigint field
-    // ❌ REMOVED: city and state (not in database)
 };
-
 
 type UserProfileContextType = {
     profile: UserProfile | null;
@@ -35,7 +31,7 @@ type UserProfileContextType = {
     refreshProfile: () => Promise<void>;
 };
 
-const UserProfileContext = createContext < UserProfileContextType | undefined > (
+const UserProfileContext = createContext<UserProfileContextType | undefined>(
     undefined
 );
 
@@ -43,9 +39,9 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     const supabase = useSupabaseClient();
     const user = useUser();
 
-    const [profile, setProfile] = useState < UserProfile | null > (null);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState < string | null > (null);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchProfile = useCallback(async () => {
         if (!user) {
@@ -58,31 +54,34 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
             setLoading(true);
             setError(null);
 
-            // ✅ FIXED: Use consolidated /api/user/profile endpoint instead of profile-by-auth-id
-            const response = await fetch(`/api/user/profile?user_id=${user.id}`);
-            
-            if (response.status === 404) {
-                // Profile doesn't exist yet
-                setProfile(null);
-                setLoading(false);
-                return;
-            }
-            
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Failed to fetch profile' }));
-                throw new Error(errorData.error || `HTTP error ${response.status}`);
+            // ✅ FIXED: Use direct Supabase query instead of API endpoint
+            // This eliminates race conditions and network delays
+            const { data: profileData, error: fetchError } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+
+            if (fetchError) {
+                if (fetchError.code === 'PGRST116') {
+                    // Profile doesn't exist yet - this is normal for very new users
+                    console.log('Profile not found for user:', user.id);
+                    setProfile(null);
+                    setLoading(false);
+                    return;
+                }
+                throw fetchError;
             }
 
-            const profileData = await response.json();
-            setProfile(profileData);
+            setProfile(profileData as UserProfile);
         } catch (err: any) {
             console.error("Error loading profile:", err.message);
-            setError(err.message);
+            setError(err.message || 'Failed to load profile');
             setProfile(null);
         } finally {
             setLoading(false);
         }
-    }, [user]);
+    }, [user, supabase]);
 
     useEffect(() => {
         fetchProfile();
