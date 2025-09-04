@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import "@/styles/globals.css";
 
-import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";  // ✅ FIXED
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { UserProfileProvider } from "@/contexts/UserProfileContext";
 
@@ -14,7 +14,7 @@ import type { Database } from "@/integrations/supabase/types";
 // ✅ PostHog
 import { initPosthog } from "@/lib/posthog";
 
-const supabase = createPagesBrowserClient(); 
+const supabase = createPagesBrowserClient<Database>(); 
 
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
