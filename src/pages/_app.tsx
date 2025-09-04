@@ -13,9 +13,10 @@ import type { Database } from "@/integrations/supabase/types";
 
 import { initPosthog } from "@/lib/posthog";
 
+const [supabaseClient] = useState(() => createPagesBrowserClient < Database > ());
+
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
-    const [supabaseClient] = useState(() => createPagesBrowserClient<Database>());
 
     useEffect(() => {
         initPosthog();
