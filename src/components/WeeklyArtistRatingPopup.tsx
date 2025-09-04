@@ -242,18 +242,17 @@ export default function WeeklyArtistRatingPopup({
       const shareValue = (shareInterest - 50) / 50;
       
       // Get the user's session token for API authentication
-      const { data: { session } } = await supabase.auth.getSession();
-        if (!user?.id) {
+     const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) {
         throw new Error('No valid session found');
-      }
+}
 
-      // Call the new API route instead of direct database operations
       const response = await fetch('/api/weekly-ratings/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-            'X-User-ID': user.id
-        },
+   method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${session.access_token}`
+  },
         body: JSON.stringify({
           weekId: weekIdentifier,
           artistRatings: [{
