@@ -153,98 +153,102 @@ export class PointsConfigService {
    * Check if user is eligible for points based on frequency rules
    * ✅ FIXED: Now uses auth_id (string) instead of user_id (number) and user_engagements table
    */
+ /**
+ * Check if a user (auth.users.id) is eligible to earn points
+ * based on frequency rules.
+ */
+class PointsConfigService {
   async checkEligibility(
     actionName: keyof PointsConfigCache,
-   user_id: string, 
+    authUserId: string,   // 👈 explicitly the UUID from auth.users
     artistUuid?: string,
     weekIdentifier?: string
   ): Promise<boolean> {
     try {
       const frequency = await this.getFrequency(actionName);
-      
+
       switch (frequency) {
-        case 'once_per_artist_lifetime':
-          // Check if user has ever earned points for this artist
+        case "once_per_artist_lifetime": {
           if (!artistUuid) return false;
-          
-          const { data: artistEngagement, error: artistError } = await supabase
+
+          const { data, error } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", userId)
+            .eq("user_id", authUserId) // 👈 always auth ID
             .eq("engagement_type", actionName)
             .eq("artist_uuid", artistUuid)
             .gt("points_earned", 0)
             .limit(1);
 
-          if (artistError) {
-            console.error("Error checking artist lifetime eligibility:", artistError);
+          if (error) {
+            console.error("Error checking artist lifetime eligibility:", error);
             return false;
           }
 
-          return !artistEngagement || artistEngagement.length === 0;
+          return !data || data.length === 0;
+        }
 
-        case 'once_per_artist_per_week':
-          // Check if user has earned points for this artist in this specific week
+        case "once_per_artist_per_week": {
           if (!artistUuid || !weekIdentifier) return false;
-          
-          const { data: artistWeekEngagement, error: artistWeekError } = await supabase
+
+          const { data, error } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", userId) 
+            .eq("user_id", authUserId)
             .eq("engagement_type", actionName)
             .eq("artist_uuid", artistUuid)
             .eq("week_identifier", weekIdentifier)
             .gt("points_earned", 0)
             .limit(1);
 
-          if (artistWeekError) {
-            console.error("Error checking artist per week eligibility:", artistWeekError);
+          if (error) {
+            console.error("Error checking artist per week eligibility:", error);
             return false;
           }
 
-          return !artistWeekEngagement || artistWeekEngagement.length === 0;
+          return !data || data.length === 0;
+        }
 
-        case 'once_per_week':
-          // Check if user has earned points for this action this week
+        case "once_per_week": {
           if (!weekIdentifier) return false;
-          
-          const { data: weekEngagement, error: weekError } = await supabase
+
+          const { data, error } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", userId) 
+            .eq("user_id", authUserId)
             .eq("engagement_type", actionName)
             .eq("week_identifier", weekIdentifier)
             .gt("points_earned", 0)
             .limit(1);
 
-          if (weekError) {
-            console.error("Error checking weekly eligibility:", weekError);
+          if (error) {
+            console.error("Error checking weekly eligibility:", error);
             return false;
           }
 
-          return !weekEngagement || weekEngagement.length === 0;
+          return !data || data.length === 0;
+        }
 
-        case 'unlimited':
-          // Always eligible
+        case "unlimited":
           return true;
 
-        case 'once':
-        default:
-          // Check if user has ever earned points for this action
-          const { data: generalEngagement, error: generalError } = await supabase
+        case "once":
+        default: {
+          const { data, error } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", userId) 
+            .eq("user_id", authUserId)
             .eq("engagement_type", actionName)
             .gt("points_earned", 0)
             .limit(1);
 
-          if (generalError) {
-            console.error("Error checking general eligibility:", generalError);
+          if (error) {
+            console.error("Error checking general eligibility:", error);
             return false;
           }
 
-          return !generalEngagement || generalEngagement.length === 0;
+          return !data || data.length === 0;
+        }
       }
     } catch (error) {
       console.error("Error checking eligibility:", error);
@@ -252,5 +256,6 @@ export class PointsConfigService {
     }
   }
 }
+
 
 export const pointsConfigService = new PointsConfigService();
