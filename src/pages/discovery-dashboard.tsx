@@ -80,24 +80,46 @@ export default function DiscoveryDashboard() {
         );
     }
 
-    if (!user || error || !userHistory) {
+    if (!user) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
-                <div className="text-center max-w-md mx-auto p-4 md:p-6">
-                    <div className="w-16 md:w-20 h-16 md:h-20 rounded-full bg-red-900/20 flex items-center justify-center mx-auto mb-4">
-                        <Compass className="w-8 md:w-10 h-8 md:h-10 text-red-400" />
-                    </div>
+                <div className="text-center">
                     <h1 className="text-xl md:text-2xl font-bold mb-4">Access Required</h1>
-                    <p className="text-red-400 mb-6 text-sm md:text-base">{error || "Please complete your profile setup first."}</p>
+                    <p className="text-red-400 mb-6 text-sm md:text-base">
+                        Please sign in to access the discovery dashboard.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-xl md:text-2xl font-bold mb-4">Error</h1>
+                    <p className="text-red-400 mb-6 text-sm md:text-base">{error}</p>
                     <Link href="/profile">
-                        <Button className="bg-blue-600 hover:bg-blue-700">
-                            Back to Profile
-                        </Button>
+                        <Button>Back to Profile</Button>
                     </Link>
                 </div>
             </div>
         );
     }
+
+    if (!userHistory) {
+        return (
+            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-xl md:text-2xl font-bold mb-4">No history yet</h1>
+                    <p className="text-gray-400 mb-6 text-sm md:text-base">
+                        Start discovering events to see your history here.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
 
     const { user_profile, weekly_summaries, total_points } = userHistory;
     
