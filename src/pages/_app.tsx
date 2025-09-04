@@ -25,7 +25,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
     return (
         <SessionContextProvider 
-            supabaseClient={supabaseClient as any}
+            supabaseClient={supabase} 
             initialSession={pageProps.initialSession}
         >
             <UserProfileProvider>
