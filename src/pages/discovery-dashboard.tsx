@@ -32,41 +32,44 @@ export default function DiscoveryDashboard() {
         }
     }, [router.query]);
 
+
     useEffect(() => {
-        if (profileLoading) return;
-
-        if (!user) {
-            setError("Please sign in to access the discovery dashboard.");
-            setLoading(false);
-            return;
-        }
-
-        if (!profile) {
-            setUserHistory(null);
-            setError("Please complete your profile setup first.");
-            setLoading(false);
-            return;
-        }
-
-        if (profile && user?.id && !userHistory) {
-            const fetchUserHistory = async () => {
-                setLoading(true);
-                setError(null);
-                try {
-                    const history = await userProfileService.getUserEngagementHistory(user.id);
-                    setUserHistory(history);
-                } catch (err) {
-                    setError(err instanceof Error ? err.message : "Failed to load dashboard data");
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            fetchUserHistory();
-        } else {
-            setLoading(false);
-        }
-    }, [user, profile, profileLoading, userHistory]);
+                // Don’t decide anything until profile AND user have finished loading
+                   if (profileLoading) return;
+        
+                    // If auth hasn’t resolved yet, don’t show an error
+                    if (user === null) {
+                            setError("Please sign in to access the discovery dashboard.");
+                            setLoading(false);
+                            return;
+                        }
+        
+                    // Profile check after loading finishes
+                    if (!profile) {
+                            setUserHistory(null);
+                          setError("Please complete your profile setup first.");
+                          setLoading(false);
+                           return;
+                       }
+        
+                  // Fetch history only once, after both user + profile exist
+                    if (user?.id && profile && !userHistory) {
+                           const fetchUserHistory = async () => {
+                                    setLoading(true);
+                                  setError(null);
+                                    try {
+                                            // IMPORTANT: use user.id (auth id), not profile!.id
+                                                const history = await userProfileService.getUserEngagementHistory(user.id);
+                                            setUserHistory(history);
+                                       } catch (err) {
+                                                setError(err instanceof Error ? err.message : "Failed to load dashboard data");
+                                           } finally {
+                                            setLoading(false);
+                                        }
+                               };
+                            fetchUserHistory();
+                        }
+            }, [user?.id, profile, profileLoading, userHistory]);
 
     if (profileLoading || loading) {
         return (
