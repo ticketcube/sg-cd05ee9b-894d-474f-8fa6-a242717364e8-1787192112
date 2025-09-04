@@ -48,7 +48,8 @@ export default function WeeklyArtistRatingPopup({
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [slidersChanged, setSlidersChanged] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState < string | null > (null);  // ← ADD THIS LINE
 
   // Timer system state
   const [watchTime, setWatchTime] = useState(0);
