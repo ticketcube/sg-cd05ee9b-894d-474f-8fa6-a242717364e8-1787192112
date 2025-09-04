@@ -155,7 +155,7 @@ export class PointsConfigService {
    */
   async checkEligibility(
     actionName: keyof PointsConfigCache,
-    authId: string, // ✅ FIXED: Changed from userId (number) to authId (string)
+   user_id: string, 
     artistUuid?: string,
     weekIdentifier?: string
   ): Promise<boolean> {
@@ -170,7 +170,7 @@ export class PointsConfigService {
           const { data: artistEngagement, error: artistError } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
+            .eq("auth_id", authId) 
             .eq("engagement_type", actionName)
             .eq("artist_uuid", artistUuid)
             .gt("points_earned", 0)
