@@ -44,13 +44,7 @@ export default function DiscoveryDashboard() {
                             return;
                         }
         
-                    // Profile check after loading finishes
-                    if (!profile) {
-                           
-                          setError("Please complete your profile setup first.");
-                          setLoading(false);
-                           return;
-                       }
+                   
         
                   // Fetch history only once, after both user + profile exist
                     if ( !userHistory) {
