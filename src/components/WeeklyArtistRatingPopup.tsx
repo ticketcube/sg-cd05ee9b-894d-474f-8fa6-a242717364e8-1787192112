@@ -42,8 +42,8 @@ export default function WeeklyArtistRatingPopup({
   onVideoPointsAwarded,
   onSubmissionSuccess,
 }: WeeklyArtistRatingPopupProps) {
-  const user = useUser();
-  const session = useSession(); // Add this line
+    const user = useUser();
+    const session = useSession(); // Add this line
   const [ticketInterest, setTicketInterest] = useState(50);
   const [shareInterest, setShareInterest] = useState(50);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -229,9 +229,7 @@ export default function WeeklyArtistRatingPopup({
             setError(null);
 
             // Get session
-          if (!session?.access_token) {
-
-            throw new Error('Please sign in again to submit your rating');
+          if (!session?.access_token) { throw new Error('Please sign in again to submit your rating');
           }
 
             // Get quadrant points from points_config table
