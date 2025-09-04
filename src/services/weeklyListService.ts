@@ -146,7 +146,7 @@ export class WeeklyListService {
       const { data: userVotes, error: votesError } = await supabase
         .from("user_engagements")  // ✅ Use user_engagements table
         .select("artist_uuid")
-          .eq("user_id", userAuthId) // ✅ FIXED: 
+          .eq("user_id", userId) // ✅ FIXED: 
         .eq("week_identifier", weekIdentifier)
         .eq("engagement_type", "quadrant");  // ✅ Use "quadrant" engagement type
 
@@ -161,7 +161,7 @@ export class WeeklyListService {
       const { data: userEngagements, error: engagementsError } = await supabase
         .from("user_engagements")
         .select("artist_uuid")
-          .eq("user_id", userAuthId) // 
+          .eq("user_id", userId) // 
         .eq("week_identifier", weekIdentifier)
         .eq("engagement_type", "video_view");
 
