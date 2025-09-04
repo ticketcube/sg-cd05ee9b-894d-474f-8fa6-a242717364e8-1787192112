@@ -225,104 +225,65 @@ export default function WeeklyArtistRatingPopup({
     const handleSubmit = async () => {
         try {
             setIsSubmitting(true);
+            setError(null);
 
-            // 🔍 DEBUG: Check session state
-            console.log('🚀 Starting weekly rating submission...');
-
+            // Get session
             const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-            console.log('🔍 Session Debug Info:', {
-                hasSession: !!session,
-                hasUser: !!session?.user,
-                userId: session?.user?.id,
-                hasAccessToken: !!session?.access_token,
-                tokenLength: session?.access_token?.length,
-                sessionError: sessionError?.message,
-                expiresAt: session?.expires_at ? new Date(session.expires_at * 1000).toISOString() : 'no expiry'
-            });
-
-            if (sessionError) {
-                console.error('❌ Session error:', sessionError);
-                throw new Error(`Session error: ${sessionError.message}`);
-            }
-
-            if (!session?.access_token) {
-                console.error('❌ No valid session found:', {
-                    session: !!session,
-                    user: !!session?.user,
-                    token: !!session?.access_token
-                });
+            if (sessionError || !session?.access_token) {
                 throw new Error('Please sign in again to submit your rating');
             }
 
-            if (!session?.user?.id) {
-                console.error('❌ No user ID found in session');
-                throw new Error('User session is invalid. Please sign in again.');
-            }
-
-            // 🔍 DEBUG: Check token format
-            console.log('🎫 Token info:', {
-                tokenStart: session.access_token.substring(0, 20) + '...',
-                tokenType: typeof session.access_token,
-                tokenValid: session.access_token.length > 50
-            });
-
-            // Prepare submission data
+            // Prepare single artist rating data
             const submissionData = {
-                weekId,
-                artistRatings: ratings.map((rating, index) => ({
-                    artistId: rating.artist_uuid,
-                    position: index + 1,
-                })),
-                quadrantPositions,
-                completionTime: Math.round((Date.now() - startTime) / 1000),
+                weekId: weekIdentifier,
+                artistRatings: [{
+                    artistId: artist.uuid,
+                    position: 1, // Single artist, position 1
+                }],
+                quadrantPositions: {
+                    [artist.uuid]: {
+                        ticket: ticketInterest,
+                        share: shareInterest
+                    }
+                },
+                completionTime: Math.round(watchTime),
             };
 
-            console.log('📤 Submitting data:', {
-                weekId,
-                ratingsCount: submissionData.artistRatings.length,
-                hasQuadrantPositions: Object.keys(quadrantPositions).length > 0,
-                userId: session.user.id
-            });
+            console.log('📤 Submitting single artist rating:', submissionData);
 
             // Make API call
             const response = await fetch("/api/weekly-ratings/submit", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${session.access_token}`, // 🔍 DEBUG: This is the critical line
+                    Authorization: `Bearer ${session.access_token}`,
                 },
                 body: JSON.stringify(submissionData),
             });
 
-            console.log('📥 API Response:', {
-                status: response.status,
-                statusText: response.statusText,
-                ok: response.ok
-            });
-
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                console.error('❌ API Error Response:', {
-                    status: response.status,
-                    error: errorData.error || errorData,
-                    fullResponse: errorData
-                });
                 throw new Error(errorData.error || `HTTP error ${response.status}`);
             }
 
             const result = await response.json();
-            console.log('✅ Submission successful:', result);
+            console.log('✅ Individual rating submitted successfully:', result);
 
-            // Handle success (rest of your existing success code...)
+            // Call parent callback
+            onRatingComplete(artist.uuid, ticketInterest, shareInterest);
+
+            // Success notification
+            if (onSubmissionSuccess) {
+                onSubmissionSuccess(result);
+            }
+
+            // Close popup
+            onClose();
 
         } catch (error: any) {
-            console.error("❌ Weekly rating submission failed:", {
-                error: error.message,
-                stack: error.stack,
-                timestamp: new Date().toISOString()
-            });
-            setError(`Failed to submit weekly ratings: ${error.message}`);
+            console.error("❌ Individual rating submission failed:", error);
+            setError(`Failed to submit rating: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }
