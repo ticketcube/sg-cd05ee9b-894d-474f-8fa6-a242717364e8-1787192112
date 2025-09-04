@@ -1,104 +1,138 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import { supabase } from '@/integrations/supabase/client';
+import { NextApiRequest, NextApiResponse } from "next";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabase } from "@/integrations/supabase/client";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    // Extract and verify the Supabase auth token
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ error: "Authorization token required" });
     }
 
-    try {
-        // 🔐 Extract and verify the Supabase auth token
-        const authHeader = req.headers.authorization;
-        const token = authHeader?.split(' ')[1];
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(token);
 
-        if (!token) {
-            return res.status(401).json({ error: 'Authorization token required' });
-        }
+    if (userError || !user) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
 
-        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    // ✅ Destructure required request body fields
+    const { weekId, artistRatings, quadrantPositions, completionTime } = req.body;
 
-        if (userError || !user) {
-            return res.status(401).json({ error: 'Invalid or expired token' });
-        }
+    if (!weekId || !artistRatings || !Array.isArray(artistRatings)) {
+      return res.status(400).json({
+        error: "Missing required fields: weekId, artistRatings",
+      });
+    }
 
-        // ✅ Destructure required request body fields
-        const { weekId, artistRatings, quadrantPositions, completionTime } = req.body;
+    console.log(
+      `📊 [WeeklyRatings] Submission for user: ${user.id}, week: ${weekId}`
+    );
 
-        if (!weekId || !artistRatings || !Array.isArray(artistRatings)) {
-            return res.status(400).json({ error: 'Missing required fields: weekId, artistRatings' });
-        }
+    // 🔎 Fetch the user profile (must exist)
+    const { data: userProfile, error: profileError } = await supabaseAdmin
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
 
-        console.log(`📊 [WeeklyRatings] Submission for user: ${user.id}, week: ${weekId}`);
+    if (profileError || !userProfile) {
+      return res.status(404).json({ error: "User profile not found" });
+    }
 
-        // 🔎 Fetch the user profile (must exist)
-        const { data: userProfile, error: profileError } = await supabaseAdmin
-            .from('user_profiles')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
+    // 🎯 Process each artist rating
+    const votingPromises = artistRatings.map(async (rating: any) => {
+      const { artistId, position } = rating;
 
-        if (profileError || !userProfile) {
-            return res.status(404).json({ error: 'User profile not found' });
-        }
+      // Get quadrant slider values
+      const sliderValues = quadrantPositions?.[artistId] || {};
+      const ticketInterest = sliderValues.ticket ?? 0;
+      const shareInterest = sliderValues.share ?? 0;
 
-        // 🎯 Process each artist rating
-        const votingPromises = artistRatings.map(async (rating: any) => {
-            const { artistId, position } = rating;
+      // Upsert weekly vote
+      const { error: voteError } = await supabaseAdmin
+        .from("weekly_votes")
+        .upsert(
+          {
+            user_id: user.id,
+            artist_uuid: artistId,
+            week_identifier: weekId,
+            vote_type: "quadrant",
+            quadrant_x: ticketInterest,
+            quadrant_y: shareInterest,
+            ranking_position: position || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,artist_uuid,week_identifier" }
+        );
 
-            // Get quadrant slider values
-            const sliderValues = quadrantPositions?.[artistId] || {};
-            const ticketInterest = sliderValues.ticket ?? 0;
-            const shareInterest = sliderValues.share ?? 0;
+      if (voteError) {
+        console.error(
+          `❌ Error saving vote for artist ${artistId}:`,
+          voteError
+        );
+        throw voteError;
+      }
 
-            // Upsert weekly vote
-            const { error: voteError } = await supabaseAdmin
-                .from('weekly_votes')
-                .upsert({
-                    user_id: user.id,
-                    artist_uuid: artistId,
-                    week_identifier: weekId,
-                    vote_type: 'quadrant',
-                    quadrant_x: ticketInterest,
-                    quadrant_y: shareInterest,
-                    ranking_position: position || null,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                }, {
-                    onConflict: 'user_id,artist_uuid,week_identifier'
-                });
+      return { artistId, success: true };
+    });
 
-            if (voteError) {
-                console.error(`❌ Error saving vote for artist ${artistId}:`, voteError);
-                throw voteError;
-            }
+    const voteResults = await Promise.all(votingPromises);
 
-            return { artistId, success: true };
-        });
+    // 📝 Record engagement (non-blocking)
+    const { error: engagementError } = await supabaseAdmin
+      .from("user_engagements")
+      .insert({
+        user_id: user.id,
+        engagement_type: "quadrant",
+        points_earned: 10,
+        week_identifier: weekId,
+        artist_uuid: artistRatings[0]?.artistId || null,
+        metadata: {
+          artists_rated: artistRatings.length,
+          completion_time: completionTime,
+          quadrant_positions: quadrantPositions,
+        },
+        created_at: new Date().toISOString(),
+      });
 
-        const voteResults = await Promise.all(votingPromises);
+    if (engagementError) {
+      console.warn(
+        "⚠️ Engagement insert failed (non-blocking):",
+        engagementError
+      );
+    }
 
-        // 📝 Record engagement (non-blocking)
-        const { error: engagementError } = await supabaseAdmin
-            .from('user_engagements')
-            .insert({
-                user_id: user.id,
-                engagement_type: 'quadrant',
-                points_earned: 10,
-                week_identifier: weekId,
-                artist_uuid: artistRatings[0]?.artistId || null,
-                metadata: {
-                    artists_rated: artistRatings.length,
-                    completion_time: completionTime,
-                    quadrant_positions: quadrantPositions
-                },
-                created_at: new Date().toISOString()
-            });
+    //  Update points (non-blocking)
+    const { error: pointsUpdateError } = await supabaseAdmin
+      .from("user_profiles")
+      .update({
+        total_points: (userProfile.total_points || 0) + 10,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.id);
 
-        if (engagementError) {
-            console.warn('⚠️ Engagement insert failed (non-blocking):', engagementError);
-        }
+    if (pointsUpdateError) {
+      console.warn(" Points update failed (non-blocking):", pointsUpdateError);
+    }
 
-        // 🏆 Update points (non-blocking)
-        const { error: pointsUpdateError } = await supabaseAdmin
-            .from('user_profiles')
+    return res.status(200).json({
+      message: "Votes submitted successfully",
+      votes: voteResults,
+      pointsEarned: 10,
+    });
+  } catch (err) {
+    console.error("❌ API error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
