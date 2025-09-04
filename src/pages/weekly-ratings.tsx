@@ -3,7 +3,6 @@ import { useUser } from "@supabase/auth-helpers-react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import { weeklyListService, EnrichedWeeklyListArtist, WeeklyListWithEnrichedArtists } from "@/services/weeklyListService";
 import weeklyVotingService, { SubmissionResult } from "@/services/weeklyVotingService";
-import { videoWatchService } from "@/services/videoWatchService";
 import type { Tables } from "@/integrations/supabase/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,12 +24,6 @@ interface ArtistRating {
   isRated: boolean;
 }
 
-interface VideoWatchStatus {
-  artistUuid: string;
-  hasWatched: boolean;
-  watchedAt?: string;
-}
-
 function WeeklyRatingsPageContent() {
   const user = useUser();
   const { profile, loading: profileLoading } = useUserProfile();
@@ -41,7 +34,6 @@ function WeeklyRatingsPageContent() {
   const [loadingSpecificList, setLoadingSpecificList] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
   const [artistRatings, setArtistRatings] = useState<ArtistRating[]>([]);
-  const [videoWatchStatuses, setVideoWatchStatuses] = useState<VideoWatchStatus[]>([]);
   const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -84,15 +76,18 @@ function WeeklyRatingsPageContent() {
       setLoadingSpecificList(true);
       setListError(null);
       
+      // ✅ PERFORMANCE FIX: Use the optimized method that fetches all data in batch queries
       const list = await weeklyListService.getWeeklyListForUser(weekIdentifier, user.id);
       if (!list) {
         setListError("Selected weekly list not found");
         setWeeklyList(null);
         return;
       }
+      
+      console.log(`✅ PERFORMANCE: Loaded weekly list with ${list.artists.length} artists in optimized batch queries`);
       setWeeklyList(list);
 
-      // Load existing user votes
+      // ✅ PERFORMANCE FIX: Load existing user votes (this is already optimized)
       const userVotes = await weeklyVotingService.getUserVotes(user.id, weekIdentifier);
       const initialRatings = userVotes.map(vote => ({
         artistUuid: vote.artist_uuid,
@@ -102,25 +97,10 @@ function WeeklyRatingsPageContent() {
       }));
       setArtistRatings(initialRatings);
 
-      // Load video watch statuses for all artists in this week
-      const watchStatuses: VideoWatchStatus[] = [];
-      for (const artistData of list.artists) {
-        try {
-          const watchData = await videoWatchService.getWatchStatus(user.id, artistData.artist.uuid, weekIdentifier);
-          watchStatuses.push({
-            artistUuid: artistData.artist.uuid,
-            hasWatched: watchData.length > 0,
-            watchedAt: watchData[0]?.created_at
-          });
-        } catch (error) {
-          watchStatuses.push({
-            artistUuid: artistData.artist.uuid,
-            hasWatched: false
-          });
-        }
-      }
-      setVideoWatchStatuses(watchStatuses);
-      
+      // ✅ REMOVED: The inefficient N+1 query loop that was making individual calls per artist
+      // The video watch statuses are now provided by weeklyListService.getWeeklyListForUser() 
+      // in the `user_has_watched_video` field for each artist
+
     } catch (err) {
       setListError(err instanceof Error ? err.message : "Failed to load weekly list");
     } finally {
@@ -173,22 +153,23 @@ function WeeklyRatingsPageContent() {
   };
 
   const handleVideoPointsAwarded = (artistUuid: string, pointsEarned: number) => {
-    setVideoWatchStatuses(prev => 
-      prev.map(status => 
-        status.artistUuid === artistUuid 
-          ? { ...status, hasWatched: true, watchedAt: new Date().toISOString() }
-          : status
-      )
-    );
-    console.log(`Video points awarded: ${pointsEarned} for artist ${artistUuid}`);
+    // ✅ PERFORMANCE FIX: Update the weeklyList state directly using the optimized data structure
+    setWeeklyList(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        artists: prev.artists.map(artist => 
+          artist.artist.uuid === artistUuid 
+            ? { ...artist, user_has_watched_video: true }
+            : artist
+        )
+      };
+    });
+    console.log(`✅ Video points awarded: ${pointsEarned} for artist ${artistUuid}`);
   };
 
   const handleSubmissionSuccess = (result: SubmissionResult) => {
     setSubmissionResult(result);
-  };
-
-  const getArtistWatchStatus = (artistUuid: string) => {
-    return videoWatchStatuses.find(status => status.artistUuid === artistUuid);
   };
 
   if (profileLoading || loading) return (
@@ -240,8 +221,8 @@ function WeeklyRatingsPageContent() {
                   {weeklyList.artists.map((artistData) => {
                     const artist = artistData.artist;
                     const hasVoted = artistData.user_has_voted;
-                    const watchStatus = getArtistWatchStatus(artist.uuid);
-                    const hasWatchedVideo = watchStatus?.hasWatched || false;
+                    // ✅ PERFORMANCE FIX: Use the optimized data directly from weeklyListService
+                    const hasWatchedVideo = artistData.user_has_watched_video;
                     
                     return (
                       <div 

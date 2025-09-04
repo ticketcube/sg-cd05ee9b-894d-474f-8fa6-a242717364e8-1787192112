@@ -1,7 +1,5 @@
-import React from "react";
 import type { AppProps } from "next/app";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import "@/styles/globals.css";
 
 import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
@@ -16,9 +14,6 @@ import type { Database } from "@/integrations/supabase/types";
 import { initPosthog } from "@/lib/posthog";
 
 export default function App({ Component, pageProps }: AppProps) {
-    const router = useRouter();
-    
-    // ✅ FIXED: Create client with consistent naming
     const [supabaseClient] = useState(() => createPagesBrowserClient<Database>());
 
     useEffect(() => {
@@ -26,8 +21,8 @@ export default function App({ Component, pageProps }: AppProps) {
     }, []);
 
     return (
-        <SessionContextProvider 
-            supabaseClient={supabaseClient}  {/* ✅ FIXED: Use consistent variable name */}
+        <SessionContextProvider
+            supabaseClient={supabaseClient}
             initialSession={pageProps.initialSession}
         >
             <UserProfileProvider>
