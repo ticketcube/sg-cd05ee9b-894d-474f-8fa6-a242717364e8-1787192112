@@ -252,7 +252,7 @@ export default function WeeklyArtistRatingPopup({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+            'X-User-ID': user.id
         },
         body: JSON.stringify({
           weekId: weekIdentifier,
