@@ -243,7 +243,7 @@ export default function WeeklyArtistRatingPopup({
       
       // Get the user's session token for API authentication
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
+        if (!user?.id) {
         throw new Error('No valid session found');
       }
 
