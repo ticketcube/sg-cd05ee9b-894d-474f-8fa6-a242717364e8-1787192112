@@ -27,8 +27,8 @@ export default function SubmissionSuccessPopup({
     return null;
   }
 
-  const { totalPointsEarned, breakdown, completionBonus } = result;
-  console.log("📊 SubmissionSuccessPopup: Using data - totalPointsEarned:", totalPointsEarned, "breakdown:", breakdown);
+  const { pointsEarned } = result;
+  
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -43,7 +43,7 @@ export default function SubmissionSuccessPopup({
         <div className="my-6 text-center">
           <p className="text-gray-400">You've earned</p>
           <p className="text-5xl font-bold text-white my-2">
-            {totalPointsEarned}
+            {pointsEarned}
           </p>
           <p className="text-gray-400">points!</p>
         </div>
