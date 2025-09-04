@@ -170,7 +170,7 @@ export class PointsConfigService {
           const { data: artistEngagement, error: artistError } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", authId) 
+            .eq("user_id", userId)
             .eq("engagement_type", actionName)
             .eq("artist_uuid", artistUuid)
             .gt("points_earned", 0)
@@ -190,7 +190,7 @@ export class PointsConfigService {
           const { data: artistWeekEngagement, error: artistWeekError } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
+            .eq("user_id", userId) 
             .eq("engagement_type", actionName)
             .eq("artist_uuid", artistUuid)
             .eq("week_identifier", weekIdentifier)
@@ -211,7 +211,7 @@ export class PointsConfigService {
           const { data: weekEngagement, error: weekError } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
+            .eq("user_id", userId) 
             .eq("engagement_type", actionName)
             .eq("week_identifier", weekIdentifier)
             .gt("points_earned", 0)
@@ -234,7 +234,7 @@ export class PointsConfigService {
           const { data: generalEngagement, error: generalError } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("auth_id", authId) // ✅ FIXED: Use auth_id instead of user_id
+            .eq("user_id", userId) 
             .eq("engagement_type", actionName)
             .gt("points_earned", 0)
             .limit(1);
