@@ -43,6 +43,7 @@ export default function WeeklyArtistRatingPopup({
   onSubmissionSuccess,
 }: WeeklyArtistRatingPopupProps) {
   const user = useUser();
+  const session = useSession(); // Add this line
   const [ticketInterest, setTicketInterest] = useState(50);
   const [shareInterest, setShareInterest] = useState(50);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
