@@ -1,7 +1,6 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin, verifyUserOwnership, getUserProfileByAuthId } from '@/lib/supabaseAdmin';
-import { supabase } from '@/integrations/supabase/client';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
