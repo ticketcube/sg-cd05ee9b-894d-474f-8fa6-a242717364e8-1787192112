@@ -19,7 +19,6 @@ const supabase = createPagesBrowserClient<Database>();
 export default function App({ Component, pageProps }: AppProps) {
     const router = useRouter();
     // Create client with proper typing
-    const [supabaseClient] = useState(() => createBrowserSupabaseClient<Database>());
 
     useEffect(() => {
         initPosthog();
