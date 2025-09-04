@@ -34,11 +34,14 @@ export default function HomePage() {
     setAuthDialogOpen(false);
   };
 
-  useEffect(() => {
-    if (user && isAuthDialogOpen === false) {
-      router.push("/discovery-dashboard");
-    }
-  }, [user, isAuthDialogOpen, router]);
+    const { profile, loading: profileLoading } = useUserProfile();
+
+    useEffect(() => {
+        if (user && profile && !profileLoading && !isAuthDialogOpen) {
+            router.push("/discovery-dashboard");
+        }
+    }, [user, profile, profileLoading, isAuthDialogOpen, router]);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
