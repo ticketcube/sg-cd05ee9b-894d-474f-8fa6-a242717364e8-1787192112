@@ -46,14 +46,14 @@ export default function DiscoveryDashboard() {
         
                     // Profile check after loading finishes
                     if (!profile) {
-                            setUserHistory(null);
+                           
                           setError("Please complete your profile setup first.");
                           setLoading(false);
                            return;
                        }
         
                   // Fetch history only once, after both user + profile exist
-                    if (user?.id && profile && !userHistory) {
+                    if ( !userHistory) {
                            const fetchUserHistory = async () => {
                                     setLoading(true);
                                   setError(null);
