@@ -20,6 +20,7 @@ type UserProfile = {
     created_at?: string;
     city?: string;
     state?: string;
+    totalpoints?: string;
     // add other fields from your user_profiles table
 };
 
