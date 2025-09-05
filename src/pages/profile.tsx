@@ -200,15 +200,7 @@ function ProfilePageContent() {
                         <h1 className="text-xl md:text-2xl font-bold text-neutral-800 mb-1">My Profile</h1>
                         <p className="text-xs md:text-sm text-neutral-600">Manage your account and track your music interests</p>
                     </div>
-                    <Button
-                        onClick={() => window.location.href = "/discovery-dashboard"}
-                        variant="outline"
-                        className="bg-white/80 hover:bg-white border-neutral-200 text-neutral-700 hover:text-neutral-800 px-3 md:px-4 py-2 shadow-sm hover:shadow-md transition-all text-xs md:text-sm"
-                    >
-                        <ArrowLeft className="w-3 md:w-4 h-3 md:h-4 mr-1 md:mr-2" />
-                        <span className="hidden sm:inline">Return to Discovery Dashboard</span>
-                        <span className="sm:hidden">Dashboard</span>
-                    </Button>
+                  
                 </div>
 
                 {/* Compact Profile Header - Made even more mobile friendly */}
