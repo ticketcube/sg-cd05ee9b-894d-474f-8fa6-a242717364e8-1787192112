@@ -92,32 +92,50 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     </Link>
 
                     {/* Auth Buttons */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         {loading || authLoading ? (
-                            <div className="w-8 h-8 animate-pulse bg-gray-600 rounded"></div>
+                            <div className="w-8 h-8 animate-pulse bg-gray-600 rounded-full"></div>
                         ) : user ? (
-                            <div className="flex items-center gap-2">
-                                <Link href="/profile">
-                                    <Button variant="outline" size="sm" className="gap-2 text-white border-white hover:bg-white hover:text-black bg-transparent">
-                                        <User className="h-4 w-4" />
-                                        Profile
-                                    </Button>
-                                </Link>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={handleSignOut}
-                                    className="gap-2 text-white border-white hover:bg-white hover:text-black bg-transparent"
+                            <div className="flex items-center gap-3">
+                                {/* Discovery Dashboard Link */}
+                                <Link
+                                    href="/dashboard"
+                                    className="hidden sm:block text-sm font-medium hover:underline"
                                 >
-                                    <LogOut className="h-4 w-4" />
+                                    Dashboard
+                                </Link>
+                                <Link
+                                    href="/dashboard"
+                                    className="sm:hidden text-sm font-medium hover:underline"
+                                >
+                                    DDashboard
+                                </Link>
+
+                                {/* User Avatar */}
+                                <Link href="/profile">
+                                    <Image
+                                        src={profile?.avatar_url || "/default-avatar.png"}
+                                        alt="User Avatar"
+                                        width={32}
+                                        height={32}
+                                        className="rounded-full cursor-pointer border border-gray-600 hover:border-white transition"
+                                    />
+                                </Link>
+
+                                {/* Logout */}
+                                <button
+                                    onClick={handleSignOut}
+                                    className="text-sm text-gray-400 hover:text-white"
+                                >
+                                    <LogOut className="w-4 h-4 inline mr-1" />
                                     Logout
-                                </Button>
+                                </button>
                             </div>
                         ) : (
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={handleLoginClick}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAuthDialogOpen(true)}
                                 className="gap-2 text-white border-white hover:bg-white hover:text-black bg-transparent"
                             >
                                 <LogIn className="h-4 w-4" />
