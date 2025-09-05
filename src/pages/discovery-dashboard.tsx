@@ -82,26 +82,25 @@ export default function DiscoveryDashboard() {
     useEffect(() => {
         console.log('🎯 [DiscoveryDashboard] Auth state:', { 
             user: user?.id, 
-            sessionLoading,
             profileLoading, 
             userHistory: !!userHistory 
         });
 
-        // ✅ ENHANCED: Don't proceed if still loading session or profile
+        // ✅ Don't proceed if still loading profile
         if (profileLoading) {
-            console.log('⏳ [DiscoveryDashboard] Still loading session or profile...');
+            console.log('⏳ [DiscoveryDashboard] Still loading profile...');
             return;
         }
-f
-        // ✅ ENHANCED: Only show access denied after session loading is complete
+
+        // ✅ Only show access denied after profile loading is complete
         if (!user) {
-            console.log('❌ [DiscoveryDashboard] No user found after session loading complete');
+            console.log('❌ [DiscoveryDashboard] No user found after loading complete');
             setError("Please sign in to access the discovery dashboard.");
             setLoading(false);
             return;
         }
 
-        // ✅ ENHANCED: User is authenticated, load history if needed
+        // ✅ User is authenticated, load history if needed
         if (user && !userHistory && !error) {
             console.log('🔄 [DiscoveryDashboard] Loading user engagement history for:', user.id);
             
@@ -110,18 +109,13 @@ f
                 setError(null);
                 
                 try {
-                  
-                    
                     const history = await userProfileService.getUserEngagementHistory(user.id);
                     console.log('✅ [DiscoveryDashboard] History loaded successfully');
                     setUserHistory(history);
-                    
-                  
-                    
                 } catch (err) {
                     console.error('❌ [DiscoveryDashboard] Failed to load history:', err);
                     
-                    // ✅ ENHANCED: Better error messages for OAuth issues
+                    // ✅ Better error messages for OAuth issues
                     const errorMessage = err instanceof Error ? err.message : "Failed to load dashboard data";
                     
                     if (errorMessage.includes('Authentication required') || errorMessage.includes('session')) {

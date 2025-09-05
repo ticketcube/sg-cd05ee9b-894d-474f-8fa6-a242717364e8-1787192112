@@ -51,88 +51,29 @@ const userProfileService = {
     async getUserProfile(userId: string): Promise<UserProfile | null> {
         try {
             console.log(`[UserProfileService] Getting profile for user_id: ${userId}`);
-            
-            // ✅ ENHANCED: Better retry logic for OAuth session timing issues
-            let lastError: any;
-            const maxRetries = 5;
-            
-            for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                try {
-                    console.log(`[UserProfileService] Attempt ${attempt}/${maxRetries} to get profile`);
-                    
-                    // ✅ CRITICAL: Direct Supabase query - no API calls to avoid session timing issues
-                    const { data: profile, error: getError } = await supabase
-                        .from('user_profiles')
-                        .select('*')
-                        .eq('user_id', userId)
-                        .maybeSingle();
 
-                    if (getError) {
-                        console.error(`[UserProfileService] Supabase error (attempt ${attempt}):`, getError);
-                        lastError = getError;
-                        
-                        if (attempt < maxRetries && (getError.message?.includes('JWT') || getError.message?.includes('session') || getError.message?.includes('auth'))) {
-                            // Session-related error, retry after delay
-                            const delay = attempt * 2000;
-                            console.log(`[UserProfileService] Session error, waiting ${delay}ms before retry...`);
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                            continue;
-                        } else {
-                            throw getError;
-                        }
-                    }
+            const { data: profile, error } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('user_id', userId)
+                .single();
 
-                    if (!profile) {
-                        console.log(`[UserProfileService] Profile not found (attempt ${attempt}) for user: ${userId}`);
-                        if (attempt < maxRetries) {
-                            // Profile might still be creating via database trigger
-                            const delay = attempt * 1500;
-                            console.log(`[UserProfileService] Profile not found, waiting ${delay}ms for database trigger...`);
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                            continue;
-                        }
-                        // After all retries, profile still doesn't exist
-                        console.log(`[UserProfileService] Profile not found after ${maxRetries} attempts`);
-                        return null;
-                    }
-
-                    console.log(`✅ [UserProfileService] Profile retrieved successfully on attempt ${attempt}`);
-                    return profile;
-                    
-                } catch (error) {
-                    console.error(`[UserProfileService] Attempt ${attempt} failed:`, error);
-                    lastError = error;
-                    
-                    if (attempt < maxRetries) {
-                        // Progressive delay
-                        const delay = attempt * 2000;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                    }
+            if (error) {
+                if (error.code === 'PGRST116') {
+                    // No rows returned - profile doesn't exist
+                    return null;
                 }
+                throw error;
             }
-            
-            // All retries failed
-            console.error(`❌ [UserProfileService] All ${maxRetries} attempts failed. Last error:`, lastError);
-            throw lastError || new Error('Failed to get user profile after retries');
-            
+
+            return profile;
         } catch (error) {
             console.error("[UserProfileService] Error getting user profile:", error);
             throw error;
         }
     },
 
-    /** ❌ DEPRECATED: Legacy method - not needed with OAuth and database triggers */
-    async createUserProfileLegacy(userId: string, username: string, email: string, city?: string): Promise<UserProfile> {
-        console.warn('[UserProfileService] createUserProfileLegacy is deprecated - profiles are created automatically by database trigger');
-        
-        // Try to get existing profile (should exist via trigger)
-        const existingProfile = await this.getUserProfile(userId);
-        if (existingProfile) {
-            return existingProfile;
-        }
-        
-        throw new Error('Profile creation is now handled automatically by database trigger');
-    },
+   
 
     /** Update user's city/location - ✅ FIXED: Direct Supabase only */
     async updateUserLocation(userId: string, cityId: number, rawCityInput: string): Promise<UserProfile> {
