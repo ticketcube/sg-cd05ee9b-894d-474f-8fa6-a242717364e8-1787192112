@@ -12,6 +12,7 @@ import userProfileService from "@/services/userProfileService";
 import type { UserEngagementHistory } from "@/services/userProfileService";
 import Link from "next/link";
 import StaffPortalTab from "@/components/StaffPortalTab";
+import { supabase } from "@/integrations/supabase/client";
 
 // ---------------- Hero Video Component ----------------
 function HeroVideo() {
@@ -65,6 +66,7 @@ export default function DiscoveryDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("discover");
+    const [sessionLoading, setSessionLoading] = useState(true); // ✅ NEW: Track session loading state
 
     useEffect(() => {
         // Set initial tab based on URL parameter
@@ -76,39 +78,52 @@ export default function DiscoveryDashboard() {
         }
     }, [router.query]);
 
+    // ✅ NEW: Session loading management for OAuth timing
+    useEffect(() => {
+        let sessionTimeout: NodeJS.Timeout;
+        
+        // Check if we just came from OAuth callback
+        const isFromOAuth = sessionStorage.getItem('oauth_callback_complete') ||
+                           sessionStorage.getItem('oauth_redirect_in_progress') ||
+                           document.referrer.includes('accounts.google.com');
+
+        if (isFromOAuth) {
+            console.log('🔄 [DiscoveryDashboard] OAuth session detected, waiting for session establishment...');
+            // Wait longer for OAuth sessions to establish
+            sessionTimeout = setTimeout(() => {
+                console.log('✅ [DiscoveryDashboard] OAuth session wait complete');
+                setSessionLoading(false);
+            }, 3000); // Wait 3 seconds for OAuth sessions
+        } else {
+            // Normal session, shorter wait
+            sessionTimeout = setTimeout(() => {
+                console.log('✅ [DiscoveryDashboard] Standard session wait complete');
+                setSessionLoading(false);
+            }, 1000); // Wait 1 second for standard sessions
+        }
+
+        return () => {
+            if (sessionTimeout) clearTimeout(sessionTimeout);
+        };
+    }, []);
 
     useEffect(() => {
-        // ✅ ENHANCED: Better authentication logic with OAuth session handling
         console.log('🎯 [DiscoveryDashboard] Auth state:', { 
             user: user?.id, 
+            sessionLoading,
             profileLoading, 
             userHistory: !!userHistory 
         });
 
-        // Wait for profile loading to complete
-        if (profileLoading) {
-            console.log('⏳ [DiscoveryDashboard] Still loading profile...');
+        // ✅ ENHANCED: Don't proceed if still loading session or profile
+        if (sessionLoading || profileLoading) {
+            console.log('⏳ [DiscoveryDashboard] Still loading session or profile...');
             return;
         }
 
-        // ✅ ENHANCED: Better OAuth session detection and handling
+        // ✅ ENHANCED: Only show access denied after session loading is complete
         if (!user) {
-            // ✅ NEW: Check for recent OAuth activity before showing error
-            const isRecentOAuth = sessionStorage.getItem('oauth_callback_complete');
-            const isVeryRecentOAuth = isRecentOAuth && (Date.now() - parseInt(isRecentOAuth)) < 15000; // 15 seconds
-            
-            if (isVeryRecentOAuth) {
-                console.log('⏳ [DiscoveryDashboard] Very recent OAuth detected, waiting for session establishment...');
-                // Wait a bit longer for OAuth session to fully establish
-                setTimeout(() => {
-                    console.log('🔄 [DiscoveryDashboard] Retrying after OAuth delay...');
-                    // Trigger re-render by checking user state again
-                    window.location.reload();
-                }, 3000);
-                return;
-            }
-            
-            console.log('❌ [DiscoveryDashboard] No user found after profile loading');
+            console.log('❌ [DiscoveryDashboard] No user found after session loading complete');
             setError("Please sign in to access the discovery dashboard.");
             setLoading(false);
             return;
@@ -121,15 +136,6 @@ export default function DiscoveryDashboard() {
             const fetchUserHistory = async () => {
                 setLoading(true);
                 setError(null);
-                
-                // ✅ ENHANCED: Better OAuth timing handling
-                const isRecentOAuth = sessionStorage.getItem('oauth_callback_complete');
-                const isVeryRecentOAuth = isRecentOAuth && (Date.now() - parseInt(isRecentOAuth)) < 10000; // 10 seconds
-                
-                if (isVeryRecentOAuth) {
-                    console.log('⏳ [DiscoveryDashboard] Very recent OAuth, adding delay for session stability');
-                    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 second delay
-                }
                 
                 try {
                     // ✅ NEW: Additional session verification before API calls
@@ -171,15 +177,26 @@ export default function DiscoveryDashboard() {
             // User and history both exist, ensure loading is false
             setLoading(false);
         }
-    }, [user?.id, profile, profileLoading, userHistory, error]);
+    }, [user?.id, profile, sessionLoading, profileLoading, userHistory, error]);
 
-    if (profileLoading || loading) {
+    // ✅ ENHANCED: Show loading state while session is establishing
+    if (sessionLoading || profileLoading || loading) {
         return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-12 md:w-16 h-12 md:h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <h1 className="text-xl md:text-2xl font-bold mb-2">Loading Discovery Dashboard</h1>
-                    <p className="text-gray-400 text-sm md:text-base">Preparing your personalized experience...</p>
+            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+                <div className="text-center space-y-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+                    <div className="space-y-2">
+                        <p className="text-white text-lg font-medium">
+                            {sessionLoading ? "Loading your session..." : 
+                             profileLoading ? "Setting up your profile..." : 
+                             "Loading Discovery Dashboard"}
+                        </p>
+                        <p className="text-gray-400 text-sm">
+                            {sessionLoading ? "Establishing secure connection" : 
+                             profileLoading ? "Preparing your personalized experience" : 
+                             "Getting your discovery data ready"}
+                        </p>
+                    </div>
                 </div>
             </div>
         );
@@ -201,12 +218,17 @@ export default function DiscoveryDashboard() {
     if (error) {
         return (
             <div className="min-h-screen bg-black text-white flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-xl md:text-2xl font-bold mb-4">Error</h1>
+                <div className="text-center max-w-md mx-auto px-4">
+                    <h1 className="text-xl md:text-2xl font-bold mb-4">Session Issue</h1>
                     <p className="text-red-400 mb-6 text-sm md:text-base">{error}</p>
-                    <Link href="/profile">
-                        <Button>Back to Profile</Button>
-                    </Link>
+                    <div className="space-y-3">
+                        <Button onClick={() => window.location.reload()} className="w-full">
+                            Refresh Page
+                        </Button>
+                        <Link href="/profile">
+                            <Button variant="outline" className="w-full">Back to Profile</Button>
+                        </Link>
+                    </div>
                 </div>
             </div>
         );
