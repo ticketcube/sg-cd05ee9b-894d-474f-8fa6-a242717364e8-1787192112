@@ -13,6 +13,50 @@ import type { UserEngagementHistory } from "@/services/userProfileService";
 import Link from "next/link";
 import StaffPortalTab from "@/components/StaffPortalTab";
 
+// ---------------- Hero Video Component ----------------
+function HeroVideo() {
+    const videoRef = useRef < HTMLVideoElement > (null);
+    const [isMuted, setIsMuted] = useState(true);
+
+    const toggleMute = () => {
+        if (videoRef.current) {
+            videoRef.current.muted = !videoRef.current.muted;
+            setIsMuted(videoRef.current.muted);
+        }
+    };
+
+    return (
+        <div className="mt-8">
+            <div className="relative overflow-hidden rounded-xl shadow-lg">
+                <video
+                    ref={videoRef}
+                    className="w-full h-auto max-h-[60vh] object-cover"
+                    src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                />
+                <button
+                    onClick={toggleMute}
+                    className="absolute bottom-3 right-3 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full shadow-lg transition"
+                >
+                    {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                </button>
+            </div>
+
+            {/* Updated button under video */}
+            <div className="flex justify-center mt-6">
+                <Link href="/weekly-ratings">
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-lg px-5 py-2.5 rounded-xl shadow-lg text-white">
+                        Rate This Week&apos;s Artists
+                    </Button>
+                </Link>
+            </div>
+        </div>
+    );
+}
+
 export default function DiscoveryDashboard() {
     const router = useRouter();
     const user = useUser();
@@ -128,62 +172,51 @@ export default function DiscoveryDashboard() {
     return (
         <AuthGuard>
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
-                {/* Hero Header - Mobile Optimized */}
+                {/* Hero Header */}
                 <div className="relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20"></div>
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
-                    
+
                     <div className="relative max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-12">
                         <div className="text-center mb-6 md:mb-12">
                             <div className="inline-flex items-center gap-2 md:gap-3 bg-white/5 backdrop-blur-sm rounded-full px-3 md:px-6 py-2 md:py-3 mb-4 md:mb-6 border border-white/10">
-                                <div className="w-6 md:w-8 h-6 md:h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                                    <Sparkles className="w-3 md:w-4 h-3 md:h-4 text-white" />
-                                </div>
+                                <Sparkles className="w-3 md:w-4 h-3 md:h-4 text-white" />
                                 <span className="text-white font-medium text-sm md:text-base">Discovery Dashboard</span>
                             </div>
-                            
+
                             <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-2 md:mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent px-2">
-                                Welcome back, {user_profile.username}!
+                                Welcome back, {profile?.username || 'Explorer'}!
                             </h1>
                             <p className="text-base md:text-xl text-gray-300 mb-6 md:mb-8 px-4">
                                 Your gateway to discovering amazing new artists and earning rewards
                             </p>
 
-                            {/* Stats Cards - Mobile Optimized */}
-                            <div className="grid grid-cols-4 gap-3 md:gap-6 max-w-3xl mx-auto">
-
-                                <div className="bg-white/5 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-                                    <div className="w-8 md:w-12 h-8 md:h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-2 md:mb-3">
-                                        <Trophy className="w-4 md:w-6 h-4 md:h-6 text-white" />
-                                    </div>
-                                    <div className="text-lg md:text-2xl font-bold text-white mb-1">{total_points}</div>
-                                    <div className="text-xs md:text-sm text-gray-400">Total Points</div>
+                            {/* Shrunk Stats Cards */}
+                            <div className="grid grid-cols-4 gap-2 max-w-2xl mx-auto">
+                                <div className="bg-white/5 rounded-lg p-2 text-center border border-white/10">
+                                    <Trophy className="w-4 h-4 text-blue-400 mx-auto mb-1" />
+                                    <div className="text-base font-bold text-white">{total_points}</div>
+                                    <div className="text-[10px] text-gray-400">Points</div>
                                 </div>
-
-                                <div className="bg-white/5 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-                                    <div className="w-8 md:w-12 h-8 md:h-12 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center mx-auto mb-2 md:mb-3">
-                                        <Star className="w-4 md:w-6 h-4 md:h-6 text-white" />
-                                    </div>
-                                    <div className="text-lg md:text-2xl font-bold text-white mb-1">{totalVotes}</div>
-                                    <div className="text-xs md:text-sm text-gray-400">Artist Ratings</div>
+                                <div className="bg-white/5 rounded-lg p-2 text-center border border-white/10">
+                                    <Star className="w-4 h-4 text-green-400 mx-auto mb-1" />
+                                    <div className="text-base font-bold text-white">{totalVotes}</div>
+                                    <div className="text-[10px] text-gray-400">Ratings</div>
                                 </div>
-
-                                <div className="bg-white/5 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-                                    <div className="w-8 md:w-12 h-8 md:h-12 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center mx-auto mb-2 md:mb-3">
-                                        <Eye className="w-4 md:w-6 h-4 md:h-6 text-white" />
-                                    </div>
-                                    <div className="text-lg md:text-2xl font-bold text-white mb-1">{totalVideos}</div>
-                                    <div className="text-xs md:text-sm text-gray-400">Videos Watched</div>
+                                <div className="bg-white/5 rounded-lg p-2 text-center border border-white/10">
+                                    <Eye className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+                                    <div className="text-base font-bold text-white">{totalVideos}</div>
+                                    <div className="text-[10px] text-gray-400">Videos</div>
                                 </div>
-
-                                <div className="bg-white/5 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 border border-white/10 hover:bg-white/10 transition-all hover:scale-105">
-                                    <div className="w-8 md:w-12 h-8 md:h-12 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center mx-auto mb-2 md:mb-3">
-                                        <Calendar className="w-4 md:w-6 h-4 md:h-6 text-white" />
-                                    </div>
-                                    <div className="text-lg md:text-2xl font-bold text-white mb-1">{weeksActive}</div>
-                                    <div className="text-xs md:text-sm text-gray-400">Weeks Active</div>
+                                <div className="bg-white/5 rounded-lg p-2 text-center border border-white/10">
+                                    <Calendar className="w-4 h-4 text-orange-400 mx-auto mb-1" />
+                                    <div className="text-base font-bold text-white">{weeksActive}</div>
+                                    <div className="text-[10px] text-gray-400">Weeks</div>
                                 </div>
                             </div>
+
+                            {/* Hero Video inserted below stats */}
+                            <HeroVideo />
                         </div>
                     </div>
                 </div>
