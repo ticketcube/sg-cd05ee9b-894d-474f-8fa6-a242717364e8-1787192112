@@ -117,26 +117,20 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
         }
     }, [user, supabase]);
 
-    // ✅ ENHANCED: Listen to auth state changes for OAuth flows
-    useEffect(() => {
-        console.log('🎯 [UserProfileContext] Auth state changed. User:', user?.id);
-        
-        // ✅ NEW: Don't interfere with active OAuth processes
-        const isOAuthActive = sessionStorage.getItem('oauth_redirect_in_progress') ||
-                            sessionStorage.getItem('oauth_user_data') ||
-                            window.location.pathname.startsWith('/auth/');
-        
-        if (user) {
-            // ✅ ENHANCED: Shorter delay during OAuth to prevent interference
-            const delay = isOAuthActive ? 50 : 200;
-            const timer = setTimeout(fetchProfile, delay);
-            return () => clearTimeout(timer);
-        } else {
-            setProfile(null);
-            setIsAuthenticated(false);
-            setLoading(false);
-        }
-    }, [user, fetchProfile]);
+    // ✅ Listen to auth state changes
+useEffect(() => {
+    console.log('🎯 [UserProfileContext] Auth state changed. User:', user?.id);
+    
+    if (user) {
+        // Standard delay for all logins
+        const timer = setTimeout(fetchProfile, 200);
+        return () => clearTimeout(timer);
+    } else {
+        setProfile(null);
+        setIsAuthenticated(false);
+        setLoading(false);
+    }
+}, [user, fetchProfile]);
 
     // ✅ NEW: Listen to auth state changes directly from Supabase
     useEffect(() => {
