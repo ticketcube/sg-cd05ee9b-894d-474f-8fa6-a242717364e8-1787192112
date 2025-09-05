@@ -43,31 +43,12 @@ export default function AuthCallback() {
         const user = sessionData.session.user;
         console.log('✅ [AuthCallback] OAuth user authenticated:', user.id);
 
-        // ✅ SIMPLIFIED: Database trigger creates profile automatically with generated username
-        // No need to check if profile exists or create it manually
-        console.log('✅ [AuthCallback] Profile will be created by database trigger, redirecting to dashboard');
 
-        // ✅ ENHANCED: Set immediate redirect flag BEFORE any navigation
-        sessionStorage.setItem('oauth_redirect_in_progress', 'true');
-        sessionStorage.setItem('oauth_callback_complete', Date.now().toString());
-        
-        // ✅ NEW: Set immediate redirect flag to prevent index page interference
-        sessionStorage.setItem('immediate_dashboard_redirect', 'true');
+       // ✅ SIMPLE: Just redirect without sessionStorage interference
+console.log('✅ [AuthCallback] Redirecting to dashboard');
 
-        // ✅ IMMEDIATE: Use window.location for fastest redirect
-        window.location.replace('/discovery-dashboard');
-        
-        // ✅ FALLBACK: Also use router for additional safety
-        setTimeout(() => {
-          router.replace('/discovery-dashboard');
-        }, 100);
-        
-        // ✅ ENHANCED: Clear flags after longer delay to ensure complete redirect
-        setTimeout(() => {
-          sessionStorage.removeItem('oauth_redirect_in_progress');
-          sessionStorage.removeItem('oauth_callback_complete');
-          sessionStorage.removeItem('immediate_dashboard_redirect');
-        }, 8000);
+// Use router.push for normal navigation
+router.push('/discovery-dashboard');
 
       } catch (error) {
         console.error('❌ [AuthCallback] Error in auth callback:', error);
