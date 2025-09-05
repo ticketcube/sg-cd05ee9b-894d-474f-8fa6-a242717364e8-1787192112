@@ -66,7 +66,6 @@ export default function DiscoveryDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState("discover");
-    const [sessionLoading, setSessionLoading] = useState(true); // ✅ NEW: Track session loading state
 
     useEffect(() => {
         // Set initial tab based on URL parameter
@@ -78,34 +77,7 @@ export default function DiscoveryDashboard() {
         }
     }, [router.query]);
 
-    // ✅ NEW: Session loading management for OAuth timing
-    useEffect(() => {
-        let sessionTimeout: NodeJS.Timeout;
-        
-        // Check if we just came from OAuth callback
-        const isFromOAuth = sessionStorage.getItem('oauth_callback_complete') ||
-                           sessionStorage.getItem('oauth_redirect_in_progress') ||
-                           document.referrer.includes('accounts.google.com');
-
-        if (isFromOAuth) {
-            console.log('🔄 [DiscoveryDashboard] OAuth session detected, waiting for session establishment...');
-            // Wait longer for OAuth sessions to establish
-            sessionTimeout = setTimeout(() => {
-                console.log('✅ [DiscoveryDashboard] OAuth session wait complete');
-                setSessionLoading(false);
-            }, 3000); // Wait 3 seconds for OAuth sessions
-        } else {
-            // Normal session, shorter wait
-            sessionTimeout = setTimeout(() => {
-                console.log('✅ [DiscoveryDashboard] Standard session wait complete');
-                setSessionLoading(false);
-            }, 1000); // Wait 1 second for standard sessions
-        }
-
-        return () => {
-            if (sessionTimeout) clearTimeout(sessionTimeout);
-        };
-    }, []);
+   
 
     useEffect(() => {
         console.log('🎯 [DiscoveryDashboard] Auth state:', { 
@@ -116,11 +88,11 @@ export default function DiscoveryDashboard() {
         });
 
         // ✅ ENHANCED: Don't proceed if still loading session or profile
-        if (sessionLoading || profileLoading) {
+        if (profileLoading) {
             console.log('⏳ [DiscoveryDashboard] Still loading session or profile...');
             return;
         }
-
+f
         // ✅ ENHANCED: Only show access denied after session loading is complete
         if (!user) {
             console.log('❌ [DiscoveryDashboard] No user found after session loading complete');
@@ -138,23 +110,13 @@ export default function DiscoveryDashboard() {
                 setError(null);
                 
                 try {
-                    // ✅ NEW: Additional session verification before API calls
-                    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-                    if (sessionError || !sessionData.session) {
-                        console.error('❌ [DiscoveryDashboard] Session verification failed:', sessionError);
-                        throw new Error('Session not properly established. Please refresh the page.');
-                    }
-                    
-                    console.log('✅ [DiscoveryDashboard] Session verified, proceeding with history fetch');
+                  
                     
                     const history = await userProfileService.getUserEngagementHistory(user.id);
                     console.log('✅ [DiscoveryDashboard] History loaded successfully');
                     setUserHistory(history);
                     
-                    // ✅ NEW: Clear OAuth flags on successful load
-                    sessionStorage.removeItem('oauth_callback_complete');
-                    sessionStorage.removeItem('oauth_redirect_in_progress');
-                    sessionStorage.removeItem('immediate_dashboard_redirect');
+                  
                     
                 } catch (err) {
                     console.error('❌ [DiscoveryDashboard] Failed to load history:', err);
@@ -177,23 +139,21 @@ export default function DiscoveryDashboard() {
             // User and history both exist, ensure loading is false
             setLoading(false);
         }
-    }, [user?.id, profile, sessionLoading, profileLoading, userHistory, error]);
+    }, [user?.id, profile, profileLoading, userHistory, error]);
 
     // ✅ ENHANCED: Show loading state while session is establishing
-    if (sessionLoading || profileLoading || loading) {
+    if (profileLoading || loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
                 <div className="text-center space-y-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
                     <div className="space-y-2">
                         <p className="text-white text-lg font-medium">
-                            {sessionLoading ? "Loading your session..." : 
-                             profileLoading ? "Setting up your profile..." : 
+                            {profileLoading ? "Setting up your profile..." : 
                              "Loading Discovery Dashboard"}
                         </p>
                         <p className="text-gray-400 text-sm">
-                            {sessionLoading ? "Establishing secure connection" : 
-                             profileLoading ? "Preparing your personalized experience" : 
+                            {profileLoading ? "Preparing your personalized experience" : 
                              "Getting your discovery data ready"}
                         </p>
                     </div>
