@@ -27,7 +27,7 @@ export default function SubmissionSuccessPopup({
     return null;
   }
 
-  const { pointsEarned } = result;
+  const { pointsEarned, message } = result;
   
 
   return (
@@ -43,7 +43,7 @@ export default function SubmissionSuccessPopup({
         <div className="my-6 text-center">
           <p className="text-gray-400">You've earned</p>
           <p className="text-5xl font-bold text-white my-2">
-            {pointsEarned}
+            {pointsEarned || 0}
           </p>
           <p className="text-gray-400">points!</p>
         </div>
