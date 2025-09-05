@@ -109,7 +109,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     return (
         <UserProfileContext.Provider value={value}>
             {children}
-        </UserProfile-provider>
+        </UserProfileContext.Provider>
     );
 }
 
