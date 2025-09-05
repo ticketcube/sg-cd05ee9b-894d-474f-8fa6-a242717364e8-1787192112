@@ -190,8 +190,8 @@ export default function DiscoveryDashboard() {
     
 
 
-    const { user_profile, weekly_summaries = [], total_points = 0 } = userHistory || {};    
     // Calculate stats
+    const { user_profile, weekly_summaries = [], total_points = 0 } = userHistory || {};    
     const totalVotes = weekly_summaries.reduce((sum, week) => sum + week.votes_submitted, 0);
     const totalVideos = weekly_summaries.reduce((sum, week) => sum + week.video_views, 0);
     const weeksActive = weekly_summaries.length;

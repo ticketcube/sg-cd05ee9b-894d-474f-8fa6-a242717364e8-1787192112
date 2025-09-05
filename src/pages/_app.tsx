@@ -1,36 +1,31 @@
-import type { AppProps } from "next/app";
-import { useEffect, useState } from "react";
 import "@/styles/globals.css";
-
+import type { AppProps } from "next/app";
+import { useState } from "react";
 import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
 import { UserProfileProvider } from "@/contexts/UserProfileContext";
+import { Toaster } from "@/components/ui/sonner";
 
-import { Toaster } from "@/components/ui/toaster";
-import AppLayout from "@/components/layout/AppLayout";
-import type { Database } from "@/integrations/supabase/types";
-
-// PostHog
-import { initPosthog } from "@/lib/posthog";
-
-export default function App({ Component, pageProps }: AppProps) {
-    const [supabaseClient] = useState(() => createPagesBrowserClient<Database>());
-
-    useEffect(() => {
-        initPosthog();
-    }, []);
+function MyApp({
+    Component,
+    pageProps,
+}: AppProps<{
+    initialSession: Session;
+}>) {
+    // Create a new Supabase client for each page render.
+    const [supabaseClient] = useState(() => createPagesBrowserClient());
 
     return (
         <SessionContextProvider
-            supabaseClient={supabaseClient as any}
+            supabaseClient={supabaseClient}
             initialSession={pageProps.initialSession}
         >
             <UserProfileProvider>
-                <AppLayout>
-                    <Component {...pageProps} />
-                </AppLayout>
+                <Component {...pageProps} />
                 <Toaster />
             </UserProfileProvider>
         </SessionContextProvider>
     );
 }
+
+export default MyApp;

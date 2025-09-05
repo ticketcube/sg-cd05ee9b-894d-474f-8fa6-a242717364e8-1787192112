@@ -219,9 +219,6 @@ const userProfileService = {
 
         // ✅ FIXED: Direct Supabase query with better error handling
         console.log(`[UserProfileService] Fetching engagements for user_id: ${userId}`);
-        
-        let engagements;
-        let queryError;
 
         // Simple single query instead of retries
         const { data: engagements, error } = await supabase
