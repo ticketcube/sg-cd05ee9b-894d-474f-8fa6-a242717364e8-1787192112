@@ -15,7 +15,7 @@ import StaffPortalTab from "@/components/StaffPortalTab";
 
 // ---------------- Hero Video Component ----------------
 function HeroVideo() {
-    const videoRef = useRef < HTMLVideoElement > (null);
+    const videoRef = useRef < videoRef > (null);
     const [isMuted, setIsMuted] = useState(true);
 
     const toggleMute = () => {
