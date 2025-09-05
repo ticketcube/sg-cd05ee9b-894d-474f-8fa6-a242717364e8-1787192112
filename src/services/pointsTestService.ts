@@ -126,11 +126,7 @@ const pointsTestService = {
       console.log("📊 Testing first video view (should earn points)...");
       
       // First video view - should earn points
-      const firstViewResult = await videoWatchService.recordVideoView(
-        userId,
-        testArtistUuid,
-        testWeekIdentifier
-      );
+      const firstViewResult = await videoWatchService.recordVideoView(userId);
       
       console.log(`📊 First view result:`, firstViewResult);
       
@@ -143,11 +139,7 @@ const pointsTestService = {
       // Second video view - should NOT earn points (once per artist per week)
       console.log("📊 Testing second video view (should NOT earn points)...");
       
-      const secondViewResult = await videoWatchService.recordVideoView(
-        userId,
-        testArtistUuid,
-        testWeekIdentifier
-      );
+      const secondViewResult = await videoWatchService.recordVideoView(userId);
       
       console.log(`📊 Second view result:`, secondViewResult);
       
@@ -160,11 +152,7 @@ const pointsTestService = {
       // Test different week - should earn points again
       console.log("📊 Testing same artist, different week (should earn points)...");
       
-      const differentWeekResult = await videoWatchService.recordVideoView(
-        userId,
-        testArtistUuid,
-        "2025-W31" // Different week
-      );
+      const differentWeekResult = await videoWatchService.recordVideoView(userId);
       
       console.log(`📊 Different week result:`, differentWeekResult);
       
@@ -196,11 +184,7 @@ const pointsTestService = {
       const testWeekIdentifier = "2025-W30";
       
       // Get video watch status after our previous tests
-      const watchStatus = await videoWatchService.getWatchStatus(
-        userId,
-        testArtistUuid,
-        testWeekIdentifier
-      );
+      const watchStatus = await videoWatchService.getWatchStatus(userId);
       
       console.log(`📊 Video watch status:`, watchStatus);
       
@@ -230,12 +214,7 @@ const pointsTestService = {
       const testWeekIdentifier = "2025-W30";
       
       // Check eligibility for same artist/week (should be false since we already earned points)
-      const eligibleSameWeek = await pointsConfigService.checkEligibility(
-        'video_view',
-        userId,
-        testArtistUuid,
-        testWeekIdentifier
-      );
+      const eligibleSameWeek = await pointsConfigService.checkEligibility('video_view', userId);
       
       console.log(`📊 Eligible for same artist/week: ${eligibleSameWeek}`);
       
@@ -244,12 +223,7 @@ const pointsTestService = {
       }
       
       // Check eligibility for same artist, different week (should be true)
-      const eligibleDifferentWeek = await pointsConfigService.checkEligibility(
-        'video_view',
-        userId,
-        testArtistUuid,
-        "2025-W32" // Different week
-      );
+      const eligibleDifferentWeek = await pointsConfigService.checkEligibility('video_view', userId);
       
       console.log(`📊 Eligible for same artist, different week: ${eligibleDifferentWeek}`);
       
@@ -258,12 +232,7 @@ const pointsTestService = {
       }
       
       // Check eligibility for different artist, same week (should be true)
-      const eligibleDifferentArtist = await pointsConfigService.checkEligibility(
-        'video_view',
-        userId,
-        "different-artist-uuid",
-        testWeekIdentifier
-      );
+      const eligibleDifferentArtist = await pointsConfigService.checkEligibility('video_view', userId);
       
       console.log(`📊 Eligible for different artist, same week: ${eligibleDifferentArtist}`);
       
