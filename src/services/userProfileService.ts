@@ -67,17 +67,28 @@ const userProfileService = {
         }
     },
 
-    /** Create a new user profile */
-    async createUserProfile(userId: string, username: string, email: string, city?: string): Promise<UserProfile> {
+    /** Create a new user profile - Updated for OAuth */
+    async createUserProfile(profileData: {
+        user_id: string;
+        username: string;
+        email: string;
+        avatar_url?: string | null;
+        total_points?: number;
+        role?: string | null;
+        city?: string;
+    }): Promise<UserProfile> {
         try {
             const response = await fetch("/api/user/secure-profile", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    user_id: userId,  // ✅ FIXED: Use user_id to match database schema
-                    username: username.trim(),
-                    email: email.trim(),
-                    city: city?.trim(),
+                    user_id: profileData.user_id,
+                    username: profileData.username.trim(),
+                    email: profileData.email.trim(),
+                    avatar_url: profileData.avatar_url || null,
+                    total_points: profileData.total_points || 0,
+                    role: profileData.role || null,
+                    city: profileData.city?.trim(),
                 }),
             });
 
@@ -92,6 +103,18 @@ const userProfileService = {
             console.error("[UserProfileService] Error creating profile:", error);
             throw error;
         }
+    },
+
+    /** Legacy method - Create a new user profile (backward compatibility) */
+    async createUserProfileLegacy(userId: string, username: string, email: string, city?: string): Promise<UserProfile> {
+        return this.createUserProfile({
+            user_id: userId,
+            username,
+            email,
+            city,
+            total_points: 0,
+            role: null
+        });
     },
 
     /** Update user's city/location */
