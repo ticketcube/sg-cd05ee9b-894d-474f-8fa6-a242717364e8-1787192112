@@ -39,13 +39,16 @@ export default function HomePage() {
     setAuthDialogOpen(false);
   };
 
-  // ✅ CRITICAL: Comprehensive OAuth process detection
+  // ✅ CRITICAL: Ultra-comprehensive OAuth process detection
   useEffect(() => {
     console.log('🏠 [HomePage] Auth state check:', { 
       user: user?.id, 
       profile: profile?.username, 
       isAuthenticated, 
-      profileLoading 
+      profileLoading,
+      pathname: window.location.pathname,
+      search: window.location.search,
+      hash: window.location.hash
     });
 
     // ✅ CRITICAL: Skip ALL redirect logic if auth dialog is open
@@ -54,29 +57,54 @@ export default function HomePage() {
       return;
     }
 
-    // ✅ ENHANCED: Comprehensive OAuth detection to prevent interference
+    // ✅ ULTRA-ENHANCED: Most comprehensive OAuth detection possible
     const isOAuthCallback = window.location.href.includes('/auth/callback') ||
                           window.location.search.includes('code=') ||
+                          window.location.search.includes('state=') ||
                           window.location.hash.includes('access_token') ||
-                          window.location.pathname.includes('/auth/');
+                          window.location.hash.includes('refresh_token') ||
+                          window.location.pathname.includes('/auth/') ||
+                          document.referrer.includes('accounts.google.com');
     
-    // ✅ CRITICAL: Check for ANY OAuth-related process
+    // ✅ CRITICAL: Check for ANY OAuth-related process or recent activity
     const isOAuthRedirectInProgress = sessionStorage.getItem('oauth_redirect_in_progress') ||
                                     sessionStorage.getItem('oauth_user_data') ||
-                                    window.location.pathname === '/auth/setup-profile';
+                                    sessionStorage.getItem('oauth_callback_complete') ||
+                                    window.location.pathname === '/auth/setup-profile' ||
+                                    window.location.pathname === '/auth/callback';
     
-    // ✅ CRITICAL: Also check if we're currently on an auth page
+    // ✅ CRITICAL: Check for recent OAuth activity (within last 10 seconds)
+    const recentOAuthActivity = sessionStorage.getItem('oauth_callback_complete');
+    const isRecentOAuth = recentOAuthActivity && 
+                         (Date.now() - parseInt(recentOAuthActivity)) < 10000;
+    
+    // ✅ CRITICAL: Also check if we're currently on an auth page or just came from one
     const isOnAuthPage = window.location.pathname.startsWith('/auth/');
     
-    if (isOAuthCallback || isOAuthRedirectInProgress || isOnAuthPage) {
-      console.log('🚫 [HomePage] OAuth/Auth process active, completely skipping all redirects');
+    if (isOAuthCallback || isOAuthRedirectInProgress || isOnAuthPage || isRecentOAuth) {
+      console.log('🚫 [HomePage] OAuth/Auth process active or recent, completely skipping all redirects');
+      console.log('🚫 [HomePage] Detection reasons:', {
+        isOAuthCallback,
+        isOAuthRedirectInProgress,
+        isOnAuthPage,
+        isRecentOAuth,
+        referrer: document.referrer
+      });
       return;
     }
 
-    // ✅ SIMPLIFIED: Only redirect authenticated users with complete profiles
+    // ✅ SIMPLIFIED: Only redirect authenticated users with complete profiles (with extra safety)
     if (user && isAuthenticated && profile && profile.username && !profileLoading) {
-      console.log('✅ [HomePage] Complete authenticated user, redirecting to dashboard');
-      router.replace("/discovery-dashboard");
+      // ✅ EXTRA SAFETY: Double-check we're not in the middle of an OAuth flow
+      const nowSafe = !sessionStorage.getItem('oauth_redirect_in_progress') && 
+                     !window.location.pathname.startsWith('/auth/');
+      
+      if (nowSafe) {
+        console.log('✅ [HomePage] Complete authenticated user, safe to redirect to dashboard');
+        router.replace("/discovery-dashboard");
+      } else {
+        console.log('⏳ [HomePage] User ready but OAuth still in progress, waiting...');
+      }
       return;
     }
     
@@ -87,7 +115,7 @@ export default function HomePage() {
     }
   }, [user, isAuthenticated, profile, profileLoading, isAuthDialogOpen, router]);
 
-  // ✅ SIMPLIFIED: Only show loading for very brief moments to prevent redirect blocking
+  // ✅ SIMPLIFIED: Only show loading for a brief moment to prevent redirect blocking
   if (profileLoading && user && !profile) {
     // Only show loading for a brief moment, don't block redirects
     const showLoading = Date.now() - (window as any).__authStartTime < 2000;

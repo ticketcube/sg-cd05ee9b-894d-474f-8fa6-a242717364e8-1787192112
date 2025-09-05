@@ -129,7 +129,18 @@ export default function SetupProfile() {
 
       // ✅ FIXED: Redirect to dashboard instead of index
       console.log('✅ [ProfileSetup] Profile created, redirecting to dashboard');
-      router.replace('/discovery-dashboard');
+      
+      // ✅ NEW: Set immediate redirect flag
+      sessionStorage.setItem('oauth_redirect_in_progress', 'true');
+      sessionStorage.setItem('immediate_dashboard_redirect', 'true');
+      
+      // ✅ ENHANCED: Use window.location for immediate redirect
+      window.location.replace('/discovery-dashboard');
+      
+      // ✅ FALLBACK: Also use router
+      setTimeout(() => {
+        router.replace('/discovery-dashboard');
+      }, 100);
 
     } catch (error) {
       console.error('Error creating profile:', error);

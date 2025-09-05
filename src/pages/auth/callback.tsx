@@ -76,19 +76,30 @@ export default function AuthCallback() {
         // ✅ EXISTING USER FLOW: Profile exists, go to dashboard
         console.log('✅ [AuthCallback] Existing user with profile, redirecting to dashboard');
 
-        // ✅ ENHANCED: Set multiple flags to ensure index page doesn't interfere
+        // ✅ ENHANCED: Set immediate redirect flag BEFORE any navigation
         sessionStorage.setItem('oauth_redirect_in_progress', 'true');
         sessionStorage.setItem('oauth_callback_complete', Date.now().toString());
+        
+        // ✅ NEW: Set immediate redirect flag to prevent index page interference
+        sessionStorage.setItem('immediate_dashboard_redirect', 'true');
 
         // ✅ ENHANCED: Force immediate redirect with replace to prevent back button issues
-        console.log('🚀 [AuthCallback] Redirecting to discovery dashboard');
-        await router.replace('/discovery-dashboard');
+        console.log('🚀 [AuthCallback] Redirecting to discovery dashboard immediately');
+        
+        // ✅ IMMEDIATE: Use window.location for fastest redirect
+        window.location.replace('/discovery-dashboard');
+        
+        // ✅ FALLBACK: Also use router for additional safety
+        setTimeout(() => {
+          router.replace('/discovery-dashboard');
+        }, 100);
         
         // ✅ ENHANCED: Clear flags after longer delay to ensure complete redirect
         setTimeout(() => {
           sessionStorage.removeItem('oauth_redirect_in_progress');
           sessionStorage.removeItem('oauth_callback_complete');
-        }, 5000); // Increased to 5 seconds
+          sessionStorage.removeItem('immediate_dashboard_redirect');
+        }, 8000); // Increased to 8 seconds to be extra safe
 
       } catch (error) {
         console.error('❌ [AuthCallback] Error in auth callback:', error);
