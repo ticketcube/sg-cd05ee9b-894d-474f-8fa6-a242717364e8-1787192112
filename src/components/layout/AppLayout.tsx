@@ -105,7 +105,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                     Dashboard
                                 </Link>
                                 <Link
-                                    href="/discover-dashboard"
+                                    href="/discovery-dashboard"
                                     className="sm:hidden text-sm font-medium hover:underline"
                                 >
                                     DDashboard
