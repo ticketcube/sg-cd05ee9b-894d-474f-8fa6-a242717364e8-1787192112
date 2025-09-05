@@ -48,30 +48,7 @@ export default function SubmissionSuccessPopup({
           <p className="text-gray-400">points!</p>
         </div>
 
-        <div className="my-6 text-center">
-          <p className="text-gray-400 text-center mb-6">{result.message}</p>
-
-          {breakdown && breakdown.length > 0 && (
-            <div className="bg-gray-800 p-4 rounded-lg mb-6">
-              <h3 className="font-semibold text-white mb-2">Points Breakdown:</h3>
-              <ul className="space-y-2">
-                {breakdown.map((item, index) => (
-                  <li key={index} className="flex justify-between items-center text-sm">
-                    <span className="text-gray-300">{item.artistName}</span>
-                    <span className="font-medium text-green-400">+{item.points} PTS</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          {completionBonus > 0 && (
-            <div className="text-center bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-6">
-              <p className="font-semibold text-yellow-400">Completion Bonus: +{completionBonus} PTS!</p>
-            </div>
-          )}
-        </div>
-
+       
         <DialogFooter>
           <Button onClick={onClose} className="w-full bg-blue-600 hover:bg-blue-700">
             Awesome!
