@@ -52,13 +52,26 @@ const userProfileService = {
         try {
             console.log(`[UserProfileService] Getting profile for user_id: ${userId}`);
             
-            // ✅ NEW: Add retry logic for OAuth session timing issues
+            // ✅ ENHANCED: Better retry logic for OAuth session timing issues
             let lastError: any;
-            const maxRetries = 3;
+            const maxRetries = 5; // Increased retries for OAuth
             
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     console.log(`[UserProfileService] Attempt ${attempt}/${maxRetries} to get profile`);
+                    
+                    // ✅ NEW: Check session before making API calls
+                    const { data: sessionData } = await supabase.auth.getSession();
+                    if (!sessionData.session) {
+                        console.log(`[UserProfileService] No session found (attempt ${attempt}/${maxRetries})`);
+                        if (attempt < maxRetries) {
+                            const delay = attempt * 2000; // 2s, 4s, 6s, 8s, 10s
+                            console.log(`[UserProfileService] Waiting ${delay}ms for session to establish...`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue;
+                        }
+                        throw new Error('No session available after retries');
+                    }
                     
                     const response = await fetch(`/api/user/profile?user_id=${userId}`);
                     
@@ -73,8 +86,8 @@ const userProfileService = {
                         lastError = new Error(`Authentication required (attempt ${attempt})`);
                         
                         if (attempt < maxRetries) {
-                            // Wait a bit before retry, increasing delay each time
-                            const delay = attempt * 1000; // 1s, 2s, 3s
+                            // Progressive delay for OAuth session establishment
+                            const delay = attempt * 2000; // 2s, 4s, 6s, 8s, 10s
                             console.log(`[UserProfileService] Waiting ${delay}ms before retry...`);
                             await new Promise(resolve => setTimeout(resolve, delay));
                             continue;
@@ -95,8 +108,8 @@ const userProfileService = {
                     lastError = error;
                     
                     if (attempt < maxRetries) {
-                        // Wait before retry
-                        const delay = attempt * 1000;
+                        // Progressive delay
+                        const delay = attempt * 2000;
                         await new Promise(resolve => setTimeout(resolve, delay));
                     }
                 }
@@ -258,26 +271,68 @@ const userProfileService = {
     },
 
     /** Get user's engagement history with weekly summaries */
-    async getUserEngagementHistory(userId: string): Promise<UserEngagementHistory> { // ✅ FIXED: Changed from authId to userId
+    async getUserEngagementHistory(userId: string): Promise<UserEngagementHistory> {
+        // ✅ ENHANCED: Ensure profile exists first, with better OAuth session handling
+        console.log(`[UserProfileService] Getting engagement history for user: ${userId}`);
+        
+        // ✅ NEW: Check session health first
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !sessionData.session) {
+            console.error('[UserProfileService] Session issue before engagement history:', sessionError);
+            throw new Error('Authentication required - session not available');
+        }
+        
+        // ✅ ENHANCED: Get user profile with retries
         const userProfile = await this.getUserProfile(userId);
-        if (!userProfile) throw new Error("User profile not found");
+        if (!userProfile) {
+            throw new Error("User profile not found");
+        }
 
-        const { data: engagements, error } = await supabase
-            .from("user_engagements")
-            .select("*")
-            .eq("user_id", userId)  // ✅ FIXED: Use user_id column
-            .order("created_at", { ascending: false });
+        // ✅ ENHANCED: Direct Supabase query with better error handling
+        console.log(`[UserProfileService] Fetching engagements for user_id: ${userId}`);
+        
+        let engagements;
+        let queryError;
+        
+        // ✅ NEW: Retry engagement query for OAuth timing issues
+        const maxRetries = 3;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            const { data, error } = await supabase
+                .from("user_engagements")
+                .select("*")
+                .eq("user_id", userId)
+                .order("created_at", { ascending: false });
 
-        if (error) throw error;
+            if (error) {
+                console.error(`[UserProfileService] Engagement query attempt ${attempt} failed:`, error);
+                queryError = error;
+                
+                if (attempt < maxRetries) {
+                    console.log(`[UserProfileService] Retrying engagement query in ${attempt * 1000}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+                    continue;
+                }
+            } else {
+                engagements = data;
+                queryError = null;
+                break;
+            }
+        }
+
+        if (queryError) {
+            console.error(`[UserProfileService] Failed to get engagements after ${maxRetries} attempts:`, queryError);
+            throw queryError;
+        }
+
+        console.log(`✅ [UserProfileService] Found ${engagements?.length || 0} engagement records`);
 
         const weeklyMap = new Map<string, UserEngagementSummary>();
-        let calculatedTotalPoints = 0; // ✅ NEW: Track the real total from engagements
+        let calculatedTotalPoints = 0;
         
         engagements?.forEach(e => {
             const weekId = e.week_identifier || "unknown";
             const pointsEarned = e.points_earned || 0;
             
-            // ✅ NEW: Add to the real calculated total
             calculatedTotalPoints += pointsEarned;
             
             if (!weeklyMap.has(weekId)) {
@@ -299,7 +354,7 @@ const userProfileService = {
         return {
             user_profile: userProfile,
             weekly_summaries: Array.from(weeklyMap.values()).sort((a, b) => b.week_identifier.localeCompare(a.week_identifier)),
-            total_points: calculatedTotalPoints, // ✅ FIXED: Use calculated total from user_engagements!
+            total_points: calculatedTotalPoints,
         };
     },
 

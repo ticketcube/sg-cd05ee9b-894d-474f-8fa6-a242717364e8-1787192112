@@ -91,15 +91,30 @@ export default function DiscoveryDashboard() {
             return;
         }
 
-        // ✅ FIXED: Direct check without timeout - OAuth should be resolved by now
+        // ✅ ENHANCED: Better OAuth session detection and handling
         if (!user) {
+            // ✅ NEW: Check for recent OAuth activity before showing error
+            const isRecentOAuth = sessionStorage.getItem('oauth_callback_complete');
+            const isVeryRecentOAuth = isRecentOAuth && (Date.now() - parseInt(isRecentOAuth)) < 15000; // 15 seconds
+            
+            if (isVeryRecentOAuth) {
+                console.log('⏳ [DiscoveryDashboard] Very recent OAuth detected, waiting for session establishment...');
+                // Wait a bit longer for OAuth session to fully establish
+                setTimeout(() => {
+                    console.log('🔄 [DiscoveryDashboard] Retrying after OAuth delay...');
+                    // Trigger re-render by checking user state again
+                    window.location.reload();
+                }, 3000);
+                return;
+            }
+            
             console.log('❌ [DiscoveryDashboard] No user found after profile loading');
             setError("Please sign in to access the discovery dashboard.");
             setLoading(false);
             return;
         }
 
-        // ✅ User is authenticated, load history if needed
+        // ✅ ENHANCED: User is authenticated, load history if needed
         if (user && !userHistory && !error) {
             console.log('🔄 [DiscoveryDashboard] Loading user engagement history for:', user.id);
             
@@ -107,27 +122,42 @@ export default function DiscoveryDashboard() {
                 setLoading(true);
                 setError(null);
                 
-                // ✅ NEW: Add small delay for very fresh OAuth sessions
+                // ✅ ENHANCED: Better OAuth timing handling
                 const isRecentOAuth = sessionStorage.getItem('oauth_callback_complete');
-                const isVeryRecentOAuth = isRecentOAuth && (Date.now() - parseInt(isRecentOAuth)) < 5000;
+                const isVeryRecentOAuth = isRecentOAuth && (Date.now() - parseInt(isRecentOAuth)) < 10000; // 10 seconds
                 
                 if (isVeryRecentOAuth) {
-                    console.log('⏳ [DiscoveryDashboard] Very recent OAuth, adding small delay for session stability');
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    console.log('⏳ [DiscoveryDashboard] Very recent OAuth, adding delay for session stability');
+                    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 second delay
                 }
                 
                 try {
+                    // ✅ NEW: Additional session verification before API calls
+                    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+                    if (sessionError || !sessionData.session) {
+                        console.error('❌ [DiscoveryDashboard] Session verification failed:', sessionError);
+                        throw new Error('Session not properly established. Please refresh the page.');
+                    }
+                    
+                    console.log('✅ [DiscoveryDashboard] Session verified, proceeding with history fetch');
+                    
                     const history = await userProfileService.getUserEngagementHistory(user.id);
                     console.log('✅ [DiscoveryDashboard] History loaded successfully');
                     setUserHistory(history);
+                    
+                    // ✅ NEW: Clear OAuth flags on successful load
+                    sessionStorage.removeItem('oauth_callback_complete');
+                    sessionStorage.removeItem('oauth_redirect_in_progress');
+                    sessionStorage.removeItem('immediate_dashboard_redirect');
+                    
                 } catch (err) {
                     console.error('❌ [DiscoveryDashboard] Failed to load history:', err);
                     
                     // ✅ ENHANCED: Better error messages for OAuth issues
                     const errorMessage = err instanceof Error ? err.message : "Failed to load dashboard data";
                     
-                    if (errorMessage.includes('Authentication required')) {
-                        setError("Session is still being established. Please refresh the page in a moment.");
+                    if (errorMessage.includes('Authentication required') || errorMessage.includes('session')) {
+                        setError("Your session is still being established. Please wait a moment and refresh the page if this persists.");
                     } else {
                         setError(errorMessage);
                     }
