@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import { Loader2, User, Mail, MapPin, CheckCircle } from "lucide-react";
-import userProfileService from "@/services/userProfileService";
 
 interface ProfileSetupModalProps {
   isOpen: boolean;
@@ -32,50 +31,83 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
     e.preventDefault();
     
     if (!user) {
-        setError('No authenticated user found');
-        return;
+      setError('No authenticated user found');
+      return;
     }
 
-    if (usernameError || !username.trim()) {
-        setError('Please choose a valid username');
-        return;
+    if (!formData.username.trim()) {
+      setError('Please enter a username');
+      return;
     }
 
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
 
     try {
-        // ✅ FIXED: OAuth users get profiles created automatically by database trigger
-        // We just need to update the username if the user wants to change it
-        console.log('[ProfileSetupModal] OAuth user - updating username via direct Supabase call');
+      // ✅ FIXED: OAuth users get profiles created automatically by database trigger
+      // We just need to update the profile with the user's chosen details
+      console.log('[ProfileSetupModal] Updating profile via direct Supabase call');
+      
+      const updateData: any = {
+        username: formData.username.trim(),
+        email: formData.email.trim()
+      };
+
+      // Handle city if provided
+      if (formData.city.trim()) {
+        updateData.raw_city_input = formData.city.trim();
         
-        const { data: updatedProfile, error: updateError } = await supabase
-            .from('user_profiles')
-            .update({ username: username.trim() })
-            .eq('user_id', user.id)
-            .select()
-            .single();
-
-        if (updateError) {
-            console.error('[ProfileSetupModal] Error updating username:', updateError);
-            throw new Error(updateError.message);
-        }
-
-        if (!updatedProfile) {
-            throw new Error('Failed to update username - profile may not exist yet');
-        }
-
-        console.log('✅ [ProfileSetupModal] Username updated successfully');
+        // Try to find city ID
+        const { data: cityData } = await supabase
+          .from('city_latlong')
+          .select('id')
+          .eq('normalized_name', formData.city.trim().toLowerCase())
+          .single();
         
-        // Refresh the profile context
-        await refreshProfile();
+        if (cityData) {
+          updateData.city_id = cityData.id;
+        }
+      }
+      
+      const { data: updatedProfile, error: updateError } = await supabase
+        .from('user_profiles')
+        .update(updateData)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('[ProfileSetupModal] Error updating profile:', updateError);
+        throw new Error(updateError.message);
+      }
+
+      if (!updatedProfile) {
+        throw new Error('Failed to update profile - profile may not exist yet');
+      }
+
+      console.log('✅ [ProfileSetupModal] Profile updated successfully');
+      
+      setSuccess(true);
+      
+      // Refresh the profile context
+      await refreshProfile();
+      
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+      
+      // Close modal after a brief delay to show success
+      setTimeout(() => {
         onClose();
-        
+        setSuccess(false);
+      }, 2000);
+      
     } catch (error) {
-        console.error('[ProfileSetupModal] Error in profile setup:', error);
-        setError(error instanceof Error ? error.message : 'Failed to update username');
+      console.error('[ProfileSetupModal] Error in profile setup:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update profile');
     } finally {
-        setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -97,7 +129,7 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
         {success ? (
           <div className="text-center py-6">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">Profile Created Successfully!</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">Profile Updated Successfully!</h3>
             <p className="text-gray-400 mb-4">Setting up your dashboard...</p>
             <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
             <p className="text-xs text-gray-500 mt-4">This will only take a moment</p>
@@ -172,13 +204,13 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
               </Button>
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !formData.username.trim()}
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating profile...
+                    Updating profile...
                   </>
                 ) : (
                   "Complete Setup"
