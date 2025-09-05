@@ -1,4 +1,3 @@
-
 // src/contexts/UserProfileContext.tsx
 import {
     createContext,
@@ -8,170 +7,109 @@ import {
     ReactNode,
     useCallback,
 } from "react";
-import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
-import { authService } from "@/services/authService";
+import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 
-type UserProfile = {
-    id: number;                    // ✅ FIXED: integer, not string
-    user_id: string;              // ✅ CORRECT: uuid
-    username: string;             // ✅ CORRECT: required text
-    role?: string;                // ✅ CORRECT: optional text
-    email: string;                // ✅ CORRECT: required text
-    raw_city_input?: string;      // ✅ CORRECT: optional text
-    avatar_url?: string;          // ✅ CORRECT: optional text
-    created_at: string;           // ✅ CORRECT: required timestamp
-    total_points?: number;        // ✅ FIXED: number, not string, and correct name
-    last_active?: string;         // ✅ ADDED: missing field
-    city_id?: number;             // ✅ ADDED: missing bigint field
+// Define the shape of the user profile data
+export type UserProfile = {
+    id: number;
+    user_id: string;
+    username: string;
+    role?: string;
+    email: string;
+    avatar_url?: string;
+    created_at: string;
+    total_points?: number;
 };
 
+// Define the shape of the context value
 type UserProfileContextType = {
     profile: UserProfile | null;
-    role: string | null;
     loading: boolean;
-    error: string | null;
     isAuthenticated: boolean;
-    refreshProfile: () => Promise<void>;
+    refreshProfile: () => void;
 };
 
-const UserProfileContext = createContext<UserProfileContextType | undefined>(
+const UserProfileContext = createContext < UserProfileContextType | undefined > (
     undefined
 );
 
 export function UserProfileProvider({ children }: { children: ReactNode }) {
     const supabase = useSupabaseClient();
-    const user = useUser();
+    const user = useUser(); // The user object from Supabase auth
 
-    const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [profile, setProfile] = useState < UserProfile | null > (null);
+    const [loading, setLoading] = useState(true); // Start as true
 
+    // This is the core profile fetching logic
     const fetchProfile = useCallback(async () => {
-        console.log('🔄 [UserProfileContext] fetchProfile called, user:', user?.id);
-        
         if (!user) {
-            console.log('❌ [UserProfileContext] No user found');
+            // If there's no user, there's no profile to fetch.
             setProfile(null);
-            setIsAuthenticated(false);
             setLoading(false);
             return;
         }
 
+        // A user exists, so let's try to fetch their profile.
+        setLoading(true);
         try {
-            setLoading(true);
-            setError(null);
-            setIsAuthenticated(true); // ✅ User exists = authenticated
-
-            console.log('🔍 [UserProfileContext] Fetching profile for user:', user.id);
-
-            // ✅ SIMPLIFIED: Use direct Supabase query - database trigger creates profiles automatically
-            const { data: profileData, error: fetchError } = await supabase
-                .from('user_profiles')
-                .select('*')
-                .eq('user_id', user.id)
+            const { data, error } = await supabase
+                .from("user_profiles")
+                .select("*")
+                .eq("user_id", user.id)
                 .single();
 
-            if (fetchError) {
-                if (fetchError.code === 'PGRST116') {
-                    // ✅ ENHANCED: Profile doesn't exist yet - this can happen during OAuth
-                    // Database trigger should create it, so we can wait briefly and retry
-                    console.log('⚠️ [UserProfileContext] Profile not found, might be very new OAuth user. Retrying...');
-                    
-                    // Wait 1 second for database trigger to complete
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // Retry once
-                    const { data: retryData, error: retryError } = await supabase
-                        .from('user_profiles')
-                        .select('*')
-                        .eq('user_id', user.id)
-                        .single();
-                    
-                    if (retryError && retryError.code === 'PGRST116') {
-                        console.log('⚠️ [UserProfileContext] Profile still not found after retry - database trigger may need time');
-                        setProfile(null);
-                        setError('Profile is being created. Please refresh the page in a moment.');
-                        setLoading(false);
-                        return;
-                    } else if (retryError) {
-                        throw retryError;
-                    }
-                    
-                    console.log('✅ [UserProfileContext] Profile found on retry:', retryData);
-                    setProfile(retryData as UserProfile);
-                    setLoading(false);
-                    return;
-                }
-                throw fetchError;
+            if (error) {
+                // This can happen if the database trigger hasn't created the profile yet.
+                console.warn("[UserProfileContext] Profile not found, could be a new user:", error.message);
+                setProfile(null); // Explicitly set profile to null on error
+            } else {
+                setProfile(data as UserProfile);
             }
-
-            console.log('✅ [UserProfileContext] Profile loaded successfully:', profileData);
-            setProfile(profileData as UserProfile);
         } catch (err: any) {
-            console.error("❌ [UserProfileContext] Error loading profile:", err.message);
-            setError(err.message || 'Failed to load profile');
+            console.error("[UserProfileContext] Error fetching profile:", err.message);
             setProfile(null);
         } finally {
             setLoading(false);
         }
     }, [user, supabase]);
 
-    // ✅ Listen to auth state changes
-useEffect(() => {
-    console.log('🎯 [UserProfileContext] Auth state changed. User:', user?.id);
-    
-    if (user) {
-        // Standard delay for all logins
-        const timer = setTimeout(fetchProfile, 200);
-        return () => clearTimeout(timer);
-    } else {
-        setProfile(null);
-        setIsAuthenticated(false);
-        setLoading(false);
-    }
-}, [user, fetchProfile]);
-
-    // ✅ NEW: Listen to auth state changes directly from Supabase
+    // The main effect hook that listens to authentication state changes.
     useEffect(() => {
-        console.log('🔗 [UserProfileContext] Setting up auth listener');
-        
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                console.log('🔄 [UserProfileContext] Auth event:', event, 'Session user:', session?.user?.id);
-                
-                if (event === 'SIGNED_IN' && session?.user) {
-                    // Force refresh profile on sign in
-                    setIsAuthenticated(true);
-                    // Small delay to ensure session is fully established
-                    setTimeout(fetchProfile, 200);
-                } else if (event === 'SIGNED_OUT') {
-                    setProfile(null);
-                    setIsAuthenticated(false);
-                    setLoading(false);
-                }
-            }
-        );
+        // Immediately try to fetch the profile when the component mounts or user changes.
+        fetchProfile();
 
+        // Listen for SIGNED_IN and SIGNED_OUT events from Supabase.
+        const {
+            data: { subscription },
+        } = supabase.auth.onAuthStateChange((event, session) => {
+            console.log(`[UserProfileContext] Auth Event: ${event}`);
+            if (event === "SIGNED_IN") {
+                // The user object is now available, let's ensure we fetch the profile.
+                // A small delay can help if the session needs a moment to be fully available.
+                setTimeout(() => fetchProfile(), 100);
+            } else if (event === "SIGNED_OUT") {
+                setProfile(null);
+                setLoading(false);
+            }
+        });
+
+        // Cleanup the subscription when the component unmounts.
         return () => {
-            console.log('🔌 [UserProfileContext] Cleaning up auth listener');
             subscription.unsubscribe();
         };
-    }, [supabase, fetchProfile]);
+    }, [user, supabase, fetchProfile]);
 
     const value: UserProfileContextType = {
         profile,
-        role: profile?.role ?? null,
         loading,
-        error,
-        isAuthenticated,
+        isAuthenticated: !!user && !!profile, // User is authenticated if they have a session AND a profile
         refreshProfile: fetchProfile,
     };
 
     return (
         <UserProfileContext.Provider value={value}>
             {children}
-        </UserProfileContext.Provider>
+        </UserProfile-provider>
     );
 }
 
