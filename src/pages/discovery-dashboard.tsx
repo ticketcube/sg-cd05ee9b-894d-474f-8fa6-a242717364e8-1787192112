@@ -78,36 +78,53 @@ export default function DiscoveryDashboard() {
 
 
     useEffect(() => {
-                // Don’t decide anything until profile AND user have finished loading
-                   if (profileLoading) return;
-        
-                    // If auth hasn’t resolved yet, don’t show an error
-                    if (user === null) {
-                            setError("Please sign in to access the discovery dashboard.");
-                            setLoading(false);
-                            return;
-                        }
-        
-                   
-        
-                  // Fetch history only once, after both user + profile exist
-                    if ( !userHistory) {
-                           const fetchUserHistory = async () => {
-                                    setLoading(true);
-                                  setError(null);
-                                    try {
-                                            // IMPORTANT: use user.id (auth id), not profile!.id
-                                                const history = await userProfileService.getUserEngagementHistory(user.id);
-                                            setUserHistory(history);
-                                       } catch (err) {
-                                                setError(err instanceof Error ? err.message : "Failed to load dashboard data");
-                                           } finally {
-                                            setLoading(false);
-                                        }
-                               };
-                            fetchUserHistory();
-                        }
-            }, [user?.id, profile, profileLoading, userHistory]);
+        // ✅ FIXED: Improved OAuth handling - wait for auth to fully resolve
+        console.log('🎯 [DiscoveryDashboard] Auth state:', { 
+            user: user?.id, 
+            profileLoading, 
+            userHistory: !!userHistory 
+        });
+
+        // Don't make decisions until profile loading is complete
+        if (profileLoading) {
+            console.log('⏳ [DiscoveryDashboard] Still loading profile...');
+            return;
+        }
+
+        // ✅ FIXED: Give auth more time to resolve after OAuth
+        // Only show error after a reasonable wait, not immediately
+        if (user === null) {
+            const timer = setTimeout(() => {
+                console.log('❌ [DiscoveryDashboard] Auth timeout - no user found');
+                setError("Please sign in to access the discovery dashboard.");
+                setLoading(false);
+            }, 2000); // Wait 2 seconds for auth to resolve
+            
+            return () => clearTimeout(timer);
+        }
+
+        // ✅ User is authenticated, proceed with loading history
+        if (user && !userHistory && !error) {
+            console.log('🔄 [DiscoveryDashboard] Loading user engagement history...');
+            
+            const fetchUserHistory = async () => {
+                setLoading(true);
+                setError(null);
+                try {
+                    const history = await userProfileService.getUserEngagementHistory(user.id);
+                    console.log('✅ [DiscoveryDashboard] History loaded successfully');
+                    setUserHistory(history);
+                } catch (err) {
+                    console.error('❌ [DiscoveryDashboard] Failed to load history:', err);
+                    setError(err instanceof Error ? err.message : "Failed to load dashboard data");
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            fetchUserHistory();
+        }
+    }, [user?.id, profile, profileLoading, userHistory, error]);
 
     if (profileLoading || loading) {
         return (

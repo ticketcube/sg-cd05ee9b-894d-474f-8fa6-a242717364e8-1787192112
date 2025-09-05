@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/integrations/supabase/client";
-import userProfileService from "@/services/userProfileService";
 
 export default function AuthCallback() {
   const router = useRouter();
@@ -32,39 +31,10 @@ export default function AuthCallback() {
         const user = data.session.user;
         console.log('✅ [AuthCallback] OAuth user authenticated:', user.id);
 
-        // Wait a moment for the auth state to propagate
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Check if user already has a profile
-        try {
-          console.log('🔍 [AuthCallback] Checking for existing profile...');
-          const existingProfile = await userProfileService.getUserProfile(user.id);
-          
-          if (existingProfile) {
-            // ✅ FIXED: Redirect existing users to discovery dashboard directly
-            console.log('✅ [AuthCallback] Existing profile found, redirecting to dashboard');
-            router.replace('/discovery-dashboard');
-            return;
-          }
-        } catch (profileError: any) {
-          // Profile doesn't exist or error occurred, continue with profile creation
-          console.log('⚠️ [AuthCallback] No existing profile found, proceeding to setup:', profileError?.message);
-        }
-
-        // New user - redirect to profile setup with user data
-        const userData = {
-          email: user.email || '',
-          name: user.user_metadata?.name || user.user_metadata?.full_name || '',
-          avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || ''
-        };
-
-        console.log('🆕 [AuthCallback] New user, storing OAuth data for profile setup');
-        
-        // Store user data in sessionStorage for profile setup
-        sessionStorage.setItem('oauth_user_data', JSON.stringify(userData));
-        
-        // Redirect to profile setup
-        router.replace('/auth/setup-profile');
+        // ✅ SIMPLIFIED: Just redirect to discovery dashboard for ALL users
+        // Let the dashboard handle profile loading and setup redirection
+        console.log('🚀 [AuthCallback] Redirecting to discovery dashboard');
+        router.replace('/discovery-dashboard');
 
       } catch (error) {
         console.error('❌ [AuthCallback] Error in auth callback:', error);
