@@ -99,7 +99,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                             <div className="flex items-center gap-3">
                                 {/* Discovery Dashboard Link */}
                                 <Link
-                                    href="/dashboard"
+                                        href="/discovery-dashboard"
                                     className="hidden sm:block text-sm font-medium hover:underline"
                                 >
                                     Dashboard
