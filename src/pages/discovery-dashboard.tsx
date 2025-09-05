@@ -210,7 +210,6 @@ export default function DiscoveryDashboard() {
     const weeksActive = weekly_summaries.length;
 
     return (
-        <AuthGuard>
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
                 {/* Hero Header */}
                 <div className="relative overflow-hidden">
@@ -315,7 +314,6 @@ export default function DiscoveryDashboard() {
                     {activeTab === "staff" && role === 'otwstaff' && <StaffPortalTab />}
                 </div>
             </div>
-        </AuthGuard>
     );
 }
 
