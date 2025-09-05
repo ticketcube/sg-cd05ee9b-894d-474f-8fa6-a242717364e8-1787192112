@@ -51,16 +51,61 @@ const userProfileService = {
     async getUserProfile(userId: string): Promise<UserProfile | null> {
         try {
             console.log(`[UserProfileService] Getting profile for user_id: ${userId}`);
-            // ✅ FIXED: Use consolidated /api/user/profile endpoint instead of profile-by-auth-id
-            const response = await fetch(`/api/user/profile?user_id=${userId}`);
+            
+            // ✅ NEW: Add retry logic for OAuth session timing issues
+            let lastError: any;
+            const maxRetries = 3;
+            
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    console.log(`[UserProfileService] Attempt ${attempt}/${maxRetries} to get profile`);
+                    
+                    const response = await fetch(`/api/user/profile?user_id=${userId}`);
+                    
+                    if (response.status === 404) {
+                        console.log(`[UserProfileService] Profile not found (404) for user: ${userId}`);
+                        return null;
+                    }
+                    
+                    if (response.status === 401) {
+                        // Authentication error - might be OAuth timing issue
+                        console.log(`[UserProfileService] Auth error (attempt ${attempt}/${maxRetries})`);
+                        lastError = new Error(`Authentication required (attempt ${attempt})`);
+                        
+                        if (attempt < maxRetries) {
+                            // Wait a bit before retry, increasing delay each time
+                            const delay = attempt * 1000; // 1s, 2s, 3s
+                            console.log(`[UserProfileService] Waiting ${delay}ms before retry...`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue;
+                        }
+                    }
 
-            if (response.status === 404) return null;
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || `HTTP error ${response.status}`);
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `HTTP error ${response.status}`);
+                    }
+
+                    const profileData = await response.json();
+                    console.log(`✅ [UserProfileService] Profile retrieved successfully on attempt ${attempt}`);
+                    return profileData;
+                    
+                } catch (error) {
+                    console.error(`[UserProfileService] Attempt ${attempt} failed:`, error);
+                    lastError = error;
+                    
+                    if (attempt < maxRetries) {
+                        // Wait before retry
+                        const delay = attempt * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                }
             }
-
-            return await response.json();
+            
+            // All retries failed
+            console.error(`❌ [UserProfileService] All ${maxRetries} attempts failed. Last error:`, lastError);
+            throw lastError || new Error('Failed to get user profile after retries');
+            
         } catch (error) {
             console.error("[UserProfileService] Error getting user profile:", error);
             throw error;

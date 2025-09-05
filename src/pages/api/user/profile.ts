@@ -4,22 +4,45 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabase = createServerSupabaseClient({ req, res });
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session?.user) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-
-  const userId = session.user.id;
-
+  
   try {
+    // ✅ ENHANCED: Better session handling for OAuth flows
+    console.log('🔐 [API/Profile] Checking session...');
+    
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.error('❌ [API/Profile] Session error:', sessionError);
+      return res.status(500).json({ 
+        error: 'Session validation failed', 
+        details: sessionError.message 
+      });
+    }
+
+    if (!sessionData?.session?.user) {
+      console.log('❌ [API/Profile] No session found. Headers:', {
+        authorization: req.headers.authorization ? 'Present' : 'Missing',
+        cookie: req.headers.cookie ? 'Present' : 'Missing'
+      });
+      
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        details: 'No valid session found. Please try refreshing the page or signing in again.'
+      });
+    }
+
+    const user = sessionData.session.user;
+    const userId = user.id;
+    
+    console.log('✅ [API/Profile] Session validated for user:', userId);
+
     switch (req.method) {
       case 'GET':
         // Handle GET requests with optional user_id parameter
         const requestedUserId = req.query.user_id as string;
         const targetUserId = requestedUserId || userId; // Use query param or current user
         
-        console.log(`[API] Getting profile for user_id: ${targetUserId}`);
+        console.log(`🔍 [API/Profile] Getting profile for user_id: ${targetUserId}`);
         
         const { data: profile, error: getError } = await supabase
           .from('user_profiles')
@@ -28,17 +51,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .maybeSingle();
 
         if (getError) {
-          console.error('[API] Error fetching profile:', getError);
-          return res.status(500).json({ error: 'Failed to fetch profile' });
-        }
-
-        if (!profile) {
-          return res.status(404).json({ 
-            error: 'Profile not found',
-            details: 'Profile should have been created automatically. Please contact support.'
+          console.error('❌ [API/Profile] Error fetching profile:', getError);
+          return res.status(500).json({ 
+            error: 'Failed to fetch profile',
+            details: getError.message
           });
         }
 
+        if (!profile) {
+          console.log('⚠️ [API/Profile] Profile not found for user_id:', targetUserId);
+          return res.status(404).json({ 
+            error: 'Profile not found',
+            details: 'Profile should have been created automatically. Please contact support.',
+            user_id: targetUserId
+          });
+        }
+
+        console.log('✅ [API/Profile] Profile found and returned:', profile.username);
         return res.status(200).json(profile);
 
       case 'POST':
@@ -53,6 +82,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Update profile functionality - enhanced to work with trigger-created profiles
         const { username: updateUsername, email: updateEmail, city: updateCity } = req.body;
         
+        console.log('🔄 [API/Profile] Updating profile for user:', userId);
+        
         // First, check if profile exists (it should, thanks to the database trigger)
         const { data: existingProfile, error: checkError } = await supabase
           .from('user_profiles')
@@ -62,18 +93,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (checkError) {
           if (checkError.code === 'PGRST116') {
-            console.error('[API] Profile not found for user_id:', userId);
+            console.error('❌ [API/Profile] Profile not found for user_id:', userId);
             return res.status(404).json({ 
               error: 'Profile not found', 
               details: 'Profile should have been created automatically. Please contact support.' 
             });
           }
-          console.error('[API] Error checking existing profile:', checkError);
+          console.error('❌ [API/Profile] Error checking existing profile:', checkError);
           return res.status(500).json({ error: 'Database error during profile check' });
         }
 
         if (!existingProfile) {
-          console.error('[API] No profile found for user_id:', userId);
+          console.error('❌ [API/Profile] No profile found for user_id:', userId);
           return res.status(404).json({ 
             error: 'Profile not found', 
             details: 'Profile should have been created automatically. Please contact support.' 
@@ -107,14 +138,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // If no update data provided, just return the existing profile
         if (Object.keys(updateData).length === 0) {
-          console.log('[API] No update data provided, returning existing profile');
+          console.log('ℹ️ [API/Profile] No update data provided, returning existing profile');
           return res.status(200).json({ 
             profile: existingProfile,
             message: 'No updates needed' 
           });
         }
 
-        console.log('[API] Updating profile with data:', updateData);
+        console.log('🔄 [API/Profile] Updating profile with data:', updateData);
 
         const { data: updatedProfile, error: updateError } = await supabase
           .from('user_profiles')
@@ -124,7 +155,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .single();
 
         if (updateError) {
-          console.error('[API] Error updating profile:', updateError);
+          console.error('❌ [API/Profile] Error updating profile:', updateError);
           return res.status(500).json({ 
             error: 'Failed to update profile',
             details: updateError.message
@@ -132,10 +163,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         if (!updatedProfile) {
-          console.error('[API] No profile returned after update');
+          console.error('❌ [API/Profile] No profile returned after update');
           return res.status(500).json({ error: 'Profile update failed - no data returned' });
         }
 
+        console.log('✅ [API/Profile] Profile updated successfully');
         return res.status(200).json({ 
           profile: updatedProfile,
           message: 'Profile updated successfully'
@@ -143,16 +175,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       case 'DELETE':
         // Delete profile functionality - keeping as is
+        console.log('🗑️ [API/Profile] Deleting profile for user:', userId);
+        
         const { error: deleteError } = await supabase
           .from('user_profiles')
           .delete()
           .eq('user_id', userId);
 
         if (deleteError) {
-          console.error('[API] Error deleting profile:', deleteError);
+          console.error('❌ [API/Profile] Error deleting profile:', deleteError);
           return res.status(500).json({ error: 'Failed to delete profile' });
         }
 
+        console.log('✅ [API/Profile] Profile deleted successfully');
         return res.status(204).end();
 
       default:
@@ -160,7 +195,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
-    console.error('[API] Unexpected error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('💥 [API/Profile] Unexpected error:', error);
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 }
