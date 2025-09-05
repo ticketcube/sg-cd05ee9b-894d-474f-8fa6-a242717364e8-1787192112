@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/integrations/supabase/client";
-import { userProfileService } from "@/services/userProfileService";
+import userProfileService from "@/services/userProfileService";
 
 export default function AuthCallback() {
   const router = useRouter();

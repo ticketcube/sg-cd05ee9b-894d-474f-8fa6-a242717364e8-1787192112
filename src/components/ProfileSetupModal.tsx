@@ -48,12 +48,12 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
       console.log("🔧 Starting profile setup with form data:", formData);
       
       // Create or update user profile
-      await userProfileService.createUserProfile(
-        user.id, // auth_id
-        formData.username.trim(),
-        formData.email.trim(),
-        formData.city.trim() || undefined
-      );
+      await userProfileService.createUserProfile({
+        user_id: user.id,
+        username: formData.username.trim(),
+        email: formData.email.trim(),
+        city: formData.city.trim() || undefined
+      });
       
       console.log("✅ Profile setup completed successfully");
       setSuccess(true);
