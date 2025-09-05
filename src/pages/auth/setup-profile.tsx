@@ -127,8 +127,9 @@ export default function SetupProfile() {
       // Clear OAuth data from session storage
       sessionStorage.removeItem('oauth_user_data');
 
-      // Redirect to home
-      router.replace('/');
+      // ✅ FIXED: Redirect to dashboard instead of index
+      console.log('✅ [ProfileSetup] Profile created, redirecting to dashboard');
+      router.replace('/discovery-dashboard');
 
     } catch (error) {
       console.error('Error creating profile:', error);

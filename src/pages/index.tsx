@@ -54,13 +54,17 @@ export default function HomePage() {
       return;
     }
 
-    // ✅ NEW: More aggressive OAuth callback detection
+    // ✅ ENHANCED: More reliable OAuth callback and redirect detection
     const isOAuthCallback = window.location.href.includes('/auth/callback') ||
                           window.location.search.includes('code=') ||
-                          window.location.hash.includes('access_token');
+                          window.location.hash.includes('access_token') ||
+                          window.location.pathname.includes('/auth/');
     
-    if (isOAuthCallback) {
-      console.log('🚫 [HomePage] OAuth callback detected, letting callback handle it');
+    // ✅ NEW: Also check for active OAuth redirect process
+    const isOAuthRedirectInProgress = sessionStorage.getItem('oauth_redirect_in_progress');
+    
+    if (isOAuthCallback || isOAuthRedirectInProgress) {
+      console.log('🚫 [HomePage] OAuth process active, skipping redirects');
       return;
     }
 

@@ -43,6 +43,39 @@ export default function AuthCallback() {
         const user = sessionData.session.user;
         console.log('✅ [AuthCallback] OAuth user authenticated:', user.id);
 
+        // ✅ ENHANCED: Check if user has a complete profile before redirecting
+        const { data: profileData, error: profileError } = await supabase
+          .from('user_profiles')
+          .select('id, username')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('❌ [AuthCallback] Error checking profile:', profileError);
+          setError('Error checking your profile. Please try again.');
+          return;
+        }
+
+        // ✅ NEW: Store OAuth user data for profile setup if needed
+        const oauthUserData = {
+          email: user.email || '',
+          name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+          avatar_url: user.user_metadata?.avatar_url || ''
+        };
+
+        if (!profileData || !profileData.username) {
+          // ✅ NEW USER FLOW: No profile exists, redirect to profile setup
+          console.log('🔄 [AuthCallback] New user, redirecting to profile setup');
+          
+          // Store OAuth data for profile setup page
+          sessionStorage.setItem('oauth_user_data', JSON.stringify(oauthUserData));
+          await router.replace('/auth/setup-profile');
+          return;
+        }
+
+        // ✅ EXISTING USER FLOW: Profile exists, go to dashboard
+        console.log('✅ [AuthCallback] Existing user with profile, redirecting to dashboard');
+
         // ✅ CRITICAL: Add a flag to prevent index page interference
         sessionStorage.setItem('oauth_redirect_in_progress', 'true');
 
