@@ -39,7 +39,7 @@ export default function HomePage() {
     setAuthDialogOpen(false);
   };
 
-  // ✅ STREAMLINED: Simplified and more reliable authentication flow
+  // ✅ CRITICAL: Comprehensive OAuth process detection
   useEffect(() => {
     console.log('🏠 [HomePage] Auth state check:', { 
       user: user?.id, 
@@ -48,56 +48,42 @@ export default function HomePage() {
       profileLoading 
     });
 
-    // ✅ CRITICAL: Skip redirect logic if auth dialog is open
+    // ✅ CRITICAL: Skip ALL redirect logic if auth dialog is open
     if (isAuthDialogOpen) {
       console.log('🚫 [HomePage] Auth dialog open, skipping redirects');
       return;
     }
 
-    // ✅ ENHANCED: More reliable OAuth callback and redirect detection
+    // ✅ ENHANCED: Comprehensive OAuth detection to prevent interference
     const isOAuthCallback = window.location.href.includes('/auth/callback') ||
                           window.location.search.includes('code=') ||
                           window.location.hash.includes('access_token') ||
                           window.location.pathname.includes('/auth/');
     
-    // ✅ NEW: Also check for active OAuth redirect process
-    const isOAuthRedirectInProgress = sessionStorage.getItem('oauth_redirect_in_progress');
+    // ✅ CRITICAL: Check for ANY OAuth-related process
+    const isOAuthRedirectInProgress = sessionStorage.getItem('oauth_redirect_in_progress') ||
+                                    sessionStorage.getItem('oauth_user_data') ||
+                                    window.location.pathname === '/auth/setup-profile';
     
-    if (isOAuthCallback || isOAuthRedirectInProgress) {
-      console.log('🚫 [HomePage] OAuth process active, skipping redirects');
+    // ✅ CRITICAL: Also check if we're currently on an auth page
+    const isOnAuthPage = window.location.pathname.startsWith('/auth/');
+    
+    if (isOAuthCallback || isOAuthRedirectInProgress || isOnAuthPage) {
+      console.log('🚫 [HomePage] OAuth/Auth process active, completely skipping all redirects');
       return;
     }
 
-    // ✅ ENHANCED: Immediate redirect for authenticated users (don't wait for profile loading)
-    if (user && isAuthenticated) {
-      console.log('✅ [HomePage] User authenticated, checking profile...');
-      
-      // If we have a profile, go to dashboard immediately
-      if (profile && profile.username) {
-        console.log('✅ [HomePage] Profile complete, redirecting to dashboard');
-        router.replace("/discovery-dashboard");
-        return;
-      }
-      
-      // If user exists but no profile yet, and we're not currently loading
-      if (!profileLoading && !profile) {
-        console.log('⚠️ [HomePage] No profile found, redirecting to setup');
-        router.replace("/auth/setup-profile");
-        return;
-      }
-      
-      // If profile is still loading, wait a bit but set a timeout to prevent infinite waiting
-      if (profileLoading) {
-        console.log('🔄 [HomePage] Profile loading, waiting...');
-        const timeout = setTimeout(() => {
-          if (!profile && user) {
-            console.log('⏰ [HomePage] Profile load timeout, redirecting to setup');
-            router.replace("/auth/setup-profile");
-          }
-        }, 3000); // 3 second timeout
-        
-        return () => clearTimeout(timeout);
-      }
+    // ✅ SIMPLIFIED: Only redirect authenticated users with complete profiles
+    if (user && isAuthenticated && profile && profile.username && !profileLoading) {
+      console.log('✅ [HomePage] Complete authenticated user, redirecting to dashboard');
+      router.replace("/discovery-dashboard");
+      return;
+    }
+    
+    // ✅ SIMPLIFIED: Don't redirect incomplete profiles - let them complete naturally
+    if (user && !profile && !profileLoading) {
+      console.log('⚠️ [HomePage] User without profile detected, but not redirecting (OAuth might handle)');
+      // Don't redirect - let OAuth callback or manual navigation handle this
     }
   }, [user, isAuthenticated, profile, profileLoading, isAuthDialogOpen, router]);
 

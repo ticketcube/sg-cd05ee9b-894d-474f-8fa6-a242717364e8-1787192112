@@ -98,9 +98,15 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         console.log('🎯 [UserProfileContext] Auth state changed. User:', user?.id);
         
+        // ✅ NEW: Don't interfere with active OAuth processes
+        const isOAuthActive = sessionStorage.getItem('oauth_redirect_in_progress') ||
+                            sessionStorage.getItem('oauth_user_data') ||
+                            window.location.pathname.startsWith('/auth/');
+        
         if (user) {
-            // Small delay to ensure OAuth session is fully established
-            const timer = setTimeout(fetchProfile, 100);
+            // ✅ ENHANCED: Shorter delay during OAuth to prevent interference
+            const delay = isOAuthActive ? 50 : 200;
+            const timer = setTimeout(fetchProfile, delay);
             return () => clearTimeout(timer);
         } else {
             setProfile(null);

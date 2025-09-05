@@ -76,17 +76,19 @@ export default function AuthCallback() {
         // ✅ EXISTING USER FLOW: Profile exists, go to dashboard
         console.log('✅ [AuthCallback] Existing user with profile, redirecting to dashboard');
 
-        // ✅ CRITICAL: Add a flag to prevent index page interference
+        // ✅ ENHANCED: Set multiple flags to ensure index page doesn't interfere
         sessionStorage.setItem('oauth_redirect_in_progress', 'true');
+        sessionStorage.setItem('oauth_callback_complete', Date.now().toString());
 
         // ✅ ENHANCED: Force immediate redirect with replace to prevent back button issues
         console.log('🚀 [AuthCallback] Redirecting to discovery dashboard');
         await router.replace('/discovery-dashboard');
         
-        // Clear the flag after successful redirect
+        // ✅ ENHANCED: Clear flags after longer delay to ensure complete redirect
         setTimeout(() => {
           sessionStorage.removeItem('oauth_redirect_in_progress');
-        }, 2000);
+          sessionStorage.removeItem('oauth_callback_complete');
+        }, 5000); // Increased to 5 seconds
 
       } catch (error) {
         console.error('❌ [AuthCallback] Error in auth callback:', error);
