@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from 'next/router';
 import { useUser } from "@supabase/auth-helpers-react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
