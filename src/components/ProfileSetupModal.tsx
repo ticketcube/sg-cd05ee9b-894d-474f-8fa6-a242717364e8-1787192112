@@ -31,134 +31,51 @@ export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: Profil
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.username.trim() || !formData.email.trim()) {
-      setError("Username and email are required");
-      return;
+    if (!user) {
+        setError('No authenticated user found');
+        return;
     }
 
-    if (!user?.id) {
-      setError("User authentication required");
-      return;
+    if (usernameError || !username.trim()) {
+        setError('Please choose a valid username');
+        return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     setError(null);
 
     try {
-      console.log("🔧 Starting profile setup with form data:", formData);
-      
-      // Create or update user profile
-      await userProfileService.createUserProfile({
-        user_id: user.id,
-        username: formData.username.trim(),
-        email: formData.email.trim(),
-        city: formData.city.trim() || undefined
-      });
-      
-      console.log("✅ Profile setup completed successfully");
-      setSuccess(true);
-      
-      // Wait a moment for the database transaction to complete, then refresh auth state
-      setTimeout(async () => {
-        try {
-          console.log("🔄 Refreshing user profile after creation...");
-          await refreshProfile();
-          console.log("✅ Profile refresh call completed");
-          
-          // Poll the database to ensure profile exists
-          let attempts = 0;
-          const maxAttempts = 10; // 5 seconds total
-          
-          const checkProfileState = async () => {
-            attempts++;
-            console.log(`🔍 Checking profile state (attempt ${attempts}/10)...`);
-            
-            try {
-              // Get current session to verify auth state
-              const { data: { session } } = await supabase.auth.getSession();
-              if (!session?.user) {
-                console.error("❌ No valid session found during polling");
-                if (onSuccess) onSuccess();
-                return;
-              }
+        // ✅ FIXED: OAuth users get profiles created automatically by database trigger
+        // We just need to update the username if the user wants to change it
+        console.log('[ProfileSetupModal] OAuth user - updating username via direct Supabase call');
+        
+        const { data: updatedProfile, error: updateError } = await supabase
+            .from('user_profiles')
+            .update({ username: username.trim() })
+            .eq('user_id', user.id)
+            .select()
+            .single();
 
-              // Check if profile exists in database
-              const { data: profileData, error: profileError } = await supabase
-                .from('user_profiles')
-                .select('id, username, email')
-                .eq('auth_id', session.user.id)
-                .single();
-
-              if (!profileError && profileData?.id) {
-                console.log("✅ Profile confirmed to exist in database - triggering success callback");
-                if (onSuccess) {
-                  onSuccess();
-                } else {
-                  onClose();
-                }
-                return;
-              }
-
-              // Profile not ready yet
-              if (attempts < maxAttempts) {
-                console.log(`⏳ Profile state not ready, retrying... (${attempts}/${maxAttempts})`);
-                setTimeout(checkProfileState, 500);
-              } else {
-                console.warn("⚠️ Max attempts reached, profile should be ready - triggering success");
-                if (onSuccess) {
-                  onSuccess();
-                } else {
-                  onClose();
-                }
-              }
-
-            } catch (pollingError) {
-              console.error("❌ Error during profile state polling:", pollingError);
-              if (attempts < maxAttempts) {
-                setTimeout(checkProfileState, 500);
-              } else {
-                if (onSuccess) {
-                  onSuccess();
-                } else {
-                  onClose();
-                }
-              }
-            }
-          };
-          
-          // Start checking profile state
-          await checkProfileState();
-          
-        } catch (refreshError) {
-          console.error("❌ Profile refresh failed, falling back to success callback:", refreshError);
-          if (onSuccess) {
-            onSuccess();
-          } else {
-            onClose();
-          }
+        if (updateError) {
+            console.error('[ProfileSetupModal] Error updating username:', updateError);
+            throw new Error(updateError.message);
         }
-      }, 1500);
-      
+
+        if (!updatedProfile) {
+            throw new Error('Failed to update username - profile may not exist yet');
+        }
+
+        console.log('✅ [ProfileSetupModal] Username updated successfully');
+        
+        // Refresh the profile context
+        await refreshProfile();
+        onClose();
+        
     } catch (error) {
-      console.error("❌ Profile setup failed:", error);
-      
-      // Provide more specific error messages
-      let errorMessage = "Failed to complete profile setup";
-      if (error instanceof Error) {
-        if (error.message.includes('Profile not found')) {
-          errorMessage = "There was an issue creating your profile. Please try again.";
-        } else if (error.message.includes('authentication')) {
-          errorMessage = "Authentication error. Please sign in again.";
-        } else if (error.message.includes('timeout')) {
-          errorMessage = "Request timed out. Please check your connection and try again.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
-      
-      setError(errorMessage);
-      setLoading(false);
-      setSuccess(false);
+        console.error('[ProfileSetupModal] Error in profile setup:', error);
+        setError(error instanceof Error ? error.message : 'Failed to update username');
+    } finally {
+        setIsLoading(false);
     }
   };
 
