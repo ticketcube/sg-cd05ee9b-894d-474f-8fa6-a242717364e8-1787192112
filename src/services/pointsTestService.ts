@@ -92,14 +92,11 @@ const pointsTestService = {
     
     try {
       // Test loading configuration
-      const config = await pointsConfigService.getAllConfigs();
-      console.log("✅ Points configuration loaded successfully");
-      
-      // Test specific point values
       const videoViewPoints = await pointsConfigService.getPoints('video_view');
       const minWatchTime = await pointsConfigService.getMinValue('video_view');
       const frequency = await pointsConfigService.getFrequency('video_view');
       
+      console.log("✅ Points configuration loaded successfully");
       console.log(`📊 Video view points: ${videoViewPoints}`);
       console.log(`📊 Min watch time: ${minWatchTime} seconds`);
       console.log(`📊 Frequency: ${frequency}`);
@@ -111,7 +108,7 @@ const pointsTestService = {
       
       console.log("✅ Points configuration values verified correctly");
       
-      return { success: true, config };
+      return { success: true, videoViewPoints, minWatchTime, frequency };
     } catch (error) {
       console.error("❌ Points configuration test failed:", error);
       throw error;
@@ -129,12 +126,11 @@ const pointsTestService = {
       console.log("📊 Testing first video view (should earn points)...");
       
       // First video view - should earn points
-      const firstViewResult = await videoWatchService.recordVideoView({
-        userId: userId,
-        artistUuid: testArtistUuid,
-        weekIdentifier: testWeekIdentifier,
-        watchTimeSeconds: 20 // Above 15 second minimum
-      });
+      const firstViewResult = await videoWatchService.recordVideoView(
+        userId,
+        testArtistUuid,
+        testWeekIdentifier
+      );
       
       console.log(`📊 First view result:`, firstViewResult);
       
@@ -147,12 +143,11 @@ const pointsTestService = {
       // Second video view - should NOT earn points (once per artist per week)
       console.log("📊 Testing second video view (should NOT earn points)...");
       
-      const secondViewResult = await videoWatchService.recordVideoView({
-        userId: userId,
-        artistUuid: testArtistUuid,
-        weekIdentifier: testWeekIdentifier,
-        watchTimeSeconds: 25
-      });
+      const secondViewResult = await videoWatchService.recordVideoView(
+        userId,
+        testArtistUuid,
+        testWeekIdentifier
+      );
       
       console.log(`📊 Second view result:`, secondViewResult);
       
@@ -165,12 +160,11 @@ const pointsTestService = {
       // Test different week - should earn points again
       console.log("📊 Testing same artist, different week (should earn points)...");
       
-      const differentWeekResult = await videoWatchService.recordVideoView({
-        userId: userId,
-        artistUuid: testArtistUuid,
-        weekIdentifier: "2025-W31", // Different week
-        watchTimeSeconds: 18
-      });
+      const differentWeekResult = await videoWatchService.recordVideoView(
+        userId,
+        testArtistUuid,
+        "2025-W31" // Different week
+      );
       
       console.log(`📊 Different week result:`, differentWeekResult);
       

@@ -22,21 +22,17 @@ export default function TestPointsPage() {
       console.log('🔍 Running basic points system test...');
       
       // Test 1: Points configuration loading
-      const config = await pointsConfigService.getAllConfigs();
-      console.log('✅ Points config loaded:', config);
-      
-      // Test 2: Get specific values
       const videoViewPoints = await pointsConfigService.getPoints('video_view');
       const minWatchTime = await pointsConfigService.getMinValue('video_view');
       const frequency = await pointsConfigService.getFrequency('video_view');
       
+      console.log('✅ Points config loaded');
       console.log('📊 Video view points:', videoViewPoints);
       console.log('📊 Min watch time:', minWatchTime);
       console.log('📊 Frequency:', frequency);
       
       setTestResults({
         success: true,
-        config,
         videoViewPoints,
         minWatchTime,
         frequency
