@@ -17,7 +17,7 @@ export type EngagementType =
 
 export interface UserEngagement {
     id: number;
-    user_id: string; // ✅ FIXED: Changed from auth_id to user_id
+    user_id: string;
     engagement_type: EngagementType;
     points_earned?: number | null;
     week_identifier?: string | null;
@@ -47,35 +47,20 @@ export interface UserEngagementHistory {
 }
 
 const userProfileService = {
-    /** Get a user's profile by user_id */
+    /** Get a user's profile by user_id - ✅ FIXED: Direct Supabase queries only */
     async getUserProfile(userId: string): Promise<UserProfile | null> {
         try {
             console.log(`[UserProfileService] Getting profile for user_id: ${userId}`);
             
             // ✅ ENHANCED: Better retry logic for OAuth session timing issues
             let lastError: any;
-            const maxRetries = 5; // Increased retries for OAuth
+            const maxRetries = 5;
             
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     console.log(`[UserProfileService] Attempt ${attempt}/${maxRetries} to get profile`);
                     
-                    // ✅ NEW: Check session before making API calls
-                    const { data: sessionData } = await supabase.auth.getSession();
-                    if (!sessionData.session) {
-                        console.log(`[UserProfileService] No session found (attempt ${attempt}/${maxRetries})`);
-                        if (attempt < maxRetries) {
-                            const delay = attempt * 2000; // 2s, 4s, 6s, 8s, 10s
-                            console.log(`[UserProfileService] Waiting ${delay}ms for session to establish...`);
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                            continue;
-                        }
-                        throw new Error('No session available after retries');
-                    }
-                    
-                    // ✅ FIXED: Direct Supabase query instead of API call to avoid session timing issues
-                    console.log(`[UserProfileService] Using direct Supabase query for better session handling`);
-                    
+                    // ✅ CRITICAL: Direct Supabase query - no API calls to avoid session timing issues
                     const { data: profile, error: getError } = await supabase
                         .from('user_profiles')
                         .select('*')
@@ -86,7 +71,7 @@ const userProfileService = {
                         console.error(`[UserProfileService] Supabase error (attempt ${attempt}):`, getError);
                         lastError = getError;
                         
-                        if (attempt < maxRetries && (getError.message?.includes('JWT') || getError.message?.includes('session'))) {
+                        if (attempt < maxRetries && (getError.message?.includes('JWT') || getError.message?.includes('session') || getError.message?.includes('auth'))) {
                             // Session-related error, retry after delay
                             const delay = attempt * 2000;
                             console.log(`[UserProfileService] Session error, waiting ${delay}ms before retry...`);
@@ -136,96 +121,81 @@ const userProfileService = {
         }
     },
 
-    /** Create a new user profile - Updated for OAuth */
-    async createUserProfile(profileData: {
-        user_id: string;
-        username: string;
-        email: string;
-        avatar_url?: string | null;
-        total_points?: number;
-        role?: string | null;
-        city?: string;
-    }): Promise<UserProfile> {
-        try {
-            const response = await fetch("/api/user/secure-profile", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    user_id: profileData.user_id,
-                    username: profileData.username.trim(),
-                    email: profileData.email.trim(),
-                    avatar_url: profileData.avatar_url || null,
-                    total_points: profileData.total_points || 0,
-                    role: profileData.role || null,
-                    city: profileData.city?.trim(),
-                }),
-            });
+    /** ❌ DEPRECATED: Legacy method - not needed with OAuth and database triggers */
+    async createUserProfileLegacy(userId: string, username: string, email: string, city?: string): Promise<UserProfile> {
+        console.warn('[UserProfileService] createUserProfileLegacy is deprecated - profiles are created automatically by database trigger');
+        
+        // Try to get existing profile (should exist via trigger)
+        const existingProfile = await this.getUserProfile(userId);
+        if (existingProfile) {
+            return existingProfile;
+        }
+        
+        throw new Error('Profile creation is now handled automatically by database trigger');
+    },
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || `HTTP error ${response.status}`);
-            }
+    /** Update user's city/location - ✅ FIXED: Direct Supabase only */
+    async updateUserLocation(userId: string, cityId: number, rawCityInput: string): Promise<UserProfile> {
+        console.log(`[UserProfileService] Updating location for user: ${userId}`);
+        
+        const { data, error } = await supabase
+            .from("user_profiles")
+            .update({ city_id: cityId, raw_city_input: rawCityInput })
+            .eq("user_id", userId)
+            .select()
+            .single();
 
-            const { profile } = await response.json();
-            return profile;
-        } catch (error) {
-            console.error("[UserProfileService] Error creating profile:", error);
+        if (error) {
+            console.error('[UserProfileService] Error updating location:', error);
+            throw error;
+        }
+        
+        if (!data) {
+            throw new Error('Failed to update location - no data returned');
+        }
+        
+        return data;
+    },
+
+    /** Add points to a user - ✅ FIXED: Direct Supabase RPC call */
+    async addPoints(userId: string, pointsToAdd: number): Promise<UserProfile | null> {
+        if (pointsToAdd === 0) {
+            return this.getUserProfile(userId);
+        }
+
+        console.log(`[UserProfileService] Adding ${pointsToAdd} points to user: ${userId}`);
+
+        const { error } = await supabase.rpc("increment_user_points", {
+            points_to_add: pointsToAdd,
+            user_id: userId
+        });
+
+        if (error) {
+            console.error('[UserProfileService] Error adding points:', error);
+            throw error;
+        }
+        
+        return this.getUserProfile(userId);
+    },
+
+    /** Update last active timestamp - ✅ FIXED: Direct Supabase only */
+    async updateLastActive(userId: string): Promise<void> {
+        console.log(`[UserProfileService] Updating last active for user: ${userId}`);
+        
+        const { error } = await supabase
+            .from("user_profiles")
+            .update({ last_active: new Date().toISOString() })
+            .eq("user_id", userId);
+
+        if (error) {
+            console.error('[UserProfileService] Error updating last active:', error);
             throw error;
         }
     },
 
-    /** Legacy method - Create a new user profile (backward compatibility) */
-    async createUserProfileLegacy(userId: string, username: string, email: string, city?: string): Promise<UserProfile> {
-        return this.createUserProfile({
-            user_id: userId,
-            username,
-            email,
-            city,
-            total_points: 0,
-            role: null
-        });
-    },
-
-    /** Update user's city/location */
-    async updateUserLocation(userId: string, cityId: number, rawCityInput: string): Promise<UserProfile> {
-        const { data, error } = await supabase
-            .from("user_profiles")
-            .update({ city_id: cityId, raw_city_input: rawCityInput })
-            .eq("user_id", userId)  // ✅ FIXED: Use user_id column
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
-    },
-
-    /** Add points to a user (uses user_id directly) */
-    async addPoints(userId: string, pointsToAdd: number): Promise<UserProfile> {
-        if (pointsToAdd === 0) return this.getUserProfile(userId);
-
-        // ✅ FIXED: Call RPC using user_id parameter
-        const { error } = await supabase.rpc("increment_user_points", {
-            points_to_add: pointsToAdd,
-            user_id: userId  // ✅ FIXED: Use user_id parameter name
-        });
-
-        if (error) throw error;
-        return this.getUserProfile(userId);
-    },
-
-    /** Update last active timestamp */
-    async updateLastActive(userId: string): Promise<void> {
-        const { error } = await supabase
-            .from("user_profiles")
-            .update({ last_active: new Date().toISOString() })
-            .eq("user_id", userId);  // ✅ FIXED: Use user_id column
-
-        if (error) throw error;
-    },
-
-    /** Record a user engagement and add points - ✅ FIXED: Now uses API to ensure service role access */
+    /** Record a user engagement and add points - ✅ FIXED: Direct Supabase insertion */
     async recordEngagement(
-        userId: string, // ✅ FIXED: Changed from authId to userId
+        userId: string,
         engagementType: EngagementType,
         pointsEarned: number,
         weekIdentifier: string,
@@ -233,79 +203,86 @@ const userProfileService = {
         metadata?: Record<string, any>
     ): Promise<UserEngagement> {
         try {
-            // Get the user's session token for API authentication
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session?.access_token) {
-                throw new Error('No valid session found for recording engagement');
-            }
-
-            // ✅ FIXED: Call the engagement API endpoint with userId
-            const response = await fetch('/api/user/engagement', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({
-                    userId,  // ✅ FIXED: Use userId instead of authId
-                    engagementType,
-                    pointsEarned,
-                    weekIdentifier,
-                    artistUuid,
-                    metadata
-                })
+            console.log(`[UserProfileService] Recording engagement for user ${userId}:`, {
+                type: engagementType,
+                points: pointsEarned,
+                week: weekIdentifier
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || `Server error: ${response.status}`);
+            // ✅ FIXED: Direct Supabase insertion instead of API call
+            const { data: engagement, error: insertError } = await supabase
+                .from('user_engagements')
+                .insert({
+                    user_id: userId,
+                    engagement_type: engagementType,
+                    points_earned: pointsEarned,
+                    week_identifier: weekIdentifier,
+                    artist_uuid: artistUuid || null,
+                    metadata: metadata || null
+                })
+                .select()
+                .single();
+
+            if (insertError) {
+                console.error('❌ [UserProfileService] Error inserting engagement:', insertError);
+                throw insertError;
             }
 
-            const result = await response.json();
-            console.log('✅ Engagement recorded via API:', result);
+            if (!engagement) {
+                throw new Error('Failed to record engagement - no data returned');
+            }
 
-            // Return the engagement data in the expected format
+            // ✅ FIXED: Add points directly via RPC
+            if (pointsEarned > 0) {
+                console.log(`[UserProfileService] Adding ${pointsEarned} points to user ${userId}`);
+                
+                const { error: pointsError } = await supabase.rpc("increment_user_points", {
+                    points_to_add: pointsEarned,
+                    user_id: userId
+                });
+
+                if (pointsError) {
+                    console.error('⚠️ [UserProfileService] Error adding points (engagement still recorded):', pointsError);
+                    // Don't throw - engagement was recorded successfully
+                }
+            }
+
+            console.log('✅ [UserProfileService] Engagement recorded successfully');
+            
             return {
-                id: result.engagement?.id || Date.now(), // Fallback ID
-                user_id: userId,  // ✅ FIXED: Use user_id instead of auth_id
+                id: engagement.id,
+                user_id: userId,
                 engagement_type: engagementType,
                 points_earned: pointsEarned,
                 week_identifier: weekIdentifier,
                 artist_uuid: artistUuid || null,
                 metadata: metadata || null,
-                created_at: new Date().toISOString()
+                created_at: engagement.created_at
             } as UserEngagement;
+            
         } catch (error) {
-            console.error("❌ Error recording engagement via API:", error);
+            console.error("❌ [UserProfileService] Error recording engagement:", error);
             throw error;
         }
     },
 
-    /** Get user's engagement history with weekly summaries */
+    /** Get user's engagement history with weekly summaries - ✅ FIXED: Direct Supabase queries only */
     async getUserEngagementHistory(userId: string): Promise<UserEngagementHistory> {
-        // ✅ ENHANCED: Ensure profile exists first, with better OAuth session handling
         console.log(`[UserProfileService] Getting engagement history for user: ${userId}`);
         
-        // ✅ NEW: Check session health first
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !sessionData.session) {
-            console.error('[UserProfileService] Session issue before engagement history:', sessionError);
-            throw new Error('Authentication required - session not available');
-        }
-        
-        // ✅ ENHANCED: Get user profile with retries
+        // ✅ ENHANCED: Get user profile with retries (using direct Supabase)
         const userProfile = await this.getUserProfile(userId);
         if (!userProfile) {
-            throw new Error("User profile not found");
+            throw new Error("User profile not found - engagement history cannot be loaded");
         }
 
-        // ✅ ENHANCED: Direct Supabase query with better error handling
+        // ✅ FIXED: Direct Supabase query with better error handling
         console.log(`[UserProfileService] Fetching engagements for user_id: ${userId}`);
         
         let engagements;
         let queryError;
         
-        // ✅ NEW: Retry engagement query for OAuth timing issues
+        // ✅ ENHANCED: Retry engagement query for OAuth timing issues
         const maxRetries = 3;
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             const { data, error } = await supabase
@@ -337,6 +314,7 @@ const userProfileService = {
 
         console.log(`✅ [UserProfileService] Found ${engagements?.length || 0} engagement records`);
 
+        // Process weekly summaries
         const weeklyMap = new Map<string, UserEngagementSummary>();
         let calculatedTotalPoints = 0;
         
@@ -355,58 +333,78 @@ const userProfileService = {
                     votes_submitted: 0,
                 });
             }
+            
             const summary = weeklyMap.get(weekId)!;
             summary.total_points += pointsEarned;
             summary.engagement_count += 1;
-            if (e.engagement_type === "video_view") summary.video_views += 1;
-            if (["vote_submission", "artist_rating", "quadrant"].includes(e.engagement_type)) summary.votes_submitted += 1;
+            
+            if (e.engagement_type === "video_view") {
+                summary.video_views += 1;
+            }
+            
+            if (["vote_submission", "artist_rating", "quadrant"].includes(e.engagement_type)) {
+                summary.votes_submitted += 1;
+            }
         });
 
         return {
             user_profile: userProfile,
-            weekly_summaries: Array.from(weeklyMap.values()).sort((a, b) => b.week_identifier.localeCompare(a.week_identifier)),
+            weekly_summaries: Array.from(weeklyMap.values()).sort((a, b) => 
+                b.week_identifier.localeCompare(a.week_identifier)
+            ),
             total_points: calculatedTotalPoints,
         };
     },
 
-    /** Check if user is eligible for a video view */
-    async checkVideoViewEligibility(userId: string, artistUuid: string, weekIdentifier: string): Promise<boolean> { // ✅ FIXED: Changed from authId to userId
+    /** Check if user is eligible for a video view - ✅ FIXED: Direct Supabase only */
+    async checkVideoViewEligibility(userId: string, artistUuid: string, weekIdentifier: string): Promise<boolean> {
         const { data, error } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", userId)  // ✅ FIXED: Use user_id column
+            .eq("user_id", userId)
             .eq("artist_uuid", artistUuid)
             .eq("week_identifier", weekIdentifier)
             .eq("engagement_type", "video_view")
             .limit(1);
 
-        if (error) return false;
+        if (error) {
+            console.error('[UserProfileService] Error checking video eligibility:', error);
+            return false;
+        }
+        
         return !data || data.length === 0;
     },
 
-    /** Check if user is eligible for vote submission */
-    async checkVoteSubmissionEligibility(userId: string, weekIdentifier: string): Promise<boolean> { // ✅ FIXED: Changed from authId to userId
+    /** Check if user is eligible for vote submission - ✅ FIXED: Direct Supabase only */
+    async checkVoteSubmissionEligibility(userId: string, weekIdentifier: string): Promise<boolean> {
         const { data, error } = await supabase
             .from("user_engagements")
             .select("id")
-            .eq("user_id", userId)  // ✅ FIXED: Use user_id column
+            .eq("user_id", userId)
             .eq("week_identifier", weekIdentifier)
             .in("engagement_type", ["vote_submission", "artist_rating"])
             .limit(1);
 
-        if (error) return false;
+        if (error) {
+            console.error('[UserProfileService] Error checking vote eligibility:', error);
+            return false;
+        }
+        
         return !data || data.length === 0;
     },
 
-    /** Get total points for a given week */
-    async getWeeklyStats(userId: string, weekIdentifier: string): Promise<{ total_points: number }> { // ✅ FIXED: Changed from authId to userId
+    /** Get total points for a given week - ✅ FIXED: Direct Supabase only */
+    async getWeeklyStats(userId: string, weekIdentifier: string): Promise<{ total_points: number }> {
         const { data, error } = await supabase
             .from("user_engagements")
             .select("points_earned")
-            .eq("user_id", userId)  // ✅ FIXED: Use user_id column
+            .eq("user_id", userId)
             .eq("week_identifier", weekIdentifier);
 
-        if (error) throw error;
+        if (error) {
+            console.error('[UserProfileService] Error getting weekly stats:', error);
+            throw error;
+        }
 
         const total_points = data?.reduce((sum, e) => sum + (e.points_earned || 0), 0) || 0;
         return { total_points };
