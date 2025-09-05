@@ -78,8 +78,8 @@ const weeklyVotingService = {
 
     const submissionResult: SubmissionResult = {
       pointsEarned: pointsFromVote,
-      ratedArtists: 1,
       message: "Your rating has been submitted successfully!",
+      success: true
     };
 
     return submissionResult;
