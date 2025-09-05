@@ -39,7 +39,7 @@ export default function HomePage() {
     setAuthDialogOpen(false);
   };
 
-  // ✅ FIXED: Better authentication flow logic - prevent OAuth interference
+  // ✅ SIMPLIFIED: Better authentication flow logic
   useEffect(() => {
     console.log('🏠 [HomePage] Auth state:', { 
       user: user?.id, 
@@ -49,31 +49,25 @@ export default function HomePage() {
       isAuthDialogOpen 
     });
 
-    // ✅ CRITICAL: Don't interfere with OAuth flows
-    // If user is coming from OAuth, they should already be redirected by callback
-    // Only redirect if user navigated directly to index page
-    const fromOAuth = window.location.search.includes('code=') || 
-                     window.location.search.includes('access_token=') ||
-                     document.referrer.includes('/auth/callback');
-    
-    if (fromOAuth) {
-      console.log('🚫 [HomePage] OAuth flow detected, skipping index redirect');
+    // ✅ CRITICAL: Don't interfere with OAuth callback redirects
+    const oauthInProgress = sessionStorage.getItem('oauth_redirect_in_progress');
+    if (oauthInProgress) {
+      console.log('🚫 [HomePage] OAuth redirect in progress, skipping index logic');
       return;
     }
 
-    // Only redirect if we have a confirmed authenticated user AND they're not in OAuth flow
-    if (isAuthenticated && !profileLoading && !isAuthDialogOpen && !fromOAuth) {
+    // Only redirect if we have a confirmed authenticated user
+    if (isAuthenticated && !profileLoading && !isAuthDialogOpen) {
       if (profile) {
-        console.log('✅ [HomePage] Direct user has profile, redirecting to dashboard');
-        // Use replace to avoid back button issues
+        console.log('✅ [HomePage] User has profile, redirecting to dashboard');
         router.replace("/discovery-dashboard");
-      } else {
+      } else if (user) {
         // ✅ If authenticated but no profile, redirect to setup
-        console.log('⚠️ [HomePage] Direct user authenticated but no profile, redirecting to setup');
+        console.log('⚠️ [HomePage] User authenticated but no profile, redirecting to setup');
         router.replace("/auth/setup-profile");
       }
     }
-  }, [isAuthenticated, profile, profileLoading, isAuthDialogOpen, router]);
+  }, [isAuthenticated, profile, profileLoading, isAuthDialogOpen, router, user]);
 
   // ✅ NEW: Show loading state while authentication is being determined
   if (profileLoading && user) {

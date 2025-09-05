@@ -13,28 +13,47 @@ export default function AuthCallback() {
       try {
         console.log('🔄 [AuthCallback] Starting OAuth callback processing');
         
-        // Handle the OAuth callback
-        const { data, error: authError } = await supabase.auth.getSession();
+        // ✅ ENHANCED: More comprehensive session handling
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
-        if (authError) {
-          console.error('❌ [AuthCallback] Auth callback error:', authError);
+        if (sessionError) {
+          console.error('❌ [AuthCallback] Session error:', sessionError);
           setError('Authentication failed. Please try again.');
           return;
         }
 
-        if (!data.session || !data.session.user) {
-          console.error('❌ [AuthCallback] No authentication session found');
+        if (!sessionData.session || !sessionData.session.user) {
+          console.error('❌ [AuthCallback] No session found, checking URL params');
+          
+          // ✅ NEW: Handle URL hash fragments for OAuth
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const urlParams = new URLSearchParams(window.location.search);
+          
+          if (hashParams.get('access_token') || urlParams.get('code')) {
+            console.log('🔄 [AuthCallback] OAuth params found, waiting for session...');
+            // Wait a bit longer for session to be established
+            setTimeout(handleAuthCallback, 1000);
+            return;
+          }
+          
           setError('No authentication session found.');
           return;
         }
 
-        const user = data.session.user;
+        const user = sessionData.session.user;
         console.log('✅ [AuthCallback] OAuth user authenticated:', user.id);
 
-        // ✅ SIMPLIFIED: Just redirect to discovery dashboard for ALL users
-        // Let the dashboard handle profile loading and setup redirection
+        // ✅ CRITICAL: Add a flag to prevent index page interference
+        sessionStorage.setItem('oauth_redirect_in_progress', 'true');
+
+        // ✅ ENHANCED: Force immediate redirect with replace to prevent back button issues
         console.log('🚀 [AuthCallback] Redirecting to discovery dashboard');
-        router.replace('/discovery-dashboard');
+        await router.replace('/discovery-dashboard');
+        
+        // Clear the flag after successful redirect
+        setTimeout(() => {
+          sessionStorage.removeItem('oauth_redirect_in_progress');
+        }, 2000);
 
       } catch (error) {
         console.error('❌ [AuthCallback] Error in auth callback:', error);
@@ -44,7 +63,7 @@ export default function AuthCallback() {
       }
     };
 
-    // Handle the callback on mount
+    // ✅ ENHANCED: Immediate processing with fallback
     handleAuthCallback();
   }, [router]);
 
