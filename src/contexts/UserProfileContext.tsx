@@ -65,7 +65,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
 
             console.log('🔍 [UserProfileContext] Fetching profile for user:', user.id);
 
-            // ✅ FIXED: Use direct Supabase query for immediate results
+            // ✅ SIMPLIFIED: Use direct Supabase query - database trigger creates profiles automatically
             const { data: profileData, error: fetchError } = await supabase
                 .from('user_profiles')
                 .select('*')
@@ -74,9 +74,32 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
 
             if (fetchError) {
                 if (fetchError.code === 'PGRST116') {
-                    // Profile doesn't exist yet - this is normal for very new users
-                    console.log('⚠️ [UserProfileContext] Profile not found for user:', user.id);
-                    setProfile(null);
+                    // ✅ ENHANCED: Profile doesn't exist yet - this can happen during OAuth
+                    // Database trigger should create it, so we can wait briefly and retry
+                    console.log('⚠️ [UserProfileContext] Profile not found, might be very new OAuth user. Retrying...');
+                    
+                    // Wait 1 second for database trigger to complete
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Retry once
+                    const { data: retryData, error: retryError } = await supabase
+                        .from('user_profiles')
+                        .select('*')
+                        .eq('user_id', user.id)
+                        .single();
+                    
+                    if (retryError && retryError.code === 'PGRST116') {
+                        console.log('⚠️ [UserProfileContext] Profile still not found after retry - database trigger may need time');
+                        setProfile(null);
+                        setError('Profile is being created. Please refresh the page in a moment.');
+                        setLoading(false);
+                        return;
+                    } else if (retryError) {
+                        throw retryError;
+                    }
+                    
+                    console.log('✅ [UserProfileContext] Profile found on retry:', retryData);
+                    setProfile(retryData as UserProfile);
                     setLoading(false);
                     return;
                 }
