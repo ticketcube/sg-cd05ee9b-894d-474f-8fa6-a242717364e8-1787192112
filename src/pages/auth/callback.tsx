@@ -43,38 +43,9 @@ export default function AuthCallback() {
         const user = sessionData.session.user;
         console.log('✅ [AuthCallback] OAuth user authenticated:', user.id);
 
-        // ✅ ENHANCED: Check if user has a complete profile before redirecting
-        const { data: profileData, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('id, username')
-          .eq('user_id', user.id)
-          .single();
-
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('❌ [AuthCallback] Error checking profile:', profileError);
-          setError('Error checking your profile. Please try again.');
-          return;
-        }
-
-        // ✅ NEW: Store OAuth user data for profile setup if needed
-        const oauthUserData = {
-          email: user.email || '',
-          name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-          avatar_url: user.user_metadata?.avatar_url || ''
-        };
-
-        if (!profileData || !profileData.username) {
-          // ✅ NEW USER FLOW: No profile exists, redirect to profile setup
-          console.log('🔄 [AuthCallback] New user, redirecting to profile setup');
-          
-          // Store OAuth data for profile setup page
-          sessionStorage.setItem('oauth_user_data', JSON.stringify(oauthUserData));
-          await router.replace('/auth/setup-profile');
-          return;
-        }
-
-        // ✅ EXISTING USER FLOW: Profile exists, go to dashboard
-        console.log('✅ [AuthCallback] Existing user with profile, redirecting to dashboard');
+        // ✅ SIMPLIFIED: Database trigger creates profile automatically with generated username
+        // No need to check if profile exists or create it manually
+        console.log('✅ [AuthCallback] Profile will be created by database trigger, redirecting to dashboard');
 
         // ✅ ENHANCED: Set immediate redirect flag BEFORE any navigation
         sessionStorage.setItem('oauth_redirect_in_progress', 'true');
@@ -83,9 +54,6 @@ export default function AuthCallback() {
         // ✅ NEW: Set immediate redirect flag to prevent index page interference
         sessionStorage.setItem('immediate_dashboard_redirect', 'true');
 
-        // ✅ ENHANCED: Force immediate redirect with replace to prevent back button issues
-        console.log('🚀 [AuthCallback] Redirecting to discovery dashboard immediately');
-        
         // ✅ IMMEDIATE: Use window.location for fastest redirect
         window.location.replace('/discovery-dashboard');
         
@@ -99,7 +67,7 @@ export default function AuthCallback() {
           sessionStorage.removeItem('oauth_redirect_in_progress');
           sessionStorage.removeItem('oauth_callback_complete');
           sessionStorage.removeItem('immediate_dashboard_redirect');
-        }, 8000); // Increased to 8 seconds to be extra safe
+        }, 8000);
 
       } catch (error) {
         console.error('❌ [AuthCallback] Error in auth callback:', error);

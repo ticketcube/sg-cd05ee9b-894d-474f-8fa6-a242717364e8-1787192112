@@ -93,43 +93,31 @@ export default function HomePage() {
       return;
     }
 
-    // ✅ SIMPLIFIED: Only redirect authenticated users with complete profiles (with extra safety)
-    if (user && isAuthenticated && profile && profile.username && !profileLoading) {
-      // ✅ EXTRA SAFETY: Double-check we're not in the middle of an OAuth flow
-      const nowSafe = !sessionStorage.getItem('oauth_redirect_in_progress') && 
-                     !window.location.pathname.startsWith('/auth/');
-      
-      if (nowSafe) {
-        console.log('✅ [HomePage] Complete authenticated user, safe to redirect to dashboard');
-        router.replace("/discovery-dashboard");
-      } else {
-        console.log('⏳ [HomePage] User ready but OAuth still in progress, waiting...');
-      }
+    // ✅ SIMPLIFIED: Only redirect authenticated users with complete profiles
+    if (user && isAuthenticated && profile && !profileLoading) {
+      console.log('✅ [HomePage] Complete authenticated user, redirecting to dashboard');
+      router.replace("/discovery-dashboard");
       return;
     }
     
-    // ✅ SIMPLIFIED: Don't redirect incomplete profiles - let them complete naturally
+    // ✅ SIMPLIFIED: Don't interfere with OAuth process - database trigger handles profile creation
     if (user && !profile && !profileLoading) {
-      console.log('⚠️ [HomePage] User without profile detected, but not redirecting (OAuth might handle)');
-      // Don't redirect - let OAuth callback or manual navigation handle this
+      console.log('⚠️ [HomePage] User without profile - OAuth callback or database trigger will handle');
+      // Don't redirect - let OAuth callback handle the flow
     }
   }, [user, isAuthenticated, profile, profileLoading, isAuthDialogOpen, router]);
 
-  // ✅ SIMPLIFIED: Only show loading for a brief moment to prevent redirect blocking
+  // ✅ SIMPLIFIED: Minimal loading state that doesn't interfere with OAuth
   if (profileLoading && user && !profile) {
-    // Only show loading for a brief moment, don't block redirects
-    const showLoading = Date.now() - (window as any).__authStartTime < 2000;
-    
-    if (showLoading) {
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-            <p className="text-white text-lg">Setting up your profile...</p>
-          </div>
+    // Very brief loading state
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+          <p className="text-white text-lg">Loading...</p>
         </div>
-      );
-    }
+      </div>
+    );
   }
 
   return (
