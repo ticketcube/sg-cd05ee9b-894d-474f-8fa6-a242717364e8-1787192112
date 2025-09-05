@@ -39,46 +39,79 @@ export default function HomePage() {
     setAuthDialogOpen(false);
   };
 
-  // ✅ SIMPLIFIED: Better authentication flow logic
+  // ✅ STREAMLINED: Simplified and more reliable authentication flow
   useEffect(() => {
-    console.log('🏠 [HomePage] Auth state:', { 
+    console.log('🏠 [HomePage] Auth state check:', { 
       user: user?.id, 
       profile: profile?.username, 
       isAuthenticated, 
-      profileLoading, 
-      isAuthDialogOpen 
+      profileLoading 
     });
 
-    // ✅ CRITICAL: Don't interfere with OAuth callback redirects
-    const oauthInProgress = sessionStorage.getItem('oauth_redirect_in_progress');
-    if (oauthInProgress) {
-      console.log('🚫 [HomePage] OAuth redirect in progress, skipping index logic');
+    // ✅ CRITICAL: Skip redirect logic if auth dialog is open
+    if (isAuthDialogOpen) {
+      console.log('🚫 [HomePage] Auth dialog open, skipping redirects');
       return;
     }
 
-    // Only redirect if we have a confirmed authenticated user
-    if (isAuthenticated && !profileLoading && !isAuthDialogOpen) {
-      if (profile) {
-        console.log('✅ [HomePage] User has profile, redirecting to dashboard');
+    // ✅ NEW: More aggressive OAuth callback detection
+    const isOAuthCallback = window.location.href.includes('/auth/callback') ||
+                          window.location.search.includes('code=') ||
+                          window.location.hash.includes('access_token');
+    
+    if (isOAuthCallback) {
+      console.log('🚫 [HomePage] OAuth callback detected, letting callback handle it');
+      return;
+    }
+
+    // ✅ ENHANCED: Immediate redirect for authenticated users (don't wait for profile loading)
+    if (user && isAuthenticated) {
+      console.log('✅ [HomePage] User authenticated, checking profile...');
+      
+      // If we have a profile, go to dashboard immediately
+      if (profile && profile.username) {
+        console.log('✅ [HomePage] Profile complete, redirecting to dashboard');
         router.replace("/discovery-dashboard");
-      } else if (user) {
-        // ✅ If authenticated but no profile, redirect to setup
-        console.log('⚠️ [HomePage] User authenticated but no profile, redirecting to setup');
+        return;
+      }
+      
+      // If user exists but no profile yet, and we're not currently loading
+      if (!profileLoading && !profile) {
+        console.log('⚠️ [HomePage] No profile found, redirecting to setup');
         router.replace("/auth/setup-profile");
+        return;
+      }
+      
+      // If profile is still loading, wait a bit but set a timeout to prevent infinite waiting
+      if (profileLoading) {
+        console.log('🔄 [HomePage] Profile loading, waiting...');
+        const timeout = setTimeout(() => {
+          if (!profile && user) {
+            console.log('⏰ [HomePage] Profile load timeout, redirecting to setup');
+            router.replace("/auth/setup-profile");
+          }
+        }, 3000); // 3 second timeout
+        
+        return () => clearTimeout(timeout);
       }
     }
-  }, [isAuthenticated, profile, profileLoading, isAuthDialogOpen, router, user]);
+  }, [user, isAuthenticated, profile, profileLoading, isAuthDialogOpen, router]);
 
-  // ✅ NEW: Show loading state while authentication is being determined
-  if (profileLoading && user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-          <p className="text-white text-lg">Loading your profile...</p>
+  // ✅ SIMPLIFIED: Only show loading for very brief moments to prevent redirect blocking
+  if (profileLoading && user && !profile) {
+    // Only show loading for a brief moment, don't block redirects
+    const showLoading = Date.now() - (window as any).__authStartTime < 2000;
+    
+    if (showLoading) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+            <p className="text-white text-lg">Setting up your profile...</p>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   return (
