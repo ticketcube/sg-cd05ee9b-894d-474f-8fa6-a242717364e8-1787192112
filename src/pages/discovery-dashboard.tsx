@@ -78,34 +78,30 @@ export default function DiscoveryDashboard() {
 
 
     useEffect(() => {
-        // ✅ FIXED: Improved OAuth handling - wait for auth to fully resolve
+        // ✅ SIMPLIFIED: Direct authentication logic without delays
         console.log('🎯 [DiscoveryDashboard] Auth state:', { 
             user: user?.id, 
             profileLoading, 
             userHistory: !!userHistory 
         });
 
-        // Don't make decisions until profile loading is complete
+        // Wait for profile loading to complete
         if (profileLoading) {
             console.log('⏳ [DiscoveryDashboard] Still loading profile...');
             return;
         }
 
-        // ✅ FIXED: Give auth more time to resolve after OAuth
-        // Only show error after a reasonable wait, not immediately
-        if (user === null) {
-            const timer = setTimeout(() => {
-                console.log('❌ [DiscoveryDashboard] Auth timeout - no user found');
-                setError("Please sign in to access the discovery dashboard.");
-                setLoading(false);
-            }, 2000); // Wait 2 seconds for auth to resolve
-            
-            return () => clearTimeout(timer);
+        // ✅ FIXED: Direct check without timeout - OAuth should be resolved by now
+        if (!user) {
+            console.log('❌ [DiscoveryDashboard] No user found after profile loading');
+            setError("Please sign in to access the discovery dashboard.");
+            setLoading(false);
+            return;
         }
 
-        // ✅ User is authenticated, proceed with loading history
+        // ✅ User is authenticated, load history if needed
         if (user && !userHistory && !error) {
-            console.log('🔄 [DiscoveryDashboard] Loading user engagement history...');
+            console.log('🔄 [DiscoveryDashboard] Loading user engagement history for:', user.id);
             
             const fetchUserHistory = async () => {
                 setLoading(true);
@@ -123,6 +119,9 @@ export default function DiscoveryDashboard() {
             };
             
             fetchUserHistory();
+        } else if (user && userHistory) {
+            // User and history both exist, ensure loading is false
+            setLoading(false);
         }
     }, [user?.id, profile, profileLoading, userHistory, error]);
 
