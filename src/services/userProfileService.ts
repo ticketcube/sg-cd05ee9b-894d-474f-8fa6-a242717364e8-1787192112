@@ -222,36 +222,19 @@ const userProfileService = {
         
         let engagements;
         let queryError;
-        
-        // ✅ ENHANCED: Retry engagement query for OAuth timing issues
-        const maxRetries = 3;
-        for (let attempt = 1; attempt <= maxRetries; attempt++) {
-            const { data, error } = await supabase
-                .from("user_engagements")
-                .select("*")
-                .eq("user_id", userId)
-                .order("created_at", { ascending: false });
 
-            if (error) {
-                console.error(`[UserProfileService] Engagement query attempt ${attempt} failed:`, error);
-                queryError = error;
-                
-                if (attempt < maxRetries) {
-                    console.log(`[UserProfileService] Retrying engagement query in ${attempt * 1000}ms...`);
-                    await new Promise(resolve => setTimeout(resolve, attempt * 1000));
-                    continue;
-                }
-            } else {
-                engagements = data;
-                queryError = null;
-                break;
-            }
-        }
+        // Simple single query instead of retries
+        const { data: engagements, error } = await supabase
+            .from("user_engagements")
+            .select("*")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false });
 
-        if (queryError) {
-            console.error(`[UserProfileService] Failed to get engagements after ${maxRetries} attempts:`, queryError);
-            throw queryError;
+        if (error) {
+            console.error("[UserProfileService] Error fetching engagements:", error);
+            throw error;
         }
+       
 
         console.log(`✅ [UserProfileService] Found ${engagements?.length || 0} engagement records`);
 
