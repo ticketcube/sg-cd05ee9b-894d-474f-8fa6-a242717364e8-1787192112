@@ -48,7 +48,7 @@ export default function AuthCallback() {
 console.log('✅ [AuthCallback] Redirecting to dashboard');
 
 // Use router.push for normal navigation
-router.push('/discovery-dashboard');
+router.replace('/discovery-dashboard');
 
       } catch (error) {
         console.error('❌ [AuthCallback] Error in auth callback:', error);
