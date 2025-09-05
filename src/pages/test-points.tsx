@@ -5,9 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { videoWatchService } from "@/services/videoWatchService";
 import { pointsConfigService } from "@/services/pointsConfigService";
-import pointsTestService from "@/services/pointsTestService";
 import { useUser } from "@supabase/auth-helpers-react";
-import userProfileService from "@/services/userProfileService"; // ✅ FIXED: Use default import instead of named import
+import userProfileService from "@/services/userProfileService";
 
 export default function TestPointsPage() {
   const user = useUser();
@@ -59,7 +58,7 @@ export default function TestPointsPage() {
       const testWeekIdentifier = "2025-W30";
       
       const result = await userProfileService.recordEngagement(
-        user.id, // ✅ Use user.id for Supabase auth
+        user.id,
         "video_view",
         10,
         testWeekIdentifier,
@@ -71,37 +70,13 @@ export default function TestPointsPage() {
       setTestResults({
         success: true,
         videoViewResult: result,
-        userId: user.id, // ✅ Use user.id for Supabase auth
+        userId: user.id,
         artistUuid: testArtistUuid,
         weekIdentifier: testWeekIdentifier
       });
       
     } catch (err) {
       console.error('❌ Video view test failed:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const runFullTestSuite = async () => {
-    if (!user) {
-      setError('Please log in to run the full test suite');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      console.log('🚀 Running comprehensive test suite...');
-      
-      const result = await pointsTestService.runComprehensiveTestSuite(user.id); // ✅ Use user.id for Supabase auth
-      console.log('🎉 Test suite completed:', result);
-      
-      setTestResults(result);
-      
-    } catch (err) {
-      console.error('❌ Full test suite failed:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setIsLoading(false);
@@ -120,7 +95,7 @@ export default function TestPointsPage() {
           </CardHeader>
           
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Button 
                 onClick={runBasicTest} 
                 disabled={isLoading}
@@ -135,14 +110,6 @@ export default function TestPointsPage() {
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {isLoading ? 'Testing...' : 'Video View Test'}
-              </Button>
-              
-              <Button 
-                onClick={runFullTestSuite} 
-                disabled={isLoading || !user}
-                className="bg-indigo-600 hover:bg-indigo-700"
-              >
-                {isLoading ? 'Testing...' : 'Full Test Suite'}
               </Button>
             </div>
 
@@ -203,8 +170,7 @@ export default function TestPointsPage() {
               <ul className="text-blue-300 text-sm mt-2 space-y-1">
                 <li>1. <strong>Basic Config Test</strong>: Tests if points configuration loads correctly</li>
                 <li>2. <strong>Video View Test</strong>: Tests recording a video view and earning points (requires login)</li>
-                <li>3. <strong>Full Test Suite</strong>: Comprehensive test of all systems (requires login)</li>
-                <li>4. Check browser console for detailed logs</li>
+                <li>3. Check browser console for detailed logs</li>
               </ul>
             </div>
           </CardContent>
