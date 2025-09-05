@@ -73,35 +73,46 @@ const userProfileService = {
                         throw new Error('No session available after retries');
                     }
                     
-                    const response = await fetch(`/api/user/profile?user_id=${userId}`);
+                    // ✅ FIXED: Direct Supabase query instead of API call to avoid session timing issues
+                    console.log(`[UserProfileService] Using direct Supabase query for better session handling`);
                     
-                    if (response.status === 404) {
-                        console.log(`[UserProfileService] Profile not found (404) for user: ${userId}`);
-                        return null;
-                    }
-                    
-                    if (response.status === 401) {
-                        // Authentication error - might be OAuth timing issue
-                        console.log(`[UserProfileService] Auth error (attempt ${attempt}/${maxRetries})`);
-                        lastError = new Error(`Authentication required (attempt ${attempt})`);
+                    const { data: profile, error: getError } = await supabase
+                        .from('user_profiles')
+                        .select('*')
+                        .eq('user_id', userId)
+                        .maybeSingle();
+
+                    if (getError) {
+                        console.error(`[UserProfileService] Supabase error (attempt ${attempt}):`, getError);
+                        lastError = getError;
                         
-                        if (attempt < maxRetries) {
-                            // Progressive delay for OAuth session establishment
-                            const delay = attempt * 2000; // 2s, 4s, 6s, 8s, 10s
-                            console.log(`[UserProfileService] Waiting ${delay}ms before retry...`);
+                        if (attempt < maxRetries && (getError.message?.includes('JWT') || getError.message?.includes('session'))) {
+                            // Session-related error, retry after delay
+                            const delay = attempt * 2000;
+                            console.log(`[UserProfileService] Session error, waiting ${delay}ms before retry...`);
                             await new Promise(resolve => setTimeout(resolve, delay));
                             continue;
+                        } else {
+                            throw getError;
                         }
                     }
 
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        throw new Error(errorData.error || `HTTP error ${response.status}`);
+                    if (!profile) {
+                        console.log(`[UserProfileService] Profile not found (attempt ${attempt}) for user: ${userId}`);
+                        if (attempt < maxRetries) {
+                            // Profile might still be creating via database trigger
+                            const delay = attempt * 1500;
+                            console.log(`[UserProfileService] Profile not found, waiting ${delay}ms for database trigger...`);
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue;
+                        }
+                        // After all retries, profile still doesn't exist
+                        console.log(`[UserProfileService] Profile not found after ${maxRetries} attempts`);
+                        return null;
                     }
 
-                    const profileData = await response.json();
                     console.log(`✅ [UserProfileService] Profile retrieved successfully on attempt ${attempt}`);
-                    return profileData;
+                    return profile;
                     
                 } catch (error) {
                     console.error(`[UserProfileService] Attempt ${attempt} failed:`, error);
