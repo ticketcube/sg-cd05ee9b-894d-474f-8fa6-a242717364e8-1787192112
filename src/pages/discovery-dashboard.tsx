@@ -187,22 +187,10 @@ export default function DiscoveryDashboard() {
         );
     }
 
-    if (!userHistory) {
-        return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-xl md:text-2xl font-bold mb-4">No history yet</h1>
-                    <p className="text-gray-400 mb-6 text-sm md:text-base">
-                        Start discovering events to see your history here.
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
-
-    const { user_profile, weekly_summaries, total_points } = userHistory;
     
+
+
+    const { user_profile, weekly_summaries = [], total_points = 0 } = userHistory || {};    
     // Calculate stats
     const totalVotes = weekly_summaries.reduce((sum, week) => sum + week.votes_submitted, 0);
     const totalVideos = weekly_summaries.reduce((sum, week) => sum + week.video_views, 0);
