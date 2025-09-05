@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@supabase/auth-helpers-react";
@@ -16,6 +17,8 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState("discover");
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const { profile, loading: profileLoading, isAuthenticated } = useUserProfile();
 
   const handleRegisterClick = () => {
     if (user) {
@@ -36,14 +39,40 @@ export default function HomePage() {
     setAuthDialogOpen(false);
   };
 
-    const { profile, loading: profileLoading } = useUserProfile();
+  // ✅ ENHANCED: Better authentication flow logic
+  useEffect(() => {
+    console.log('🏠 [HomePage] Auth state:', { 
+      user: user?.id, 
+      profile: profile?.username, 
+      isAuthenticated, 
+      profileLoading, 
+      isAuthDialogOpen 
+    });
 
-    useEffect(() => {
-        if (user && profile && !profileLoading && !isAuthDialogOpen) {
-            router.push("/discovery-dashboard");
-        }
-    }, [user, profile, profileLoading, isAuthDialogOpen, router]);
+    // Only redirect if we have a confirmed authenticated user
+    if (isAuthenticated && !profileLoading && !isAuthDialogOpen) {
+      if (profile) {
+        console.log('✅ [HomePage] User has profile, redirecting to dashboard');
+        router.push("/discovery-dashboard");
+      } else {
+        // ✅ ENHANCED: If authenticated but no profile, redirect to setup
+        console.log('⚠️ [HomePage] User authenticated but no profile, redirecting to setup');
+        router.push("/auth/setup-profile");
+      }
+    }
+  }, [isAuthenticated, profile, profileLoading, isAuthDialogOpen, router]);
 
+  // ✅ NEW: Show loading state while authentication is being determined
+  if (profileLoading && user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+          <p className="text-white text-lg">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">

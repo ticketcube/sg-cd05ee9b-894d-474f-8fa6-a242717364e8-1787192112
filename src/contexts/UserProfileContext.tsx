@@ -1,3 +1,4 @@
+
 // src/contexts/UserProfileContext.tsx
 import {
     createContext,
@@ -8,6 +9,7 @@ import {
     useCallback,
 } from "react";
 import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { authService } from "@/services/authService";
 
 type UserProfile = {
     id: number;                    // ✅ FIXED: integer, not string
@@ -28,6 +30,7 @@ type UserProfileContextType = {
     role: string | null;
     loading: boolean;
     error: string | null;
+    isAuthenticated: boolean;
     refreshProfile: () => Promise<void>;
 };
 
@@ -42,10 +45,15 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const fetchProfile = useCallback(async () => {
+        console.log('🔄 [UserProfileContext] fetchProfile called, user:', user?.id);
+        
         if (!user) {
+            console.log('❌ [UserProfileContext] No user found');
             setProfile(null);
+            setIsAuthenticated(false);
             setLoading(false);
             return;
         }
@@ -53,9 +61,11 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
         try {
             setLoading(true);
             setError(null);
+            setIsAuthenticated(true); // ✅ User exists = authenticated
 
-            // ✅ FIXED: Use direct Supabase query instead of API endpoint
-            // This eliminates race conditions and network delays
+            console.log('🔍 [UserProfileContext] Fetching profile for user:', user.id);
+
+            // ✅ FIXED: Use direct Supabase query for immediate results
             const { data: profileData, error: fetchError } = await supabase
                 .from('user_profiles')
                 .select('*')
@@ -65,7 +75,7 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
             if (fetchError) {
                 if (fetchError.code === 'PGRST116') {
                     // Profile doesn't exist yet - this is normal for very new users
-                    console.log('Profile not found for user:', user.id);
+                    console.log('⚠️ [UserProfileContext] Profile not found for user:', user.id);
                     setProfile(null);
                     setLoading(false);
                     return;
@@ -73,9 +83,10 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
                 throw fetchError;
             }
 
+            console.log('✅ [UserProfileContext] Profile loaded successfully:', profileData);
             setProfile(profileData as UserProfile);
         } catch (err: any) {
-            console.error("Error loading profile:", err.message);
+            console.error("❌ [UserProfileContext] Error loading profile:", err.message);
             setError(err.message || 'Failed to load profile');
             setProfile(null);
         } finally {
@@ -83,15 +94,54 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
         }
     }, [user, supabase]);
 
+    // ✅ ENHANCED: Listen to auth state changes for OAuth flows
     useEffect(() => {
-        fetchProfile();
-    }, [fetchProfile]);
+        console.log('🎯 [UserProfileContext] Auth state changed. User:', user?.id);
+        
+        if (user) {
+            // Small delay to ensure OAuth session is fully established
+            const timer = setTimeout(fetchProfile, 100);
+            return () => clearTimeout(timer);
+        } else {
+            setProfile(null);
+            setIsAuthenticated(false);
+            setLoading(false);
+        }
+    }, [user, fetchProfile]);
+
+    // ✅ NEW: Listen to auth state changes directly from Supabase
+    useEffect(() => {
+        console.log('🔗 [UserProfileContext] Setting up auth listener');
+        
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                console.log('🔄 [UserProfileContext] Auth event:', event, 'Session user:', session?.user?.id);
+                
+                if (event === 'SIGNED_IN' && session?.user) {
+                    // Force refresh profile on sign in
+                    setIsAuthenticated(true);
+                    // Small delay to ensure session is fully established
+                    setTimeout(fetchProfile, 200);
+                } else if (event === 'SIGNED_OUT') {
+                    setProfile(null);
+                    setIsAuthenticated(false);
+                    setLoading(false);
+                }
+            }
+        );
+
+        return () => {
+            console.log('🔌 [UserProfileContext] Cleaning up auth listener');
+            subscription.unsubscribe();
+        };
+    }, [supabase, fetchProfile]);
 
     const value: UserProfileContextType = {
         profile,
         role: profile?.role ?? null,
         loading,
         error,
+        isAuthenticated,
         refreshProfile: fetchProfile,
     };
 
