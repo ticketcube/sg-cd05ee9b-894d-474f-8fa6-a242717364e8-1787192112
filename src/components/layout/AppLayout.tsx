@@ -108,7 +108,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                     href="/discovery-dashboard"
                                     className="sm:hidden text-sm font-medium hover:underline"
                                 >
-                                    DDashboard
+                                    Dashboard
                                 </Link>
 
                                 {/* User Avatar */}
