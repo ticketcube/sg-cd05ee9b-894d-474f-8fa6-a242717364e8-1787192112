@@ -114,7 +114,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                 {/* User Avatar */}
                                 <Link href="/profile">
                                     <Image
-                                        src={profile?.avatar_url || "/default-avatar.png"}
+                                            src= "/OTWLogocolor.png"
                                         alt="User Avatar"
                                         width={32}
                                         height={32}
