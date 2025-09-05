@@ -6,34 +6,63 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const supabase = createServerSupabaseClient({ req, res });
   
   try {
-    // ✅ ENHANCED: Better session handling for OAuth flows
-    console.log('🔐 [API/Profile] Checking session...');
+    // ✅ ENHANCED: Better session handling for OAuth flows with multiple approaches
+    console.log('🔐 [API/Profile] Checking session... Method:', req.method);
+    console.log('🔐 [API/Profile] Headers:', {
+      authorization: req.headers.authorization ? 'Present' : 'Missing',
+      cookie: req.headers.cookie ? 'Present (length: ' + req.headers.cookie?.length + ')' : 'Missing'
+    });
     
-    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    // ✅ NEW: Try both getSession and getUser for better OAuth compatibility
+    let user;
+    let sessionError;
+
+    // First try: getSession (standard approach)
+    const { data: sessionData, error: getSessionError } = await supabase.auth.getSession();
     
-    if (sessionError) {
-      console.error('❌ [API/Profile] Session error:', sessionError);
-      return res.status(500).json({ 
-        error: 'Session validation failed', 
-        details: sessionError.message 
-      });
+    if (getSessionError) {
+      console.warn('⚠️ [API/Profile] getSession error:', getSessionError);
+      sessionError = getSessionError;
     }
 
-    if (!sessionData?.session?.user) {
-      console.log('❌ [API/Profile] No session found. Headers:', {
-        authorization: req.headers.authorization ? 'Present' : 'Missing',
-        cookie: req.headers.cookie ? 'Present' : 'Missing'
+    if (sessionData?.session?.user) {
+      user = sessionData.session.user;
+      console.log('✅ [API/Profile] Session found via getSession for user:', user.id);
+    } else {
+      // Second try: getUser (sometimes more reliable for fresh OAuth sessions)
+      console.log('🔄 [API/Profile] getSession failed, trying getUser...');
+      const { data: userData, error: getUserError } = await supabase.auth.getUser();
+      
+      if (getUserError) {
+        console.error('❌ [API/Profile] getUser also failed:', getUserError);
+        sessionError = getUserError;
+      } else if (userData?.user) {
+        user = userData.user;
+        console.log('✅ [API/Profile] User found via getUser for user:', user.id);
+      }
+    }
+    
+    if (!user) {
+      console.error('❌ [API/Profile] No user found via any method. Errors:', {
+        getSessionError: getSessionError?.message,
+        sessionError: sessionError?.message
       });
       
       return res.status(401).json({ 
         error: 'Authentication required',
-        details: 'No valid session found. Please try refreshing the page or signing in again.'
+        details: 'No valid session found. This might be a temporary issue after signing in. Please try refreshing the page.',
+        debug: {
+          hasAuthHeader: !!req.headers.authorization,
+          hasCookies: !!req.headers.cookie,
+          errors: {
+            session: getSessionError?.message,
+            general: sessionError?.message
+          }
+        }
       });
     }
 
-    const user = sessionData.session.user;
     const userId = user.id;
-    
     console.log('✅ [API/Profile] Session validated for user:', userId);
 
     switch (req.method) {

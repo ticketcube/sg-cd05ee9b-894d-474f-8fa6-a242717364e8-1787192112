@@ -78,7 +78,7 @@ export default function DiscoveryDashboard() {
 
 
     useEffect(() => {
-        // ✅ SIMPLIFIED: Direct authentication logic without delays
+        // ✅ ENHANCED: Better authentication logic with OAuth session handling
         console.log('🎯 [DiscoveryDashboard] Auth state:', { 
             user: user?.id, 
             profileLoading, 
@@ -106,13 +106,31 @@ export default function DiscoveryDashboard() {
             const fetchUserHistory = async () => {
                 setLoading(true);
                 setError(null);
+                
+                // ✅ NEW: Add small delay for very fresh OAuth sessions
+                const isRecentOAuth = sessionStorage.getItem('oauth_callback_complete');
+                const isVeryRecentOAuth = isRecentOAuth && (Date.now() - parseInt(isRecentOAuth)) < 5000;
+                
+                if (isVeryRecentOAuth) {
+                    console.log('⏳ [DiscoveryDashboard] Very recent OAuth, adding small delay for session stability');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+                
                 try {
                     const history = await userProfileService.getUserEngagementHistory(user.id);
                     console.log('✅ [DiscoveryDashboard] History loaded successfully');
                     setUserHistory(history);
                 } catch (err) {
                     console.error('❌ [DiscoveryDashboard] Failed to load history:', err);
-                    setError(err instanceof Error ? err.message : "Failed to load dashboard data");
+                    
+                    // ✅ ENHANCED: Better error messages for OAuth issues
+                    const errorMessage = err instanceof Error ? err.message : "Failed to load dashboard data";
+                    
+                    if (errorMessage.includes('Authentication required')) {
+                        setError("Session is still being established. Please refresh the page in a moment.");
+                    } else {
+                        setError(errorMessage);
+                    }
                 } finally {
                     setLoading(false);
                 }
