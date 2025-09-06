@@ -14,7 +14,7 @@ export type UserProfile = {
     id: number;
     user_id: string;
     username: string;
-    role?: string;
+    role?: string; // ADDED
     email: string;
     raw_city_input?: string; // ADDED
     avatar_url?: string;
