@@ -46,7 +46,7 @@ export default function TestPointsPage() {
       console.log('🔍 Running basic points system test...');
       
       // Test 1: Points configuration loading
-      const videoViewPoints = await pointsConfigService.getPoints('video_view');
+      const videoViewPoints = await pointsConfigService.getMaxValue('video_view');
       const minWatchTime = await pointsConfigService.getMinValue('video_view');
       const frequency = await pointsConfigService.getFrequency('video_view');
       

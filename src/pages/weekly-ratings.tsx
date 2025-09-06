@@ -24,6 +24,12 @@ interface ArtistRating {
   isRated: boolean;
 }
 
+// Define SubmissionResult locally since we're removing the service import
+interface SubmissionResult {
+  message: string;
+  pointsEarned: number;
+}
+
 function WeeklyRatingsPageContent() {
   const user = useUser();
   const { profile, loading: profileLoading } = useUserProfile();
@@ -35,9 +41,10 @@ function WeeklyRatingsPageContent() {
   const [listError, setListError] = useState<string | null>(null);
   const [artistRatings, setArtistRatings] = useState<ArtistRating[]>([]);
   const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [showRatingPopup, setShowRatingPopup] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const {
     notification,
@@ -149,7 +156,7 @@ function WeeklyRatingsPageContent() {
 
   const handleWatchArtist = (artistData: EnrichedWeeklyListArtist) => {
     setSelectedArtist(artistData);
-    setIsPopupOpen(true);
+    setShowRatingPopup(true);
   };
 
   const handleVideoPointsAwarded = (artistUuid: string, pointsEarned: number) => {
@@ -295,12 +302,12 @@ function WeeklyRatingsPageContent() {
         
         {selectedArtist && (
           <WeeklyArtistRatingPopup
-            artist={selectedArtist}
+            artist={selectedArtist.artist}
             isOpen={showRatingPopup}
             onClose={() => setShowRatingPopup(false)}
             onRatingComplete={handleRatingComplete}
-            weekIdentifier={currentWeek}
-            userHasVoted={userVotes[selectedArtist?.uuid]}
+            weekIdentifier={selectedListId}
+            userHasVoted={artistRatings.find(r => r.artistUuid === selectedArtist?.artist.uuid)?.isRated || false}
             onVideoPointsAwarded={handleVideoPointsAwarded}
             onSubmissionSuccess={(result: SubmissionResult) => {
                 setSubmissionResult(result);
@@ -310,8 +317,11 @@ function WeeklyRatingsPageContent() {
         )}
 
         <SubmissionSuccessPopup 
-          isOpen={!!submissionResult} 
-          onClose={() => setSubmissionResult(null)} 
+          isOpen={showSuccessPopup} 
+          onClose={() => {
+            setShowSuccessPopup(false);
+            setSubmissionResult(null);
+          }} 
           result={submissionResult} 
         />
       </div>

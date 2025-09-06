@@ -7,7 +7,6 @@ import { UserProfileProvider } from "@/contexts/UserProfileContext";
 import { Toaster } from "@/components/ui/sonner";
 import AppLayout from "@/components/layout/AppLayout";
 import { useRouter } from "next/router";
-import type { Database } from "@/integrations/supabase/types";
 
 function MyApp({
     Component,

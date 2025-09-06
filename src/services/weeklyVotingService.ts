@@ -41,6 +41,13 @@ const weeklyVotingService = {
 
         const pointsEarned = await pointsConfigService.getMaxValue("quadrant");
         console.log("[WeeklyVotingService] Points to award:", pointsEarned);
+        
+        // Return a submission result
+        return {
+            message: "Votes submitted successfully!",
+            pointsEarned,
+            success: true
+        };
     },
 
   async submitQuadrantVote(
