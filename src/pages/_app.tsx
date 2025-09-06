@@ -2,19 +2,13 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { useState } from "react";
 import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
-import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { UserProfileProvider } from "@/contexts/UserProfileContext";
 import { Toaster } from "@/components/ui/sonner";
 import AppLayout from "@/components/layout/AppLayout";
 import { useRouter } from "next/router";
 
-function MyApp({
-    Component,
-    pageProps,
-}: AppProps<{
-    initialSession: Session;
-}>) {
-    // Create untyped client for SessionContextProvider compatibility
+function MyApp({ Component, pageProps }: AppProps) {
     const [supabaseClient] = useState(() => createPagesBrowserClient());
     const router = useRouter();
 
@@ -31,7 +25,7 @@ function MyApp({
 
     return (
         <SessionContextProvider
-            supabaseClient={supabaseClient}
+            supabaseClient={supabaseClient as any}
             initialSession={pageProps.initialSession}
         >
             <UserProfileProvider>
