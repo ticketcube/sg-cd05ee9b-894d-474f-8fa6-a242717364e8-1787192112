@@ -1,8 +1,8 @@
 // pages/api/voting/submit.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { checkEligibility } from "@/lib/services/eligibilityService";
-import { recordEngagement } from "@/lib/services/userProfileService";
+import { checkEligibility } from "@/pages/services/eligibilityService";
+import { recordEngagement } from "@/pages/services/userProfileService";
 import { ENGAGEMENT_TYPES } from "@/constants/engagementTypes";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
