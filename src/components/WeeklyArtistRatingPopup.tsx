@@ -145,47 +145,42 @@ export default function WeeklyArtistRatingPopup({
   };
 
     const awardVideoPoints = async () => {
-        if (!user || hasEarnedPoints || !isEligibleForPoints) return;
+        if (!user || hasEarnedPoints || !isEligibleForPoints || !session) return;
 
         try {
-            console.log('🎯 Attempting to award video points...', {
-                user: user.id,
-                artist: artist.uuid,
-                watchTime: minWatchTime
+            const response = await fetch('/api/points/award', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                    actionName: 'video_view',
+                    artistUuid: artist.uuid,
+                    weekIdentifier: weekIdentifier,
+                    metadata: { watchTime: minWatchTime }
+                }),
             });
 
-            // Use the new API-first points service
-            const result = await pointsConfigService.awardPoints(
-                'video_view',
-                artist.uuid,
-                weekIdentifier,
-                { watchTimeSeconds: minWatchTime }
-            );
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP Error: ${response.status}`);
+            }
 
-            console.log('✅ Video points result:', result);
+            const result = await response.json();
 
-            if (result.success && result.pointsAwarded && result.pointsAwarded > 0) {
+            if (result.success && result.pointsAwarded > 0) {
                 setHasEarnedPoints(true);
-                stopTimer(); // Stop timer after points are awarded
-
-                // Notify parent component
+                stopTimer();
                 if (onVideoPointsAwarded) {
                     onVideoPointsAwarded(artist.uuid, result.pointsAwarded);
                 }
-
-                console.log(`🎉 Successfully awarded ${result.pointsAwarded} points for watching ${artist.artist_name}!`);
             } else {
-                console.log('ℹ️ No points awarded - user may have already watched this video this week');
-                setHasEarnedPoints(true); // Still mark as "processed" to stop timer
+                setHasEarnedPoints(true);
                 stopTimer();
             }
         } catch (error) {
             console.error('❌ Error awarding video points:', error);
-
-            if (error instanceof Error) {
-                console.error('Video points error details:', error.message);
-            }
-
             stopTimer();
         }
     };
