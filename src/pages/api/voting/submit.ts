@@ -1,8 +1,8 @@
 // pages/api/voting/submit.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { checkEligibility } from "@/pages/services/eligibilityService";
-import { recordEngagement } from "@/pages/services/userProfileService";
+import userProfileService from "@/services/userProfileService";
+import pointsConfigService from "@/services/pointsConfigService";
 import { ENGAGEMENT_TYPES } from "@/constants/engagementTypes";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -30,24 +30,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).json({ error: "Missing required vote data" });
         }
 
-        // --- 3. Check eligibility based on points_config.frequency ---
-        const eligible = await checkEligibility(user.id, ENGAGEMENT_TYPES.VOTE, { weekIdentifier, artistUuid });
+        // --- 3. Check eligibility ---
+        const eligible = await userProfileService.checkEligibility(user.id, ENGAGEMENT_TYPES.VOTE, {
+            weekIdentifier,
+            artistUuid
+        });
         if (!eligible.allowed) {
             return res.status(400).json({ error: eligible.reason || "Not eligible to vote" });
         }
 
-        // --- 4. Record the vote as an engagement ---
-        const engagement = await recordEngagement(user.id, ENGAGEMENT_TYPES.VOTE, {
-            artistUuid,
-            weekIdentifier,
-            quadrant_x,
-            quadrant_y,
-        });
+        // --- 4. Fetch points from points_config ---
+        const pointsEarned = await pointsConfigService.getPointsForAction(ENGAGEMENT_TYPES.VOTE);
 
-        // --- 5. Respond ---
+        // --- 5. Record the vote as an engagement ---
+        const engagement = await userProfileService.recordEngagement(
+            user.id,
+            ENGAGEMENT_TYPES.VOTE,
+            pointsEarned,
+            weekIdentifier,
+            artistUuid,
+            { quadrant_x, quadrant_y }
+        );
+
+        // --- 6. Respond ---
         return res.status(200).json({
             success: true,
             engagement,
+            pointsAwarded: pointsEarned
         });
 
     } catch (error) {
