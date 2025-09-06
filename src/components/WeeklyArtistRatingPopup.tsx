@@ -228,7 +228,7 @@ export default function WeeklyArtistRatingPopup({
           }
 
             // Get quadrant points from points_config table
-            const quadrantPoints = await pointsConfigService.getPoints('quadrant');
+            const quadrantPoints = await pointsConfigService.getMaxValue('quadrant'); 
 
             // Prepare user engagement data for quadrant submission
             const engagementData = {
