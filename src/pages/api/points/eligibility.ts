@@ -1,64 +1,65 @@
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import type { NextApiRequest, NextApiResponse } from 'next';
+// pages/api/points/eligibility.ts
+import type { NextApiRequest, NextApiResponse } from "next";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+    if (req.method !== "POST") {
+        return res.status(405).json({ error: "Method not allowed" });
     }
 
     try {
-        const supabase = createServerSupabaseClient({ req, res });
+        const { actionName, userId, weekIdentifier } = req.body;
 
-        // Get user session
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            return res.status(401).json({ error: 'Unauthorized' });
+        if (!actionName || !userId || !weekIdentifier) {
+            return res.status(400).json({ error: "Missing required parameters" });
         }
 
-        const { actionName, artistUuid, weekIdentifier } = req.body;
-        const userId = session.user.id;
-
-        // Use service role for database queries
-        const { supabaseAdmin } = await import('@/lib/supabaseAdmin');
-
-        // First get the frequency rule
-        const { data: configData } = await supabaseAdmin
-            .from('points_config')
-            .select('frequency')
-            .eq('action_name', actionName)
+        // 1️⃣ Load points config for this action
+        const { data: config, error: configError } = await supabaseAdmin
+            .from("points_config")
+            .select("*")
+            .eq("action_name", actionName)
+            .eq("is_active", true)
             .single();
 
-        if (!configData) {
-            return res.status(400).json({ error: 'Invalid action name' });
+        if (configError || !config) {
+            console.error("Points config not found:", configError);
+            return res.status(400).json({ eligible: false, reason: "No active points config for this action" });
         }
 
-        const frequency = configData.frequency || 'once';
+        const { frequency, min_value, max_value } = config;
 
-        // Check eligibility based on frequency
-        let query = supabaseAdmin
-            .from('user_engagements')
-            .select('id')
-            .eq('user_id', userId)
-            .eq('engagement_type', actionName)
-            .gt('points_earned', 0)
-            .limit(1);
+        // 2️⃣ Check frequency limits
+        let eligible = true;
+        let reason = "";
+        let points = min_value || 0;
 
-        if (frequency === 'once_per_artist_lifetime' && artistUuid) {
-            query = query.eq('artist_uuid', artistUuid);
-        } else if (frequency === 'once_per_artist_per_week' && artistUuid && weekIdentifier) {
-            query = query.eq('artist_uuid', artistUuid).eq('week_identifier', weekIdentifier);
-        } else if (frequency === 'once_per_week' && weekIdentifier) {
-            query = query.eq('week_identifier', weekIdentifier);
+        if (frequency && frequency !== "unlimited") {
+            // Count engagements this week
+            const { data: engagements, error: engagementError } = await supabaseAdmin
+                .from("user_engagements")
+                .select("*", { count: "exact" })
+                .eq("user_id", userId)
+                .eq("engagement_type", actionName)
+                .eq("week_identifier", weekIdentifier);
+
+            if (engagementError) {
+                console.error("Error checking user engagements:", engagementError);
+                return res.status(500).json({ eligible: false, reason: "Internal error checking eligibility" });
+            }
+
+            const countThisWeek = engagements?.length || 0;
+
+            if (frequency === "once_per_week" && countThisWeek >= 1) {
+                eligible = false;
+                reason = "You have already performed this action this week";
+            }
+            // Could add more frequency rules here
         }
 
-        const { data, error } = await query;
-        if (error) throw error;
-
-        const eligible = frequency === 'unlimited' || !data || data.length === 0;
-
-        res.status(200).json({ eligible });
+        res.status(200).json({ eligible, reason, points });
     } catch (error) {
-        console.error('Error checking eligibility:', error);
-        res.status(500).json({ error: 'Failed to check eligibility' });
+        console.error("Eligibility API error:", error);
+        res.status(500).json({ eligible: false, reason: error instanceof Error ? error.message : "Unknown error" });
     }
 }
