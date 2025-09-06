@@ -7,6 +7,7 @@ import { UserProfileProvider } from "@/contexts/UserProfileContext";
 import { Toaster } from "@/components/ui/sonner";
 import AppLayout from "@/components/layout/AppLayout";
 import { useRouter } from "next/router";
+import type { Database } from "@/integrations/supabase/types";
 
 function MyApp({
     Component,
@@ -15,7 +16,7 @@ function MyApp({
     initialSession: Session;
 }>) {
     // Create a new Supabase client for each page render.
-    const [supabaseClient] = useState(() => createPagesBrowserClient());
+    const [supabaseClient] = useState(() => createPagesBrowserClient<Database>());
     const router = useRouter();
 
     // Define paths that should NOT have the main AppLayout

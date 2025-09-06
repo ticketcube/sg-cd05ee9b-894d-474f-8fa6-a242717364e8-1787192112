@@ -9,8 +9,8 @@ import { ChevronLeft, ChevronRight, Timer, CheckCircle, Loader2, Eye, Ticket, Us
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { useUser, useSession } from "@supabase/auth-helpers-react";
 import { videoWatchService } from "@/services/videoWatchService";
-import weeklyVotingService, { SubmissionResult } from "@/services/weeklyVotingService";
-import { pointsConfigService } from "@/services/pointsConfigService";
+
+import { pointsConfigService, checkPointsEligibility } from "@/services/pointsConfigService";
 import { usePointsNotifications } from "@/components/points/PointsNotification";
 import type { Artist } from "@/types/artists";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,7 +100,7 @@ export default function WeeklyArtistRatingPopup({
       setVideoPoints(points);
 
       // Check if user is eligible for points
-      const eligible = await pointsConfigService.checkEligibility(
+        const result = await checkPointsEligibility( 
         'video_view',
         artist.uuid,
         weekIdentifier
