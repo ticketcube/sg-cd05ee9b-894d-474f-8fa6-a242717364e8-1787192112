@@ -1,31 +1,27 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Timer, CheckCircle, Loader2, Eye, Ticket, Users } from "lucide-react";
+import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, Timer, CheckCircle, Loader2, Ticket, Users } from "lucide-react";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { useUser, useSession } from "@supabase/auth-helpers-react";
-import { videoWatchService } from "@/services/videoWatchService";
-
-import { pointsConfigService, checkPointsEligibility } from "@/services/pointsConfigService";
-import { usePointsNotifications } from "@/components/points/PointsNotification";
+import { pointsConfigService, checkPointsEligibility } from "@/services/pointsConfigService"; // CORRECT IMPORT
 import type { Artist } from "@/types/artists";
-import { supabase } from "@/integrations/supabase/client";
+
+// CORRECT: SubmissionResult is now defined locally
+interface SubmissionResult {
+  message: string;
+  pointsEarned: number;
+}
 
 interface WeeklyArtistRatingPopupProps {
   artist: Artist;
   isOpen: boolean;
   onClose: () => void;
-  onRatingComplete: (
-    artistUuid: string,
-    ticketInterest: number,
-    shareInterest: number
-  ) => void;
+  onRatingComplete: (artistUuid: string, ticketInterest: number, shareInterest: number) => void;
   weekIdentifier: string;
-  weeklyListId?: number;
   userHasVoted?: boolean;
   onVideoPointsAwarded?: (artistUuid: string, pointsEarned: number) => void;
   onSubmissionSuccess?: (result: SubmissionResult) => void;
@@ -37,22 +33,20 @@ export default function WeeklyArtistRatingPopup({
   onClose,
   onRatingComplete,
   weekIdentifier,
-  weeklyListId = 1,
   userHasVoted,
   onVideoPointsAwarded,
   onSubmissionSuccess,
 }: WeeklyArtistRatingPopupProps) {
-    const user = useUser();
-    const session = useSession(); // Add this line
+  const user = useUser();
+  const session = useSession();
   const [ticketInterest, setTicketInterest] = useState(50);
   const [shareInterest, setShareInterest] = useState(50);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [slidersChanged, setSlidersChanged] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState < string | null > (null);  // ← ADD THIS LINE
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Timer system state
   const [watchTime, setWatchTime] = useState(0);
   const [hasEarnedPoints, setHasEarnedPoints] = useState(false);
   const [isEligibleForPoints, setIsEligibleForPoints] = useState(false);
@@ -60,461 +54,194 @@ export default function WeeklyArtistRatingPopup({
   const [videoPoints, setVideoPoints] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Reset state when popup opens or artist changes
+  // --- Core Logic ---
+
+  // CORRECT: This function now uses the right helper for eligibility.
+  const checkVideoPointsEligibility = async () => {
+    if (!user) return;
+    try {
+      const minTime = await pointsConfigService.getMinValue('video_view');
+      const points = await pointsConfigService.getMaxValue('video_view');
+      setMinWatchTime(minTime);
+      setVideoPoints(points);
+
+      // This helper checks the DB to see if the user has already done this action for this artist this week.
+      const result = await checkPointsEligibility('video_view', user.id, weekIdentifier, artist.uuid);
+      setIsEligibleForPoints(result.eligible);
+    } catch (error) {
+      console.error('Error checking video points eligibility:', error);
+      setIsEligibleForPoints(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen && artist) {
-      // Reset all timer state for new artist
       setWatchTime(0);
       setHasEarnedPoints(false);
       setIsEligibleForPoints(false);
       setSlidersChanged(false);
       setTicketInterest(50);
       setShareInterest(50);
-      stopTimer(); // Clear any existing timer
-      
+      setError(null);
+      stopTimer();
       if (user) {
-        checkPointsEligibility();
+        checkVideoPointsEligibility();
       }
-    } else if (!isOpen) {
-      // Clean up when popup closes
-      stopTimer();
-      setWatchTime(0);
-      setHasEarnedPoints(false);
-      setSlidersChanged(false);
     }
-    
-    return () => {
-      // Cleanup timer on unmount or dependency change
-      stopTimer();
-    };
+    return () => stopTimer();
   }, [isOpen, artist, user]);
 
-  const checkPointsEligibility = async () => {
-    if (!user) return;
-    
+  const awardVideoPoints = async () => {
+    if (!user || !session || hasEarnedPoints || !isEligibleForPoints) return;
     try {
-      // Get points configuration
-      const minTime = await pointsConfigService.getMinValue('video_view');
-      const points = await pointsConfigService.getPoints('video_view');
-      setMinWatchTime(minTime);
-      setVideoPoints(points);
-
-      // Check if user is eligible for points
-        const result = await checkPointsEligibility( 
-        'video_view',
-        artist.uuid,
-        weekIdentifier
-      );
-      setIsEligibleForPoints(eligible);
-    } catch (error) {
-      console.error('Error checking points eligibility:', error);
-      setIsEligibleForPoints(false);
+      // CORRECT: Secure API call to award points. Server validates everything.
+      const response = await fetch('/api/points/award', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: JSON.stringify({ actionName: 'video_view', artistUuid: artist.uuid, weekIdentifier }),
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to award points');
+      }
+      const result = await response.json();
+      if (result.success && result.pointsAwarded > 0) {
+        setHasEarnedPoints(true);
+        if (onVideoPointsAwarded) onVideoPointsAwarded(artist.uuid, result.pointsAwarded);
+      }
+    } catch (err: any) {
+      console.error('Error awarding video points:', err.message);
+    } finally {
+      stopTimer();
     }
   };
 
-  const startTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
+  const handleSubmit = async () => {
+    if (!user || !session || isSubmitting || userHasVoted) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      // CORRECT: Checks eligibility before trying to submit.
+      const eligibility = await checkPointsEligibility('quadrant', user.id, weekIdentifier, artist.uuid);
+      if (!eligibility.eligible) {
+          throw new Error(eligibility.reason || "You have already rated this artist this week.");
+      }
+
+      const quadrantPoints = await pointsConfigService.getMaxValue('quadrant');
+      
+      // CORRECT: Secure API call to submit the rating engagement.
+      const response = await fetch("/api/user/engagement", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: JSON.stringify({
+          engagement_type: 'quadrant',
+          points_earned: quadrantPoints,
+          week_identifier: weekIdentifier,
+          artist_uuid: artist.uuid,
+          metadata: { quadrant_positions: { [artist.uuid]: { ticket: ticketInterest, share: shareInterest } } },
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || `HTTP error ${response.status}`);
+      }
+      
+      onRatingComplete(artist.uuid, ticketInterest, shareInterest);
+      if (onSubmissionSuccess) {
+        onSubmissionSuccess({ message: `Rating submitted! You earned ${quadrantPoints} points.`, pointsEarned: quadrantPoints });
+      }
+      onClose();
+    } catch (err: any) {
+      console.error("Quadrant rating submission failed:", err);
+      setError(`Failed to submit rating: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
-    
+  };
+
+  // --- Timer Logic ---
+  const startTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
-      setWatchTime((prevTime) => {
-        const newTime = prevTime + 1;
-        
-        // Award points when reaching minimum watch time
-        if (newTime >= minWatchTime && !hasEarnedPoints && isEligibleForPoints && user) {
+      setWatchTime((prev) => {
+        const newTime = prev + 1;
+        if (newTime >= minWatchTime && !hasEarnedPoints && isEligibleForPoints) {
           awardVideoPoints();
-          return minWatchTime; // Cap the time at minimum watch time
+          return minWatchTime;
         }
-        
-        // Stop timer if points already earned or time exceeded
-        if (hasEarnedPoints || newTime > minWatchTime) {
-          return prevTime; // Don't increment further
-        }
-        
+        if (newTime > minWatchTime) return minWatchTime;
         return newTime;
       });
     }, 1000);
   };
+  const stopTimer = () => { if (timerRef.current) clearInterval(timerRef.current); };
 
-  const stopTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-    const awardVideoPoints = async () => {
-        if (!user || hasEarnedPoints || !isEligibleForPoints || !session) return;
-
-        try {
-            const response = await fetch('/api/points/award', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`,
-                },
-                body: JSON.stringify({
-                    actionName: 'video_view',
-                    artistUuid: artist.uuid,
-                    weekIdentifier: weekIdentifier,
-                    metadata: { watchTime: minWatchTime }
-                }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || `HTTP Error: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success && result.pointsAwarded > 0) {
-                setHasEarnedPoints(true);
-                stopTimer();
-                if (onVideoPointsAwarded) {
-                    onVideoPointsAwarded(artist.uuid, result.pointsAwarded);
-                }
-            } else {
-                setHasEarnedPoints(true);
-                stopTimer();
-            }
-        } catch (error) {
-            console.error('❌ Error awarding video points:', error);
-            stopTimer();
-        }
-    };
-
-  // Start timer automatically when popup opens (autoplay behavior)
   useEffect(() => {
-    if (isOpen && isEligibleForPoints && !hasEarnedPoints) {
-      startTimer();
-    } else {
-      stopTimer();
-    }
-    
-    return () => stopTimer();
-  }, [isOpen, isEligibleForPoints, hasEarnedPoints]);
+    if (isOpen && isVideoPlaying && isEligibleForPoints && !hasEarnedPoints) startTimer();
+    else stopTimer();
+    return stopTimer;
+  }, [isOpen, isVideoPlaying, isEligibleForPoints, hasEarnedPoints]);
 
-  const handleVideoPlay = () => {
-    setIsVideoPlaying(true);
-  };
 
-  const handleVideoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!isVideoPlaying) {
-      handleVideoPlay();
-    }
-  };
-
-  const handleTicketInterestChange = (value: number[]) => {
-    setTicketInterest(value[0]);
-    setSlidersChanged(true);
-  };
-
-  const handleShareInterestChange = (value: number[]) => {
-    setShareInterest(value[0]);
-    setSlidersChanged(true);
-  };
-
-    const handleSubmit = async () => {
-        try {
-            setIsSubmitting(true);
-            setError(null);
-
-            // Get session
-          if (!session?.access_token) { throw new Error('Please sign in again to submit your rating');
-          }
-
-            // Get quadrant points from points_config table
-            const quadrantPoints = await pointsConfigService.getMaxValue('quadrant'); 
-
-            // Prepare user engagement data for quadrant submission
-            const engagementData = {
-                user_id: session.user.id,
-                engagement_type: 'quadrant',
-                points_earned: quadrantPoints, // Points from points_config table
-                week_identifier: weekIdentifier,
-                artist_uuid: artist.uuid,
-                metadata: {
-                    quadrant_positions: {
-                        [artist.uuid]: {
-                            ticket: ticketInterest,
-                            share: shareInterest
-                        }
-                    },
-                    completion_time: Math.round(watchTime),
-                    artist_name: artist.artist_name
-                },
-                created_at: new Date().toISOString()
-            };
-
-            console.log('📤 Submitting quadrant engagement:', engagementData);
-
-            // Submit to user_engagements via API
-            const response = await fetch("/api/user/engagement", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${session.access_token}`,
-                },
-                body: JSON.stringify(engagementData),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                throw new Error(errorData.error || `HTTP error ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log('✅ Quadrant engagement submitted successfully:', result);
-
-            // Call parent callback with the rating data
-            onRatingComplete(artist.uuid, ticketInterest, shareInterest);
-
-            // Success notification
-            if (onSubmissionSuccess) {
-                onSubmissionSuccess({
-                    message: `Rating submitted! You earned ${quadrantPoints} points.`,
-                    pointsEarned: quadrantPoints
-                });
-            }
-
-            // Close popup
-            onClose();
-
-        } catch (error: any) {
-            console.error("❌ Quadrant rating submission failed:", error);
-            setError(`Failed to submit rating: ${error.message}`);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
+  // --- UI Handlers & Render ---
   const videoLinks = artist.artist_videolink ? artist.artist_videolink.split(",").map(s => s.trim()).filter(s => s) : [];
-  const hasMultipleVideos = videoLinks.length > 1;
-
-  const handleVideoIndexChange = (newIndex: number) => {
-    setCurrentVideoIndex(newIndex);
-  };
-
-  const handleNextVideo = () => {
-    if (currentVideoIndex < videoLinks.length - 1) {
-      handleVideoIndexChange(currentVideoIndex + 1);
-    }
-  };
-
-  const handlePrevVideo = () => {
-    if (currentVideoIndex > 0) {
-      handleVideoIndexChange(currentVideoIndex - 1);
-    }
-  };
-
-  const getTicketLabel = (value: number) => {
-    if (value < 25) return "Not For Me";
-    if (value < 75) return "Maybe";
-    return "I'd Buy Tickets";
-  };
-
-  const getShareLabel = (value: number) => {
-    if (value < 25) return "Not For Them";
-    if (value < 75) return "Maybe";
-    return "I'd Tell Friends";
-  };
-
+  const handleVideoIndexChange = (i: number) => setCurrentVideoIndex(i);
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
-        className="max-w-4xl w-full p-0 bg-black text-white border-gray-800"
-      >
+      <DialogContent className="max-w-4xl w-full p-0 bg-black text-white border-gray-800">
         <div className="grid grid-cols-1 md:grid-cols-2">
-          {/* Video Section */}
           <div className="relative aspect-video bg-gray-900">
             <ArtistVideoPlayer
-              artist={artist}
-              videoLinks={videoLinks}
-              currentIndex={currentVideoIndex}
-              onChangeIndex={handleVideoIndexChange}
-              isEmbed={true}
-              showNavigationControls={false}
-              onPlay={handleVideoPlay}
-              onPause={() => setIsVideoPlaying(false)}
+              artist={artist} videoLinks={videoLinks} currentIndex={currentVideoIndex}
+              onChangeIndex={handleVideoIndexChange} isEmbed={true} showNavigationControls={false}
+              onPlay={() => setIsVideoPlaying(true)} onPause={() => setIsVideoPlaying(false)}
             />
-            
-            {/* Remove the timer from video overlay - moving it to below artist name */}
-            
-            {/* Remove the click-through play button overlay since video autoplays */}
-            
-            {hasMultipleVideos && (
+            {videoLinks.length > 1 && (
               <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 z-40"
-                  onClick={handlePrevVideo}
-                  disabled={currentVideoIndex === 0}
-                >
-                  <ChevronLeft />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 z-40"
-                  onClick={handleNextVideo}
-                  disabled={currentVideoIndex === videoLinks.length - 1}
-                >
-                  <ChevronRight />
-                </Button>
-                
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 px-2 py-1 rounded text-xs z-40">
-                  {currentVideoIndex + 1} of {videoLinks.length}
-                </div>
+                <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 z-40" onClick={() => handleVideoIndexChange(currentVideoIndex - 1)} disabled={currentVideoIndex === 0}><ChevronLeft /></Button>
+                <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 z-40" onClick={() => handleVideoIndexChange(currentVideoIndex + 1)} disabled={currentVideoIndex === videoLinks.length - 1}><ChevronRight /></Button>
               </>
             )}
           </div>
-          
           <div className="p-6 flex flex-col">
-            <DialogHeader className="mb-4">
+            <DialogHeader className="mb-4 text-center">
               <DialogTitle className="text-2xl font-bold">{artist.artist_name}</DialogTitle>
-              {artist.artist_genre && (
-                <p className="text-gray-400 text-sm">{artist.artist_genre}</p>
-                          )}
-
-                          {error && (
-                              <div className="bg-red-600 px-3 py-2 rounded text-sm mt-2">
-                                  {error}
-                              </div>
-                          )}
-              
-              {/* Timer and Points Display - Centered below artist name */}
+              {artist.artist_genre && <p className="text-gray-400 text-sm">{artist.artist_genre}</p>}
+              {error && <div className="bg-red-900/50 text-red-300 border border-red-700 px-3 py-2 rounded text-sm mt-2">{error}</div>}
               <div className="flex justify-center mt-3">
                 {!isEligibleForPoints ? (
-                  <div className="bg-gray-800 px-3 py-1 rounded-lg flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-gray-400" />
-                    <span className="text-xs text-gray-400">Already watched</span>
-                  </div>
+                  <div className="bg-gray-800 px-3 py-1 rounded-lg flex items-center gap-2"><CheckCircle className="w-4 h-4 text-gray-400" /><span className="text-xs text-gray-400">Video points earned</span></div>
                 ) : hasEarnedPoints ? (
-                  <div className="bg-green-600 px-3 py-1 rounded-lg flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-white" />
-                    <span className="text-xs text-white font-medium">{videoPoints} points earned!</span>
-                  </div>
+                  <div className="bg-green-600 px-3 py-1 rounded-lg flex items-center gap-2"><CheckCircle className="w-4 h-4 text-white" /><span className="text-xs text-white font-medium">{videoPoints} points earned!</span></div>
                 ) : (
-                  <div className="bg-gray-800 px-3 py-1 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Timer className="w-4 h-4 text-blue-400" />
-                      <span className="text-xs text-white">{watchTime}s / {minWatchTime}s</span>
-                    </div>
-                    <Progress 
-                      value={(watchTime / minWatchTime) * 100} 
-                      className="w-24 h-1 bg-gray-600"
-                    />
-                  </div>
+                  <div className="bg-gray-800 px-3 py-1 rounded-lg"><div className="flex items-center gap-2 mb-1"><Timer className="w-4 h-4 text-blue-400" /><span className="text-xs text-white">{watchTime}s / {minWatchTime}s</span></div><Progress value={(watchTime / minWatchTime) * 100} className="w-24 h-1 bg-gray-600" /></div>
                 )}
               </div>
             </DialogHeader>
-
-            <div className="flex flex-col flex-1">
-              <AnimatePresence>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-6"
-                >
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-center">Rate This Artist</h3>
-                    
-                    {/* Ticket Interest Slider */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Ticket className="w-4 h-4 text-blue-400" />
-                        <span className="text-sm font-medium">Concert Interest</span>
-                      </div>
-                      <div className="px-3">
-                        <div className="relative mb-2">
-                          <div 
-                            className="absolute inset-0 h-3 rounded-full pointer-events-none z-0"
-                            style={{
-                              background: `linear-gradient(to right, #3b82f6 0%, #ef4444 100%)`,
-                              top: '50%',
-                              transform: 'translateY(-50%)'
-                            }}
-                          />
-                          <Slider
-                            value={[ticketInterest]} 
-                            onValueChange={handleTicketInterestChange}
-                            max={100}
-                            step={1}
-                            disabled={userHasVoted}
-                            className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-7 [&_[data-radix-slider-thumb]]:h-7 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-800 [&_[data-radix-slider-thumb]]:shadow-xl [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform [&_[data-radix-slider-thumb]]:z-20"
-                          />
-                        </div>
-                        <div className="flex justify-between text-xs text-gray-400 mt-1">
-                          <span>Not For Me</span>
-                          <span className="font-medium text-white">{getTicketLabel(ticketInterest)}</span>
-                          <span>I'd Buy Tickets</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Share Interest Slider */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-green-400" />
-                        <span className="text-sm font-medium">Sharing Interest</span>
-                      </div>
-                      <div className="px-3">
-                        <div className="relative mb-2">
-                          <div 
-                            className="absolute inset-0 h-3 rounded-full pointer-events-none z-0"
-                            style={{
-                              background: `linear-gradient(to right, #3b82f6 0%, #ef4444 100%)`,
-                              top: '50%',
-                              transform: 'translateY(-50%)'
-                            }}
-                          />
-                          <Slider
-                            value={[shareInterest]}
-                            onValueChange={handleShareInterestChange}
-                            max={100}
-                            step={1}
-                            disabled={userHasVoted}
-                            className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-7 [&_[data-radix-slider-thumb]]:h-7 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-800 [&_[data-radix-slider-thumb]]:shadow-xl [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform [&_[data-radix-slider-thumb]]:z-20"
-                          />
-                        </div>
-                        <div className="flex justify-between text-xs text-gray-400 mt-1">
-                          <span>Not For Them</span>
-                          <span>I'd Tell Friends</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+            <div className="flex-1 space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-center">Rate This Artist</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2"><Ticket className="w-4 h-4 text-blue-400" /><span className="text-sm font-medium">Concert Interest</span></div>
+                  <Slider value={[ticketInterest]} onValueChange={(v) => { setTicketInterest(v[0]); setSlidersChanged(true); }} max={100} step={1} disabled={userHasVoted} />
+                  <div className="flex justify-between text-xs text-gray-400"><span>Not For Me</span><span>I'd Buy Tickets</span></div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2"><Users className="w-4 h-4 text-green-400" /><span className="text-sm font-medium">Sharing Interest</span></div>
+                  <Slider value={[shareInterest]} onValueChange={(v) => { setShareInterest(v[0]); setSlidersChanged(true); }} max={100} step={1} disabled={userHasVoted} />
+                  <div className="flex justify-between text-xs text-gray-400"><span>Not For Them</span><span>I'd Tell Friends</span></div>
+                </div>
+              </div>
             </div>
+            <DialogFooter className="pt-6">
+              <Button onClick={handleSubmit} className="w-full text-lg" disabled={isSubmitting || userHasVoted || !slidersChanged}>
+                {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : userHasVoted ? "You've Already Rated" : !slidersChanged ? "Adjust Sliders to Submit" : "Submit Rating"}
+              </Button>
+            </DialogFooter>
           </div>
         </div>
-        <DialogFooter className="p-6 bg-gray-800">
-          <Button
-            onClick={handleSubmit}
-            className={`w-full text-lg ${
-              slidersChanged && !userHasVoted 
-                ? "bg-blue-600 hover:bg-blue-700" 
-                : "bg-gray-600 hover:bg-gray-600 cursor-not-allowed"
-            }`}
-            disabled={isSubmitting || userHasVoted || !slidersChanged}
-          >
-            {isSubmitting ? (
-              <Loader2 className="animate-spin mr-2" />
-            ) : userHasVoted ? (
-              "You've Already Rated This Artist"
-            ) : !slidersChanged ? (
-              "Adjust Sliders to Submit Rating"
-            ) : (
-              "Submit Rating"
-            )}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
