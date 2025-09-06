@@ -1,146 +1,136 @@
-// src/services/pointsConfigService.ts
-
-import { supabase } from "@/integrations/supabase/client";
-
-// API-First Points Configuration Service
-export interface PointsConfigCache {
-    video_view: any;
-    artist_rating: any;
-    quadrant: any;
-    vote_submission: any;
-    video_completion_bonus: any;
-    rating_completion_bonus: any;
-    weekly_streak: any;
-    referral_bonus: any;
-}
+import { supabase } from '@/integrations/supabase/client';
 
 export class PointsConfigService {
-    private cache: PointsConfigCache | null = null;
-    private cacheExpiry: number = 0;
+    private cache = new Map < string, any > ();
+    private cacheExpiry = new Map < string, number > ();
     private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-    private async _getAuthHeaders(): Promise<HeadersInit> {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            throw new Error("Authentication required");
-        }
-        return {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-        };
-    }
+    async loadConfig(): Promise < any > {
+    const cacheKey = 'points_config';
+    const now = Date.now();
 
-    /**
-     * Load points configuration via API
-     */
-    async loadConfig(): Promise<PointsConfigCache> {
-        if (this.cache && Date.now() < this.cacheExpiry) {
-            return this.cache;
-        }
-
-        try {
-            const headers = await this._getAuthHeaders();
-            const response = await fetch('/api/points/config', { headers });
-            if (!response.ok) {
-                throw new Error(`HTTP error ${response.status}`);
-            }
-
-            const config = await response.json();
-            this.cache = config;
-            this.cacheExpiry = Date.now() + this.CACHE_DURATION;
-
-            return this.cache;
-        } catch (error) {
-            console.error('Failed to load points configuration:', error);
-            throw error;
-        }
-    }
-
-    /**
-     * Get points value for a specific action
-     */
-    async getPoints(actionName: keyof PointsConfigCache): Promise<number> {
-        const config = await this.loadConfig();
-        return config[actionName]?.points_value || 0;
-    }
-
-    /**
-     * Get minimum value for an action
-     */
-    async getMinValue(actionName: keyof PointsConfigCache): Promise<number> {
-        const config = await this.loadConfig();
-        return config[actionName]?.min_value || 0;
-    }
-
-    /**
-     * Get frequency setting for an action
-     */
-    async getFrequency(actionName: keyof PointsConfigCache): Promise<string> {
-        const config = await this.loadConfig();
-        return config[actionName]?.frequency || 'once';
-    }
-
-    /**
-     * Check eligibility via API
-     */
-    async checkEligibility(
-        actionName: keyof PointsConfigCache,
-        artistUuid?: string,
-        weekIdentifier?: string
-    ): Promise<boolean> {
-        try {
-            const headers = await this._getAuthHeaders();
-            const response = await fetch('/api/points/eligibility', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({ actionName, artistUuid, weekIdentifier })
-            });
-
-            if (!response.ok) {
-                console.error('Eligibility check failed:', response.status);
-                return false;
-            }
-
-            const result = await response.json();
-            return result.eligible;
-        } catch (error) {
-            console.error('Error checking eligibility:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Award points via API
-     */
-    async awardPoints(
-        actionName: keyof PointsConfigCache,
-        artistUuid?: string,
-        weekIdentifier?: string,
-        metadata?: any
-    ): Promise<{ success: boolean; pointsAwarded?: number }> {
-        try {
-            const headers = await this._getAuthHeaders();
-            const response = await fetch('/api/points/award', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({ actionName, artistUuid, weekIdentifier, metadata })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Error awarding points:', error);
-            return { success: false };
-        }
-    }
-
-    clearCache(): void {
-        this.cache = null;
-        this.cacheExpiry = 0;
-    }
+    // Check cache first
+    if(this.cache.has(cacheKey) &&
+        this.cacheExpiry.has(cacheKey) &&
+        now < this.cacheExpiry.get(cacheKey)!) {
+    console.log('[PointsConfigService] Using cached config');
+    return this.cache.get(cacheKey);
 }
 
+try {
+    console.log('[PointsConfigService] Loading fresh config from API');
+
+    // ✅ FIX: Get the current session and include auth token
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        throw new Error("Authentication required to load points configuration.");
+    }
+
+    const response = await fetch('/api/points/config', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}` // ✅ ADD AUTH HEADER
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+    }
+
+    const config = await response.json();
+
+    // Cache the result
+    this.cache.set(cacheKey, config);
+    this.cacheExpiry.set(cacheKey, now + this.CACHE_DURATION);
+
+    console.log('[PointsConfigService] Config loaded and cached');
+    return config;
+} catch (error) {
+    console.error('[PointsConfigService] Error loading config:', error);
+    throw error;
+}
+    }
+
+    async getMinValue(actionName: string): Promise < number > {
+    const config = await this.loadConfig();
+    const actionConfig = config[actionName];
+
+    if(!actionConfig) {
+        console.warn(`[PointsConfigService] No config found for action: ${actionName}`);
+        return 0;
+    }
+        
+        return actionConfig.min_points || 0;
+}
+
+    async getMaxValue(actionName: string): Promise < number > {
+    const config = await this.loadConfig();
+    const actionConfig = config[actionName];
+
+    if(!actionConfig) {
+        console.warn(`[PointsConfigService] No config found for action: ${actionName}`);
+        return 0;
+    }
+        
+        return actionConfig.max_points || 0;
+}
+
+    async getActionConfig(actionName: string): Promise < any > {
+    const config = await this.loadConfig();
+    return config[actionName] || null;
+}
+
+// Clear cache when needed
+clearCache(): void {
+    this.cache.clear();
+    this.cacheExpiry.clear();
+}
+}
+
+// Export singleton instance
 export const pointsConfigService = new PointsConfigService();
+
+// Helper function for checking points eligibility
+export async function checkPointsEligibility(
+    actionName: string,
+    userId: string,
+    weekIdentifier: string
+): Promise<{ eligible: boolean; reason?: string; points?: number }> {
+    try {
+        // ✅ FIX: Get the current session and include auth token
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            return {
+                eligible: false,
+                reason: "Authentication required to check points eligibility."
+            };
+        }
+
+        const response = await fetch('/api/points/eligibility', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}` // ✅ ADD AUTH HEADER
+            },
+            body: JSON.stringify({
+                actionName,
+                userId,
+                weekIdentifier
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || `HTTP error ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('[PointsConfigService] Error checking eligibility:', error);
+        return {
+            eligible: false,
+            reason: error instanceof Error ? error.message : 'Unknown error occurred'
+        };
+    }
+}
