@@ -5,6 +5,8 @@ import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
 import { UserProfileProvider } from "@/contexts/UserProfileContext";
 import { Toaster } from "@/components/ui/sonner";
+import AppLayout from "@/components/layout/AppLayout";
+import { useRouter } from "next/router";
 
 function MyApp({
     Component,
@@ -14,6 +16,18 @@ function MyApp({
 }>) {
     // Create a new Supabase client for each page render.
     const [supabaseClient] = useState(() => createPagesBrowserClient());
+    const router = useRouter();
+
+    // Define paths that should NOT have the main AppLayout
+    const noLayoutPaths = ["/auth/callback"];
+    const needsLayout = !noLayoutPaths.includes(router.pathname);
+
+    const PageComponent = (
+        <>
+            <Component {...pageProps} />
+            <Toaster />
+        </>
+    );
 
     return (
         <SessionContextProvider
@@ -21,8 +35,11 @@ function MyApp({
             initialSession={pageProps.initialSession}
         >
             <UserProfileProvider>
-                <Component {...pageProps} />
-                <Toaster />
+                {needsLayout ? (
+                    <AppLayout>{PageComponent}</AppLayout>
+                ) : (
+                    PageComponent
+                )}
             </UserProfileProvider>
         </SessionContextProvider>
     );

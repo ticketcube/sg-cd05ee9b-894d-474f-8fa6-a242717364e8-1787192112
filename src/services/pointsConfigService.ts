@@ -1,3 +1,7 @@
+// src/services/pointsConfigService.ts
+
+import { supabase } from "@/integrations/supabase/client";
+
 // API-First Points Configuration Service
 export interface PointsConfigCache {
     video_view: any;
@@ -15,6 +19,17 @@ export class PointsConfigService {
     private cacheExpiry: number = 0;
     private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+    private async _getAuthHeaders(): Promise<HeadersInit> {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            throw new Error("Authentication required");
+        }
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+        };
+    }
+
     /**
      * Load points configuration via API
      */
@@ -24,7 +39,8 @@ export class PointsConfigService {
         }
 
         try {
-            const response = await fetch('/api/points/config');
+            const headers = await this._getAuthHeaders();
+            const response = await fetch('/api/points/config', { headers });
             if (!response.ok) {
                 throw new Error(`HTTP error ${response.status}`);
             }
@@ -73,9 +89,10 @@ export class PointsConfigService {
         weekIdentifier?: string
     ): Promise<boolean> {
         try {
+            const headers = await this._getAuthHeaders();
             const response = await fetch('/api/points/eligibility', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({ actionName, artistUuid, weekIdentifier })
             });
 
@@ -102,9 +119,10 @@ export class PointsConfigService {
         metadata?: any
     ): Promise<{ success: boolean; pointsAwarded?: number }> {
         try {
+            const headers = await this._getAuthHeaders();
             const response = await fetch('/api/points/award', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({ actionName, artistUuid, weekIdentifier, metadata })
             });
 
