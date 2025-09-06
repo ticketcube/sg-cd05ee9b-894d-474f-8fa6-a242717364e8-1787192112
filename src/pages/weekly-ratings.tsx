@@ -295,15 +295,17 @@ function WeeklyRatingsPageContent() {
         
         {selectedArtist && (
           <WeeklyArtistRatingPopup
-            artist={selectedArtist.artist}
-            isOpen={isPopupOpen}
-            onClose={() => setIsPopupOpen(false)}
+            artist={selectedArtist}
+            isOpen={showRatingPopup}
+            onClose={() => setShowRatingPopup(false)}
             onRatingComplete={handleRatingComplete}
-            weekIdentifier={selectedListId}
-            weeklyListId={weeklyList?.id}
-            userHasVoted={selectedArtist.user_has_voted}
+            weekIdentifier={currentWeek}
+            userHasVoted={userVotes[selectedArtist?.uuid]}
             onVideoPointsAwarded={handleVideoPointsAwarded}
-            onSubmissionSuccess={handleSubmissionSuccess}
+            onSubmissionSuccess={(result: SubmissionResult) => {
+                setSubmissionResult(result);
+                setShowSuccessPopup(true);
+            }}
           />
         )}
 

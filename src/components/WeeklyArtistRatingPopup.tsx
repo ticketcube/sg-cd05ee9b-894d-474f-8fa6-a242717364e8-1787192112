@@ -66,7 +66,7 @@ export default function WeeklyArtistRatingPopup({
       setVideoPoints(points);
 
       // This helper checks the DB to see if the user has already done this action for this artist this week.
-      const result = await checkPointsEligibility('video_view', user.id, weekIdentifier, artist.uuid);
+      const result = await checkPointsEligibility('video_view', user.id, weekIdentifier);
       setIsEligibleForPoints(result.eligible);
     } catch (error) {
       console.error('Error checking video points eligibility:', error);
@@ -122,7 +122,7 @@ export default function WeeklyArtistRatingPopup({
     setError(null);
     try {
       // CORRECT: Checks eligibility before trying to submit.
-      const eligibility = await checkPointsEligibility('quadrant', user.id, weekIdentifier, artist.uuid);
+      const eligibility = await checkPointsEligibility('quadrant', user.id, weekIdentifier);
       if (!eligibility.eligible) {
           throw new Error(eligibility.reason || "You have already rated this artist this week.");
       }

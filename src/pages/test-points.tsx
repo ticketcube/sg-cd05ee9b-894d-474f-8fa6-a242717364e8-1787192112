@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,31 @@ import { useUser } from "@supabase/auth-helpers-react";
 import userProfileService from "@/services/userProfileService";
 
 export default function TestPointsPage() {
+    const [config, setConfig] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadConfig = async () => {
+            try {
+                await pointsConfigService.loadConfig();
+                const videoViewPoints = await pointsConfigService.getMaxValue('video_view');
+                const videoViewFrequency = await pointsConfigService.getFrequency('video_view');
+                setConfig({
+                    video_view: {
+                        points: videoViewPoints,
+                        frequency: videoViewFrequency
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading config:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadConfig();
+    }, []);
+
   const user = useUser();
   const [testResults, setTestResults] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);

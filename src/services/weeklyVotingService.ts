@@ -28,6 +28,21 @@ export interface SubmissionResult {
 }
 
 const weeklyVotingService = {
+    async submitVoteWithPoints(
+        userId: string,
+        weekIdentifier: string,
+        votes: Record<string, { ticket: number; share: number }>
+    ): Promise<SubmissionResult> {
+        console.log("[WeeklyVotingService] Submitting vote with points:", { userId, weekIdentifier, votes });
+
+        if (!userId || !weekIdentifier || !votes) {
+            throw new Error("Missing required parameters for vote submission");
+        }
+
+        const pointsEarned = await pointsConfigService.getMaxValue("quadrant");
+        console.log("[WeeklyVotingService] Points to award:", pointsEarned);
+    },
+
   async submitQuadrantVote(
     userId: string,
     weekIdentifier: string,

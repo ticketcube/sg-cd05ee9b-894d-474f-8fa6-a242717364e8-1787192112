@@ -16,7 +16,7 @@ function MyApp({
     initialSession: Session;
 }>) {
     // Create a new Supabase client for each page render.
-    const [supabaseClient] = useState(() => createPagesBrowserClient<Database>());
+    const [supabaseClient] = useState(() => createPagesBrowserClient());
     const router = useRouter();
 
     // Define paths that should NOT have the main AppLayout
