@@ -1,9 +1,65 @@
 // pages/api/voting/submit.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import userProfileService from "@/services/userProfileService";
-import pointsConfigService from "@/services/pointsConfigService";
+import pointsConfigService, { PointsConfig } from "@/services/pointsConfigService";
+
+// Optional: a service to record engagements
+import { recordEngagement } from "@/pages/services/userProfileService";
 import { ENGAGEMENT_TYPES } from "@/constants/engagementTypes";
+
+/**
+ * Helper: check eligibility based on points_config frequency
+ */
+async function checkEligibility(
+    userId: string,
+    actionName: string,
+    artistUuid?: string,
+    weekIdentifier?: string
+): Promise<{ allowed: boolean; reason?: string }> {
+    try {
+        // 1. Fetch points config for action
+        const { data: configData } = await supabaseAdmin
+            .from("points_config")
+            .select("*")
+            .eq("action_name", actionName)
+            .eq("is_active", true)
+            .single();
+
+        if (!configData) {
+            return { allowed: false, reason: "No active points config found for this action." };
+        }
+
+        const frequency = configData.frequency || "once";
+
+        // 2. Query previous engagements based on frequency
+        let query = supabaseAdmin
+            .from("user_engagements")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("engagement_type", actionName)
+            .gt("points_earned", 0)
+            .limit(1);
+
+        if (frequency === "once_per_artist_lifetime" && artistUuid) {
+            query = query.eq("artist_uuid", artistUuid);
+        } else if (frequency === "once_per_artist_per_week" && artistUuid && weekIdentifier) {
+            query = query.eq("artist_uuid", artistUuid).eq("week_identifier", weekIdentifier);
+        } else if (frequency === "once_per_week" && weekIdentifier) {
+            query = query.eq("week_identifier", weekIdentifier);
+        }
+
+        const { data: engagements, error } = await query;
+        if (error) throw error;
+
+        const allowed = frequency === "unlimited" || !engagements || engagements.length === 0;
+        const reason = allowed ? undefined : "You have already performed this action according to its frequency limit.";
+
+        return { allowed, reason };
+    } catch (err) {
+        console.error("[Eligibility] Error:", err);
+        return { allowed: false, reason: "Error checking eligibility." };
+    }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== "POST") {
@@ -24,43 +80,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(401).json({ error: "Invalid session" });
         }
 
-        // --- 2. Extract vote data from body ---
-        const { artistUuid, weekIdentifier, quadrant_x, quadrant_y } = req.body;
-        if (!artistUuid || !weekIdentifier || quadrant_x === undefined || quadrant_y === undefined) {
-            return res.status(400).json({ error: "Missing required vote data" });
-        }
+        // --- 2. Extract vote data ---
+        const { artistUuid, weekIdentifier } = req.body;
+        const actionName = ENGAGEMENT_TYPES.VOTE; // Use vote engagement type
+        const userId = user.id;
 
         // --- 3. Check eligibility ---
-        const eligible = await userProfileService.checkEligibility(user.id, ENGAGEMENT_TYPES.VOTE, {
-            weekIdentifier,
-            artistUuid
-        });
-        if (!eligible.allowed) {
-            return res.status(400).json({ error: eligible.reason || "Not eligible to vote" });
+        const eligibility = await checkEligibility(userId, actionName, artistUuid, weekIdentifier);
+        if (!eligibility.allowed) {
+            return res.status(400).json({ error: eligibility.reason });
         }
 
-        // --- 4. Fetch points from points_config ---
-        const pointsEarned = await pointsConfigService.getPointsForAction(ENGAGEMENT_TYPES.VOTE);
+        // --- 4. Fetch points for this action ---
+        const points = await pointsConfigService.getPointsForAction(actionName);
 
         // --- 5. Record the vote as an engagement ---
-        const engagement = await userProfileService.recordEngagement(
-            user.id,
-            ENGAGEMENT_TYPES.VOTE,
-            pointsEarned,
-            weekIdentifier,
+        const engagement = await recordEngagement(userId, actionName, {
             artistUuid,
-            { quadrant_x, quadrant_y }
-        );
+            weekIdentifier,
+            points_earned: points,
+        });
 
         // --- 6. Respond ---
         return res.status(200).json({
             success: true,
             engagement,
-            pointsAwarded: pointsEarned
+            points_earned: points,
         });
-
     } catch (error) {
-        console.error("Voting API error:", error);
+        console.error("[Voting API] Error:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 }
