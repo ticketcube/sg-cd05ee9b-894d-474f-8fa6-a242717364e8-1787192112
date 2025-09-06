@@ -14,7 +14,7 @@ function MyApp({
 }: AppProps<{
     initialSession: Session;
 }>) {
-    // Create a new Supabase client for each page render.
+    // Create untyped client for SessionContextProvider compatibility
     const [supabaseClient] = useState(() => createPagesBrowserClient());
     const router = useRouter();
 

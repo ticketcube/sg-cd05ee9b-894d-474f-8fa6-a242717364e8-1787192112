@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Tables } from "@/integrations/supabase/types";
 import userProfileService from "./userProfileService";
-import { pointsConfigService } from "./pointsConfigService";
+import { pointsConfigService, checkPointsEligibility } from "./pointsConfigService"; // FIXED: Added missing import
 
 // Use user_engagements table since weekly_artist_rankings doesn't exist
 export interface ArtistVote {
@@ -28,26 +28,57 @@ export interface SubmissionResult {
 }
 
 const weeklyVotingService = {
-    async submitVoteWithPoints(
+    async submitRating(
         userId: string,
-        weekIdentifier: string,
-        votes: Record<string, { ticket: number; share: number }>
+        artistUuid: string,
+        ticketInterest: number,
+        shareInterest: number,
+        weekIdentifier: string
     ): Promise<SubmissionResult> {
-        console.log("[WeeklyVotingService] Submitting vote with points:", { userId, weekIdentifier, votes });
+        try {
+            // ✅ STEP 1: Check eligibility first
+            const eligibility = await checkPointsEligibility('quadrant', userId, weekIdentifier);
+            if (!eligibility.eligible) {
+                throw new Error(eligibility.reason || "You have already rated this artist this week.");
+            }
 
-        if (!userId || !weekIdentifier || !votes) {
-            throw new Error("Missing required parameters for vote submission");
+            // ✅ STEP 2: Get points for quadrant rating
+            const ratingPoints = await pointsConfigService.getMaxValue('quadrant');
+            
+            // ✅ STEP 3: Submit the engagement using the secure API
+            const engagementData = {
+                engagement_type: 'quadrant' as const,
+                points_earned: ratingPoints,
+                week_identifier: weekIdentifier,
+                artist_uuid: artistUuid,
+                metadata: {
+                    quadrant_positions: {
+                        [artistUuid]: {
+                            ticket: ticketInterest,
+                            share: shareInterest
+                        }
+                    }
+                }
+            };
+
+            // Use userProfileService to record engagement securely
+            const result = await userProfileService.recordEngagement(
+                userId,
+                engagementData.engagement_type,
+                engagementData.points_earned,
+                engagementData.week_identifier,
+                engagementData.artist_uuid,
+                engagementData.metadata
+            );
+
+            return {
+                message: `Rating submitted successfully! You earned ${ratingPoints} points.`,
+                pointsEarned: ratingPoints
+            };
+        } catch (error: any) {
+            console.error("Error submitting quadrant rating:", error);
+            throw new Error(error.message || "Failed to submit rating");
         }
-
-        const pointsEarned = await pointsConfigService.getMaxValue("quadrant");
-        console.log("[WeeklyVotingService] Points to award:", pointsEarned);
-        
-        // Return a submission result
-        return {
-            message: "Votes submitted successfully!",
-            pointsEarned,
-            success: true
-        };
     },
 
   async submitQuadrantVote(
@@ -70,8 +101,8 @@ const weeklyVotingService = {
 
     let pointsFromVote = 0;
     try {
-      // Get points from pointsConfigService instead of hardcoding
-      const ratingPoints = await pointsConfigService.getPoints('quadrant');
+      // FIXED: Use getMaxValue instead of getPoints
+      const ratingPoints = await pointsConfigService.getMaxValue('quadrant');
       
       // Calculate quadrant from slider values for backward compatibility
       const quadrant = ticketInterest >= 0 && shareInterest >= 0 ? 1 : 

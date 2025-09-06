@@ -24,12 +24,6 @@ interface ArtistRating {
   isRated: boolean;
 }
 
-// Define SubmissionResult locally since we're removing the service import
-interface SubmissionResult {
-  message: string;
-  pointsEarned: number;
-}
-
 function WeeklyRatingsPageContent() {
   const user = useUser();
   const { profile, loading: profileLoading } = useUserProfile();
