@@ -1,136 +1,59 @@
-import { supabase } from '@/integrations/supabase/client';
 
-export class PointsConfigService {
-    private cache = new Map < string, any > ();
-    private cacheExpiry = new Map < string, number > ();
-    private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+import { supabase } from "@/integrations/supabase/client";
 
-    async loadConfig(): Promise < any > {
-    const cacheKey = 'points_config';
-    const now = Date.now();
-
-    // Check cache first
-    if(this.cache.has(cacheKey) &&
-        this.cacheExpiry.has(cacheKey) &&
-        now < this.cacheExpiry.get(cacheKey)!) {
-    console.log('[PointsConfigService] Using cached config');
-    return this.cache.get(cacheKey);
+export interface PointsConfig {
+    id: number;
+    action_name: string;
+    points_value: number;
+    frequency?: string | null;
+    min_value?: number | null;
+    description?: string | null;
+    is_active?: boolean;
+    created_at?: string;
+    updated_at?: string;
 }
 
-try {
-    console.log('[PointsConfigService] Loading fresh config from API');
+const pointsConfigService = {
+    /**
+     * Fetch points config by action name
+     * Only active entries are considered
+     */
+    async getPointsForAction(actionName: string): Promise<number> {
+        const { data, error } = await supabase
+            .from < PointsConfig > ("points_config")
+                .select("points_value, is_active")
+                .eq("action_name", actionName)
+                .eq("is_active", true)
+                .single();
 
-    // ✅ FIX: Get the current session and include auth token
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        throw new Error("Authentication required to load points configuration.");
-    }
-
-    const response = await fetch('/api/points/config', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}` // ✅ ADD AUTH HEADER
-        }
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
-    }
-
-    const config = await response.json();
-
-    // Cache the result
-    this.cache.set(cacheKey, config);
-    this.cacheExpiry.set(cacheKey, now + this.CACHE_DURATION);
-
-    console.log('[PointsConfigService] Config loaded and cached');
-    return config;
-} catch (error) {
-    console.error('[PointsConfigService] Error loading config:', error);
-    throw error;
-}
-    }
-
-    async getMinValue(actionName: string): Promise < number > {
-    const config = await this.loadConfig();
-    const actionConfig = config[actionName];
-
-    if(!actionConfig) {
-        console.warn(`[PointsConfigService] No config found for action: ${actionName}`);
-        return 0;
-    }
-        
-        return actionConfig.min_points || 0;
-}
-
-    async getMaxValue(actionName: string): Promise < number > {
-    const config = await this.loadConfig();
-    const actionConfig = config[actionName];
-
-    if(!actionConfig) {
-        console.warn(`[PointsConfigService] No config found for action: ${actionName}`);
-        return 0;
-    }
-        
-        return actionConfig.max_points || 0;
-}
-
-    async getActionConfig(actionName: string): Promise < any > {
-    const config = await this.loadConfig();
-    return config[actionName] || null;
-}
-
-// Clear cache when needed
-clearCache(): void {
-    this.cache.clear();
-    this.cacheExpiry.clear();
-}
-}
-
-// Export singleton instance
-export const pointsConfigService = new PointsConfigService();
-
-// Helper function for checking points eligibility
-export async function checkPointsEligibility(
-    actionName: string,
-    userId: string,
-    weekIdentifier: string
-): Promise<{ eligible: boolean; reason?: string; points?: number }> {
-    try {
-        // ✅ FIX: Get the current session and include auth token
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            return {
-                eligible: false,
-                reason: "Authentication required to check points eligibility."
-            };
+        if (error) {
+            console.error(`[PointsConfigService] Error fetching points for action "${actionName}":`, error);
+            throw error;
         }
 
-        const response = await fetch('/api/points/eligibility', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.access_token}` // ✅ ADD AUTH HEADER
-            },
-            body: JSON.stringify({
-                actionName,
-                userId,
-                weekIdentifier
-            })
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || `HTTP error ${response.status}`);
+        if (!data) {
+            throw new Error(`[PointsConfigService] No active points config found for action "${actionName}"`);
         }
 
-        return await response.json();
-    } catch (error) {
-        console.error('[PointsConfigService] Error checking eligibility:', error);
-        return {
-            eligible: false,
-            reason: error instanceof Error ? error.message : 'Unknown error occurred'
-        };
+        return data.points_value;
+    },
+
+    /**
+     * Optional: fetch all active points configs
+     */
+    async getAllActiveConfigs(): Promise<PointsConfig[]> {
+        const { data, error } = await supabase
+            .from < PointsConfig > ("points_config")
+                .select("*")
+                .eq("is_active", true);
+
+        if (error) {
+            console.error("[PointsConfigService] Error fetching all active points configs:", error);
+            throw error;
+        }
+
+        return data || [];
     }
-}
+};
+
+export default pointsConfigService;
