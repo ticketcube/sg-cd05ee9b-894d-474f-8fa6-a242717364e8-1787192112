@@ -16,6 +16,7 @@ export type UserProfile = {
     username: string;
     role?: string;
     email: string;
+    raw_city_input?: string; // ADDED
     avatar_url?: string;
     created_at: string;
     total_points?: number;
@@ -24,6 +25,7 @@ export type UserProfile = {
 // Define the shape of the context value
 type UserProfileContextType = {
     profile: UserProfile | null;
+    role: string | null; // ADDED
     loading: boolean;
     isAuthenticated: boolean;
     refreshProfile: () => void;
@@ -102,7 +104,8 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     const value: UserProfileContextType = {
         profile,
         loading,
-        isAuthenticated: !!user && !!profile, // User is authenticated if they have a session AND a profile
+        role: profile?.role ?? null, // ADDED
+        isAuthenticated: !!user, // CHANGED
         refreshProfile: fetchProfile,
     };
 
