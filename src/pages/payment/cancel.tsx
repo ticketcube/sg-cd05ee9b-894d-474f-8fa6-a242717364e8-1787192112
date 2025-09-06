@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { XCircle } from 'lucide-react';
-import { Navbar } from '@/components/layout/Navbar';
 import Head from 'next/head';
 
 export default function PaymentCancelPage() {
@@ -12,7 +11,6 @@ export default function PaymentCancelPage() {
         <Head>
             <title>Payment Canceled - OTWChart</title>
         </Head>
-        <Navbar />
         <main className="container mx-auto flex min-h-[80vh] items-center justify-center px-4">
             <Card className="w-full max-w-md text-center shadow-lg">
                 <CardHeader>

@@ -3,30 +3,16 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Loader2 } from 'lucide-react';
-import { Navbar } from '@/components/layout/Navbar';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { CheckCircle } from 'lucide-react';
 import Head from 'next/head';
 
 export default function PaymentSuccessPage() {
-  const router = useRouter();
-  const { session_id } = router.query;
-
-  useEffect(() => {
-    // Redirect to cubes page after 3 seconds
-    const timer = setTimeout(() => {
-      router.push('/my-cubes'); // Changed from '/profile' to '/my-cubes'
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [router]);
-
   return (
     <>
         <Head>
             <title>Payment Successful - OTWChart</title>
         </Head>
-        <Navbar />
         <main className="container mx-auto flex min-h-[80vh] items-center justify-center px-4">
             <Card className="w-full max-w-md text-center shadow-lg">
                 <CardHeader>
