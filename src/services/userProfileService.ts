@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import pointsConfigService from "@/services/pointsConfigService";  // NEW
+import eligibilityService from "@/services/eligibilityService";    // NEW
+
 
 // Types
 export type UserProfile = Tables<"user_profiles">;
@@ -13,7 +16,10 @@ export type EngagementType =
     | "weekly_streak"
     | "referral_bonus"
     | "artist_rating"
-    | "rating_completion_bonus";
+    | "rating_completion_bonus"
+    | "vote_submission";
+
+
 
 export interface UserEngagement {
     id: number;
@@ -73,12 +79,12 @@ const userProfileService = {
         }
     },
 
-   
+
 
     /** Update user's city/location - ✅ FIXED: Direct Supabase only */
     async updateUserLocation(userId: string, cityId: number, rawCityInput: string): Promise<UserProfile> {
         console.log(`[UserProfileService] Updating location for user: ${userId}`);
-        
+
         const { data, error } = await supabase
             .from("user_profiles")
             .update({ city_id: cityId, raw_city_input: rawCityInput })
@@ -90,11 +96,11 @@ const userProfileService = {
             console.error('[UserProfileService] Error updating location:', error);
             throw error;
         }
-        
+
         if (!data) {
             throw new Error('Failed to update location - no data returned');
         }
-        
+
         return data;
     },
 
@@ -115,14 +121,14 @@ const userProfileService = {
             console.error('[UserProfileService] Error adding points:', error);
             throw error;
         }
-        
+
         return this.getUserProfile(userId);
     },
 
     /** Update last active timestamp - ✅ FIXED: Direct Supabase only */
     async updateLastActive(userId: string): Promise<void> {
         console.log(`[UserProfileService] Updating last active for user: ${userId}`);
-        
+
         const { error } = await supabase
             .from("user_profiles")
             .update({ last_active: new Date().toISOString() })
@@ -143,74 +149,47 @@ const userProfileService = {
         artistUuid?: string,
         metadata?: Record<string, any>
     ): Promise<UserEngagement> {
-        try {
-            console.log(`[UserProfileService] Recording engagement for user ${userId}:`, {
-                type: engagementType,
-                points: pointsEarned,
-                week: weekIdentifier
-            });
+        const eligibility = await eligibilityService.checkEligibility(userId, engagementType, {
+            artistUuid,
+            weekIdentifier
+        });
+        if (!eligibility.allowed) {
+            throw new Error(`User not eligible: ${eligibility.reason}`);
+        }
 
-            // ✅ FIXED: Direct Supabase insertion instead of API call
-            const { data: engagement, error: insertError } = await supabase
-                .from('user_engagements')
-                .insert({
-                    user_id: userId,
-                    engagement_type: engagementType,
-                    points_earned: pointsEarned,
-                    week_identifier: weekIdentifier,
-                    artist_uuid: artistUuid || null,
-                    metadata: metadata || null
-                })
-                .select()
-                .single();
-
-            if (insertError) {
-                console.error('❌ [UserProfileService] Error inserting engagement:', insertError);
-                throw insertError;
-            }
-
-            if (!engagement) {
-                throw new Error('Failed to record engagement - no data returned');
-            }
-
-            // ✅ FIXED: Add points directly via RPC
-            if (pointsEarned > 0) {
-                console.log(`[UserProfileService] Adding ${pointsEarned} points to user ${userId}`);
-                
-                const { error: pointsError } = await supabase.rpc("increment_user_points", {
-                    points_to_add: pointsEarned,
-                    user_id: userId
-                });
-
-                if (pointsError) {
-                    console.error('⚠️ [UserProfileService] Error adding points (engagement still recorded):', pointsError);
-                    // Don't throw - engagement was recorded successfully
-                }
-            }
-
-            console.log('✅ [UserProfileService] Engagement recorded successfully');
-            
-            return {
-                id: engagement.id,
+        // Store slider/quadrant info in metadata
+        const { data: engagement, error } = await supabase
+            .from("user_engagements")
+            .insert({
                 user_id: userId,
                 engagement_type: engagementType,
                 points_earned: pointsEarned,
-                week_identifier: weekIdentifier,
+                week_identifier: weekIdentifier || null,
                 artist_uuid: artistUuid || null,
-                metadata: metadata || null,
-                created_at: engagement.created_at
-            } as UserEngagement;
-            
-        } catch (error) {
-            console.error("❌ [UserProfileService] Error recording engagement:", error);
-            throw error;
+                metadata: metadata || null
+            })
+            .select()
+            .single();
+
+        if (error || !engagement) throw error || new Error("Failed to insert engagement");
+
+        if (pointsEarned > 0) {
+            // Add points via RPC
+            const { error: rpcError } = await supabase.rpc("increment_user_points", {
+                user_id: userId,
+                points_to_add: pointsEarned
+            });
+            if (rpcError) console.warn("Points increment failed (engagement saved):", rpcError);
         }
+
+        return engagement as UserEngagement;
+
     },
 
     /** Get user's engagement history with weekly summaries - ✅ FIXED: Direct Supabase queries only */
     async getUserEngagementHistory(userId: string): Promise<UserEngagementHistory> {
         console.log(`[UserProfileService] Getting engagement history for user: ${userId}`);
-        
+
         // ✅ ENHANCED: Get user profile with retries (using direct Supabase)
         const userProfile = await this.getUserProfile(userId);
         if (!userProfile) {
@@ -231,20 +210,20 @@ const userProfileService = {
             console.error("[UserProfileService] Error fetching engagements:", error);
             throw error;
         }
-       
+
 
         console.log(`✅ [UserProfileService] Found ${engagements?.length || 0} engagement records`);
 
         // Process weekly summaries
-        const weeklyMap = new Map<string, UserEngagementSummary>();
+        const weeklyMap = new Map < string, UserEngagementSummary> ();
         let calculatedTotalPoints = 0;
-        
+
         engagements?.forEach(e => {
             const weekId = e.week_identifier || "unknown";
             const pointsEarned = e.points_earned || 0;
-            
+
             calculatedTotalPoints += pointsEarned;
-            
+
             if (!weeklyMap.has(weekId)) {
                 weeklyMap.set(weekId, {
                     week_identifier: weekId,
@@ -254,15 +233,15 @@ const userProfileService = {
                     votes_submitted: 0,
                 });
             }
-            
+
             const summary = weeklyMap.get(weekId)!;
             summary.total_points += pointsEarned;
             summary.engagement_count += 1;
-            
+
             if (e.engagement_type === "video_view") {
                 summary.video_views += 1;
             }
-            
+
             if (["vote_submission", "artist_rating", "quadrant"].includes(e.engagement_type)) {
                 summary.votes_submitted += 1;
             }
@@ -270,49 +249,22 @@ const userProfileService = {
 
         return {
             user_profile: userProfile,
-            weekly_summaries: Array.from(weeklyMap.values()).sort((a, b) => 
+            weekly_summaries: Array.from(weeklyMap.values()).sort((a, b) =>
                 b.week_identifier.localeCompare(a.week_identifier)
             ),
             total_points: calculatedTotalPoints,
         };
     },
 
-    /** Check if user is eligible for a video view - ✅ FIXED: Direct Supabase only */
-    async checkVideoViewEligibility(userId: string, artistUuid: string, weekIdentifier: string): Promise<boolean> {
-        const { data, error } = await supabase
-            .from("user_engagements")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("artist_uuid", artistUuid)
-            .eq("week_identifier", weekIdentifier)
-            .eq("engagement_type", "video_view")
-            .limit(1);
 
-        if (error) {
-            console.error('[UserProfileService] Error checking video eligibility:', error);
-            return false;
-        }
-        
-        return !data || data.length === 0;
+    async checkEligibility(
+        userId: string,
+        engagementType: EngagementType,
+        context?: { artistUuid?: string; weekIdentifier?: string }
+    ): Promise<{ allowed: boolean; reason?: string }> {
+        return eligibilityService.checkEligibility(userId, engagementType, context);
     },
 
-    /** Check if user is eligible for vote submission - ✅ FIXED: Direct Supabase only */
-    async checkVoteSubmissionEligibility(userId: string, weekIdentifier: string): Promise<boolean> {
-        const { data, error } = await supabase
-            .from("user_engagements")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("week_identifier", weekIdentifier)
-            .in("engagement_type", ["vote_submission", "artist_rating"])
-            .limit(1);
-
-        if (error) {
-            console.error('[UserProfileService] Error checking vote eligibility:', error);
-            return false;
-        }
-        
-        return !data || data.length === 0;
-    },
 
     /** Get total points for a given week - ✅ FIXED: Direct Supabase only */
     async getWeeklyStats(userId: string, weekIdentifier: string): Promise<{ total_points: number }> {
