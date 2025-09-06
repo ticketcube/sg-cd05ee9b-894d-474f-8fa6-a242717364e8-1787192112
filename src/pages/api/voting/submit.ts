@@ -1,10 +1,10 @@
 // pages/api/voting/submit.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import pointsConfigService, { PointsConfig } from "@/services/pointsConfigService";
-
+import pointsConfigService from "@/services/pointsConfigService";
+import { recordEngagement } from "@/services/userEngagementService";
+import { checkEligibility } from "@/services/eligibilityService";
 // Optional: a service to record engagements
-import { recordEngagement } from "@/pages/services/userProfileService";
 import { ENGAGEMENT_TYPES } from "@/constants/engagementTypes";
 
 /**
