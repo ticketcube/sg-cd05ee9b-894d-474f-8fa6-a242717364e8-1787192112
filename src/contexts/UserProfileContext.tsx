@@ -27,7 +27,7 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
             if (session?.user) {
                 setUser(session.user);
                 try {
-                    const userProfile = await userProfileService.getUserProfile(session.user.id);
+                    const userProfile = await getUserProfile(session.user.id);
                     setProfile(userProfile);
                     setIsAdmin(userProfile?.role === 'otwstaff');
                 } catch (profileError) {
@@ -50,7 +50,7 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
             if (session?.user) {
                 setUser(session.user);
                 try {
-                    const userProfile = await userProfileService.getUserProfile(session.user.id);
+                    const userProfile = await getUserProfile(session.user.id);
                     setProfile(userProfile);
                     setIsAdmin(userProfile?.role === 'otwstaff');
                 } catch (profileError) {
