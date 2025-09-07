@@ -1,39 +1,46 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useUserProfile } from '@/contexts/UserProfileContext';
+import { useUserProfile } from "@/contexts/UserProfileContext";
+import { ReactNode } from "react";
+import { Loader2 } from "lucide-react";
 
 interface AuthGuardProps {
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
-const AuthGuard = ({ children }: AuthGuardProps) => {
-    const { user, loading } = useUserProfile();
-    const router = useRouter();
+export default function AuthGuard({ children }: AuthGuardProps) {
+    const { user, profile, loading } = useUserProfile();
 
-    useEffect(() => {
-        // Don't do anything while loading
-        if (loading) {
-            return;
-        }
-
-        // If loading is finished and there's no user, redirect to home
-        if (!user) {
-            router.push('/');
-        }
-    }, [user, loading, router]);
-
-    // While loading, show a loading indicator or null
+    // While the session and profile are loading, show a full-screen loading indicator.
+    // This is the crucial step to prevent the "login required" page from flashing.
     if (loading) {
-        return <div>Loading...</div>; // Or a spinner component
+        return (
+            <div className="flex h-screen w-full items-center justify-center bg-background">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-muted-foreground">Loading your session...</p>
+                </div>
+            </div>
+        );
     }
 
-    // If there's a user, render the children
-    if (user) {
+    // If loading is complete and there is still no user, we can assume they are not logged in.
+    // The pages this guard protects are responsible for showing a login prompt.
+    // We just render the children, which will handle the prompt.
+    if (!user) {
         return <>{children}</>;
     }
 
-    // If no user and not loading (i.e., redirect is imminent), return null
-    return null;
-};
+    // Edge case: User is authenticated, but the profile hasn't been created in our DB yet.
+    if (user && !profile) {
+        return (
+            <div className="flex h-screen w-full items-center justify-center bg-background">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-muted-foreground">Finalizing your profile setup...</p>
+                </div>
+            </div>
+        );
+    }
 
-export default AuthGuard;
+    // If loading is complete, and we have a user and a profile, render the protected content.
+    return <>{children}</>;
+}
