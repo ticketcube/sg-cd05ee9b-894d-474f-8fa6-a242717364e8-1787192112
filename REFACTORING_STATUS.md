@@ -22,12 +22,12 @@ This file tracks our progress through the `REFACTORING PLAN SEP 7.md`. It serves
     *   [x] **Task 3.2**: Create `src/hooks/useWeeklyLists.ts`.
     *   [x] **Task 3.3**: Create `src/hooks/useWeeklyListDetail.ts`.
 
-*   **➡️ Step 4: UI Decomposition into Components (Current Step)**
+*   **✅ Step 4: UI Decomposition into Components**
     *   [x] **Task 4.1**: Create stateless UI components.
     *   [x] **Task 4.2**: Create `WeeklyArtistGrid`.
-    *   [ ] **Task 4.3**: Create `WeeklyRatingsQuadrant`.
+    *   [x] **Task 4.3**: Create `WeeklyRatingsQuadrant`.
 
-*   **🔲 Step 5: Page Orchestration**
+*   **➡️ Step 5: Page Orchestration (Current Step)**
     *   [ ] **Task 5.1**: Rewrite `weekly-ratings.tsx`.
 
 *   **🔲 Step 6: API Endpoint &amp; Cleanup**
