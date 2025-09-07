@@ -24,7 +24,7 @@ This file tracks our progress through the `REFACTORING PLAN SEP 7.md`. It serves
 
 *   **➡️ Step 4: UI Decomposition into Components (Current Step)**
     *   [x] **Task 4.1**: Create stateless UI components.
-    *   [ ] **Task 4.2**: Create `WeeklyArtistGrid`.
+    *   [x] **Task 4.2**: Create `WeeklyArtistGrid`.
     *   [ ] **Task 4.3**: Create `WeeklyRatingsQuadrant`.
 
 *   **🔲 Step 5: Page Orchestration**
