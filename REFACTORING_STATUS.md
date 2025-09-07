@@ -32,7 +32,7 @@ This file tracks our progress through the `REFACTORING PLAN SEP 7.md`. It serves
 
 *   **✅ Step 6: API Endpoint &amp; Cleanup**
     *   [x] **Task 6.1**: Delete obsolete API endpoints (`/api/voting/*`, `/api/points/*`).
-    *   [ ] **Task 6.2**: Final cleanup.
+    *   [x] **Task 6.2**: Final cleanup.
 
 ---
 **🎉 REFACTORING COMPLETE! 🎉**
