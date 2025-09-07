@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { UserProfile, userProfileService, getUserProfile } from '@/services/userProfileService';
+import { UserProfile, getUserProfile } from '@/services/userProfileService';
 
 interface UserProfileContextType {
     user: User | null;
