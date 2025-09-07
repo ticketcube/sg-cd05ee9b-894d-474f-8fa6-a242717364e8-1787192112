@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).json({ error: "Missing required vote data" });
         }
 
-        const actionType = ENGAGEMENT_TYPES.VOTE;
+        const actionType = ENGAGEMENT_TYPES.QUADRANT;
 
         // --- 3. Check points eligibility ---
         const eligibility = await checkPointsEligibility(actionType, userId, weekIdentifier);
