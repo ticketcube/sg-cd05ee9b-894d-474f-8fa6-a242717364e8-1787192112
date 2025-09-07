@@ -6,6 +6,7 @@ export interface ArtistRating {
   ticketInterest: number; // 0-100 slider value
   shareInterest: number;  // 0-100 slider value
   isRated: boolean;
+  hasWatched: boolean; // <-- Add this line
 }
 
 // We can re-export types from services for convenient access in components
