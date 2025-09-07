@@ -1,6 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-import { pointsConfigService } from "./pointsConfigService";
-import { userEngagementService } from "./userEngagementService";
+
+export interface VideoViewData {
+  artistUuid: string;
+  weekIdentifier: string;
+  watchTimeSeconds: number;
+}
 
 class VideoWatchService {
   /**
@@ -12,15 +16,15 @@ class VideoWatchService {
       // Get the user's session token for API authentication
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error('No valid session found');
+        throw new Error("No valid session found");
       }
 
-      // Call the new video-points API route
-      const response = await fetch('/api/user/video-points', {
-        method: 'POST',
+      // Call the API route to record video points
+      const response = await fetch("/api/user/video-points", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           artistUuid: data.artistUuid,
@@ -35,7 +39,7 @@ class VideoWatchService {
       }
 
       const result = await response.json();
-      console.log('✅ Video points API response:', result);
+      console.log("✅ Video points API response:", result);
 
       return {
         pointsEarned: result.pointsEarned,
@@ -45,18 +49,18 @@ class VideoWatchService {
       console.error("Error recording video view:", error);
       throw error;
     }
-  },
+  }
 
   /**
    * Checks if a user has watched all videos in a given week.
    */
-  async hasWatchedAllVideosInWeek(userId: string, weekIdentifier: string, artistUuidsInWeek: string[]): Promise<boolean> { // ✅ FIXED: Parameter name changed to userId
+  async hasWatchedAllVideosInWeek(userId: string, weekIdentifier: string, artistUuidsInWeek: string[]): Promise<boolean> {
     const uniqueArtistUuids = [...new Set(artistUuidsInWeek)];
 
     const { data, error } = await supabase
       .from("user_engagements")
-      .select("artist_uuid")
-      .eq("user_id", userId) // ✅ FIXED: Use user_id instead of auth_id
+      .select("artist_uuid", { count: "exact", head: true })
+      .eq("user_id", userId)
       .eq("week_identifier", weekIdentifier)
       .eq("engagement_type", "video_view")
       .in("artist_uuid", uniqueArtistUuids);
@@ -66,19 +70,18 @@ class VideoWatchService {
       return false;
     }
     
-    // Check if the count of distinct watched artists matches the total number of artists
-    const uniqueWatchedArtists = [...new Set(data.map(item => item.artist_uuid))];
-    return uniqueWatchedArtists.length === uniqueArtistUuids.length;
-  },
+    const distinctCount = data ? data.length : 0;
+    return distinctCount === uniqueArtistUuids.length;
+  }
 
   /**
    * Gets the watch status for a user, artist, and week.
    */
-  async getWatchStatus(userId: string, artistUuid: string, weekIdentifier: string) { // ✅ FIXED: Parameter name changed to userId
+  async getWatchStatus(userId: string, artistUuid: string, weekIdentifier: string) {
     const { data, error } = await supabase
       .from("user_engagements")
       .select("created_at")
-      .eq("user_id", userId) // ✅ FIXED: Use user_id instead of auth_id
+      .eq("user_id", userId)
       .eq("artist_uuid", artistUuid)
       .eq("week_identifier", weekIdentifier)
       .eq("engagement_type", "video_view")
@@ -90,7 +93,7 @@ class VideoWatchService {
     }
 
     return data || [];
-  },
-};
+  }
+}
 
-export default VideoWatchService;
+export const videoWatchService = new VideoWatchService();
