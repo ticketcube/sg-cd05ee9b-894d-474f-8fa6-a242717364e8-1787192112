@@ -51,32 +51,21 @@ export interface UserEngagementHistory {
     total_points: number;
 }
 
-const userProfileService = {
-    /** Get a user's profile by user_id - ✅ FIXED: Direct Supabase queries only */
-    async getUserProfile(userId: string): Promise<UserProfile | null> {
-        try {
-            console.log(`[UserProfileService] Getting profile for user_id: ${userId}`);
+/** Get a user's profile by user_id */
+export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
+    const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
-            const { data: profile, error } = await supabase
-                .from('user_profiles')
-                .select('*')
-                .eq('user_id', userId)
-                .single();
+    if (error) {
+        console.error('Error fetching user profile:', error.message);
+        return null;
+    }
 
-            if (error) {
-                if (error.code === 'PGRST116') {
-                    // No rows returned - profile doesn't exist
-                    return null;
-                }
-                throw error;
-            }
-
-            return profile;
-        } catch (error) {
-            console.error("[UserProfileService] Error getting user profile:", error);
-            throw error;
-        }
-    },
+    return data;
+};
 
 
 
