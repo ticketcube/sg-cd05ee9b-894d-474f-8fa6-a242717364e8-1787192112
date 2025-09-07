@@ -5,7 +5,7 @@ This document tracks our progress against the `AUTH_RLS_REFACTOR_PLAN.md`.
 ## Phase 1: Stabilize Auth Flow &amp; Fix Race Condition
 
 - [x] **Task 1.1: Refactor `UserProfileContext`** - Introduce a `loading` state to manage auth states correctly.
-- [ ] **Task 1.2: Refactor `AuthGuard`** - Use the new `loading` state from `UserProfileContext` to show a loading indicator instead of redirecting prematurely.
+- [x] **Task 1.2: Refactor `AuthGuard`** - Use the new `loading` state from `UserProfileContext` to show a loading indicator instead of redirecting prematurely.
 - [ ] **Task 1.3: Update `AppLayout` and Pages** - Ensure `AppLayout.tsx` and protected pages like `discovery-dashboard.tsx` handle the loading state gracefully.
 
 ## Phase 2: Solidify RLS &amp; Secure API Routes
