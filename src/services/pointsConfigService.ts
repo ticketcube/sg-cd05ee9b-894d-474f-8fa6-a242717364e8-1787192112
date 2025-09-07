@@ -43,11 +43,26 @@ class PointsConfigService {
     const config = await this.getConfigForAction(actionName);
     return config?.points_value || 0;
   }
+
+  async getMinValue(actionName: string): Promise<number> {
+    const config = await this.getConfigForAction(actionName);
+    return config?.min_value || 0;
+  }
+
+  async getMaxValue(actionName: string): Promise<number> {
+    const config = await this.getConfigForAction(actionName);
+    // Assuming 'max_value' is the points_value for now.
+    return config?.points_value || 0;
+  }
 }
 
 export const pointsConfigService = new PointsConfigService();
 
-export const checkPointsEligibility = async (userId: string, actionName: string): Promise<{ eligible: boolean, reason?: string, config?: PointsConfig }> => {
+export const checkPointsEligibility = async (
+  userId: string,
+  actionName: string,
+  context: { artistUuid?: string; weekIdentifier?: string } = {}
+): Promise<{ eligible: boolean, reason?: string, config?: PointsConfig }> => {
     const config = await pointsConfigService.getConfigForAction(actionName);
     
     if (!config || !config.is_active) {

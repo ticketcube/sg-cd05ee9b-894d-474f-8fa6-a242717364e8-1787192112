@@ -560,10 +560,17 @@ export type Database = {
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "user_profiles_city_id_fkey"
+                        foreignKeyName: "public_user_profiles_city_id_fkey"
                         columns: ["city_id"]
                         isOneToOne: false
                         referencedRelation: "city_latlong"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "public_user_profiles_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: true
+                        referencedRelation: "users"
                         referencedColumns: ["id"]
                     },
                 ]
@@ -631,34 +638,60 @@ export type Database = {
                 }
                 Relationships: []
             }
+            video_submissions: {
+                Row: {
+                    created_at: string | null
+                    id: number
+                    title: string
+                    url: string
+                    user_id: string
+                }
+                Insert: {
+                    created_at?: string | null
+                    id?: number
+                    title: string
+                    url: string
+                    user_id: string
+                }
+                Update: {
+                    created_at?: string | null
+                    id?: number
+                    title?: string
+                    url?: string
+                    user_id?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "video_submissions_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: true
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             weekly_list_artists: {
                 Row: {
                     artist_uuid: string
                     created_at: string
                     id: number
-                    position: number | null
-                    week_identifier: string | null
-                    weekly_list_id: number | null
+                    weekly_list_id: number
                 }
                 Insert: {
                     artist_uuid: string
                     created_at?: string
                     id?: number
-                    position?: number | null
-                    week_identifier?: string | null
-                    weekly_list_id?: number | null
+                    weekly_list_id: number
                 }
                 Update: {
                     artist_uuid?: string
                     created_at?: string
                     id?: number
-                    position?: number | null
-                    week_identifier?: string | null
-                    weekly_list_id?: number | null
+                    weekly_list_id?: number
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "fk_weekly_list_artists_artist"
+                        foreignKeyName: "weekly_list_artists_artist_uuid_fkey"
                         columns: ["artist_uuid"]
                         isOneToOne: false
                         referencedRelation: "artists"
@@ -709,9 +742,57 @@ export type Database = {
                 }
                 Relationships: []
             }
+            weekly_votes: {
+                Row: {
+                    id: number
+                    created_at: string
+                    user_id: string
+                    artist_uuid: string
+                    week_identifier: string
+                    quadrant_x: number
+                    quadrant_y: number
+                    vote_type: string
+                }
+                Insert: {
+                    id?: number
+                    created_at?: string
+                    user_id: string
+                    artist_uuid: string
+                    week_identifier: string
+                    quadrant_x: number
+                    quadrant_y: number
+                    vote_type: string
+                }
+                Update: {
+                    id?: number
+                    created_at?: string
+                    user_id?: string
+                    artist_uuid?: string
+                    week_identifier?: string
+                    quadrant_x?: number
+                    quadrant_y?: number
+                    vote_type?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "weekly_votes_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "weekly_votes_artist_uuid_fkey"
+                        columns: ["artist_uuid"]
+                        isOneToOne: false
+                        referencedRelation: "artists"
+                        referencedColumns: ["uuid"]
+                    },
+                ]
+            }
         }
         Views: {
-            [_ in never]: never
+            [key: string]: never
         }
         Functions: {
             get_artist_vote_counts: {

@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { userProfileService } from "./userProfileService";
+import userProfileService from "./userProfileService";
 import { userEngagementService } from "./userEngagementService";
 import { pointsConfigService, checkPointsEligibility } from "./pointsConfigService";
 
@@ -44,7 +44,7 @@ const weeklyVotingService = {
     ): Promise<SubmissionResult> {
         try {
             // ✅ STEP 1: Check eligibility first
-            const eligibility = await checkPointsEligibility('quadrant', userId, weekIdentifier);
+            const eligibility = await userProfileService.checkEligibility(userId, 'quadrant', { weekIdentifier });
             if (!eligibility.eligible) {
                 throw new Error(eligibility.reason || "You have already rated this artist this week.");
             }
@@ -112,9 +112,9 @@ const weeklyVotingService = {
       const ratingPoints = await pointsConfigService.getMaxValue('quadrant');
       
       // Calculate quadrant from slider values for backward compatibility
-      const quadrant = ticketInterest >= 0 && shareInterest >= 0 ? 1 : 
-                      ticketInterest >= 0 && shareInterest < 0 ? 2 :
-                      ticketInterest < 0 && shareInterest < 0 ? 3 : 4;
+      const quadrant = ticketInterest >= 50 && shareInterest >= 50 ? 1 : 
+                      ticketInterest >= 50 && shareInterest < 50 ? 4 :
+                      ticketInterest < 50 && shareInterest < 50 ? 3 : 2;
       
       // Record engagement with quadrant_x/quadrant_y metadata
       const engagement = await userProfileService.recordEngagement(
@@ -169,9 +169,9 @@ const weeklyVotingService = {
       // Calculate quadrant from quadrant_x and quadrant_y values
       const quadrant_x = vote.quadrant_x || 0;
       const quadrant_y = vote.quadrant_y || 0;
-      const quadrant = quadrant_x >= 0 && quadrant_y >= 0 ? 1 : 
-                      quadrant_x >= 0 && quadrant_y < 0 ? 2 :
-                      quadrant_x < 0 && quadrant_y < 0 ? 3 : 4;
+      const quadrant = quadrant_x >= 50 && quadrant_y >= 50 ? 1 : 
+                      quadrant_x >= 50 && quadrant_y < 50 ? 4 :
+                      quadrant_x < 50 && quadrant_y < 50 ? 3 : 2;
 
       // Create proper ArtistVote object using existing database fields
       const transformedVote: ArtistVote = {

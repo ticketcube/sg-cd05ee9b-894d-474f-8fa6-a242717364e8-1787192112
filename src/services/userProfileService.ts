@@ -148,11 +148,11 @@ const userProfileService = {
         artistUuid?: string,
         metadata?: Record<string, any>
     ): Promise<UserEngagement> {
-        const eligibility = await checkPointsEligibility(userId, engagementType, {
+        const eligibility = await this.checkEligibility(userId, engagementType, {
             artistUuid,
             weekIdentifier
         });
-        if (!eligibility.allowed) {
+        if (!eligibility.eligible) {
             throw new Error(`User not eligible: ${eligibility.reason}`);
         }
 
@@ -260,8 +260,9 @@ const userProfileService = {
         userId: string,
         engagementType: EngagementType,
         context?: { artistUuid?: string; weekIdentifier?: string }
-    ): Promise<{ allowed: boolean; reason?: string }> {
-        return checkPointsEligibility(userId, engagementType, context);
+    ): Promise<{ eligible: boolean; reason?: string }> {
+        const result = await checkPointsEligibility(userId, engagementType, context);
+        return { eligible: result.eligible, reason: result.reason };
     },
 
 
