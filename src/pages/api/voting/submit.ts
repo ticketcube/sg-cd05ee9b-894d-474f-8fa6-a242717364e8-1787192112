@@ -1,7 +1,7 @@
 // pages/api/voting/submit.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { weeklyVotingService } from "@/services/weeklyVotingService";
+import weeklyVotingService from "@/services/weeklyVotingService";
 import { pointsConfigService, checkPointsEligibility } from "@/services/pointsConfigService";
 import { ENGAGEMENT_TYPES } from "@/constants/engagementTypes";
 
@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const actionType = ENGAGEMENT_TYPES.QUADRANT;
 
         // --- 3. Check points eligibility ---
-        const eligibility = await checkPointsEligibility(actionType, userId, weekIdentifier);
+        const eligibility = await checkPointsEligibility(userId, actionType, { artistUuid, weekIdentifier });
         if (!eligibility.eligible) {
             return res.status(400).json({ error: eligibility.reason || "Not eligible to vote" });
         }
@@ -50,9 +50,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 engagement_type: actionType,
                 artist_uuid: artistUuid,
                 week_identifier: weekIdentifier,
-                quadrant_x,
-                quadrant_y,
-                points_earned: pointsValue
+                points_earned: pointsValue,
+                metadata: {
+                    quadrant_x,
+                    quadrant_y
+                }
             })
             .select()
             .single();

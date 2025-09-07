@@ -6,11 +6,11 @@ import { Progress } from "@/components/ui/progress";
 import { Loader2, Timer, CheckCircle, Ticket, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { useUser, useSession } from "@supabase/auth-helpers-react";
-import { weeklyVotingService } from "@/services/weeklyVotingService";
+import weeklyVotingService from "@/services/weeklyVotingService";
 import type { SubmissionResult } from "@/services/weeklyVotingService";
 import { pointsConfigService, checkPointsEligibility } from "@/services/pointsConfigService";
 import PointsNotification, { usePointsNotifications } from "@/components/points/PointsNotification";
-import SubmissionSuccessPopup from "./SubmissionSuccessPopup";
+import SubmissionSuccessPopup from "@/components/points/SubmissionSuccessPopup";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import type { Artist } from "@/types/artists";
 
@@ -50,11 +50,11 @@ export default function WeeklyArtistRatingPopup({
   const [minWatchTime, setMinWatchTime] = useState(15);
   const [videoPoints, setVideoPoints] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const timerRef = useRef < NodeJS.Timeout | null > (null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // --- Submission states ---
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState < string | null > (null);
+  const [error, setError] = useState<string | null>(null);
 
   // --- Video Points Eligibility Check ---
   const checkVideoPoints = async () => {
@@ -65,7 +65,7 @@ export default function WeeklyArtistRatingPopup({
       setMinWatchTime(minTime);
       setVideoPoints(points);
 
-      const result = await checkPointsEligibility('video_view', user.id, weekIdentifier);
+      const result = await checkPointsEligibility(user.id, 'video_view', { artistUuid: artist.uuid, weekIdentifier });
       setIsEligibleForPoints(result.eligible);
     } catch (err) {
       console.error("Error checking video points eligibility:", err);
@@ -114,7 +114,7 @@ export default function WeeklyArtistRatingPopup({
   const awardVideoPoints = async () => {
     if (!user || !session || hasEarnedPoints || !isEligibleForPoints) return;
     try {
-      const res = await fetch('/api/voting/submitVideoView', {
+      const res = await fetch('/api/voting/videoview_submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
         body: JSON.stringify({ artistUuid: artist.uuid, weekIdentifier, watchTime }),
@@ -135,7 +135,7 @@ export default function WeeklyArtistRatingPopup({
     setError(null);
 
     try {
-      const res = await fetch('/api/voting/submitQuadrant', {
+      const res = await fetch('/api/voting/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
         body: JSON.stringify({
@@ -198,13 +198,62 @@ export default function WeeklyArtistRatingPopup({
 
             {/* Sliders */}
             <div className="flex-1 space-y-6">
-              <Slider value={[ticketInterest]} onValueChange={v => { setTicketInterest(v[0]); setSlidersChanged(true); }} max={100} step={1} disabled={userHasVoted} />
-              <Slider value={[shareInterest]} onValueChange={v => { setShareInterest(v[0]); setSlidersChanged(true); }} max={100} step={1} disabled={userHasVoted} />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <Ticket className="w-4 h-4" />
+                    <span>Would you buy a ticket?</span>
+                  </div>
+                  <span className="text-blue-400">{ticketInterest}%</span>
+                </div>
+                <Slider 
+                  value={[ticketInterest]} 
+                  onValueChange={v => { setTicketInterest(v[0]); setSlidersChanged(true); }} 
+                  max={100} 
+                  step={1} 
+                  disabled={userHasVoted}
+                  className="w-full"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    <span>Would you share with friends?</span>
+                  </div>
+                  <span className="text-purple-400">{shareInterest}%</span>
+                </div>
+                <Slider 
+                  value={[shareInterest]} 
+                  onValueChange={v => { setShareInterest(v[0]); setSlidersChanged(true); }} 
+                  max={100} 
+                  step={1} 
+                  disabled={userHasVoted}
+                  className="w-full"
+                />
+              </div>
             </div>
 
             <DialogFooter className="pt-6">
-              <Button onClick={handleSubmitQuadrant} disabled={isSubmitting || userHasVoted || !slidersChanged} className="w-full text-lg">
-                {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : userHasVoted ? "Already Rated" : "Submit Rating"}
+              <Button 
+                onClick={handleSubmitQuadrant} 
+                disabled={isSubmitting || userHasVoted || !slidersChanged} 
+                className="w-full text-lg bg-blue-600 hover:bg-blue-700"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 w-4 h-4" />
+                    Submitting...
+                  </>
+                ) : userHasVoted ? (
+                  <>
+                    <CheckCircle className="mr-2 w-4 h-4" />
+                    Already Rated
+                  </>
+                ) : (
+                  "Submit Rating"
+                )}
               </Button>
             </DialogFooter>
           </div>

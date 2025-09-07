@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@supabase/auth-helpers-react";
 import { weeklyListService } from "@/services/weeklyListService";
-import { userProfileService } from "@/services/userProfileService";
+import userProfileService from "@/services/userProfileService";
 import type { Tables } from "@/integrations/supabase/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
