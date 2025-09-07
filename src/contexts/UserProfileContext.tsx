@@ -13,7 +13,7 @@ interface UserProfileContextType {
 
 const UserProfileContext = createContext < UserProfileContextType | undefined > (undefined);
 
-export const userProfileService = ({ children }: { children: ReactNode }) => {
+export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState < User | null > (null);
     const [profile, setProfile] = useState < UserProfile | null > (null);
     const [loading, setLoading] = useState(true);
