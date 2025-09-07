@@ -133,8 +133,6 @@ export class WeeklyListService {
 
   async getWeeklyListForUser(weekIdentifier: string, userId: string): Promise<WeeklyListWithEnrichedArtists | null> {
     try {
-     
-      
       // Get the basic weekly list
       const weeklyList = await this.getWeeklyList(weekIdentifier);
       if (!weeklyList) {
@@ -142,13 +140,12 @@ export class WeeklyListService {
         return null;
       }
 
-      
       const { data: userVotes, error: votesError } = await supabase
-        .from("user_engagements")  // ✅ Use user_engagements table
+        .from("user_engagements")
         .select("artist_uuid")
-          .eq("user_id", userId) // ✅ FIXED: 
+        .eq("user_id", userId)
         .eq("week_identifier", weekIdentifier)
-        .eq("engagement_type", "quadrant");  // ✅ Use "quadrant" engagement type
+        .eq("engagement_type", "quadrant");
 
       if (votesError) {
         console.error("Error fetching user votes:", votesError);
@@ -157,11 +154,10 @@ export class WeeklyListService {
       const votedArtistUuids = new Set(userVotes?.map(v => v.artist_uuid) || []);
       console.log(`✅ Found ${votedArtistUuids.size} voted artists for user`);
 
-      //
       const { data: userEngagements, error: engagementsError } = await supabase
         .from("user_engagements")
         .select("artist_uuid")
-          .eq("user_id", userId) // 
+        .eq("user_id", userId)
         .eq("week_identifier", weekIdentifier)
         .eq("engagement_type", "video_view");
 
@@ -173,7 +169,7 @@ export class WeeklyListService {
       console.log(`✅ Found ${watchedArtistUuids.size} watched videos for user`);
 
       // Create enriched artists with user status
-      const enrichedArtists: EnrichedWeeklyListArtist[] = weeklyList.artists.map(artistData => ({
+      const enrichedArtists = weeklyList.artists.map((artistData): EnrichedWeeklyListArtist => ({
         ...artistData,
         user_has_voted: votedArtistUuids.has(artistData.artist.uuid),
         user_has_watched_video: watchedArtistUuids.has(artistData.artist.uuid)
