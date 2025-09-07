@@ -13,6 +13,4 @@ export function WeeklyEmpty({ message = "There are no weekly lists available rig
         </div>
     );
 }
-Once you have created all five files in the src / components / weekly / directory, please respond with "DONE, CHECK MY WORK".
-
 
