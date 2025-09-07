@@ -17,12 +17,12 @@ This file tracks our progress through the `REFACTORING PLAN SEP 7.md`. It serves
     *   [x] **Task 2.1**: Refactor `src/services/weeklyVotingService.ts`.
     *   [x] **Task 2.2**: Tidy up `src/services/weeklyListService.ts`.
 
-*   **➡️ Step 3: Logic Extraction into Hooks (Current Step)**
+*   **✅ Step 3: Logic Extraction into Hooks**
     *   [x] **Task 3.1**: Create `src/hooks/usePointsOnboarding.ts`.
     *   [x] **Task 3.2**: Create `src/hooks/useWeeklyLists.ts`.
-    *   [ ] **Task 3.3**: Create `src/hooks/useWeeklyListDetail.ts`.
+    *   [x] **Task 3.3**: Create `src/hooks/useWeeklyListDetail.ts`.
 
-*   **🔲 Step 4: UI Decomposition into Components**
+*   **➡️ Step 4: UI Decomposition into Components (Current Step)**
     *   [ ] **Task 4.1**: Create stateless UI components.
     *   [ ] **Task 4.2**: Create `WeeklyArtistGrid`.
     *   [ ] **Task 4.3**: Create `WeeklyRatingsQuadrant`.
