@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -6,9 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Eye, Star, Trophy, TrendingUp, Loader2 } from "lucide-react";
 import { useUser } from "@supabase/auth-helpers-react";
 import { weeklyListService } from "@/services/weeklyListService";
-import { videoWatchService } from "@/services/videoWatchService";
-import weeklyVotingService from "@/services/weeklyVotingService";
-import userProfileService from "@/services/userProfileService";
+import { userProfileService } from "@/services/userProfileService";
 
 interface WeeklyProgressData {
   weekIdentifier: string;
@@ -30,9 +27,9 @@ export default function WeeklyPointsDashboard({
   className = "",
 }: WeeklyPointsDashboardProps) {
   const user = useUser();
-  const [progress, setProgress] = useState<WeeklyProgressData | null>(null);
+  const [progress, setProgress] = useState < WeeklyProgressData | null > (null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState < string | null > (null);
 
   const loadWeeklyProgress = useCallback(async () => {
     if (!user || !weekIdentifier) return;
@@ -41,37 +38,22 @@ export default function WeeklyPointsDashboard({
       setLoading(true);
       setError(null);
 
-      // Get the weekly list and its artists
       const weeklyList = await weeklyListService.getWeeklyListForUser(weekIdentifier, user.id);
-      if (!weeklyList) {
-        throw new Error("Weekly list not found");
-      }
+      if (!weeklyList) throw new Error("Weekly list not found");
 
-      const artistUuids = weeklyList.artists.map(a => a.artist.uuid);
-      const totalArtists = artistUuids.length;
+      const totalArtists = weeklyList.artists.length;
 
-      // Check videos watched
-      let videosWatched = 0;
-      for (const artistUuid of artistUuids) {
-        try {
-          const watchData = await videoWatchService.getWatchStatus(user.id, artistUuid, weekIdentifier);
-          if (watchData.length > 0) {
-            videosWatched++;
-          }
-        } catch (error) {
-          console.error("Error checking watch status for artist:", artistUuid, error);
-        }
-      }
+      // Count videos watched
+      const videosWatched = weeklyList.artists.filter(a => a.user_has_watched_video).length;
 
-      // Get user votes for this week
-      const userVotes = await weeklyVotingService.getUserVotes(user.id, weekIdentifier);
-      const artistsRated = userVotes.length;
+      // Count artists rated
+      const artistsRated = weeklyList.artists.filter(a => a.user_has_voted).length;
 
-      // Get total points earned this week
+      // Get total points earned
       const weeklyStats = await userProfileService.getWeeklyStats(user.id, weekIdentifier);
       const pointsEarned = weeklyStats.total_points || 0;
 
-      // Calculate completion bonus (assuming it's awarded when all artists are rated)
+      // Completion bonus
       const completionBonus = artistsRated === totalArtists ? 50 : 0;
       const isComplete = artistsRated === totalArtists && videosWatched === totalArtists;
 
@@ -93,19 +75,15 @@ export default function WeeklyPointsDashboard({
   }, [user, weekIdentifier]);
 
   useEffect(() => {
-    if (user && weekIdentifier) {
-      loadWeeklyProgress();
-    }
-  }, [user, weekIdentifier, loadWeeklyProgress]);
+    loadWeeklyProgress();
+  }, [loadWeeklyProgress]);
 
   if (loading) {
     return (
       <Card className={`${className}`}>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin mr-2" />
-            Loading weekly progress...
-          </div>
+        <CardContent className="p-6 flex justify-center items-center">
+          <Loader2 className="w-6 h-6 animate-spin mr-2" />
+          Loading weekly progress...
         </CardContent>
       </Card>
     );
@@ -114,10 +92,8 @@ export default function WeeklyPointsDashboard({
   if (error || !progress) {
     return (
       <Card className={`${className}`}>
-        <CardContent className="p-6">
-          <p className="text-red-500 text-center">
-            {error || "Unable to load weekly progress"}
-          </p>
+        <CardContent className="p-6 text-center text-red-500">
+          {error || "Unable to load weekly progress"}
         </CardContent>
       </Card>
     );
@@ -174,7 +150,7 @@ export default function WeeklyPointsDashboard({
               +{progress.pointsEarned} pts
             </Badge>
           </div>
-          
+
           {progress.isComplete && progress.completionBonus > 0 && (
             <div className="flex justify-between items-center mt-2 text-sm">
               <span className="text-purple-400">Completion Bonus</span>
