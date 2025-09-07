@@ -1,11 +1,10 @@
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import type { Database } from "@/integrations/supabase/types";
+import { userEngagementService } from "@/services/userEngagementService";
+import { checkPointsEligibility } from "@/services/pointsConfigService";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
-import pointsConfigService from "@/services/pointsConfigService";  // NEW
-import eligibilityService from "@/services/eligibilityService";    // NEW
 
-
-// Types
-export type UserProfile = Tables<"user_profiles">;
+export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
 export type EngagementType =
     | "video_view"
@@ -149,7 +148,7 @@ const userProfileService = {
         artistUuid?: string,
         metadata?: Record<string, any>
     ): Promise<UserEngagement> {
-        const eligibility = await eligibilityService.checkEligibility(userId, engagementType, {
+        const eligibility = await checkPointsEligibility(userId, engagementType, {
             artistUuid,
             weekIdentifier
         });
@@ -262,7 +261,7 @@ const userProfileService = {
         engagementType: EngagementType,
         context?: { artistUuid?: string; weekIdentifier?: string }
     ): Promise<{ allowed: boolean; reason?: string }> {
-        return eligibilityService.checkEligibility(userId, engagementType, context);
+        return checkPointsEligibility(userId, engagementType, context);
     },
 
 

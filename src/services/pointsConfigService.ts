@@ -1,59 +1,66 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
-export interface PointsConfig {
-    id: number;
-    action_name: string;
-    points_value: number;
-    frequency?: string | null;
-    min_value?: number | null;
-    description?: string | null;
-    is_active?: boolean;
-    created_at?: string;
-    updated_at?: string;
+export type PointsConfig = Database["public"]["Tables"]["points_config"]["Row"];
+
+class PointsConfigService {
+  private pointsConfig: PointsConfig[] | null = null;
+  private lastFetched: number | null = null;
+
+  private async fetchConfig(forceRefresh = false): Promise<PointsConfig[]> {
+    const now = Date.now();
+    // Cache for 5 minutes
+    if (this.pointsConfig && this.lastFetched && (now - this.lastFetched < 5 * 60 * 1000) && !forceRefresh) {
+      return this.pointsConfig;
+    }
+
+    const { data, error } = await supabase
+      .from("points_config")
+      .select("*")
+      .eq("is_active", true);
+
+    if (error) {
+      console.error("Error fetching points config:", error);
+      throw new Error("Could not load points configuration.");
+    }
+    
+    this.pointsConfig = data;
+    this.lastFetched = now;
+    return data;
+  }
+
+  async getAllConfigs(): Promise<PointsConfig[]> {
+    return await this.fetchConfig(true); // Force refresh for admin-like use
+  }
+
+  async getConfigForAction(actionName: string): Promise<PointsConfig | null> {
+    const configs = await this.fetchConfig();
+    const config = configs.find(c => c.action_name === actionName);
+    return config || null;
+  }
+  
+  async getPointsForAction(actionName: string): Promise<number> {
+    const config = await this.getConfigForAction(actionName);
+    return config?.points_value || 0;
+  }
 }
 
-const pointsConfigService = {
-    /**
-     * Fetch points config by action name
-     * Only active entries are considered
-     */
-    async getPointsForAction(actionName: string): Promise<number> {
-        const { data, error } = await supabase
-            .from < PointsConfig > ("points_config")
-                .select("points_value, is_active")
-                .eq("action_name", actionName)
-                .eq("is_active", true)
-                .single();
+export const pointsConfigService = new PointsConfigService();
 
-        if (error) {
-            console.error(`[PointsConfigService] Error fetching points for action "${actionName}":`, error);
-            throw error;
-        }
-
-        if (!data) {
-            throw new Error(`[PointsConfigService] No active points config found for action "${actionName}"`);
-        }
-
-        return data.points_value;
-    },
-
-    /**
-     * Optional: fetch all active points configs
-     */
-    async getAllActiveConfigs(): Promise<PointsConfig[]> {
-        const { data, error } = await supabase
-            .from < PointsConfig > ("points_config")
-                .select("*")
-                .eq("is_active", true);
-
-        if (error) {
-            console.error("[PointsConfigService] Error fetching all active points configs:", error);
-            throw error;
-        }
-
-        return data || [];
+export const checkPointsEligibility = async (userId: string, actionName: string): Promise<{ eligible: boolean, reason?: string, config?: PointsConfig }> => {
+    const config = await pointsConfigService.getConfigForAction(actionName);
+    
+    if (!config || !config.is_active) {
+        return { eligible: false, reason: "This action is currently not eligible for points." };
     }
-};
 
-export default pointsConfigService;
+    if (!config.frequency) {
+        return { eligible: true, config }; // No frequency limit
+    }
+
+    // This is a placeholder for more complex frequency checking logic,
+    // which would require querying a log of user point awards.
+    // For now, we assume eligibility if a config is found.
+    
+    return { eligible: true, config };
+};

@@ -1,14 +1,17 @@
 // services/userEngagementService.ts
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import pointsConfigService from "@/services/PointsConfigService";
+import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+import { pointsConfigService } from '@/services/pointsConfigService';
 
-export interface EngagementParams {
-    userId: string;
-    engagementType: string; // e.g., 'VOTE', 'LIKE', 'COMMENT'
-    artistUuid?: string | null;
-    weekIdentifier?: string | null;
-    additionalData?: Record<string, any>; // optional extra metadata
-}
+type EngagementEvent = {
+  user_id: string;
+  engagement_type: string;
+  artist_uuid?: string | null;
+  week_identifier?: string | null;
+  points_earned: number;
+  metadata?: Record<string, any>;
+  created_at: string;
+};
 
 export async function recordEngagement(
     params: EngagementParams
@@ -25,7 +28,7 @@ export async function recordEngagement(
         }
 
         // 2️⃣ Insert engagement record
-        const { data, error } = await supabaseAdmin
+        const { data, error } = await supabase
             .from("user_engagements")
             .insert({
                 user_id: userId,

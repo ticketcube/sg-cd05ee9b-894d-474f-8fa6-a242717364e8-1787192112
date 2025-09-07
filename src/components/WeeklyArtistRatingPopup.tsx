@@ -6,13 +6,13 @@ import { Progress } from "@/components/ui/progress";
 import { Loader2, Timer, CheckCircle, Ticket, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { useUser, useSession } from "@supabase/auth-helpers-react";
+import { weeklyVotingService } from "@/services/weeklyVotingService";
+import type { SubmissionResult } from "@/services/weeklyVotingService";
 import { pointsConfigService, checkPointsEligibility } from "@/services/pointsConfigService";
+import PointsNotification, { usePointsNotifications } from "@/components/points/PointsNotification";
+import SubmissionSuccessPopup from "./SubmissionSuccessPopup";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 import type { Artist } from "@/types/artists";
-
-interface SubmissionResult {
-  message: string;
-  pointsEarned: number;
-}
 
 interface WeeklyArtistRatingPopupProps {
   artist: Artist;

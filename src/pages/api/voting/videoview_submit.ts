@@ -1,10 +1,11 @@
 // pages/api/voting/submitVideoView.ts
-import type { NextApiRequest, NextApiResponse } from "next";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import { pointsConfigService, checkPointsEligibility } from "@/services/pointsConfigService";
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { videoWatchService } from '@/services/videoWatchService';
+import { pointsConfigService, checkPointsEligibility } from '@/services/pointsConfigService';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (req.method !== 'POST') return res.status(405).json({ error: "Method not allowed" });
 
     try {
         const authHeader = req.headers.authorization;

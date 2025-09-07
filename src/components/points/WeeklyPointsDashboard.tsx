@@ -1,13 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Star, Trophy, TrendingUp, Loader2 } from "lucide-react";
 import { useUser } from "@supabase/auth-helpers-react";
 import { weeklyListService } from "@/services/weeklyListService";
 import { userProfileService } from "@/services/userProfileService";
+import { useUserProfile } from "@/contexts/UserProfileContext";
+import HowPointsWorkModal from "./HowPointsWorkModal";
 
-interface WeeklyProgressData {
+type WeeklySummary = {
   weekIdentifier: string;
   totalArtists: number;
   videosWatched: number;
@@ -27,7 +29,7 @@ export default function WeeklyPointsDashboard({
   className = "",
 }: WeeklyPointsDashboardProps) {
   const user = useUser();
-  const [progress, setProgress] = useState < WeeklyProgressData | null > (null);
+  const [progress, setProgress] = useState < WeeklySummary | null > (null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState < string | null > (null);
 

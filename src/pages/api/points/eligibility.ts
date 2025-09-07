@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // 2️⃣ Check frequency limits
         let eligible = true;
         let reason = "";
-        let points = min_value || 0;
+        const points = min_value || 0;
 
         if (frequency && frequency !== "unlimited") {
             // Count engagements this week

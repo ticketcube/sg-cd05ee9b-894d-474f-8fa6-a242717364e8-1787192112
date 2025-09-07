@@ -1,15 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { pointsConfigService } from "./pointsConfigService";
-import userProfileService from "./userProfileService";
+import { userEngagementService } from "./userEngagementService";
 
-export interface VideoViewData {
-  userId: string; // ✅ FIXED: Changed from number to string (user_id)
-  artistUuid: string;
-  weekIdentifier: string;
-  watchTimeSeconds: number;
-}
-
-export const videoWatchService = {
+class VideoWatchService {
   /**
    * Records that a user has watched a video and awards points if applicable.
    * A user can only get points for watching a specific artist's video once per week.
@@ -99,3 +92,5 @@ export const videoWatchService = {
     return data || [];
   },
 };
+
+export default VideoWatchService;

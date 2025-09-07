@@ -1,10 +1,17 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { Database, Tables } from "@/integrations/supabase/types";
-import userProfileService from "./userProfileService";
-import { pointsConfigService, checkPointsEligibility } from "./pointsConfigService"; // FIXED: Added missing import
+import type { Database } from "@/integrations/supabase/types";
+import { userProfileService } from "./userProfileService";
+import { userEngagementService } from "./userEngagementService";
+import { pointsConfigService, checkPointsEligibility } from "./pointsConfigService";
 
-// Use user_engagements table since weekly_artist_rankings doesn't exist
+export interface ArtistVoteSubmission {
+  artistUuid: string;
+  ticketInterest: number;
+  shareInterest: number;
+  weekIdentifier: string;
+}
+
 export interface ArtistVote {
     id: number;
     user_id: number;
