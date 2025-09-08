@@ -2,8 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { voteToSliders } from "@/lib/quadrant";
-import { WeeklyListWithEnrichedArtists } from "@/services/weeklyListService";
-import { ArtistRating } from "@/types/weekly";
+import { WeeklyListWithEnrichedArtists, ArtistRating } from "@/types/weekly";
 import { EnrichedWeeklyListArtist } from "@/types/artists";
 
 interface WeeklyRatingsQuadrantProps {
@@ -16,7 +15,7 @@ export default function WeeklyRatingsQuadrant({ ratings, weeklyList, onSelectArt
   const ratedArtists = ratings
     .filter(r => r.isRated)
     .map(rating => {
-      const artistData = weeklyList?.artists.find(a => a.artist_id === rating.artistUuid);
+      const artistData = weeklyList?.artists.find(a => a.artist_uuid === rating.artistUuid);
       return artistData ? { ...artistData, rating } : null;
     })
     .filter(Boolean) as (EnrichedWeeklyListArtist & { rating: ArtistRating })[];
@@ -35,7 +34,7 @@ export default function WeeklyRatingsQuadrant({ ratings, weeklyList, onSelectArt
 
       <TooltipProvider>
         {ratedArtists.map((artist) => {
-          // Convert vote coordinates to slider values (0-100) for positioning
+          // This will still cause a type error until we fix the ArtistRating type.
           const { ticket, share } = voteToSliders(artist.rating.x, artist.rating.y);
 
           // Position is based on slider values, with (0,0) at bottom-left
@@ -45,7 +44,7 @@ export default function WeeklyRatingsQuadrant({ ratings, weeklyList, onSelectArt
           };
 
           return (
-            <Tooltip key={artist.artist_id}>
+            <Tooltip key={artist.artist_uuid}>
               <TooltipTrigger asChild>
                 <div
                   className="absolute transform -translate-x-1/2 translate-y-1/2 cursor-pointer transition-transform hover:scale-110"

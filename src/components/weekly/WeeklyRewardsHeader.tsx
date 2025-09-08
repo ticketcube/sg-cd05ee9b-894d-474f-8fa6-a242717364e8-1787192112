@@ -1,5 +1,5 @@
 // src/components/weekly/WeeklyRewardsHeader.tsx
-import { HowPointsWorkModal } from '@/components/points/HowPointsWorkModal';
+import HowPointsWorkModal from "@/components/points/HowPointsWorkModal";
 
 export default function WeeklyRewardsHeader() {
   return (

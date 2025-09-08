@@ -15,15 +15,19 @@ export interface WeeklyListWithEnrichedArtists extends WeeklyList {
 
 export type ArtistRating = {
     artistUuid: string;
-    ticketInterest: number;
-    shareInterest: number;
+    ticketInterest?: number;
+    x: number;  // Add this property
+    y: number;  // Add this property
+    shareInterest?: number;
     hasWatched: boolean;
     isRated: boolean;
 };
 
 export type SubmissionResult = {
-    success: boolean;
+    success?: boolean;
     message: string;
     pointsAwarded?: number;
     error?: string; 
+    pointsEarned?: number;  // Add this property  
+    type?: string;          // Add this property
 };

@@ -12,7 +12,7 @@ import HowPointsWorkModal from "@/components/points/HowPointsWorkModal";
 import WeeklyRatingsQuadrant from "@/components/weekly/WeeklyRatingsQuadrant";
 import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
 import { weeklyListService } from '@/services/weeklyListService';
-import { WeeklyList } from '@/types/weekly';
+import { WeeklyListWithEnrichedArtists } from '@/types/weekly';
 import { WeeklyArtistGrid } from '@/components/weekly/WeeklyArtistGrid';
 import { WeeklyError } from '@/components/weekly/WeeklyError';
 import { WeeklyLoading } from '@/components/weekly/WeeklyLoading';
@@ -23,7 +23,7 @@ const DiscoveryDashboard = () => {
     const [activeTab, setActiveTab] = useState('weekly');
     const [isModalOpen, setModalOpen] = usePointsOnboarding();
 
-    const [weeklyList, setWeeklyList] = useState<WeeklyList | null>(null);
+    const [weeklyList, setWeeklyList] = useState<WeeklyListWithEnrichedArtists | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +55,7 @@ const DiscoveryDashboard = () => {
     const renderContent = () => {
         if (isLoading) return <WeeklyLoading />;
         if (error) return <WeeklyError message={error} />;
-        if (!weeklyList || weeklyList.artists.length === 0) {
+        if (!weeklyList || !weeklyList.artists || weeklyList.artists.length === 0) {
             return (
                 <Card>
                     <CardHeader>
@@ -70,9 +70,10 @@ const DiscoveryDashboard = () => {
 
         switch (activeTab) {
             case 'weekly':
-                return <WeeklyArtistGrid list={weeklyList} />;
+                return <WeeklyArtistGrid artists={weeklyList.artists} />;
             case 'quadrant':
-                return <WeeklyRatingsQuadrant listId={weeklyList.id} artists={weeklyList.artists} />;
+                // The dashboard does not have user-specific ratings, so we pass an empty array.
+                return <WeeklyRatingsQuadrant ratings={[]} weeklyList={weeklyList} onSelectArtist={() => {}} />;
             case 'discover':
                 return <DiscoverMoreTab />;
             case 'rewards':
@@ -86,7 +87,7 @@ const DiscoveryDashboard = () => {
         <>
             <DashboardHeader
                 username={profile.username || 'Music Fan'}
-                points={profile.points || 0}
+                points={profile.total_points || 0}
                 onHowItWorksClick={() => setModalOpen(true)}
             />
             <HeroVideo />
