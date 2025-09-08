@@ -7,7 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Timer, Trophy, X } from "lucide-react";
 import ArtistVideoPlayer from "./ArtistVideoPlayer";
-import { addPoints } from '@/services/userProfileService';
+import { recordEngagement } from '@/services/userProfileService';
 import { useUser } from "@supabase/auth-helpers-react";
 import type { Artist, VibeArtist } from "@/types/artists";
 
@@ -53,7 +53,7 @@ export function WeeklyArtistPopup({
     if (!user || pointsAwarded || !artist || !weekIdentifier) return;
     
     try {
-      await userProfileService.recordEngagement(
+      await recordEngagement(
         user.id, 
         "video_view", 
         10, 
