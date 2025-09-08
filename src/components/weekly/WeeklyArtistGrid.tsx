@@ -39,7 +39,7 @@ export function WeeklyArtistGrid({ artists, onSelect }: WeeklyArtistGridProps) {
                 <CheckCircle2 className="w-4 h-4 text-white" />
               </div>
             )}
-            {artist.has_watched && !artist.is_rated && (
+                  {artist.user_has_watched || false && !artist.is_rated && (
                <div className="absolute top-0 right-0 -mt-1 -mr-1 bg-blue-500 rounded-full p-1 shadow-lg">
                 <Eye className="w-4 h-4 text-white" />
               </div>
