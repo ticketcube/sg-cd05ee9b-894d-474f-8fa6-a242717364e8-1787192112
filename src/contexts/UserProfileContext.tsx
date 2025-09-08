@@ -36,56 +36,69 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
     };
 
     useEffect(() => {
-        // This function handles both initial load and auth state changes
-        const getSessionAndProfile = async () => {
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        let isMounted = true;
 
-            if (session?.user) {
-                setUser(session.user);
-                try {
+        const getSessionAndProfile = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!isMounted) return;
+
+                if (session?.user) {
+                    setUser(session.user);
                     const userProfile = await getUserProfile(session.user.id);
+                    if (!isMounted) return;
                     setProfile(userProfile);
                     setIsAdmin(userProfile?.role === 'otwstaff');
-                } catch (profileError) {
-                    console.error("Error fetching user profile:", profileError);
+                } else {
+                    setUser(null);
                     setProfile(null);
                     setIsAdmin(false);
                 }
-            } else {
-                setUser(null);
-                setProfile(null);
-                setIsAdmin(false);
+            } catch (err) {
+                console.error("Error loading session/profile:", err);
+                if (isMounted) {
+                    setUser(null);
+                    setProfile(null);
+                    setIsAdmin(false);
+                }
+            } finally {
+                if (isMounted) setLoading(false);
             }
-            setLoading(false);
         };
 
         getSessionAndProfile();
 
         const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            setLoading(true);
             if (session?.user) {
                 setUser(session.user);
                 try {
                     const userProfile = await getUserProfile(session.user.id);
+                    if (!isMounted) return;
                     setProfile(userProfile);
                     setIsAdmin(userProfile?.role === 'otwstaff');
                 } catch (profileError) {
                     console.error("Error fetching user profile on auth change:", profileError);
+                    if (isMounted) {
+                        setProfile(null);
+                        setIsAdmin(false);
+                    }
+                }
+            } else {
+                if (isMounted) {
+                    setUser(null);
                     setProfile(null);
                     setIsAdmin(false);
                 }
-            } else {
-                setUser(null);
-                setProfile(null);
-                setIsAdmin(false);
             }
-            setLoading(false);
+            if (isMounted) setLoading(false);
         });
 
         return () => {
+            isMounted = false;
             authListener.subscription.unsubscribe();
         };
-    }, [user]);
+    }, []); // 👈 run once only (no [user] dep)
+
 
     const logout = async () => {
         await supabase.auth.signOut();
