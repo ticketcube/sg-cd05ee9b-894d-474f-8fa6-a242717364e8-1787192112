@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AppLayout } from '@/components/layout/AppLayout';
+import AppLayout from "@/components/layout/AppLayout";
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import { EnrichedWeeklyListArtist } from '@/types/artists';
 import { SubmissionResult } from '@/types/weekly';
@@ -19,9 +19,9 @@ import { WeeklyRatingsQuadrant } from '@/components/weekly/WeeklyRatingsQuadrant
 import { WeeklyRewardsHeader } from '@/components/weekly/WeeklyRewardsHeader';
 
 // --- Popups & Notifications ---
-import { HowPointsWorkModal } from '@/components/points/HowPointsWorkModal';
-import { WeeklyArtistRatingPopup } from '@/components/WeeklyArtistRatingPopup';
-import { SubmissionSuccessPopup } from '@/components/points/SubmissionSuccessPopup';
+import HowPointsWorkModal from "@/components/points/HowPointsWorkModal";
+import WeeklyArtistRatingPopup from "@/components/WeeklyArtistRatingPopup";
+import SubmissionSuccessPopup from "@/components/points/SubmissionSuccessPopup";
 import { PointsNotification } from '@/components/points/PointsNotification';
 import { useToast } from '@/components/ui/use-toast';
 
