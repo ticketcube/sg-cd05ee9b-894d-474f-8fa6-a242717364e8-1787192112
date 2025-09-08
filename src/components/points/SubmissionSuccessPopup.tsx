@@ -7,8 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import type { SubmissionResult } from "@/services/weeklyVotingService";
-
+import { SubmissionResult } from "@/types/weekly";
 interface SubmissionSuccessPopupProps {
   isOpen: boolean;
   onClose: () => void;
