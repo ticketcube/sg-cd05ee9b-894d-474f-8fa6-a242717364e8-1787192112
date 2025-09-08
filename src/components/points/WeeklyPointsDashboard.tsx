@@ -46,7 +46,7 @@ export default function WeeklyPointsDashboard({
       const totalArtists = weeklyList.artists.length;
 
       // Count videos watched
-      const videosWatched = weeklyList.artists.filter(a => a.user_has_watched_video).length;
+      const videosWatched = weeklyList.artists.filter(a => a.user_has_watched).length;
 
       // Count artists rated
       const artistsRated = weeklyList.artists.filter(a => a.user_has_voted).length;
