@@ -12,7 +12,7 @@ interface WeeklyRatingsQuadrantProps {
   onSelectArtist: (artist: EnrichedWeeklyListArtist) => void;
 }
 
-export function WeeklyRatingsQuadrant({ ratings, weeklyList, onSelectArtist }: WeeklyRatingsQuadrantProps) {
+export default function WeeklyRatingsQuadrant({ ratings, weeklyList, onSelectArtist }: WeeklyRatingsQuadrantProps) {
   const ratedArtists = ratings
     .filter(r => r.isRated)
     .map(rating => {
