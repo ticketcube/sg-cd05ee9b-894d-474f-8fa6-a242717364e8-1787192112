@@ -29,8 +29,8 @@ export function useWeeklyLists() {
       if (allLists && allLists.length > 0) {
         setLists(allLists);
         // Find the active list, otherwise default to the newest one.
-        const activeList = allLists.find(list => list.is_active);
-        setSelectedListId(activeList ? activeList.id : allLists[0].id);
+        const activeList = allLists.find(list => list.status === 'active');
+        setSelectedListId(activeList ? activeList.id.toString() : allLists[0].id.toString());
       } else {
         // Handle case where no lists are returned
         setLists([]);
