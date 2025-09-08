@@ -49,5 +49,4 @@ export interface DisplayArtist extends Artist {
     is_featured?: boolean;
 }
 
-export type { EnrichedWeeklyListArtist };
 
