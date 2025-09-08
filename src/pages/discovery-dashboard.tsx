@@ -9,7 +9,7 @@ import MoreRewardsTab from "@/components/dashboard/MoreRewardsTab";
 import DashboardLoading from "@/components/dashboard/DashboardLoading";
 import DashboardAuthBlock from "@/components/dashboard/DashboardAuthBlock";
 import HowPointsWorkModal from "@/components/points/HowPointsWorkModal";
-
+import WeeklyRatingsQuadrant from "@/components/weekly/WeeklyRatingsQuadrant";
 import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
 import { weeklyListService } from '@/services/weeklyListService';
 import { WeeklyList } from '@/types/weekly';
