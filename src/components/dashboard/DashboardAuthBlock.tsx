@@ -17,7 +17,7 @@ const DashboardAuthBlock = ({ showAuthDialog, setShowAuthDialog }: DashboardAuth
           </p>
           <Button onClick={() => setShowAuthDialog(true)}>Sign In</Button>
       </div>
-      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
+     <AuthDialog isOpen={showAuthDialog} onClose={() => setShowAuthDialog(false)} />
     </>
   );
 };
