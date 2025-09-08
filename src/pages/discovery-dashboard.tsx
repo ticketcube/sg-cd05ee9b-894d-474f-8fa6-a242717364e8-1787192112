@@ -91,7 +91,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
             />
             <HeroVideo />
             <div className="container mx-auto px-4 py-8">
-                <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+                <TabNavigation activeTab={activeTab} />
                 <div className="mt-8">{renderContent()}</div>
             </div>
            <HowPointsWorkModal isOpen={showOnboarding} onClose={() => dismiss()} />
