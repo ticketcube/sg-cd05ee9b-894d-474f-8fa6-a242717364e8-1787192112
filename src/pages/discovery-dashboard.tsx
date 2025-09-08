@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
-import { HeroVideo } from '@/components/dashboard/HeroVideo';
-import { TabNavigation } from '@/components/dashboard/TabNavigation';
-import { WeeklyRatingsQuadrant } from '@/components/weekly/WeeklyRatingsQuadrant';
-import { DiscoverMoreTab } from '@/components/dashboard/DiscoverMoreTab';
-import { MoreRewardsTab } from '@/components/dashboard/MoreRewardsTab';
-import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
-import { DashboardAuthBlock } from '@/components/dashboard/DashboardAuthBlock';
-import { HowPointsWorkModal } from '@/components/points/HowPointsWorkModal';
+import AppLayout from "@/components/layout/AppLayout";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import HeroVideo from "@/components/dashboard/HeroVideo";
+import TabNavigation from "@/components/dashboard/TabNavigation";
+import DiscoverMoreTab from "@/components/dashboard/DiscoverMoreTab";
+import MoreRewardsTab from "@/components/dashboard/MoreRewardsTab";
+import DashboardLoading from "@/components/dashboard/DashboardLoading";
+import DashboardAuthBlock from "@/components/dashboard/DashboardAuthBlock";
+import HowPointsWorkModal from "@/components/points/HowPointsWorkModal";
+
 import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
 import { weeklyListService } from '@/services/weeklyListService';
 import { WeeklyList } from '@/types/weekly';
