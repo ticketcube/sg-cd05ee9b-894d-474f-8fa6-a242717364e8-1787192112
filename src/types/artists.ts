@@ -11,13 +11,22 @@ export interface EnrichedWeeklyListArtist extends Artist {
     weekly_list_id: number;
     artist_uuid: string;
     video_url: string;
+    artist_name: string;
+    artist_image: string;
+    profile_image_url?: string;
+   
+
+
 
     // For user-specific data
     user_has_watched?: boolean;
     is_rated?: boolean;
     ticket_interest?: number;
     share_interest?: number;
+    user_has_voted?: boolean;
 }
+
+
 
 // Legacy types that other components expect
 export interface ArtistWithVoteCount extends Artist {
@@ -39,3 +48,6 @@ export interface DisplayArtist extends Artist {
     display_name?: string;
     is_featured?: boolean;
 }
+
+export type { EnrichedWeeklyListArtist };
+
