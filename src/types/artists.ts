@@ -36,6 +36,6 @@ export interface VibeArtist extends Artist {
 }
 
 export interface DisplayArtist extends Artist {
-    display_name: string;
+    display_name?: string;
     is_featured?: boolean;
 }
