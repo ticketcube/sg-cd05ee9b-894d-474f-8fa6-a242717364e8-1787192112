@@ -1,28 +1,36 @@
-import React from 'react';
-import { useRouter } from 'next/router';
+
+import React, { useState, useEffect } from 'react';
+
+// Component Imports
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, TrendingUp, Clock, ArrowRight } from 'lucide-react';
-
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
-import { TabNavigation } from '@/components/dashboard/TabNavigation';
-import { DiscoverMoreTab } from '@/components/dashboard/DiscoverMoreTab';
-import { MoreRewardsTab } from '@/components/dashboard/MoreRewardsTab';
-import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
-
-import { useWeeklyLists } from '@/hooks/useWeeklyLists';
-
+import AppLayout from '@/components/layout/AppLayout';
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import TabNavigation from '@/components/dashboard/TabNavigation';
+import DiscoverMoreTab from '@/components/dashboard/DiscoverMoreTab';
+import MoreRewardsTab from '@/components/dashboard/MoreRewardsTab';
+import DashboardLoading from '@/components/dashboard/DashboardLoading';
+import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
+import HeroVideo from '@/components/dashboard/HeroVideo';
+import HowPointsWorkModal from '@/components/points/HowPointsWorkModal';
 import WeeklyArtistGrid from '@/components/weekly/WeeklyArtistGrid';
 import WeeklyError from '@/components/weekly/WeeklyError';
 import WeeklyLoading from '@/components/weekly/WeeklyLoading';
 import WeeklyRatingsQuadrant from '@/components/weekly/WeeklyRatingsQuadrant';
 
-    const DiscoveryDashboard = () => {  
+// Hook & Context Imports
+import { useUserProfile } from '@/contexts/UserProfileContext';
+import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
+
+// Service & Type Imports
+import { weeklyListService } from '@/services/weeklyListService';
+import type { WeeklyListWithEnrichedArtists } from "@/types/weekly";
+import type { EnrichedWeeklyListArtist } from "@/types/artists";
+
+const DiscoveryDashboard = () => {
     const { profile, loading: userLoading } = useUserProfile();
     const [activeTab, setActiveTab] = useState('weekly');
     const { showOnboarding, dismiss } = usePointsOnboarding();
-        const [showAuthDialog, setShowAuthDialog] = useState(false);
+    const [showAuthDialog, setShowAuthDialog] = useState(false);
     const [weeklyList, setWeeklyList] = useState<WeeklyListWithEnrichedArtists | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -52,9 +60,14 @@ import WeeklyRatingsQuadrant from '@/components/weekly/WeeklyRatingsQuadrant';
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
 
+    const handleArtistSelect = (artist: EnrichedWeeklyListArtist) => {
+        console.log('Selected Artist:', artist.uuid);
+        // Future implementation: show artist detail popup
+    };
+
     const renderContent = () => {
         if (isLoading) return <WeeklyLoading />;
-        if (error) return <WeeklyError message={error} />;
+        if (error) return <WeeklyError>{error}</WeeklyError>;
         if (!weeklyList || !weeklyList.artists || weeklyList.artists.length === 0) {
             return (
                 <Card>
@@ -70,9 +83,10 @@ import WeeklyRatingsQuadrant from '@/components/weekly/WeeklyRatingsQuadrant';
 
         switch (activeTab) {
             case 'weekly':
-                return <WeeklyArtistGrid artists={weeklyList.artists} onSelect={(artistUuid) => console.log('Selected:', artistUuid)} />;
+                return <WeeklyArtistGrid artists={weeklyList.artists} onArtistSelect={handleArtistSelect} />;
             case 'quadrant':
-                // The dashboard does not have user-specific ratings, so we pass an empty array.
+                // The dashboard does not have user-specific ratings, so we pass an empty array for now.
+                // This will need to be connected to user-specific data later.
                 return <WeeklyRatingsQuadrant ratings={[]} weeklyList={weeklyList} onSelectArtist={() => {}} />;
             case 'discover':
                 return <DiscoverMoreTab />;
@@ -87,11 +101,11 @@ import WeeklyRatingsQuadrant from '@/components/weekly/WeeklyRatingsQuadrant';
         <>
             <DashboardHeader
                 profile={profile}
-                historyLoading={false}
+                historyLoading={false} // Placeholder
                 total_points={profile.total_points || 0}
-                totalVotes={0}
-                totalVideos={0}
-                weeksActive={1}
+                totalVotes={0} // Placeholder
+                totalVideos={0} // Placeholder
+                weeksActive={1} // Placeholder
             />
             <HeroVideo />
             <div className="container mx-auto px-4 py-8">
@@ -102,7 +116,7 @@ import WeeklyRatingsQuadrant from '@/components/weekly/WeeklyRatingsQuadrant';
                 />
                 <div className="mt-8">{renderContent()}</div>
             </div>
-            <HowPointsWorkModal isOpen={showOnboarding} />
+            <HowPointsWorkModal isOpen={showOnboarding} onDismiss={dismiss} isOnboarding />
         </>
     );
 };
