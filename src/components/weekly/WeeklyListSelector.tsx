@@ -21,7 +21,7 @@ export function WeeklyListSelector({ lists, value, onChange, disabled }: WeeklyL
                 </SelectTrigger>
                 <SelectContent>
                     {lists.map((list) => (
-                        <SelectItem key={list.id} value={list.id}>
+                        <SelectItem key={list.id} value={String(list.id)}>
                             {list.title}
                         </SelectItem>
                     ))}
