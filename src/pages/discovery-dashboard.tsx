@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
     const { profile, loading: userLoading } = useUserProfile();
     const [activeTab, setActiveTab] = useState('weekly');
     const { showOnboarding, dismiss } = usePointsOnboarding();
-
+        const [showAuthDialog, setShowAuthDialog] = useState(false);
     const [weeklyList, setWeeklyList] = useState<WeeklyListWithEnrichedArtists | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -49,7 +49,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
     }
 
     if (!profile) {
-        return <DashboardAuthBlock />;
+        return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
 
     const renderContent = () => {
