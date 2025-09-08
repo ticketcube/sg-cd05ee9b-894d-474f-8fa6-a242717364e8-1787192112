@@ -94,7 +94,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
                 <TabNavigation activeTab={activeTab} />
                 <div className="mt-8">{renderContent()}</div>
             </div>
-           <HowPointsWorkModal isOpen={showOnboarding} onClose={() => dismiss()} />
+            <HowPointsWorkModal isOpen={showOnboarding} />
         </>
     );
 };
