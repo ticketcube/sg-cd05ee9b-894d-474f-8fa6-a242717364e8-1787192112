@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Eye, Star, Trophy, TrendingUp, Loader2 } from "lucide-react";
 import { useUser } from "@supabase/auth-helpers-react";
 import { weeklyListService } from "@/services/weeklyListService";
-import { addPoints } from "@/services/userProfileService";
+import { getWeeklyStats } from "@/services/userProfileService";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import HowPointsWorkModal from "./HowPointsWorkModal";
 
@@ -52,7 +52,7 @@ export default function WeeklyPointsDashboard({
       const artistsRated = weeklyList.artists.filter(a => a.user_has_voted).length;
 
       // Get total points earned
-      const weeklyStats = await userProfileService.getWeeklyStats(user.id, weekIdentifier);
+      const weeklyStats = await getWeeklyStats(user.id, weekIdentifier);
       const pointsEarned = weeklyStats.total_points || 0;
 
       // Completion bonus
