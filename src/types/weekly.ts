@@ -1,13 +1,29 @@
-import type { EnrichedWeeklyListArtist, WeeklyListWithEnrichedArtists } from '@/services/weeklyListService';
+import { Database } from '@/integrations/supabase/types';
+import { EnrichedWeeklyListArtist } from './artists';
 
-// This will be the local state for managing each artist's rating UI
-export interface ArtistRating {
-  artistUuid: string;
-  ticketInterest: number; // 0-100 slider value
-  shareInterest: number;  // 0-100 slider value
-  isRated: boolean;
-  hasWatched: boolean; // <-- Add this line
+export type WeeklyList = Database['public']['Tables']['weekly_lists']['Row'];
+export type WeeklyListArtist = Database['public']['Tables']['weekly_list_artists']['Row'];
+export type WeeklyVote = Database['public']['Tables']['weekly_votes']['Row'];
+
+export interface WeeklyListWithArtists extends WeeklyList {
+    artists: WeeklyListArtist[];
 }
 
-// We can re-export types from services for convenient access in components
-export type { EnrichedWeeklyListArtist, WeeklyListWithEnrichedArtists };
+export interface WeeklyListWithEnrichedArtists extends WeeklyList {
+    artists: EnrichedWeeklyListArtist[];
+}
+
+export type ArtistRating = {
+    artistUuid: string;
+    ticketInterest: number;
+    shareInterest: number;
+    hasWatched: boolean;
+    isRated: boolean;
+};
+
+export type SubmissionResult = {
+    success: boolean;
+    message: string;
+    pointsAwarded?: number;
+    error?: string; 
+};

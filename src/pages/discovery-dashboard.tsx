@@ -1,111 +1,106 @@
+import { useState, useEffect } from 'react';
+import { useUserProfile } from '@/contexts/UserProfileContext';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { HeroVideo } from '@/components/dashboard/HeroVideo';
+import { TabNavigation } from '@/components/dashboard/TabNavigation';
+import { WeeklyRatingsQuadrant } from '@/components/weekly/WeeklyRatingsQuadrant';
+import { DiscoverMoreTab } from '@/components/dashboard/DiscoverMoreTab';
+import { MoreRewardsTab } from '@/components/dashboard/MoreRewardsTab';
+import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
+import { DashboardAuthBlock } from '@/components/dashboard/DashboardAuthBlock';
+import { HowPointsWorkModal } from '@/components/points/HowPointsWorkModal';
+import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
+import { weeklyListService } from '@/services/weeklyListService';
+import { WeeklyList } from '@/types/weekly';
+import { WeeklyArtistGrid } from '@/components/weekly/WeeklyArtistGrid';
+import { WeeklyError } from '@/components/weekly/WeeklyError';
+import { WeeklyLoading } from '@/components/weekly/WeeklyLoading';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-import { useState, useEffect } from "react";
-import { useRouter } from 'next/router';
-import { useUserProfile } from "@/contexts/UserProfileContext";
-import userProfileService from "@/services/userProfileService";
-import type { UserEngagementHistory } from "@/services/userProfileService";
+const DiscoveryDashboard = () => {
+    const { profile, loading: userLoading } = useUserProfile();
+    const [activeTab, setActiveTab] = useState('weekly');
+    const [isModalOpen, setModalOpen] = usePointsOnboarding();
 
-import StaffPortalTab from "@/components/StaffPortalTab";
-import { Button } from "@/components/ui/button";
-
-// New Dashboard Components
-import DashboardLoading from "@/components/dashboard/DashboardLoading";
-import DashboardAuthBlock from "@/components/dashboard/DashboardAuthBlock";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import TabNavigation from "@/components/dashboard/TabNavigation";
-import DiscoverMoreTab from "@/components/dashboard/DiscoverMoreTab";
-import MoreRewardsTab from "@/components/dashboard/MoreRewardsTab";
-
-// ---------------- MAIN DASHBOARD COMPONENT ----------------
-export default function DiscoveryDashboard() {
-    const router = useRouter();
-    const { user, profile, role, loading: profileLoading } = useUserProfile();
-
-    const [userHistory, setUserHistory] = useState&lt;UserEngagementHistory | null&gt;(null);
-    const [historyLoading, setHistoryLoading] = useState(true);
-    const [historyError, setHistoryError] = useState&lt;string | null&gt;(null);
-    const [activeTab, setActiveTab] = useState&lt;"discover" | "rewards" | "staff"&gt;("discover");
-    const [showAuthDialog, setShowAuthDialog] = useState(false);
-
-    useEffect(() => {
-        const { tab } = router.query;
-        if (tab === 'rewards' || (tab === 'staff' && role === 'otwstaff')) {
-            setActiveTab(tab as "rewards" | "staff");
-        } else {
-            setActiveTab('discover');
-        }
-    }, [router.query, role]);
+    const [weeklyList, setWeeklyList] = useState<WeeklyList | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (user &amp;&amp; profile) {
-            const fetchUserHistory = async () => {
-                setHistoryLoading(true);
-                setHistoryError(null);
-                try {
-                    const history = await userProfileService.getUserEngagementHistory(profile.user_id);
-                    setUserHistory(history);
-                } catch (err: any) {
-                    console.error("Error fetching user engagement history:", err);
-                    setHistoryError(err.message || "Failed to load your activity history.");
-                } finally {
-                    setHistoryLoading(false);
-                }
-            };
+        const fetchWeeklyList = async () => {
+            try {
+                setIsLoading(true);
+                const list = await weeklyListService.getActiveWeeklyListWithArtists();
+                setWeeklyList(list);
+            } catch (err) {
+                setError('Failed to load the weekly list. Please try again later.');
+                console.error(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-            fetchUserHistory();
-        } else if (!profileLoading) {
-            // Not logged in, or no profile yet
-            setHistoryLoading(false);
+        fetchWeeklyList();
+    }, []);
+
+    if (userLoading) {
+        return <DashboardLoading />;
+    }
+
+    if (!profile) {
+        return <DashboardAuthBlock />;
+    }
+
+    const renderContent = () => {
+        if (isLoading) return <WeeklyLoading />;
+        if (error) return <WeeklyError message={error} />;
+        if (!weeklyList || weeklyList.artists.length === 0) {
+            return (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>This Week's Chart</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p>The new weekly chart is being prepared. Check back soon!</p>
+                    </CardContent>
+                </Card>
+            );
         }
-    }, [user, profile, profileLoading]);
 
-    if (profileLoading) {
-        return &lt;DashboardLoading /&gt;;
-    }
-
-    if (!user) {
-        return &lt;DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} /&gt;;
-    }
-
-    if (historyError) {
-        return (
-            &lt;div className="min-h-screen bg-black text-white flex items-center justify-center"&gt;
-                &lt;div className="text-center max-w-md mx-auto px-4"&gt;
-                    &lt;h1 className="text-xl md:text-2xl font-bold mb-4"&gt;Dashboard Error&lt;/h1&gt;
-                    &lt;p className="text-red-400 mb-6"&gt;{historyError}&lt;/p&gt;
-                    &lt;Button onClick={() =&gt; window.location.reload()}&gt;Refresh Page&lt;/Button&gt;
-                &lt;/div&gt;
-            &lt;/div&gt;
-        );
-    }
-
-    const { weekly_summaries = [], total_points = 0 } = userHistory || {};
-    const totalVotes = userHistory ? weekly_summaries.reduce((sum, week) =&gt; sum + week.votes_submitted, 0) : 0;
-    const totalVideos = userHistory ? weekly_summaries.reduce((sum, week) =&gt; sum + week.video_views, 0) : 0;
-    const weeksActive = userHistory ? weekly_summaries.length : 0;
+        switch (activeTab) {
+            case 'weekly':
+                return <WeeklyArtistGrid list={weeklyList} />;
+            case 'quadrant':
+                return <WeeklyRatingsQuadrant listId={weeklyList.id} artists={weeklyList.artists} />;
+            case 'discover':
+                return <DiscoverMoreTab />;
+            case 'rewards':
+                return <MoreRewardsTab />;
+            default:
+                return null;
+        }
+    };
 
     return (
-        &lt;div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900"&gt;
-            &lt;DashboardHeader
-                profile={profile}
-                historyLoading={historyLoading}
-                total_points={total_points}
-                totalVotes={totalVotes}
-                totalVideos={totalVideos}
-                weeksActive={weeksActive}
-            /&gt;
-
-            &lt;div className="max-w-4xl mx-auto px-3 md:px-4 pb-8 md:pb-12"&gt;
-                &lt;TabNavigation
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    role={role}
-                /&gt;
-                
-                {activeTab === "discover" &amp;&amp; &lt;DiscoverMoreTab /&gt;}
-                {activeTab === "rewards" &amp;&amp; &lt;MoreRewardsTab totalPoints={total_points} weeksActive={weeksActive} totalVideos={totalVideos} /&gt;}
-                {activeTab === "staff" &amp;&amp; role === 'otwstaff' &amp;&amp; &lt;StaffPortalTab /&gt;}
-            &lt;/div&gt;
-        &lt;/div&gt;
+        <>
+            <DashboardHeader
+                username={profile.username || 'Music Fan'}
+                points={profile.points || 0}
+                onHowItWorksClick={() => setModalOpen(true)}
+            />
+            <HeroVideo />
+            <div className="container mx-auto px-4 py-8">
+                <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+                <div className="mt-8">{renderContent()}</div>
+            </div>
+            <HowPointsWorkModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
+        </>
     );
-}
+};
+
+DiscoveryDashboard.getLayout = function getLayout(page: React.ReactElement) {
+    return <AppLayout>{page}</AppLayout>;
+};
+
+export default DiscoveryDashboard;

@@ -1,17 +1,21 @@
-import { Badge } from '@/components/ui/badge';
-import { Gift, Trophy, Star, Eye, Award } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
-interface MoreRewardsTabProps {
-    totalPoints: number;
-    weeksActive: number;
-    totalVideos: number;
-}
-
-export default function MoreRewardsTab({ totalPoints, weeksActive, totalVideos }: MoreRewardsTabProps) {
-    const goal = 240;
-    const isComplete = totalPoints >= goal;
-    const progress = Math.min((totalPoints / goal) * 100, 100);
+const MoreRewardsTab = () => {
     return (
-        <div className="space-y-4 md:space-y-6"><div className="text-center mb-6 md:mb-8"><h2 className="text-xl md:text-2xl font-bold text-white mb-2">Your Rewards &amp; Achievements</h2><p className="text-gray-400 text-sm md:text-base px-4">Track your progress and unlock exclusive rewards</p></div><div className="bg-gradient-to-r from-yellow-900/20 to-orange-900/20 rounded-xl md:rounded-2xl p-4 md:p-6 border border-yellow-500/30 backdrop-blur-sm"><div className="flex items-start gap-3 md:gap-6"><div className={`w-14 md:w-20 h-14 md:h-20 rounded-xl md:rounded-2xl flex items-center justify-center transition-all shadow-lg flex-shrink-0 ${isComplete ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 shadow-yellow-500/25" : "bg-gradient-to-r from-gray-600 to-gray-700 text-gray-300 shadow-gray-600/25"}`}>{isComplete ? <Gift className="w-7 md:w-10 h-7 md:h-10" /> : <Trophy className="w-7 md:w-10 h-7 md:h-10" />}</div><div className="flex-1 min-w-0"><h3 className="font-bold text-white text-lg md:text-xl mb-1 md:mb-2">September Discovery Reward</h3><p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">Earn 240 points to receive all nine OnesToWatch Zines!</p>{!isComplete ? (<><div className="w-full bg-gray-800 rounded-full h-2 md:h-3 overflow-hidden mb-2 md:mb-3"><div className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 md:h-3 transition-all duration-500 ease-out rounded-full" style={{ width: `${progress}%` }} /></div><div className="flex justify-between items-center"><span className="text-xs md:text-sm text-gray-300">{totalPoints} / {goal} points</span><span className="text-xs md:text-sm font-medium text-yellow-400">{Math.round(progress)}% complete</span></div></>) : (<div className="flex items-center gap-2 md:gap-3 flex-wrap"><Badge className="bg-green-500 text-white px-2 md:px-3 py-1 text-xs md:text-sm">Completed!</Badge><span className="text-green-200 font-semibold text-sm md:text-base">🎉 Package on the way!</span></div>)}</div></div></div><div className="grid gap-3 md:gap-4"><h3 className="text-lg font-semibold text-white mb-1 md:mb-2">Your Achievements</h3>{weeksActive >= 3 && (<div className="bg-white/5 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 border border-green-500/30"><div className="flex items-center gap-3 md:gap-4"><div className="w-12 md:w-16 h-12 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25 flex-shrink-0"><Star className="w-6 md:w-8 h-6 md:h-8 text-white" /></div><div className="min-w-0"><h4 className="font-semibold text-white text-base md:text-lg">Consistent Explorer</h4><p className="text-gray-400 text-sm md:text-base">Active for {weeksActive} weeks - keep up the great work!</p></div></div></div>)}{totalVideos >= 10 && (<div className="bg-white/5 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 border border-purple-500/30"><div className="flex items-center gap-3 md:gap-4"><div className="w-12 md:w-16 h-12 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/25 flex-shrink-0"><Eye className="w-6 md:w-8 h-6 md:h-8 text-white" /></div><div className="min-w-0"><h4 className="font-semibold text-white text-base md:text-lg">Music Discoverer</h4><p className="text-gray-400 text-sm md:text-base">Watched {totalVideos} artist videos and counting!</p></div></div></div>)}<div className="bg-white/5 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-600/30 opacity-75"><div className="flex items-center gap-3 md:gap-4"><div className="w-12 md:w-16 h-12 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-r from-gray-600 to-gray-700 flex items-center justify-center flex-shrink-0"><Award className="w-6 md:w-8 h-6 md:h-8 text-gray-400" /></div><div className="min-w-0"><h4 className="font-semibold text-gray-300 text-base md:text-lg">More Rewards Coming Soon</h4><p className="text-gray-500 text-sm md:text-base">Keep discovering to unlock new achievements and exclusive rewards!</p></div></div></div></div>
+        <Card>
+            <CardHeader>
+                <CardTitle>Discover More Ways to Earn</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="mb-4">You've unlocked the basics. Explore other charts and features to earn more points and discover new artists.</p>
+                <Link href="/genres" passHref>
+                    <Button>Explore Genre Charts</Button>
+                </Link>
+            </CardContent>
+        </Card>
     );
-}
+};
+
+export default MoreRewardsTab;

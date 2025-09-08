@@ -8,16 +8,32 @@ interface UserProfileContextType {
     profile: UserProfile | null;
     loading: boolean;
     isAdmin: boolean;
+    isAuthenticated: boolean;
+    role: string | null;
+    refreshProfile: () => Promise<void>;
     logout: () => Promise<void>;
 }
 
-const UserProfileContext = createContext < UserProfileContextType | undefined > (undefined);
+const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
 
 export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState < User | null > (null);
-    const [profile, setProfile] = useState < UserProfile | null > (null);
+    const [user, setUser] = useState<User | null>(null);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
+
+    const refreshProfile = async () => {
+        if (!user) return;
+        try {
+            const userProfile = await getUserProfile(user.id);
+            setProfile(userProfile);
+            setIsAdmin(userProfile?.role === 'otwstaff');
+        } catch (profileError) {
+            console.error("Error refreshing user profile:", profileError);
+            setProfile(null);
+            setIsAdmin(false);
+        }
+    };
 
     useEffect(() => {
         // This function handles both initial load and auth state changes
@@ -69,7 +85,7 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
         return () => {
             authListener.subscription.unsubscribe();
         };
-    }, []);
+    }, [user]);
 
     const logout = async () => {
         await supabase.auth.signOut();
@@ -83,6 +99,9 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
         profile,
         loading,
         isAdmin,
+        isAuthenticated: !!user,
+        role: profile?.role || null,
+        refreshProfile,
         logout,
     };
 
@@ -100,6 +119,9 @@ export const useUserProfile = () => {
     }
     return context;
 };
+
+// Export UserProfile type for components that need it
+export type { UserProfile };
 
 // Kept for backwards compatibility if other components use it, but useUserProfile is preferred
 export const useAuth = () => {
