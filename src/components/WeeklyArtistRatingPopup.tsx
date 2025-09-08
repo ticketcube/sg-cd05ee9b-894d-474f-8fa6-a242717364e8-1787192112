@@ -1,264 +1,120 @@
-import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+
+import React, { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Progress } from "@/components/ui/progress";
-import { Loader2, Timer, CheckCircle, Ticket, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
-import { useUser, useSession } from "@supabase/auth-helpers-react";
-import { weeklyVotingService } from "@/services/weeklyVotingService";
-import { SubmissionResult } from "@/types/weekly";
-import { pointsConfigService, checkPointsEligibility } from "@/services/pointsConfigService";
-import PointsNotification, { usePointsNotifications } from "@/components/points/PointsNotification";
-import SubmissionSuccessPopup from "@/components/points/SubmissionSuccessPopup";
+import WeeklyRatingsQuadrant from "@/components/weekly/WeeklyRatingsQuadrant";
 import { useUserProfile } from "@/contexts/UserProfileContext";
-import type { Artist } from "@/types/artists";
+import { weeklyVotingService } from "@/services/weeklyVotingService";
+import type { EnrichedWeeklyListArtist } from "@/types/weekly";
+import type { ArtistRating } from "@/types/weekly";
 
 interface WeeklyArtistRatingPopupProps {
-  artist: Artist;
-  isOpen: boolean;
-  onClose: () => void;
-  onRatingComplete: (artistUuid: string, ticketInterest: number, shareInterest: number) => void;
-  weekIdentifier: string;
-  userHasVoted?: boolean;
-  onVideoPointsAwarded?: (artistUuid: string, pointsEarned: number) => void;
-  onSubmissionSuccess?: (result: SubmissionResult) => void;
+    isOpen: boolean;
+    onClose: () => void;
+    artist: EnrichedWeeklyListArtist | null;
+    onVoteSubmit: (artistUuid: string, rating: ArtistRating) => void;
+    initialRating?: ArtistRating;
 }
 
-export default function WeeklyArtistRatingPopup({
-  artist,
-  isOpen,
-  onClose,
-  onRatingComplete,
-  weekIdentifier,
-  userHasVoted,
-  onVideoPointsAwarded,
-  onSubmissionSuccess,
-}: WeeklyArtistRatingPopupProps) {
-  const user = useUser();
-  const session = useSession();
+const WeeklyArtistRatingPopup: React.FC<WeeklyArtistRatingPopupProps> = ({
+    isOpen,
+    onClose,
+    artist,
+    onVoteSubmit,
+    initialRating
+}) => {
+    const { profile } = useUserProfile();
+    const [selectedQuadrant, setSelectedQuadrant] = useState<{ x: number; y: number } | null>(initialRating || null);
 
-  // --- Slider states ---
-  const [ticketInterest, setTicketInterest] = useState(50);
-  const [shareInterest, setShareInterest] = useState(50);
-  const [slidersChanged, setSlidersChanged] = useState(false);
+    useEffect(() => {
+        setSelectedQuadrant(initialRating || null);
+    }, [initialRating, artist]);
 
-  // --- Video states ---
-  const [watchTime, setWatchTime] = useState(0);
-  const [hasEarnedPoints, setHasEarnedPoints] = useState(false);
-  const [isEligibleForPoints, setIsEligibleForPoints] = useState(false);
-  const [minWatchTime, setMinWatchTime] = useState(15);
-  const [videoPoints, setVideoPoints] = useState(0);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // --- Submission states ---
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // --- Video Points Eligibility Check ---
-  const checkVideoPoints = async () => {
-    if (!user) return;
-    try {
-      const minTime = await pointsConfigService.getMinValue('video_view');
-      const points = await pointsConfigService.getMaxValue('video_view');
-      setMinWatchTime(minTime);
-      setVideoPoints(points);
-
-      const result = await checkPointsEligibility(user.id, 'video_view', { artistUuid: artist.uuid, weekIdentifier });
-      setIsEligibleForPoints(result.eligible);
-    } catch (err) {
-      console.error("Error checking video points eligibility:", err);
-      setIsEligibleForPoints(false);
+    if (!artist) {
+        return null;
     }
-  };
 
-  useEffect(() => {
-    if (isOpen && artist) {
-      setWatchTime(0);
-      setHasEarnedPoints(false);
-      setIsEligibleForPoints(false);
-      setSlidersChanged(false);
-      setTicketInterest(50);
-      setShareInterest(50);
-      setError(null);
-      stopTimer();
-      checkVideoPoints();
-    }
-    return () => stopTimer();
-  }, [isOpen, artist, user]);
+    const handleQuadrantSelect = (quadrant: { x: number; y: number }) => {
+        setSelectedQuadrant(quadrant);
+    };
 
-  // --- Video Timer ---
-  const startTimer = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setWatchTime(prev => {
-        const newTime = prev + 1;
-        if (newTime >= minWatchTime && !hasEarnedPoints && isEligibleForPoints) {
-          awardVideoPoints();
-          return minWatchTime;
+    const handleSubmitVote = async () => {
+        if (!profile || !selectedQuadrant || !artist) {
+            alert("Please select a rating and ensure you are logged in.");
+            return;
         }
-        return Math.min(newTime, minWatchTime);
-      });
-    }, 1000);
-  };
-  const stopTimer = () => { if (timerRef.current) clearInterval(timerRef.current); };
 
-  useEffect(() => {
-    if (isOpen && isVideoPlaying && isEligibleForPoints && !hasEarnedPoints) startTimer();
-    else stopTimer();
-    return stopTimer;
-  }, [isOpen, isVideoPlaying, isEligibleForPoints, hasEarnedPoints]);
+        try {
+            const newRating: ArtistRating = {
+                artistUuid: artist.uuid,
+                x: selectedQuadrant.x,
+                y: selectedQuadrant.y,
+                ticketInterest: selectedQuadrant.x > 0,
+                shareInterest: selectedQuadrant.y > 0,
+                isRated: true,
+                hasWatched: false, // This will be handled separately
+            };
+            
+            await weeklyVotingService.submitVote({
+                user_id: profile.id,
+                artist_uuid: artist.uuid,
+                week_identifier: artist.week_identifier,
+                quadrant_x: newRating.x,
+                quadrant_y: newRating.y,
+            });
 
-  // --- Award Video Points ---
-  const awardVideoPoints = async () => {
-    if (!user || !session || hasEarnedPoints || !isEligibleForPoints) return;
-    try {
-      const res = await fetch('/api/voting/videoview_submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-        body: JSON.stringify({ artistUuid: artist.uuid, weekIdentifier, watchTime }),
-      });
-      if (!res.ok) throw await res.json();
-      const data = await res.json();
-      setHasEarnedPoints(true);
-      if (onVideoPointsAwarded) onVideoPointsAwarded(artist.uuid, data.pointsAwarded);
-    } catch (err: any) {
-      console.error("Error awarding video points:", err);
-    } finally { stopTimer(); }
-  };
+            onVoteSubmit(artist.uuid, newRating);
+            onClose();
 
-  // --- Submit Quadrant Vote ---
-  const handleSubmitQuadrant = async () => {
-    if (!user || !session || isSubmitting || userHasVoted) return;
-    setIsSubmitting(true);
-    setError(null);
+        } catch (error) {
+            console.error("Error submitting vote:", error);
+            alert("There was an error submitting your vote. Please try again.");
+        }
+    };
 
-    try {
-      const res = await fetch('/api/voting/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-        body: JSON.stringify({
-          artistUuid: artist.uuid,
-          weekIdentifier,
-          quadrant_x: ticketInterest,
-          quadrant_y: shareInterest,
-        }),
-      });
-      if (!res.ok) throw await res.json();
-      const data = await res.json();
-      onRatingComplete(artist.uuid, ticketInterest, shareInterest);
-      if (onSubmissionSuccess) {
-        onSubmissionSuccess({ message: `Rating submitted! You earned ${data.pointsAwarded} points.`, pointsEarned: data.pointsAwarded });
-      }
-      onClose();
-    } catch (err: any) {
-      console.error("Quadrant submit error:", err);
-      setError(err.error || "Failed to submit rating");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    return (
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-4xl h-auto flex flex-col">
+                <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold text-center">{artist.artist_name}</DialogTitle>
+                </DialogHeader>
 
-  // --- UI ---
-  const videoLinks = artist.artist_videolink?.split(",").map(s => s.trim()).filter(Boolean) || [];
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const handleVideoIndexChange = (i: number) => setCurrentVideoIndex(i);
+                <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 p-4 overflow-y-auto">
+                    <div className="w-full">
+                         <ArtistVideoPlayer 
+                            videoUrl={artist.video_url}
+                            artistName={artist.artist_name}
+                            artistUuid={artist.uuid}
+                            weekIdentifier={artist.week_identifier}
+                        />
+                    </div>
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full p-0 bg-black text-white border-gray-800">
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          {/* Video Player */}
-          <div className="relative aspect-video bg-gray-900">
-            <ArtistVideoPlayer
-              artist={artist}
-              videoLinks={videoLinks}
-              currentIndex={currentVideoIndex}
-              onChangeIndex={handleVideoIndexChange}
-              isEmbed
-              showNavigationControls={false}
-              onPlay={() => setIsVideoPlaying(true)}
-              onPause={() => setIsVideoPlaying(false)}
-            />
-          </div>
-
-          {/* Rating Sliders */}
-          <div className="p-6 flex flex-col">
-            <DialogHeader className="mb-4 text-center">
-              <DialogTitle className="text-2xl font-bold">{artist.artist_name}</DialogTitle>
-              {error && <div className="bg-red-900/50 text-red-300 px-3 py-2 rounded">{error}</div>}
-              {/* Video Points Display */}
-              <div className="flex justify-center mt-3">
-                {!isEligibleForPoints ? <div className="bg-gray-800 px-3 py-1 rounded-lg text-xs text-gray-400">Video points earned</div>
-                  : hasEarnedPoints ? <div className="bg-green-600 px-3 py-1 rounded-lg text-xs text-white">{videoPoints} points earned!</div>
-                    : <div className="bg-gray-800 px-3 py-1 rounded-lg text-xs text-white"><Timer className="w-4 h-4 inline" /> {watchTime}s / {minWatchTime}s</div>}
-              </div>
-            </DialogHeader>
-
-            {/* Sliders */}
-            <div className="flex-1 space-y-6">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <Ticket className="w-4 h-4" />
-                    <span>Would you buy a ticket?</span>
-                  </div>
-                  <span className="text-blue-400">{ticketInterest}%</span>
+                    <div className="flex flex-col items-center justify-center">
+                        <h3 className="text-lg font-semibold mb-2">Rate This Artist</h3>
+                        <p className="text-sm text-muted-foreground mb-4 text-center">
+                            Your rating helps us discover the next big artists. Where does this artist fall on your vibe chart?
+                        </p>
+                        <WeeklyRatingsQuadrant
+                            onSelect={handleQuadrantSelect}
+                            initialSelection={selectedQuadrant}
+                        />
+                    </div>
                 </div>
-                <Slider 
-                  value={[ticketInterest]} 
-                  onValueChange={v => { setTicketInterest(v[0]); setSlidersChanged(true); }} 
-                  max={100} 
-                  step={1} 
-                  disabled={userHasVoted}
-                  className="w-full"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    <span>Would you share with friends?</span>
-                  </div>
-                  <span className="text-purple-400">{shareInterest}%</span>
-                </div>
-                <Slider 
-                  value={[shareInterest]} 
-                  onValueChange={v => { setShareInterest(v[0]); setSlidersChanged(true); }} 
-                  max={100} 
-                  step={1} 
-                  disabled={userHasVoted}
-                  className="w-full"
-                />
-              </div>
-            </div>
 
-            <DialogFooter className="pt-6">
-              <Button 
-                onClick={handleSubmitQuadrant} 
-                disabled={isSubmitting || userHasVoted || !slidersChanged} 
-                className="w-full text-lg bg-blue-600 hover:bg-blue-700"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="animate-spin mr-2 w-4 h-4" />
-                    Submitting...
-                  </>
-                ) : userHasVoted ? (
-                  <>
-                    <CheckCircle className="mr-2 w-4 h-4" />
-                    Already Rated
-                  </>
-                ) : (
-                  "Submit Rating"
-                )}
-              </Button>
-            </DialogFooter>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
+                <DialogFooter className="p-4">
+                    <DialogClose asChild>
+                        <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    </DialogClose>
+                    <Button onClick={handleSubmitVote} disabled={!selectedQuadrant}>
+                        Submit Rating
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+export default WeeklyArtistRatingPopup;
+
