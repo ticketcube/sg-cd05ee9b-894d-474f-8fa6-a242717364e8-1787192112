@@ -86,7 +86,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
     return (
         <>
             <DashboardHeader
-                username={profile.username || 'Music Fan'}
                 points={profile.total_points || 0}
                 onHowItWorksClick={() => dismiss()}
             />
