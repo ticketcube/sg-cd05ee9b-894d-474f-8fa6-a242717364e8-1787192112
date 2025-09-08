@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import AppLayout from "@/components/layout/AppLayout";
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import { EnrichedWeeklyListArtist } from '@/types/artists';
-import { SubmissionResult } from '@/types/weekly';
+import { EnrichedWeeklyListArtist, SubmissionResult } from '@/types/weekly';
 
 // --- Custom Hooks ---
 import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
@@ -10,20 +9,20 @@ import { useWeeklyLists } from '@/hooks/useWeeklyLists';
 import { useWeeklyListDetail } from '@/hooks/useWeeklyListDetail';
 
 // --- UI Components ---
-import { WeeklyArtistGrid } from '@/components/weekly/WeeklyArtistGrid';
-import { WeeklyEmpty } from '@/components/weekly/WeeklyEmpty';
-import { WeeklyError } from '@/components/weekly/WeeklyError';
-import { WeeklyListSelector } from '@/components/weekly/WeeklyListSelector';
-import { WeeklyLoading } from '@/components/weekly/WeeklyLoading';
-import { WeeklyRatingsQuadrant } from '@/components/weekly/WeeklyRatingsQuadrant';
-import { WeeklyRewardsHeader } from '@/components/weekly/WeeklyRewardsHeader';
+import WeeklyArtistGrid from '@/components/weekly/WeeklyArtistGrid';
+import WeeklyEmpty from '@/components/weekly/WeeklyEmpty';
+import WeeklyError from '@/components/weekly/WeeklyError';
+import WeeklyListSelector from '@/components/weekly/WeeklyListSelector';
+import WeeklyLoading from '@/components/weekly/WeeklyLoading';
+import WeeklyRatingsQuadrant from '@/components/weekly/WeeklyRatingsQuadrant';
+import WeeklyRewardsHeader from '@/components/weekly/WeeklyRewardsHeader';
 
 // --- Popups & Notifications ---
 import HowPointsWorkModal from "@/components/points/HowPointsWorkModal";
 import WeeklyArtistRatingPopup from "@/components/WeeklyArtistRatingPopup";
 import SubmissionSuccessPopup from "@/components/points/SubmissionSuccessPopup";
-import { PointsNotification } from '@/components/points/PointsNotification';
-import { useToast } from '@/components/ui/use-toast';
+import { usePointsNotifications } from '@/components/points/PointsNotification';
+import { useToast } from '@/hooks/use-toast';
 
 
 export default function WeeklyRatingsPage() {
@@ -31,23 +30,23 @@ export default function WeeklyRatingsPage() {
     const { toast } = useToast();
 
     // --- State Hooks ---
-    const { showOnboarding, dismissOnboarding } = usePointsOnboarding();
+    const { showOnboarding, dismiss } = usePointsOnboarding();
     const { lists, selectedListId, setSelectedListId, loading: listsLoading, error: listsError } = useWeeklyLists();
     const {
         weeklyList,
         artistRatings,
         updateRating,
-        markArtistAsWatched,
+        markWatched,
         loading: detailLoading,
         error: detailError,
         reload: reloadListDetail
-    } = useWeeklyListDetail(selectedListId, user?.id);
+    } = useWeeklyListDetail(selectedListId ? parseInt(selectedListId) : 0, user?.id);
 
     // --- Local UI State for Popups ---
     const [showHowPointsWork, setShowHowPointsWork] = useState(false);
-    const [selectedArtist, setSelectedArtist] = useState < EnrichedWeeklyListArtist | null > (null);
+    const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
     const [showRatingPopup, setShowRatingPopup] = useState(false);
-    const [submissionResult, setSubmissionResult] = useState < SubmissionResult | null > (null);
+    const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
     // --- Effects ---
@@ -63,26 +62,34 @@ export default function WeeklyRatingsPage() {
         setShowRatingPopup(true);
     };
 
-    const handleRatingComplete = useCallback(async (artistId: string, ticketInterest: number, shareInterest: number, x: number, y: number, pointsAwarded: number) => {
+    const handleRatingComplete = useCallback(async (artistId: string, ticketInterest: number, shareInterest: number) => {
         setShowRatingPopup(false);
 
-        const result = await updateRating(artistId, ticketInterest, shareInterest, x, y);
+        const result = await updateRating(artistId, ticketInterest, shareInterest);
 
-        if (result.success) {
-            setSubmissionResult({ pointsAwarded: result.pointsAwarded ?? 0, type: 'rate' });
+        if (result) {
+            setSubmissionResult({ 
+                message: 'Rating submitted successfully',
+                pointsAwarded: 5,
+                type: 'rate' 
+            });
             setShowSuccessPopup(true);
-            toast({ title: "Rating Submitted!", description: `You earned ${result.pointsAwarded} points.` });
+            toast({ title: "Rating Submitted!", description: "You earned 5 points." });
         } else {
-            toast({ title: "Error", description: result.error, variant: 'destructive' });
+            toast({ title: "Error", description: 'Failed to submit rating', variant: 'destructive' });
         }
     }, [updateRating, toast]);
 
     const handleVideoPointsAwarded = useCallback(async (artistId: string, points: number) => {
-        await markArtistAsWatched(artistId);
-        setSubmissionResult({ pointsAwarded: points, type: 'watch' });
+        await markWatched(artistId);
+        setSubmissionResult({ 
+            message: 'Video watched successfully',
+            pointsAwarded: points, 
+            type: 'watch' 
+        });
         setShowSuccessPopup(true);
         toast({ title: "Video Watched!", description: `You earned ${points} points.` });
-    }, [markArtistAsWatched, toast]);
+    }, [markWatched, toast]);
 
     const handleCloseSuccessPopup = () => {
         setShowSuccessPopup(false);
@@ -90,13 +97,13 @@ export default function WeeklyRatingsPage() {
     };
 
     const handleDismissOnboarding = () => {
-        dismissOnboarding();
+        dismiss();
         setShowHowPointsWork(false);
     };
 
     // --- Render Logic ---
     const isLoading = listsLoading || detailLoading;
-    const error = listsError || detailError;
+    const error = listsError || (detailError instanceof Error ? detailError.message : detailError);
 
     const renderContent = () => {
         if (isLoading) return <WeeklyLoading />;
@@ -108,16 +115,16 @@ export default function WeeklyRatingsPage() {
                 <div className="space-y-4">
                     <h2 className="text-xl font-semibold tracking-tight">Rate Artists</h2>
                     <WeeklyArtistGrid
-                        artists={weeklyList.artists}
-                        onSelect={handleSelectArtist}
+                        weeklyList={weeklyList}
+                        onArtistClick={handleSelectArtist}
                     />
                 </div>
                 <div className="space-y-4">
                     <h2 className="text-xl font-semibold tracking-tight">Your Ratings</h2>
                     <WeeklyRatingsQuadrant
+                        artists={weeklyList.artists}
                         ratings={artistRatings}
-                        weeklyList={weeklyList}
-                        onSelectArtist={handleSelectArtist}
+                        onRating={handleRatingComplete}
                     />
                 </div>
             </div>
@@ -130,7 +137,7 @@ export default function WeeklyRatingsPage() {
                 <WeeklyRewardsHeader onShowInfo={() => setShowHowPointsWork(true)} />
 
                 <div className="my-6">
-                    <PointsNotification />
+                    {/* Points notification placeholder */}
                 </div>
 
                 <div className="mb-8 max-w-sm">
@@ -148,7 +155,7 @@ export default function WeeklyRatingsPage() {
             {/* --- Modals & Popups --- */}
             <HowPointsWorkModal
                 isOpen={showHowPointsWork}
-                onClose={handleDismissOnboarding}
+                onDismiss={handleDismissOnboarding}
                 isOnboarding={showOnboarding}
             />
 
@@ -158,9 +165,7 @@ export default function WeeklyRatingsPage() {
                     onClose={() => setShowRatingPopup(false)}
                     artist={selectedArtist}
                     onRatingComplete={handleRatingComplete}
-                    onVideoPointsAwarded={handleVideoPointsAwarded}
-                    initialTicketInterest={artistRatings.find(r => r.artistUuid === selectedArtist.artist_id)?.ticketInterest ?? 50}
-                    initialShareInterest={artistRatings.find(r => r.artistUuid === selectedArtist.artist_id)?.shareInterest ?? 50}
+                    weekIdentifier={weeklyList?.week_identifier || ''}
                 />
             )}
 
@@ -168,7 +173,7 @@ export default function WeeklyRatingsPage() {
                 <SubmissionSuccessPopup
                     isOpen={showSuccessPopup}
                     onClose={handleCloseSuccessPopup}
-                    pointsAwarded={submissionResult.pointsAwarded}
+                    message={submissionResult.message}
                     type={submissionResult.type}
                 />
             )}

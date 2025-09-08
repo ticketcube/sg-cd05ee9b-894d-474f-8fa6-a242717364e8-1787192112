@@ -1,28 +1,18 @@
 // src/components/weekly/WeeklyLoading.tsx
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
-export function WeeklyLoading() {
-    return (
-        <div className="space-y-4">
-            <Skeleton className="h-8 w-1/4 mb-6" />
-            <div className="border border-dashed rounded-lg p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                        <Skeleton className="h-[125px] w-full rounded-xl" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-4 w-4/5" />
-                            <Skeleton className="h-4 w-3/5" />
-                        </div>
-                    </div>
-                    <div className="space-y-3">
-                        <Skeleton className="h-[125px] w-full rounded-xl" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-4 w-4/5" />
-                            <Skeleton className="h-4 w-3/5" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+interface WeeklyLoadingProps {
+  message?: string;
+}
+
+export default function WeeklyLoading({ message = "Loading weekly list..." }: WeeklyLoadingProps) {
+  return (
+    <Card className="p-8 text-center">
+      <CardContent className="flex flex-col items-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
+        <p className="text-gray-600">{message}</p>
+      </CardContent>
+    </Card>
+  );
 }

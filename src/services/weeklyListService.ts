@@ -1,7 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
-import { WeeklyList, WeeklyListWithArtists, WeeklyListWithEnrichedArtists } from "@/types/weekly";
-import { EnrichedWeeklyListArtist } from "@/types/artists";
+import { 
+    WeeklyList, 
+    WeeklyListWithArtists, 
+    WeeklyListWithEnrichedArtists,
+    EnrichedWeeklyListArtist 
+} from "@/types/weekly";
 
 export const weeklyListService = {
     async getAllWeeklyLists(): Promise<WeeklyList[]> {
@@ -27,7 +31,7 @@ export const weeklyListService = {
                     *
                 )
             `)
-            .eq('is_active', true)
+            .eq('status', 'active')
             .single();
 
         if (error) {
@@ -40,8 +44,8 @@ export const weeklyListService = {
     async getActiveWeeklyListWithArtists(): Promise<WeeklyListWithEnrichedArtists | null> {
         const { data: listData, error: listError } = await supabase
             .from('weekly_lists')
-            .select('id, name, description, start_date, end_date')
-            .eq('is_active', true)
+            .select('*')
+            .eq('status', 'active')
             .single();
 
         if (listError || !listData) {
@@ -63,12 +67,12 @@ export const weeklyListService = {
             return null;
         }
 
-        const enrichedArtists: EnrichedWeeklyListArtist[] = artistsData.map((item: any) => ({
+        const enrichedArtists: EnrichedWeeklyListArtist[] = artistsData?.map((item: any) => ({
             ...item.artists,
             weekly_list_id: listData.id,
             artist_uuid: item.artist_uuid,
             video_url: item.video_url,
-        }));
+        })) || [];
 
         return {
             ...listData,
@@ -85,7 +89,7 @@ export const weeklyListService = {
         // Get user's votes for this list
         const { data: votes, error: votesError } = await supabase
             .from('weekly_votes')
-            .select('artist_uuid, ticket_interest, share_interest')
+            .select('artist_uuid, quadrant_x, quadrant_y')
             .eq('weekly_list_id', listId)
             .eq('user_id', userId)
             .in('artist_uuid', artistUuids);
@@ -109,8 +113,8 @@ export const weeklyListService = {
         list.artists.forEach(artist => {
             const vote = votesMap.get(artist.uuid);
             artist.is_rated = !!vote;
-            artist.ticket_interest = vote?.ticket_interest;
-            artist.share_interest = vote?.share_interest;
+            artist.ticket_interest = vote?.quadrant_x;
+            artist.share_interest = vote?.quadrant_y;
             artist.user_has_watched = viewsSet.has(artist.uuid);
         });
 

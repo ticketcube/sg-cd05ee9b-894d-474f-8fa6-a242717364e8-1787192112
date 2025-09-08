@@ -1,96 +1,112 @@
 // src/hooks/useWeeklyListDetail.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { weeklyListService } from '@/services/weeklyListService';
 import { weeklyVotingService } from '@/services/weeklyVotingService';
-import { voteToSliders } from '@/lib/quadrant';
-import type {
-    ArtistRating,
-    WeeklyListWithEnrichedArtists,
-    EnrichedWeeklyListArtist
+import { 
+  WeeklyListWithEnrichedArtists, 
+  ArtistRating
 } from '@/types/weekly';
 
-export function useWeeklyListDetail(listId: string | null, userId: string | undefined) {
-    const [weeklyList, setWeeklyList] = useState < WeeklyListWithEnrichedArtists | null > (null);
-    const [artistRatings, setArtistRatings] = useState < ArtistRating[] > ([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState < string | null > (null);
+export function useWeeklyListDetail(listId: number, userId?: string) {
+  const [weeklyList, setWeeklyList] = useState<WeeklyListWithEnrichedArtists | null>(null);
+  const [artistRatings, setArtistRatings] = useState<ArtistRating[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
-    const loadData = useCallback(async () => {
-        if (!listId || !userId) {
-            setWeeklyList(null);
-            setArtistRatings([]);
-            return;
-        }
+  const loadWeeklyList = async () => {
+    try {
+      setLoading(true);
+      setError('');
 
-        setLoading(true);
-        setError(null);
+      const listData = await weeklyListService.getWeeklyListForUser(
+        listId.toString(),
+        userId || ''
+      );
 
-        try {
-            const [listData, votesData] = await Promise.all([
-                weeklyListService.getWeeklyListForUser(listId, userId),
-                weeklyVotingService.getVotesForWeek(listId, userId),
-            ]);
+      if (!listData) {
+        throw new Error('Weekly list not found');
+      }
 
-            if (!listData) {
-                throw new Error('Weekly list not found.');
-            }
+      setWeeklyList(listData);
 
-            // Combine the list artists with their corresponding votes/ratings
-            const ratings: ArtistRating[] = listData.artists.map((artist: EnrichedWeeklyListArtist) => {
-                const vote = votesData.find(v => v.artist_id === artist.artist_uuid);
-                const sliderValues = vote ? voteToSliders(vote.vote_x, vote.vote_y) : { ticket: 50, share: 50 };
-
-                return {
-                    artistUuid: artist.artist_uuid,
-                    ticketInterest: sliderValues.ticket,
-                    shareInterest: sliderValues.share,
-                    isRated: !!vote,
-                    hasWatched: !!artist.has_watched_video,
-                };
-            });
-
-            setWeeklyList(listData);
-            setArtistRatings(ratings);
-
-        } catch (err) {
-            console.error('Failed to load weekly list details:', err);
-            setError(err instanceof Error ? err.message : 'An unknown error occurred.');
-            setWeeklyList(null);
-            setArtistRatings([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [listId, userId]);
-
-    useEffect(() => {
-        loadData();
-    }, [loadData]);
-
-    const updateRating = useCallback((artistUuid: string, ticket: number, share: number) => {
-        setArtistRatings(prevRatings =>
-            prevRatings.map(r =>
-                r.artistUuid === artistUuid
-                    ? { ...r, ticketInterest: ticket, shareInterest: share, isRated: true }
-                    : r
-            )
+      // Load user ratings if userId is provided
+      if (userId) {
+        const ratingsData = await weeklyVotingService.getArtistRatingsForWeek(
+          listId.toString(),
+          userId
         );
-    }, []);
+        setArtistRatings(ratingsData);
+      }
+    } catch (err) {
+      console.error('Error loading weekly list detail:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load weekly list');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const markWatched = useCallback((artistUuid: string) => {
-        setArtistRatings(prevRatings =>
-            prevRatings.map(r =>
-                r.artistUuid === artistUuid ? { ...r, hasWatched: true } : r
-            )
+  const updateRating = (artistUuid: string, ticket: number, share: number) => {
+    setArtistRatings(prev => {
+      const existing = prev.find(r => r.artistUuid === artistUuid);
+      if (existing) {
+        return prev.map(r => 
+          r.artistUuid === artistUuid 
+            ? { ...r, ticketInterest: ticket, shareInterest: share, isRated: true, x: ticket, y: share }
+            : r
         );
-    }, []);
+      } else {
+        return [...prev, {
+          artistUuid,
+          ticketInterest: ticket,
+          shareInterest: share,
+          hasWatched: false,
+          isRated: true,
+          x: ticket,
+          y: share
+        }];
+      }
+    });
+  };
 
-    return {
-        weeklyList,
-        artistRatings,
-        loading,
-        error,
-        reload: loadData,
-        updateRating,
-        markWatched,
-    };
+  const markWatched = (artistUuid: string) => {
+    setArtistRatings(prev => {
+      const existing = prev.find(r => r.artistUuid === artistUuid);
+      if (existing) {
+        return prev.map(r => 
+          r.artistUuid === artistUuid 
+            ? { ...r, hasWatched: true }
+            : r
+        );
+      } else {
+        return [...prev, {
+          artistUuid,
+          hasWatched: true,
+          isRated: false,
+          x: 0,
+          y: 0
+        }];
+      }
+    });
+  };
+
+  const reload = async () => {
+    await loadWeeklyList();
+  };
+
+  useEffect(() => {
+    if (listId) {
+      loadWeeklyList();
+    }
+  }, [listId, userId]);
+
+  return {
+    weeklyList,
+    artistRatings,
+    loading,
+    error,
+    reload,
+    updateRating,
+    markWatched
+  };
 }

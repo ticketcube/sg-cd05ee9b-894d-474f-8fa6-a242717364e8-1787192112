@@ -1,16 +1,18 @@
 // src/components/weekly/WeeklyEmpty.tsx
-import { Info } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { FileX } from 'lucide-react';
 
 interface WeeklyEmptyProps {
-    message?: string;
+  message?: string;
 }
 
-export function WeeklyEmpty({ message = "There are no weekly lists available right now. Please check back later." }: WeeklyEmptyProps) {
-    return (
-        <div className="flex flex-col items-center justify-center text-center text-gray-500 dark:text-gray-400 p-8 border-2 border-dashed rounded-lg min-h-[200px]">
-            <Info className="w-12 h-12 mb-4" />
-            <p>{message}</p>
-        </div>
-    );
+export default function WeeklyEmpty({ message = "No weekly list found" }: WeeklyEmptyProps) {
+  return (
+    <Card className="p-8 text-center">
+      <CardContent>
+        <FileX className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+        <p className="text-gray-600">{message}</p>
+      </CardContent>
+    </Card>
+  );
 }
-

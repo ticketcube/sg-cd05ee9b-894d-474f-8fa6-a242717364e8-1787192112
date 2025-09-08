@@ -1,22 +1,22 @@
-import { useState, useEffect } from 'react';
-import { useUserProfile } from '@/contexts/UserProfileContext';
-import AppLayout from "@/components/layout/AppLayout";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import HeroVideo from "@/components/dashboard/HeroVideo";
-import TabNavigation from "@/components/dashboard/TabNavigation";
-import DiscoverMoreTab from "@/components/dashboard/DiscoverMoreTab";
-import MoreRewardsTab from "@/components/dashboard/MoreRewardsTab";
-import DashboardLoading from "@/components/dashboard/DashboardLoading";
-import DashboardAuthBlock from "@/components/dashboard/DashboardAuthBlock";
-import HowPointsWorkModal from "@/components/points/HowPointsWorkModal";
-import WeeklyRatingsQuadrant from "@/components/weekly/WeeklyRatingsQuadrant";
-import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
-import { weeklyListService } from '@/services/weeklyListService';
-import { WeeklyListWithEnrichedArtists } from '@/types/weekly';
-import { WeeklyArtistGrid } from '@/components/weekly/WeeklyArtistGrid';
-import { WeeklyError } from '@/components/weekly/WeeklyError';
-import { WeeklyLoading } from '@/components/weekly/WeeklyLoading';
+import React from 'react';
+import { useRouter } from 'next/router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, Users, TrendingUp, Clock, ArrowRight } from 'lucide-react';
+
+import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
+import { TabNavigation } from '@/components/dashboard/TabNavigation';
+import { DiscoverMoreTab } from '@/components/dashboard/DiscoverMoreTab';
+import { MoreRewardsTab } from '@/components/dashboard/MoreRewardsTab';
+import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
+
+import { useWeeklyLists } from '@/hooks/useWeeklyLists';
+
+import WeeklyArtistGrid from '@/components/weekly/WeeklyArtistGrid';
+import WeeklyError from '@/components/weekly/WeeklyError';
+import WeeklyLoading from '@/components/weekly/WeeklyLoading';
+import WeeklyRatingsQuadrant from '@/components/weekly/WeeklyRatingsQuadrant';
 
     const DiscoveryDashboard = () => {  
     const { profile, loading: userLoading } = useUserProfile();

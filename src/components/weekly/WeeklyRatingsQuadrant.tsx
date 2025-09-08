@@ -1,72 +1,86 @@
 // src/components/weekly/WeeklyRatingsQuadrant.tsx
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { voteToSliders } from "@/lib/quadrant";
-import { WeeklyListWithEnrichedArtists, ArtistRating } from "@/types/weekly";
-import { EnrichedWeeklyListArtist } from "@/types/artists";
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Play } from 'lucide-react';
+import { EnrichedWeeklyListArtist, ArtistRating } from '@/types/weekly';
 
 interface WeeklyRatingsQuadrantProps {
+  artists: EnrichedWeeklyListArtist[];
   ratings: ArtistRating[];
-  weeklyList: WeeklyListWithEnrichedArtists | null;
-  onSelectArtist: (artist: EnrichedWeeklyListArtist) => void;
+  onRating: (artistUuid: string, ticketInterest: number, shareInterest: number) => void;
 }
 
-export default function WeeklyRatingsQuadrant({ ratings, weeklyList, onSelectArtist }: WeeklyRatingsQuadrantProps) {
-  const ratedArtists = ratings
-    .filter(r => r.isRated)
-    .map(rating => {
-      const artistData = weeklyList?.artists.find(a => a.artist_uuid === rating.artistUuid);
-      return artistData ? { ...artistData, rating } : null;
-    })
-    .filter(Boolean) as (EnrichedWeeklyListArtist & { rating: ArtistRating })[];
+export default function WeeklyRatingsQuadrant({ artists, ratings, onRating }: WeeklyRatingsQuadrantProps) {
+  const handleQuadrantClick = (event: React.MouseEvent<HTMLDivElement>, artist: EnrichedWeeklyListArtist) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1; // -1 to 1
+    const y = ((event.clientY - rect.top) / rect.height) * 2 - 1; // -1 to 1
+    
+    // Convert coordinates to rating values (0-10)
+    const ticketInterest = Math.round((x + 1) * 5); // 0 to 10
+    const shareInterest = Math.round((1 - y) * 5); // 0 to 10 (inverted y)
+    
+    onRating(artist.artist_uuid, ticketInterest, shareInterest);
+  };
 
   return (
-    <div className="relative aspect-square w-full max-w-lg mx-auto bg-gray-50 dark:bg-gray-800/50 rounded-lg shadow-inner overflow-hidden">
-      {/* Quadrant Lines */}
-      <div className="absolute top-1/2 left-0 w-full h-px bg-gray-300 dark:bg-gray-600"></div>
-      <div className="absolute left-1/2 top-0 h-full w-px bg-gray-300 dark:bg-gray-600"></div>
-
-      {/* Axis Labels */}
-      <div className="absolute top-1 left-1/2 -translate-x-1/2 text-xs font-semibold text-gray-500">SHARE INTENT</div>
-      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 text-xs text-gray-400">Low</div>
-      <div className="absolute top-1/2 -translate-y-1/2 left-1 text-xs font-semibold text-gray-500 transform -rotate-90 origin-top-left -translate-x-full -ml-3">TICKET INTENT</div>
-      <div className="absolute top-1/2 -translate-y-1/2 right-1 text-xs text-gray-400 transform rotate-90 origin-top-right translate-x-full ml-1">Low</div>
-
-      <TooltipProvider>
-        {ratedArtists.map((artist) => {
-          // This will still cause a type error until we fix the ArtistRating type.
-          const { ticket, share } = voteToSliders(artist.rating.x, artist.rating.y);
-
-          // Position is based on slider values, with (0,0) at bottom-left
-          const style = {
-            left: `${share}%`,
-            bottom: `${ticket}%`,
-          };
-
-          return (
-            <Tooltip key={artist.artist_uuid}>
-              <TooltipTrigger asChild>
-                <div
-                  className="absolute transform -translate-x-1/2 translate-y-1/2 cursor-pointer transition-transform hover:scale-110"
-                  style={style}
-                  onClick={() => onSelectArtist(artist)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelectArtist(artist)}
-                >
-                  <Avatar className="w-10 h-10 border-2 border-white dark:border-gray-900 shadow-md">
-                    <AvatarImage src={artist.profile_image_url || ''} alt={artist.artist_name || 'artist'} />
-                    <AvatarFallback>{artist.artist_name?.charAt(0) || 'A'}</AvatarFallback>
-                  </Avatar>
+    <div className="grid gap-4">
+      {artists.map((artist) => {
+        const rating = ratings.find(r => r.artistUuid === artist.artist_uuid);
+        
+        return (
+          <Card key={artist.artist_uuid} className="overflow-hidden">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4 mb-4">
+                <img 
+                  src={artist.artist_image || artist.profile_image_url} 
+                  alt={artist.artist_name}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <h3 className="font-semibold">{artist.artist_name}</h3>
+                  <p className="text-sm text-gray-600">{artist.artist_genre}</p>
                 </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{artist.artist_name}</p>
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
-      </TooltipProvider>
+                <Button size="sm" variant="outline">
+                  <Play className="w-4 h-4 mr-1" />
+                  Play
+                </Button>
+              </div>
+              
+              <div 
+                className="relative w-full h-32 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={(e) => handleQuadrantClick(e, artist)}
+              >
+                <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                  <div className="border-r border-b border-gray-200 flex items-center justify-center text-xs text-gray-500">
+                    Low Ticket<br />High Share
+                  </div>
+                  <div className="border-b border-gray-200 flex items-center justify-center text-xs text-gray-500">
+                    High Ticket<br />High Share
+                  </div>
+                  <div className="border-r border-gray-200 flex items-center justify-center text-xs text-gray-500">
+                    Low Ticket<br />Low Share
+                  </div>
+                  <div className="flex items-center justify-center text-xs text-gray-500">
+                    High Ticket<br />Low Share
+                  </div>
+                </div>
+                
+                {rating && (
+                  <div 
+                    className="absolute w-3 h-3 bg-blue-500 rounded-full transform -translate-x-1/2 -translate-y-1/2"
+                    style={{
+                      left: `${((rating.ticketInterest || 0) / 10) * 100}%`,
+                      top: `${(1 - (rating.shareInterest || 0) / 10) * 100}%`
+                    }}
+                  />
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

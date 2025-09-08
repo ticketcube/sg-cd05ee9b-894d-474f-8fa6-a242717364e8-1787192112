@@ -9,7 +9,7 @@ interface WeeklyListSelectorProps {
     disabled: boolean;
 }
 
-export function WeeklyListSelector({ lists, value, onChange, disabled }: WeeklyListSelectorProps) {
+export default function WeeklyListSelector({ lists, value, onChange, disabled }: WeeklyListSelectorProps) {
     return (
         <div className="mb-6 max-w-xs">
             <label htmlFor="weekly-list-selector" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
