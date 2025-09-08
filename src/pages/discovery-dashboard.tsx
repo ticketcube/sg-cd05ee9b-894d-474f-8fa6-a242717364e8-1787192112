@@ -70,7 +70,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
         switch (activeTab) {
             case 'weekly':
-                return <WeeklyArtistGrid artists={weeklyList.artists} />;
+                return <WeeklyArtistGrid artists={weeklyList.artists} onSelect={(artistUuid) => console.log('Selected:', artistUuid)} />;
             case 'quadrant':
                 // The dashboard does not have user-specific ratings, so we pass an empty array.
                 return <WeeklyRatingsQuadrant ratings={[]} weeklyList={weeklyList} onSelectArtist={() => {}} />;
