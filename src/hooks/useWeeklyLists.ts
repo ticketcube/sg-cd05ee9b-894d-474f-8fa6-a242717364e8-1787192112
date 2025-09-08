@@ -1,7 +1,7 @@
 // src/hooks/useWeeklyLists.ts
 import { useState, useEffect, useCallback } from 'react';
 import { weeklyListService } from '@/services/weeklyListService';
-import type { WeeklyList } from '@/integrations/supabase/types';
+import type { WeeklyList } from '@/types/weekly';
 
 /**
  * Hook for fetching and managing all available weekly lists.
