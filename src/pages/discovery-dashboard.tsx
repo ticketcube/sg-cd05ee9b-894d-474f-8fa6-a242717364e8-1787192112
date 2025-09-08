@@ -18,10 +18,10 @@ import { WeeklyError } from '@/components/weekly/WeeklyError';
 import { WeeklyLoading } from '@/components/weekly/WeeklyLoading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const DiscoveryDashboard = () => {
+    const DiscoveryDashboard = () => {  
     const { profile, loading: userLoading } = useUserProfile();
     const [activeTab, setActiveTab] = useState('weekly');
-    const [isModalOpen, setModalOpen] = usePointsOnboarding();
+    const { showOnboarding, dismiss } = usePointsOnboarding();
 
     const [weeklyList, setWeeklyList] = useState<WeeklyListWithEnrichedArtists | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -88,14 +88,14 @@ const DiscoveryDashboard = () => {
             <DashboardHeader
                 username={profile.username || 'Music Fan'}
                 points={profile.total_points || 0}
-                onHowItWorksClick={() => setModalOpen(true)}
+                onHowItWorksClick={() => dismiss()}
             />
             <HeroVideo />
             <div className="container mx-auto px-4 py-8">
                 <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
                 <div className="mt-8">{renderContent()}</div>
             </div>
-            <HowPointsWorkModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
+           <HowPointsWorkModal isOpen={showOnboarding} onClose={() => dismiss()} />
         </>
     );
 };
