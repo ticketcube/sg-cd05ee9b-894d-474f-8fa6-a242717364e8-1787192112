@@ -86,8 +86,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
     return (
         <>
             <DashboardHeader
-                points={profile.total_points || 0}
-                onHowItWorksClick={() => dismiss()}
+                profile={profile}
+                historyLoading={false}
+                total_points={profile.total_points || 0}
+                totalVotes={0}
+                totalVideos={0}
+                weeksActive={1}
             />
             <HeroVideo />
             <div className="container mx-auto px-4 py-8">
