@@ -14,9 +14,6 @@ export interface EnrichedWeeklyListArtist extends Artist {
     artist_name: string;
     artist_image: string;
     profile_image_url?: string;
-   
-
-
 
     // For user-specific data
     user_has_watched?: boolean;
