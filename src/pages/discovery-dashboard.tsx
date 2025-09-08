@@ -11,7 +11,7 @@ import MoreRewardsTab from '@/components/dashboard/MoreRewardsTab';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import HeroVideo from '@/components/dashboard/HeroVideo';
-import { HowPointsWorkModal } from '@/components/points/HowPointsWorkModal';
+import  HowPointsWorkModal  from '@/components/points/HowPointsWorkModal';
 import { Button } from '@/components/ui/button';
 
 // Hook & Context Imports
