@@ -22,7 +22,7 @@ export function WeeklyArtistGrid({ artists, onSelect }: WeeklyArtistGridProps) {
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
       {artists.map((artist) => (
         <div
-          key={artist.uuid}
+          key={artist.artist_uuid}
           className="flex flex-col items-center justify-start text-center cursor-pointer group"
           onClick={() => onSelect(artist)}
           role="button"
