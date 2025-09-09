@@ -258,27 +258,7 @@ export class ArtistService {
     }
   }
 
-  async getArtistsWithTikTok(): Promise<Artist[]> {
-    try {
-      const { data, error } = await supabase
-        .from("artists")
-        .select("*")
-        .not("tiktok_handle", "is", null)
-        .not("tiktok_handle", "eq", "")
-        .not("tiktok_video_id", "is", null)
-        .not("tiktok_video_id", "eq", "");
-
-      if (error) {
-        console.error("Error fetching artists with TikTok:", error);
-        return [];
-      }
-      return data as Artist[];
-    } catch (error) {
-      console.error("Unexpected error in getArtistsWithTikTok:", error);
-      return [];
-    }
-  }
-
+  
   async getTopArtistsByListeners(limit: number = 100): Promise<Artist[]> {
     try {
       const { data, error } = await supabase
@@ -422,7 +402,7 @@ export class ArtistService {
         if (b.votes_count !== a.votes_count) {
           return b.votes_count - a.votes_count;
         }
-        return a.name.localeCompare(b.name);
+        return a.artist.artist_name.localeCompare(b.artist_name);
       });
       
       const paginatedArtists = artistsWithVotes.slice(from, to + 1);
