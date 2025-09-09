@@ -11,8 +11,8 @@ export interface EnrichedWeeklyListArtist extends Artist {
     // From weekly_list_artists
     weekly_list_id: number;
     artist_uuid: string;
-    video_url: string;
-    profile_image_url?: string;
+    artist_videolink: string;
+    artist_image?: string;
 
     // User-specific (optional until hydrated)
     user_has_watched?: boolean;
