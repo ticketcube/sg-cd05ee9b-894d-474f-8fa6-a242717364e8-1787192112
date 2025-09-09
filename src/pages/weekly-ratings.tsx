@@ -1,29 +1,18 @@
-
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-
-// Component Imports
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import SeptemberArtistGrid from "@/components/september/SeptemberArtistGrid";
+import SeptemberVideoPopup from "@/components/september/SeptemberVideoPopup";
+import SeptemberRatingPopup from "@/components/september/SeptemberRatingPopup";
+import PointsNotification from "@/components/points/PointsNotification";
 import AppLayout from '@/components/layout/AppLayout';
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import TabNavigation from '@/components/dashboard/TabNavigation';
-import DiscoverMoreTab from '@/components/dashboard/DiscoverMoreTab';
-import MoreRewardsTab from '@/components/dashboard/MoreRewardsTab';
-import DashboardLoading from '@/components/dashboard/DashboardLoading';
-import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
-import HeroVideo from '@/components/dashboard/HeroVideo';
-import HowPointsWorkModal from '@/components/points/HowPointsWorkModal';
-import { Button } from '@/components/ui/button';
-import { septemberRewardsService, EnrichedWeeklyList } from '@/services/septemberRewardsService';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import SeptemberArtistGrid from '@/components/september/SeptemberArtistGrid';
-import SeptemberVideoPopup from '@/components/september/SeptemberVideoPopup';
-import SeptemberRatingPopup from '@/components/september/SeptemberRatingPopup';
-import { Trophy, Star, Calendar } from 'lucide-react';
-import { EnrichedWeeklyListArtist } from '@/types/weekly';
-
-// Hook & Context Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
+import AuthGuard from '@/components/AuthGuard';
+
+// Import types and services correctly
+import type { EnrichedWeeklyList, EnrichedWeeklyListArtist } from "@/types/weekly";
+import { weeklyListService } from "@/services/weeklyListService";
+import { septemberRewardsService } from "@/services/septemberRewardsService";
 
 const SeptemberRewards = () => {
 
@@ -40,11 +29,26 @@ const SeptemberRewards = () => {
 
     // Load enriched weekly lists on component mount
     useEffect(() => {
-        if (profile) {
-            loadEnrichedWeeklyLists();
-            setUserPoints(profile.total_points || 0);
-        }
-    }, [profile]);
+        const loadData = async () => {
+          try {
+            setLoading(true);
+            
+            // Use the correct service method
+            const enrichedLists = await weeklyListService.getEnrichedActiveWeeklyLists();
+            setWeeklyLists(enrichedLists);
+            
+            if (enrichedLists.length > 0) {
+              setSelectedListId(enrichedLists[0].id.toString());
+            }
+          } catch (error) {
+            console.error('Error loading weekly lists:', error);
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        loadData();
+      }, []);
 
     if (userLoading) {
         return <DashboardLoading />;
