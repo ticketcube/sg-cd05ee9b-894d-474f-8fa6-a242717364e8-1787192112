@@ -266,8 +266,3 @@ const SeptemberRewards = () => {
     );
 }
 
-SeptemberRewards.getLayout = function getLayout(page: React.ReactElement) {
-    return <AppLayout>{page}</AppLayout>;
-};
-
-export default SeptemberRewards;
