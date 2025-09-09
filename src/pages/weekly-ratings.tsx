@@ -266,3 +266,6 @@ const SeptemberRewards = () => {
     );
 }
 
+export default DiscoveryDashboard;
+
+
