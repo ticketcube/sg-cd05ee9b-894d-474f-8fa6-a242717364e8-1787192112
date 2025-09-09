@@ -1,182 +1,269 @@
-import { useState, useEffect, useCallback } from 'react';
-import AppLayout from "@/components/layout/AppLayout";
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+// Component Imports
+import AppLayout from '@/components/layout/AppLayout';
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import TabNavigation from '@/components/dashboard/TabNavigation';
+import DiscoverMoreTab from '@/components/dashboard/DiscoverMoreTab';
+import MoreRewardsTab from '@/components/dashboard/MoreRewardsTab';
+import DashboardLoading from '@/components/dashboard/DashboardLoading';
+import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
+import HeroVideo from '@/components/dashboard/HeroVideo';
+import HowPointsWorkModal from '@/components/points/HowPointsWorkModal';
+import { Button } from '@/components/ui/button';
+import { septemberRewardsService, WeeklyList, WeeklyListArtist } from '@/services/septemberRewardsService';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import SeptemberArtistGrid from '@/components/september/SeptemberArtistGrid';
+import SeptemberVideoPopup from '@/components/september/SeptemberVideoPopup';
+import SeptemberRatingPopup from '@/components/september/SeptemberRatingPopup';
+import { Trophy, Star, Calendar } from 'lucide-react';
+
+// Hook & Context Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import { EnrichedWeeklyListArtist, SubmissionResult } from '@/types/weekly';
-
-// --- Custom Hooks ---
 import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
-import { useWeeklyLists } from '@/hooks/useWeeklyLists';
-import { useWeeklyListDetail } from '@/hooks/useWeeklyListDetail';
 
-// --- UI Components ---
-import WeeklyArtistGrid from '@/components/weekly/WeeklyArtistGrid';
-import WeeklyEmpty from '@/components/weekly/WeeklyEmpty';
-import WeeklyError from '@/components/weekly/WeeklyError';
-import WeeklyListSelector from '@/components/weekly/WeeklyListSelector';
-import WeeklyLoading from '@/components/weekly/WeeklyLoading';
-import WeeklyRatingsQuadrant from '@/components/weekly/WeeklyRatingsQuadrant';
-import WeeklyRewardsHeader from '@/components/weekly/WeeklyRewardsHeader';
+const SeptemberRewards = () => {
 
-// --- Popups & Notifications ---
-import HowPointsWorkModal from "@/components/points/HowPointsWorkModal";
-import WeeklyArtistRatingPopup from "@/components/WeeklyArtistRatingPopup";
-import SubmissionSuccessPopup from "@/components/points/SubmissionSuccessPopup";
-import { usePointsNotifications } from '@/components/points/PointsNotification';
-import { useToast } from '@/hooks/use-toast';
-
-
-export default function WeeklyRatingsPage() {
-    const { user } = useUserProfile();
-    const { toast } = useToast();
-
-    // --- State Hooks ---
-    const { showOnboarding, dismiss } = usePointsOnboarding();
-    const { lists, selectedListId, setSelectedListId, loading: listsLoading, error: listsError } = useWeeklyLists();
-    const {
-        weeklyList,
-        artistRatings,
-        updateRating,
-        markWatched,
-        loading: detailLoading,
-        error: detailError,
-        reload: reloadListDetail
-    } = useWeeklyListDetail(selectedListId ? parseInt(selectedListId) : 0, user?.id);
-
-    // --- Local UI State for Popups ---
-    const [showHowPointsWork, setShowHowPointsWork] = useState(false);
-    const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
+    const { profile, loading: userLoading } = useUserProfile();
+    const [weeklyLists, setWeeklyLists] = useState < WeeklyList[] > ([]);
+    const [selectedListId, setSelectedListId] = useState < string | null > (null);
+    const [artists, setArtists] = useState < WeeklyListArtist[] > ([]);
+    const [loading, setLoading] = useState(true);
+    const [loadingArtists, setLoadingArtists] = useState(false);
+    const [error, setError] = useState < string | null > (null);
+    const [selectedArtist, setSelectedArtist] = useState < WeeklyListArtist | null > (null);
+    const [showVideoPopup, setShowVideoPopup] = useState(false);
     const [showRatingPopup, setShowRatingPopup] = useState(false);
-    const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
-    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [userPoints, setUserPoints] = useState(0);
+    const [showAuthDialog, setShowAuthDialog] = useState(false);
 
-    // --- Effects ---
+    if (userLoading) {
+        return <DashboardLoading />;
+    }
+
+    if (!profile) {
+        return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
+    }
+
+
+
+
+    // Load weekly lists on component mount
     useEffect(() => {
-        if (showOnboarding) {
-            setShowHowPointsWork(true);
+        loadWeeklyLists();
+        if (profile) {
+            setUserPoints(profile.total_points || 0);
         }
-    }, [showOnboarding]);
+    }, [profile]);
 
-    // --- Callbacks & Event Handlers ---
-    const handleSelectArtist = (artist: EnrichedWeeklyListArtist) => {
+    // Load artists when a weekly list is selected
+    useEffect(() => {
+        if (selectedListId) {
+            loadArtistsForList(parseInt(selectedListId));
+        } else {
+            setArtists([]);
+        }
+    }, [selectedListId]);
+
+    const loadWeeklyLists = async () => {
+        try {
+            setLoading(true);
+            const data = await septemberRewardsService.getActiveWeeklyLists();
+            setWeeklyLists(data);
+
+            // Auto-select the first list if available
+            if (data.length > 0) {
+                setSelectedListId(data[0].id.toString());
+            }
+        } catch (err) {
+            console.error('Error loading weekly lists:', err);
+            setError('Failed to load weekly lists. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const loadArtistsForList = async (listId: number) => {
+        try {
+            setLoadingArtists(true);
+            const data = await septemberRewardsService.getArtistsForWeeklyList(listId);
+            setArtists(data);
+        } catch (err) {
+            console.error('Error loading artists for list:', err);
+            setError('Failed to load artists. Please try again.');
+        } finally {
+            setLoadingArtists(false);
+        }
+    };
+
+    const handleArtistClick = (artist: WeeklyListArtist) => {
         setSelectedArtist(artist);
+        setShowVideoPopup(true);
+    };
+
+    const handleVideoWatched = () => {
+        // Called when the 15-second video watch timer completes
+        setShowVideoPopup(false);
         setShowRatingPopup(true);
     };
 
-    const handleRatingComplete = useCallback(async (artistId: string, ticketInterest: number, shareInterest: number) => {
-        setShowRatingPopup(false);
+    const handleRatingComplete = async (artistUuid: string, quadrantX: number, quadrantY: number) => {
+        if (!profile || !selectedListId) return;
 
-        const result = await updateRating(artistId, ticketInterest, shareInterest);
+        try {
+            const selectedList = weeklyLists.find(list => list.id.toString() === selectedListId);
+            const weekIdentifier = selectedList?.week_identifier || 'default';
 
-        if (result) {
-            setSubmissionResult({ 
-                message: 'Rating submitted successfully',
-                pointsAwarded: 5,
-                type: 'rate' 
-            });
-            setShowSuccessPopup(true);
-            toast({ title: "Rating Submitted!", description: "You earned 5 points." });
-        } else {
-            toast({ title: "Error", description: 'Failed to submit rating', variant: 'destructive' });
+            const result = await septemberRewardsService.submitRating(
+                profile.user_id,
+                artistUuid,
+                weekIdentifier,
+                quadrantX,
+                quadrantY
+            );
+
+            if (result.success && result.pointsEarned) {
+                setUserPoints(prev => prev + result.pointsEarned!);
+                // Show success message or update UI as needed
+            }
+        } catch (error) {
+            console.error('Error submitting rating:', error);
         }
-    }, [updateRating, toast]);
 
-    const handleVideoPointsAwarded = useCallback(async (artistId: string, points: number) => {
-        await markWatched(artistId);
-        setSubmissionResult({ 
-            message: 'Video watched successfully',
-            pointsAwarded: points, 
-            type: 'watch' 
-        });
-        setShowSuccessPopup(true);
-        toast({ title: "Video Watched!", description: `You earned ${points} points.` });
-    }, [markWatched, toast]);
-
-    const handleCloseSuccessPopup = () => {
-        setShowSuccessPopup(false);
-        setSubmissionResult(null);
+        // Close both popups and clear selected artist
+        setShowRatingPopup(false);
+        setShowVideoPopup(false);
+        setSelectedArtist(null);
     };
 
-    const handleDismissOnboarding = () => {
-        dismiss();
-        setShowHowPointsWork(false);
+    const handleClosePopups = () => {
+        setShowVideoPopup(false);
+        setShowRatingPopup(false);
+        setSelectedArtist(null);
     };
 
-    // --- Render Logic ---
-    const isLoading = listsLoading || detailLoading;
-    const error = listsError || (detailError instanceof Error ? detailError.message : detailError);
 
-    const renderContent = () => {
-        if (isLoading) return <WeeklyLoading />;
-        if (error) return <WeeklyError message={error} />;
-        if (!weeklyList || weeklyList.artists.length === 0) return <WeeklyEmpty />;
-
-        return (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                <div className="space-y-4">
-                    <h2 className="text-xl font-semibold tracking-tight">Rate Artists</h2>
-                    <WeeklyArtistGrid
-                        weeklyList={weeklyList}
-                        onArtistClick={handleSelectArtist}
-                    />
-                </div>
-                <div className="space-y-4">
-                    <h2 className="text-xl font-semibold tracking-tight">Your Ratings</h2>
-                    <WeeklyRatingsQuadrant
-                        artists={weeklyList.artists}
-                        ratings={artistRatings}
-                        onRating={handleRatingComplete}
-                    />
-                </div>
-            </div>
-        );
-    };
 
     return (
-        <AppLayout>
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <WeeklyRewardsHeader onShowInfo={() => setShowHowPointsWork(true)} />
-
-                <div className="my-6">
-                    {/* Points notification placeholder */}
+        <div className="container mx-auto px-4 py-8">
+            {/* Header Section */}
+            <div className="text-center mb-8">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                    <Trophy className="h-8 w-8 text-yellow-500" />
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                        Weekly Ratings
+                    </h1>
+                    <Star className="h-8 w-8 text-yellow-500" />
                 </div>
-
-                <div className="mb-8 max-w-sm">
-                    <WeeklyListSelector
-                        lists={lists}
-                        value={selectedListId}
-                        onChange={setSelectedListId}
-                        disabled={isLoading}
-                    />
+                <p className="text-lg text-gray-600 dark:text-gray-300 mb-2">
+                    Rate artists and earn points for exclusive rewards!
+                </p>
+                <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900 px-4 py-2 rounded-full">
+                    <Star className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <span className="font-semibold text-blue-800 dark:text-blue-200">
+                        Your Points: {userPoints}
+                    </span>
                 </div>
-
-                {renderContent()}
             </div>
 
-            {/* --- Modals & Popups --- */}
-            <HowPointsWorkModal
-                isOpen={showHowPointsWork}
-                onDismiss={handleDismissOnboarding}
-                isOnboarding={showOnboarding}
-            />
+            {/* Instructions */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8">
+                <h2 className="text-xl font-semibold mb-3">How it Works</h2>
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                    <div className="text-center">
+                        <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-2">1</div>
+                        <p>Click on any artist to watch their video</p>
+                    </div>
+                    <div className="text-center">
+                        <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-2">2</div>
+                        <p>Rate them on the quadrant (ticket vs share interest)</p>
+                    </div>
+                    <div className="text-center">
+                        <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto mb-2">3</div>
+                        <p>Earn points for each rating you submit</p>
+                    </div>
+                </div>
+            </div>
 
-            {selectedArtist && (
-                <WeeklyArtistRatingPopup
-                    isOpen={showRatingPopup}
-                    onClose={() => setShowRatingPopup(false)}
+            {/* Weekly List Selector */}
+            <div className="mb-8">
+                <div className="max-w-xs mx-auto">
+                    <label htmlFor="weekly-list-selector" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <Calendar className="h-4 w-4" />
+                        Select Week
+                    </label>
+                    <Select onValueChange={setSelectedListId} value={selectedListId || ''} disabled={weeklyLists.length === 0}>
+                        <SelectTrigger id="weekly-list-selector">
+                            <SelectValue placeholder="Select a week..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {weeklyLists.map((list) => (
+                                <SelectItem key={list.id} value={list.id.toString()}>
+                                    {list.title}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            {/* Loading Artists */}
+            {loadingArtists && (
+                <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-gray-600 dark:text-gray-300 mt-2">Loading artists...</p>
+                </div>
+            )}
+
+            {/* Artists Grid */}
+            {!loadingArtists && selectedListId && (
+                <SeptemberArtistGrid
+                    artists={artists}
+                    onArtistClick={handleArtistClick}
+                />
+            )}
+
+            {/* No List Selected */}
+            {!selectedListId && !loadingArtists && (
+                <div className="text-center py-12">
+                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                        Select a Week
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                        Choose a weekly list above to see artists available for rating.
+                    </p>
+                </div>
+            )}
+
+            {/* Video Popup - Step 1 */}
+            {selectedArtist && showVideoPopup && (
+                <SeptemberVideoPopup
                     artist={selectedArtist}
-                    onRatingComplete={handleRatingComplete}
-                    weekIdentifier={weeklyList?.week_identifier || ''}
+                    isOpen={showVideoPopup}
+                    onClose={handleClosePopups}
+                    onWatchComplete={handleVideoWatched}
+                    weekIdentifier={weeklyLists.find(list => list.id.toString() === selectedListId)?.week_identifier || 'default'}
                 />
             )}
 
-            {submissionResult && (
-                <SubmissionSuccessPopup
-                    isOpen={showSuccessPopup}
-                    onClose={handleCloseSuccessPopup}
-                    message={submissionResult.message}
-                    type={submissionResult.type}
+            {/* Rating Popup - Step 2 */}
+            {selectedArtist && showRatingPopup && (
+                <SeptemberRatingPopup
+                    artist={selectedArtist}
+                    isOpen={showRatingPopup}
+                    onClose={handleClosePopups}
+                    onRatingComplete={handleRatingComplete}
                 />
             )}
-        </AppLayout>
+        </div>
     );
 }
+
+SeptemberRewards.getLayout = function getLayout(page: React.ReactElement) {
+    return <AppLayout>{page}</AppLayout>;
+};
+
+export default SeptemberRewards;
