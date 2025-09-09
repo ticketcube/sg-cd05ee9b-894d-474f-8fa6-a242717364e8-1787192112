@@ -5,7 +5,7 @@ import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X, Star } from 'lucide-react';
-import WeeklyRatingsQuadrant from './weekly/WeeklyRatingsQuadrant';
+import WeeklyRatingsQuadrant, { WeeklyRatingsQuadrantProps } from './weekly/WeeklyRatingsQuadrant';
 import { EnrichedWeeklyListArtist } from '@/types/weekly';
 
 interface WeeklyArtistRatingPopupProps {
@@ -57,7 +57,7 @@ export default function WeeklyArtistRatingPopup({
             <h3 className="text-lg font-semibold mb-2">Rate {artist.artist_name}</h3>
             <div className="flex-grow">
               <WeeklyRatingsQuadrant 
-                onSelect={(quadrant) => setQuadrantSelection(quadrant)}
+                onSelectionChange={(quadrant) => setQuadrantSelection(quadrant)}
                 initialSelection={quadrantSelection}
                 disabled={hasVoted}
               />

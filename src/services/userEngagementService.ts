@@ -16,9 +16,9 @@ export type EngagementParams = {
 class UserEngagementService {
   async recordEngagement(
       params: EngagementParams
-  ): Promise<{ success: boolean; engagement?: any; error?: string }> {
+  ): Promise<{ success: boolean; engagement?: any; error?: string; pointsEarned?: number }> {
       try {
-          const { userId, engagementType, artistUuid = null, weekIdentifier = null, additionalData = {} } = params;
+          const { userId, engagementType, artistUuid = null, weekIdentifier = null, x_quadrant, y_quadrant, additionalData = {} } = params;
 
           // 1️⃣ Fetch points for this engagement type
           let points = 0;
@@ -37,8 +37,8 @@ class UserEngagementService {
                   artist_uuid: artistUuid,
                   week_identifier: weekIdentifier,
                   points_earned: points,
-                  x_quadrant,  
-                  y_quadrant, 
+                  x_quadrant: x_quadrant,  
+                  y_quadrant: y_quadrant, 
                   metadata: additionalData, // still keep everything else here if needed
                   created_at: new Date().toISOString(),
               })
@@ -50,7 +50,7 @@ class UserEngagementService {
               return { success: false, error: error.message };
           }
 
-          return { success: true, engagement: data };
+          return { success: true, engagement: data, pointsEarned: points };
       } catch (err) {
           console.error("[recordEngagement] Unexpected error:", err);
           return { success: false, error: err instanceof Error ? err.message : "Unknown error" };

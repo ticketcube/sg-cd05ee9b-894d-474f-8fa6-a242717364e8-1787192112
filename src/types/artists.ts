@@ -2,11 +2,6 @@ import { Database } from "@/integrations/supabase/types";
 
 export type Artist = Database['public']['Tables']['artists']['Row'];
 
-export interface ArtistWithVoteCount extends Artist {
-    vote_count: number;
-    artist_videolink: string | null;
-}
-
 export interface ArtistWithVotes extends Artist {
     votes: any[];
     total_votes: number;

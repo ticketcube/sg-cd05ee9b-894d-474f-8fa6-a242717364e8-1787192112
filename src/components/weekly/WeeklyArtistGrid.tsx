@@ -1,13 +1,16 @@
 // src/components/weekly/WeeklyArtistGrid.tsx
 import { Play, User } from 'lucide-react';
 import { EnrichedWeeklyListArtist } from '@/types/weekly';
+import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
+import { WeeklyList } from '@/types/weekly';
 
 interface WeeklyArtistGridProps {
     artists: EnrichedWeeklyListArtist[];
     onArtistClick: (artist: EnrichedWeeklyListArtist) => void;
+    weeklyList: WeeklyList;
 }
 
-export default function WeeklyArtistGrid({ artists, onArtistClick }: WeeklyArtistGridProps) {
+export default function WeeklyArtistGrid({ artists, onArtistClick, weeklyList }: WeeklyArtistGridProps) {
   if (!artists) {
     return <div>No artists available</div>;
   }
@@ -22,10 +25,7 @@ export default function WeeklyArtistGrid({ artists, onArtistClick }: WeeklyArtis
         >
           <div className="aspect-video mb-2">
             <ArtistVideoPlayer
-              videoUrl={artist.video_url}
-              artistName={artist.artist_name}
-              artistUuid={artist.artist_uuid}
-              weekIdentifier={weeklyList.week_identifier}
+              videoUrl={artist.artist_videolink}
             />
           </div>
           <h3 className="font-semibold text-lg">{artist.artist_name}</h3>
