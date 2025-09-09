@@ -1,9 +1,7 @@
-
 import React, { useState } from 'react';
 import Link from 'next/link';
 
 // Component Imports
-import AppLayout from '@/components/layout/AppLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import TabNavigation from '@/components/dashboard/TabNavigation';
 import DiscoverMoreTab from '@/components/dashboard/DiscoverMoreTab';
@@ -54,8 +52,6 @@ const DiscoveryDashboard = () => {
             />
            
             <div className="container mx-auto px-4 py-8 text-center">
-              
-
                 <TabNavigation
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
@@ -63,13 +59,8 @@ const DiscoveryDashboard = () => {
                 />
                 <div className="mt-8">{renderContent()}</div>
             </div>
-          
         </>
     );
-};
-
-DiscoveryDashboard.getLayout = function getLayout(page: React.ReactElement) {
-    return <AppLayout>{page}</AppLayout>;
 };
 
 export default DiscoveryDashboard;
