@@ -181,7 +181,19 @@ export function WeeklyArtistPopup({
         
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Video Section */}
-          <div className="relative aspect-video bg-gray-900">
+          <div className="relative w-full aspect-video bg-black rounded-lg">
+            <ArtistVideoPlayer
+              videoUrl={displayArtist.artist_videolink}
+              onPlay={handlePlay}
+              onPause={handlePause}
+              onEnded={handleEnded}
+              onPlayerError={handlePlayerError}
+              showNavigationControls={showNavigationControls}
+              onClick={onRatingClick}
+            />
+          </div>
+
+          <div className="flex items-center justify-between mt-2">
             {/* Watch Timer Display */}
             <div className="absolute top-2 left-2 z-10 bg-black/75 px-3 py-1 rounded-lg flex items-center gap-2">
               <Timer className="w-4 h-4" />

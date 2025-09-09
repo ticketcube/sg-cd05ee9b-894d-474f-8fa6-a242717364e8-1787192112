@@ -178,11 +178,11 @@ export default function AllArtistsPage() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                        <ArtistVideoPlayer 
-                          artist={artist}
-                          size="sm"
-                          className="hover:scale-105 transition-transform duration-200"
+                      <div className="absolute inset-0 z-10 w-full h-full">
+                        <ArtistVideoPlayer
+                          videoUrl={artist.artist_videolink}
+                          size="100%"
+                          className="w-full h-full"
                         />
                       </div>
                     </div>

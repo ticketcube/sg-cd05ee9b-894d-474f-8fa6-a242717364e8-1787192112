@@ -1,120 +1,78 @@
 
-import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
-import WeeklyRatingsQuadrant from "@/components/weekly/WeeklyRatingsQuadrant";
-import { useUserProfile } from "@/contexts/UserProfileContext";
-import { weeklyVotingService } from "@/services/weeklyVotingService";
-import type { EnrichedWeeklyListArtist } from "@/types/weekly";
-import type { ArtistRating } from "@/types/weekly";
+import { useState } from 'react';
+import { WeeklyListArtist } from '@/services/septemberRewardsService';
+import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { X, Star } from 'lucide-react';
+import WeeklyRatingsQuadrant from './weekly/WeeklyRatingsQuadrant';
+import { EnrichedWeeklyListArtist } from '@/types/weekly';
 
 interface WeeklyArtistRatingPopupProps {
-    isOpen: boolean;
-    onClose: () => void;
-    artist: EnrichedWeeklyListArtist | null;
-    onVoteSubmit: (artistUuid: string, rating: ArtistRating) => void;
-    initialRating?: ArtistRating;
+  artist: EnrichedWeeklyListArtist;
+  isOpen: boolean;
+  onClose: () => void;
+  onRatingSubmit: (artistUuid: string, quadrantX: number, quadrantY: number, weekIdentifier: string) => void;
+  userVote: { x: number; y: number } | null;
 }
 
-const WeeklyArtistRatingPopup: React.FC<WeeklyArtistRatingPopupProps> = ({
-    isOpen,
-    onClose,
-    artist,
-    onVoteSubmit,
-    initialRating
-}) => {
-    const { profile } = useUserProfile();
-    const [selectedQuadrant, setSelectedQuadrant] = useState<{ x: number; y: number } | null>(initialRating || null);
+export default function WeeklyArtistRatingPopup({ 
+  artist, 
+  isOpen, 
+  onClose, 
+  onRatingSubmit,
+  userVote,
+}: WeeklyArtistRatingPopupProps) {
+  const [quadrantSelection, setQuadrantSelection] = useState<{ x: number, y: number } | null>(userVote);
 
-    useEffect(() => {
-        setSelectedQuadrant(initialRating || null);
-    }, [initialRating, artist]);
-
-
-    if (!artist) {
-        return null;
+  const handleSubmit = () => {
+    if (quadrantSelection) {
+      onRatingSubmit(artist.uuid, quadrantSelection.x, quadrantSelection.y, artist.week_identifier);
     }
+  };
 
-    const handleQuadrantSelect = (quadrant: { x: number; y: number }) => {
-        setSelectedQuadrant(quadrant);
-    };
+  const hasVoted = userVote !== null;
 
-    const handleSubmitVote = async () => {
-        if (!profile || !selectedQuadrant || !artist) {
-            alert("Please select a rating and ensure you are logged in.");
-            return;
-        }
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-2xl font-bold">
+              {artist.artist_name}
+            </DialogTitle>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        </DialogHeader>
 
-        try {
-            const newRating: ArtistRating = {
-                artistUuid: artist.uuid,
-                x: selectedQuadrant.x,
-                y: selectedQuadrant.y,
-                ticketInterest: selectedQuadrant.x > 0,
-                shareInterest: selectedQuadrant.y > 0,
-                isRated: true,
-                hasWatched: false, // This will be handled separately
-            };
-            
-            await weeklyVotingService.submitVote({
-                user_id: profile.id,
-                artist_uuid: artist.uuid,
-                week_identifier: artist.week_identifier,
-                quadrant_x: newRating.x,
-                quadrant_y: newRating.y,
-            });
-
-            onVoteSubmit(artist.uuid, newRating);
-            onClose();
-
-        } catch (error) {
-            console.error("Error submitting vote:", error);
-            alert("There was an error submitting your vote. Please try again.");
-        }
-    };
-
-    return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-4xl h-auto flex flex-col">
-                <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-center">{artist.artist_name}</DialogTitle>
-                </DialogHeader>
-
-                <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 p-4 overflow-y-auto">
-                    <div className="w-full">
-                         <ArtistVideoPlayer 
-                            videoUrl={artist.video_url}
-                            artistName={artist.artist_name}
-                            artistUuid={artist.uuid}
-                            weekIdentifier={artist.week_identifier}
-                        />
-                    </div>
-
-                    <div className="flex flex-col items-center justify-center">
-                        <h3 className="text-lg font-semibold mb-2">Rate This Artist</h3>
-                        <p className="text-sm text-muted-foreground mb-4 text-center">
-                            Your rating helps us discover the next big artists. Where does this artist fall on your vibe chart?
-                        </p>
-                        <WeeklyRatingsQuadrant
-                            onSelect={handleQuadrantSelect}
-                            initialSelection={selectedQuadrant}
-                        />
-                    </div>
-                </div>
-
-                <DialogFooter className="p-4">
-                    <DialogClose asChild>
-                        <Button variant="outline" onClick={onClose}>Cancel</Button>
-                    </DialogClose>
-                    <Button onClick={handleSubmitVote} disabled={!selectedQuadrant}>
-                        Submit Rating
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
-export default WeeklyArtistRatingPopup;
-
+        <div className="grid lg:grid-cols-2 gap-6">
+          <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden">
+            <ArtistVideoPlayer
+              videoUrl={artist.artist_videolink}
+            />
+          </div>
+          <div className="flex flex-col">
+            <h3 className="text-lg font-semibold mb-2">Rate {artist.artist_name}</h3>
+            <div className="flex-grow">
+              <WeeklyRatingsQuadrant 
+                onSelect={(quadrant) => setQuadrantSelection(quadrant)}
+                initialSelection={quadrantSelection}
+                disabled={hasVoted}
+              />
+            </div>
+            <Button
+              onClick={handleSubmit}
+              disabled={!quadrantSelection || hasVoted}
+              className="w-full mt-4"
+              size="lg"
+            >
+              {hasVoted ? "You have already voted" : "Submit Rating"}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

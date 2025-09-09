@@ -68,52 +68,39 @@ export function UnifiedArtistPopup({
       >
         <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Video Section */}
-          <div className="relative aspect-video bg-gray-900">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentVideoIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="w-full h-full"
-              >
-                <ArtistVideoPlayer
-                  artist={artist}
-                  videoLinks={videoLinks}
-                  currentIndex={currentVideoIndex}
-                  onChangeIndex={handleVideoIndexChange}
-                  isEmbed={true}
-                  showNavigationControls={false}
-                />
-              </motion.div>
-            </AnimatePresence>
+          <div className="relative w-full aspect-video bg-black rounded-lg">
+            <ArtistVideoPlayer
+              videoUrl={displayArtist.artist_videolink}
+              onPlay={handlePlay}
+              onPause={handlePause}
+              onEnded={handleEnded}
+              onPlayerError={handlePlayerError}
+            />
+          </div>
+
+          <div className="flex items-center justify-between mt-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75"
+              onClick={handlePrevVideo}
+              disabled={currentVideoIndex === 0}
+            >
+              <ChevronLeft />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75"
+              onClick={handleNextVideo}
+              disabled={currentVideoIndex === videoLinks.length - 1}
+            >
+              <ChevronRight />
+            </Button>
             
-            {hasMultipleVideos && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75"
-                  onClick={handlePrevVideo}
-                  disabled={currentVideoIndex === 0}
-                >
-                  <ChevronLeft />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75"
-                  onClick={handleNextVideo}
-                  disabled={currentVideoIndex === videoLinks.length - 1}
-                >
-                  <ChevronRight />
-                </Button>
-                
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 px-2 py-1 rounded text-xs">
-                  {currentVideoIndex + 1} of {videoLinks.length}
-                </div>
-              </>
-            )}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/75 px-2 py-1 rounded text-xs">
+              {currentVideoIndex + 1} of {videoLinks.length}
+            </div>
           </div>
           
           <div className="p-6 flex flex-col">

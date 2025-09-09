@@ -205,11 +205,15 @@ export function ArtistChart({ artists, onVote, selectedArtists }: ArtistChartPro
             {/* Video Content */}
             {selectedArtist && (
               <div className="aspect-video w-full">
-                <ArtistVideoPlayer 
-                  artist={selectedArtist}
-                  isEmbed={true}
-                  className="w-full h-full"
-                />
+                {showVideo && (
+                  <div className="absolute inset-0 z-10 w-full h-full">
+                    <ArtistVideoPlayer
+                      videoUrl={artist.artist_videolink}
+                      isEmbed={isEmbed}
+                      className="w-full h-full"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>

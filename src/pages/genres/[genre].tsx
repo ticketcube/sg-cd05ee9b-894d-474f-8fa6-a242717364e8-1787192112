@@ -136,15 +136,23 @@ const GenrePage = () => {
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4">
                   {artist.artist_image && (
-                    <Image
-                      src={artist.artist_image}
-                      alt={artist.artist_name}
-                      width={200}
-                      height={200}
-                      className="rounded-md object-cover aspect-square"
-                    />
+                    <div className="relative w-full h-48">
+                      <Image
+                        src={artist.artist_image}
+                        alt={artist.artist_name}
+                        fill
+                        className="rounded-md object-cover"
+                      />
+                      {artist.artist_videolink && (
+                        <div className="absolute inset-0 z-10 w-full h-full">
+                          <ArtistVideoPlayer
+                            videoUrl={artist.artist_videolink}
+                            size="100%"
+                          />
+                        </div>
+                      )}
+                    </div>
                   )}
-                  <ArtistVideoPlayer artist={artist} size="sm" />
                   <div className="flex gap-2 w-full">
                     <Button onClick={() => handleVote(artist)} className="flex-1">
                       {selectedArtists.includes(artist.uuid) ? "Unvote" : "Vote"}

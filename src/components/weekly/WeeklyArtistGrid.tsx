@@ -1,20 +1,20 @@
 // src/components/weekly/WeeklyArtistGrid.tsx
-import { WeeklyListWithEnrichedArtists, EnrichedWeeklyListArtist } from '@/types/weekly';
-import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
+import { Play, User } from 'lucide-react';
+import { EnrichedWeeklyListArtist } from '@/types/weekly';
 
 interface WeeklyArtistGridProps {
-  weeklyList: WeeklyListWithEnrichedArtists | null;
-  onArtistClick?: (artist: EnrichedWeeklyListArtist) => void;
+    artists: EnrichedWeeklyListArtist[];
+    onArtistClick: (artist: EnrichedWeeklyListArtist) => void;
 }
 
-export default function WeeklyArtistGrid({ weeklyList, onArtistClick }: WeeklyArtistGridProps) {
-  if (!weeklyList || !weeklyList.artists) {
+export default function WeeklyArtistGrid({ artists, onArtistClick }: WeeklyArtistGridProps) {
+  if (!artists) {
     return <div>No artists available</div>;
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {weeklyList.artists.map((artist) => (
+      {artists.map((artist) => (
         <div
           key={artist.artist_uuid}
           className="border rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow"

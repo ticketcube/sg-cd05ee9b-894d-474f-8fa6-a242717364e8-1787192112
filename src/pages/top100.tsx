@@ -317,15 +317,14 @@ export default function Top100Page() {
                     <div className="flex items-center gap-3">
                       {isUnlocked ? (
                         <>
-                          <ArtistVideoPlayer 
-                            artist={artist}
-                            size="sm"
-                            className="hover:scale-105 transition-transform duration-200"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRowClick(artist);
-                            }}
-                          />
+                          <div className="absolute inset-0 z-10 w-full h-full">
+                            <ArtistVideoPlayer
+                              videoUrl={artist.artist_videolink}
+                              size="100%"
+                              className="w-full h-full"
+                              onClick={(e) => handleArtistClick(e, artist)}
+                            />
+                          </div>
                           
                           <Button
                             onClick={(e) => {
