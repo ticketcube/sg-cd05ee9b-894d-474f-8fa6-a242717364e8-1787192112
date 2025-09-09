@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { userEngagementService } from '@/services/userEngagementService';
+import { ENGAGEMENT_TYPES } from '@/services/engagementTypes';
 
 export interface WeeklyListArtist {
     uuid: string;
