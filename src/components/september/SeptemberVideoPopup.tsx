@@ -89,7 +89,7 @@ export default function SeptemberVideoPopup({
                         {/* Video Player */}
                         <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden">
                             <ArtistVideoPlayer
-                                videoUrl={artist.artist_videolink || ''}
+                                artist_videolink={artist.artist_videolink || ''}
                                 onPlay={handleVideoPlay}
                                 onPause={handleVideoPause}
                             />
