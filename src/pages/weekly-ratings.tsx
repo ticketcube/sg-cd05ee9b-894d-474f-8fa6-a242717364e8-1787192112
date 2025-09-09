@@ -28,11 +28,11 @@ import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
 const SeptemberRewards = () => {
 
     const { profile, loading: userLoading } = useUserProfile();
-    const [enrichedLists, setEnrichedLists] = useState<EnrichedWeeklyList[]>([]);
-    const [selectedListId, setSelectedListId] = useState<string | null>(null);
+    const [enrichedLists, setEnrichedLists] = useState < EnrichedWeeklyList[] > ([]);
+    const [selectedListId, setSelectedListId] = useState < string | null > (null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
+    const [error, setError] = useState < string | null > (null);
+    const [selectedArtist, setSelectedArtist] = useState < EnrichedWeeklyListArtist | null > (null);
     const [showVideoPopup, setShowVideoPopup] = useState(false);
     const [showRatingPopup, setShowRatingPopup] = useState(false);
     const [userPoints, setUserPoints] = useState(0);
@@ -231,8 +231,8 @@ const SeptemberRewards = () => {
                 <div className="text-center py-12">
                     <div className="bg-red-100 dark:bg-red-900 border border-red-400 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-4">
                         <p>{error}</p>
-                        <Button 
-                            onClick={loadEnrichedWeeklyLists} 
+                        <Button
+                            onClick={loadEnrichedWeeklyLists}
                             className="mt-2"
                             variant="outline"
                         >
@@ -266,8 +266,6 @@ const SeptemberRewards = () => {
     );
 }
 
-SeptemberRewards.getLayout = function getLayout(page: React.ReactElement) {
-    return <AppLayout>{page}</AppLayout>;
-};
-
 export default SeptemberRewards;
+
+
