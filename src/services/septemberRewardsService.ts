@@ -78,7 +78,7 @@ class SeptemberRewardsService {
      * Get artists for a specific weekly list
      * @deprecated Use getActiveEnrichedWeeklyLists instead
      */
-    async getArtistsForWeeklyList(weeklyListId: number): Promise<WeeklyListArtist[]> {
+    async getArtistsForWeeklyList(weeklyListId: number): Promise<Artist[]> {
         try {
             const { data, error } = await supabase
                 .from('weekly_list_artists')
@@ -111,7 +111,7 @@ class SeptemberRewardsService {
     /**
      * Get all artists available for September rewards
      */
-    async getSeptemberArtists(): Promise<SeptemberArtist[]> {
+    async getSeptemberArtists(): Promise<Artist[]> {
         try {
             const { data, error } = await supabase
                 .from('artists')
