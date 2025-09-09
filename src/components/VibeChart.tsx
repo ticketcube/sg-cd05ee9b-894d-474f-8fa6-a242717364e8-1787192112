@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import Image from "next/image";
 import type { VibeArtist } from "@/types/artists";
-import { UnifiedArtistPopup } from "./UnifiedArtistPopup";
 
 interface VibeChartProps {
   artists: VibeArtist[];
@@ -143,9 +142,9 @@ const QuadrantSection = ({
                 <div className="flex items-start space-x-4">
                   <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                     <ArtistVideoPlayer
-                      artist={artist}
-                      size="md"
-                      className="w-full h-full"
+                      artist_videolink={artist.artist_videolink || ''}
+                      size="w-full h-full"
+                      className="rounded-lg"
                     />
                   </div>
                   <div className="space-y-2 flex-1 min-w-0">
@@ -287,9 +286,9 @@ export default function VibeChart({ artists, chartSize = 600 }: VibeChartProps) 
                     <div className="flex items-start space-x-4">
                       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                         <ArtistVideoPlayer
-                          artist={artist}
-                          size="md"
-                          className="w-full h-full"
+                          artist_videolink={artist.artist_videolink || ''}
+                          size="w-full h-full"
+                          className="rounded-lg"
                         />
                       </div>
                       <div className="space-y-2 flex-1 min-w-0">
@@ -346,15 +345,46 @@ export default function VibeChart({ artists, chartSize = 600 }: VibeChartProps) 
         </div>
       </div>
 
+      {/* Simple artist details popup when clicked */}
       {selectedArtist && (
-        <UnifiedArtistPopup 
-          artist={selectedArtist} 
-          isOpen={!!selectedArtist} 
-          onClose={() => setSelectedArtist(null)} 
-          showVibes={true}
-          showGenre={true}
-          showBio={true}
-        />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold">{selectedArtist.artist_name}</h3>
+              <button 
+                onClick={() => setSelectedArtist(null)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <div className="space-y-3">
+              {selectedArtist.artist_genre && (
+                <p><strong>Genre:</strong> {selectedArtist.artist_genre}</p>
+              )}
+              {selectedArtist.primary_vibe && (
+                <p><strong>Primary Vibe:</strong> {selectedArtist.primary_vibe}</p>
+              )}
+              {selectedArtist.secondary_vibe && (
+                <p><strong>Secondary Vibe:</strong> {selectedArtist.secondary_vibe}</p>
+              )}
+              {selectedArtist.artist_bio && (
+                <div>
+                  <strong>Bio:</strong>
+                  <p className="text-sm text-gray-600 mt-1">{selectedArtist.artist_bio}</p>
+                </div>
+              )}
+              {selectedArtist.artist_videolink && (
+                <div className="mt-4">
+                  <ArtistVideoPlayer
+                    artist_videolink={selectedArtist.artist_videolink}
+                    size="w-full h-48"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

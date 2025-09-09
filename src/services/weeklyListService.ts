@@ -1,0 +1,30 @@
+
+import { supabase } from "@/integrations/supabase/client";
+import type { WeeklyList, EnrichedWeeklyList } from "@/types/weekly";
+
+export const weeklyListService = {
+  async getActiveWeeklyLists(): Promise<WeeklyList[]> {
+    const { data, error } = await supabase
+      .from('weekly_lists')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getEnrichedActiveWeeklyLists(): Promise<EnrichedWeeklyList[]> {
+    try {
+      const response = await fetch('/api/weekly-lists/active');
+      if (!response.ok) {
+        throw new Error('Failed to fetch enriched weekly lists');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching enriched weekly lists:', error);
+      throw error;
+    }
+  }
+};

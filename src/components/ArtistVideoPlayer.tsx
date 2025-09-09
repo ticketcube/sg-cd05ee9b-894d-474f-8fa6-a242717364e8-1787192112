@@ -1,43 +1,54 @@
-import ReactPlayer from 'react-player';
-import { VideoOff } from 'lucide-react';
+import React from 'react';
+import dynamic from 'next/dynamic';
 
-interface ArtistVideoPlayerProps {
-  artist_videolink: string | null;
+// Dynamically import ReactPlayer to prevent SSR issues
+const ReactPlayerDynamic = dynamic(() => import('react-player'), { ssr: false });
+
+// Cast to any to bypass stubborn type issue from the library
+const ReactPlayer = ReactPlayerDynamic as any;
+
+export interface ArtistVideoPlayerProps {
+  artist_videolink: string;
   onPlay?: () => void;
   onPause?: () => void;
   onEnded?: () => void;
-  onPlayerError?: () => void;
+  onError?: () => void;
+  className?: string;
+  size?: string;
 }
 
-export default function ArtistVideoPlayer({
+export function ArtistVideoPlayer({
   artist_videolink,
   onPlay,
   onPause,
   onEnded,
-  onPlayerError
+  onError,
+  className = "",
+  size = "w-full h-48"
 }: ArtistVideoPlayerProps) {
   if (!artist_videolink) {
     return (
-      <div className="w-full h-full bg-black flex items-center justify-center">
-        <div className="text-center text-white">
-          <VideoOff className="w-12 h-12 mx-auto mb-2" />
-          <p className="text-lg">No Video Available</p>
-        </div>
+      <div className={`${size} bg-gray-200 flex items-center justify-center ${className}`}>
+        <p className="text-gray-500">No video available</p>
       </div>
     );
   }
 
   return (
-    <ReactPlayer
-      url={artist_videolink}
-      width="100%"
-      height="100%"
-      playing={true}
-      controls={true}
-      onPlay={onPlay}
-      onPause={onPause}
-      onEnded={onEnded}
-      onError={onPlayerError}
-    />
+    <div className={`${size} ${className}`}>
+      <ReactPlayer 
+        url={artist_videolink}
+        width="100%"
+        height="100%"
+        playing
+        controls
+        onPlay={onPlay}
+        onPause={onPause}
+        onEnded={onEnded}
+        onError={onError}
+      />
+    </div>
   );
 }
+
+export default ArtistVideoPlayer;
