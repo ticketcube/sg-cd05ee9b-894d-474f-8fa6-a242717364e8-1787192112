@@ -1,4 +1,7 @@
+import type { Database } from "@/integrations/supabase/types";
+export type WeeklyList = Database["public"]["Tables"]["weekly_lists"]["Row"];
 import { ArtistWithVotes } from './artists';
+
 
 export interface WeeklyList {
     id: number;
