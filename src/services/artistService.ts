@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { ArtistWithVotes } from "@/types/artists";
+import type { Artist, ArtistWithVotes } from "@/types/artists";
 import type { ArtistWithLocation } from "@/types/map";
 
 export class ArtistService {
@@ -37,23 +37,23 @@ export class ArtistService {
     }
   }
 
-  async getAllArtists(page: number = 1, limit: number = 50): Promise<{ artists: ArtistWithVoteCount[], count: number }> {
+  async getAllArtists(page: number = 1, limit: number = 50): Promise<{ artists: ArtistWithVotes[], count: number }> {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
     const { data, error, count } = await supabase
       .from('artists')
       .select('*', { count: 'exact' })
-        .order('artist_otwcreateddate', { ascending: false })
+        .order('created_at', { ascending: false })
       .range(from, to);
 
     if (error) {
       throw new Error(`Failed to fetch all artists: ${error.message}`);
     }
 
-    const artistsWithVoteCount: ArtistWithVoteCount[] = (data || []).map((artist) => ({
+    const artistsWithVoteCount: ArtistWithVotes[] = (data || []).map((artist) => ({
       ...artist,
-      vote_count: 0, // No vote counts needed for All Artists page
+      votes_count: 0, // No vote counts needed for All Artists page
     }));
 
     return {
@@ -67,8 +67,7 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
           .select("*")
-          .eq("Top_List", "Groover")
-        .eq("artist_genre", genre);
+          .eq("primary_genre", genre);
 
       if (error) {
         console.error(`Error fetching artists for genre ${genre}:`, error);
@@ -107,11 +106,11 @@ export class ArtistService {
   async getRelatedArtists(artistId: string): Promise<Artist[]> {
     try {
       const mainArtist = await this.getArtistById(artistId);
-      if (!mainArtist || !mainArtist.artist_relatedartists) {
+      if (!mainArtist || !mainArtist.related_artists) {
         return [];
       }
 
-      const relatedArtistNames = mainArtist.artist_relatedartists;
+      const relatedArtistNames = mainArtist.related_artists;
       if (relatedArtistNames.length === 0) {
         return [];
       }
@@ -119,10 +118,10 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
         .select("*")
-        .in("artist_name", relatedArtistNames);
+        .in("name", relatedArtistNames);
 
       if (error) {
-        console.error(`Error fetching related artists for ${mainArtist.artist_name}:`, error);
+        console.error(`Error fetching related artists for ${mainArtist.name}:`, error);
         return [];
       }
 
@@ -137,9 +136,8 @@ export class ArtistService {
     try {
       const { data, error } = await supabase
           .from("artists")
-          .select("artist_genre")
-          .eq("Top_List", "Groover")
-       ;
+          .select("primary_genre")
+          ;
 
       if (error) {
         console.error("Error fetching genre counts:", error);
@@ -147,8 +145,8 @@ export class ArtistService {
       }
 
       const counts = data.reduce((acc, artist) => {
-        if (artist.artist_genre) {
-          acc[artist.artist_genre] = (acc[artist.artist_genre] || 0) + 1;
+        if (artist.primary_genre) {
+          acc[artist.primary_genre] = (acc[artist.primary_genre] || 0) + 1;
         }
         return acc;
       }, {} as { [key: string]: number });
@@ -195,7 +193,7 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
         .select("*")
-        .eq("Top_List", "Groover")
+        .or(`primary_vibe.eq.${vibe},secondary_vibe.eq.${vibe}`);
 
       if (error) {
         console.error(`Error fetching artists for vibe ${vibe}:`, error);
@@ -208,7 +206,7 @@ export class ArtistService {
     }
   }
 
-  async getTopVotedArtists(limit: number = 25): Promise<ArtistWithVoteCount[]> {
+  async getTopVotedArtists(limit: number = 25): Promise<ArtistWithVotes[]> {
     try {
       const { data: votes, error: votesError } = await supabase
         .from("top25_votes")
@@ -253,7 +251,7 @@ export class ArtistService {
 
       artistsWithVotes.sort((a, b) => b.vote_count - a.vote_count);
 
-      return artistsWithVotes as ArtistWithVoteCount[];
+      return artistsWithVotes as ArtistWithVotes[];
     } catch (error) {
       console.error("Unexpected error in getTopVotedArtists:", error);
       return [];
@@ -265,10 +263,10 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
         .select("*")
-        .not("artist_tiktok_username", "is", null)
-        .not("artist_tiktok_username", "eq", "")
-        .not("artist_tiktok_videoid", "is", null)
-        .not("artist_tiktok_videoid", "eq", "");
+        .not("tiktok_handle", "is", null)
+        .not("tiktok_handle", "eq", "")
+        .not("tiktok_video_id", "is", null)
+        .not("tiktok_video_id", "eq", "");
 
       if (error) {
         console.error("Error fetching artists with TikTok:", error);
@@ -286,7 +284,7 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
         .select("*")
-        .order("artist_totallisteners", { ascending: false })
+        .order("spotify_monthly_listeners", { ascending: false })
         .limit(limit);
 
       if (error) {
@@ -300,7 +298,7 @@ export class ArtistService {
     }
   }
   
-  async getTopVotedArtistsWithDetails(page: number = 1, limit: number = 25): Promise<{ artists: ArtistWithVoteCount[], count: number }> {
+  async getTopVotedArtistsWithDetails(page: number = 1, limit: number = 25): Promise<{ artists: ArtistWithVotes[], count: number }> {
     try {
       // First, get all votes and count them
       const { data: votes, error: votesError } = await supabase
@@ -355,11 +353,11 @@ export class ArtistService {
           if (!artistDetails) return null;
           return {
             ...artistDetails,
-            vote_count: voteCounts[uuid] || 0,
+            votes_count: voteCounts[uuid] || 0,
             rank: (page - 1) * limit + index + 1,
           };
         })
-        .filter((a): a is ArtistWithVoteCount & { rank: number } => a !== null);
+        .filter((a): a is ArtistWithVotes & { rank: number } => a !== null);
 
       return { artists: result, count: totalCount };
     } catch (error) {
@@ -368,7 +366,7 @@ export class ArtistService {
     }
   }
 
-  async getTop100ArtistsSortedByVotes(page: number = 1, limit: number = 25): Promise<{ artists: ArtistWithVoteCount[], count: number }> {
+  async getTop100ArtistsSortedByVotes(page: number = 1, limit: number = 25): Promise<{ artists: ArtistWithVotes[], count: number }> {
     try {
       // First, get all votes to determine the vote counts for sorting
       const { data: votes, error: votesError } = await supabase
@@ -395,7 +393,7 @@ export class ArtistService {
       const { count, error: countError } = await supabase
         .from("artists")
         .select('*', { count: 'exact', head: true })
-        .eq("Top_List", "100");
+        .in("top_lists", ["100"]);
 
       if (countError) {
         console.error("Error fetching Top 100 artist count:", countError);
@@ -408,7 +406,7 @@ export class ArtistService {
       const { data: top100Artists, error: artistsError } = await supabase
         .from("artists")
         .select("*")
-        .eq("Top_List", "100");
+        .in("top_lists", ["100"]);
 
       if (artistsError) {
         console.error("Error fetching Top 100 artists:", artistsError);
@@ -417,14 +415,14 @@ export class ArtistService {
       
       const artistsWithVotes = top100Artists.map(artist => ({
         ...artist,
-        vote_count: voteCounts[artist.uuid] || 0,
+        votes_count: voteCounts[artist.uuid] || 0,
       }));
 
       artistsWithVotes.sort((a, b) => {
-        if (b.vote_count !== a.vote_count) {
-          return b.vote_count - a.vote_count;
+        if (b.votes_count !== a.votes_count) {
+          return b.votes_count - a.votes_count;
         }
-        return a.artist_name.localeCompare(b.artist_name);
+        return a.name.localeCompare(b.name);
       });
       
       const paginatedArtists = artistsWithVotes.slice(from, to + 1);
@@ -434,7 +432,7 @@ export class ArtistService {
         rank: from + index + 1,
       }));
 
-      return { artists: result as ArtistWithVoteCount[], count: count || 0 };
+      return { artists: result as ArtistWithVotes[], count: count || 0 };
     } catch (error) {
       console.error("Error in getTop100ArtistsSortedByVotes:", error);
       return { artists: [], count: 0 };
