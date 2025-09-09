@@ -13,12 +13,13 @@ import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import HeroVideo from '@/components/dashboard/HeroVideo';
 import HowPointsWorkModal from '@/components/points/HowPointsWorkModal';
 import { Button } from '@/components/ui/button';
-import { septemberRewardsService, WeeklyList, WeeklyListArtist } from '@/services/septemberRewardsService';
+import { septemberRewardsService, EnrichedWeeklyList } from '@/services/septemberRewardsService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SeptemberArtistGrid from '@/components/september/SeptemberArtistGrid';
 import SeptemberVideoPopup from '@/components/september/SeptemberVideoPopup';
 import SeptemberRatingPopup from '@/components/september/SeptemberRatingPopup';
 import { Trophy, Star, Calendar } from 'lucide-react';
+import { EnrichedWeeklyListArtist } from '@/types/weekly';
 
 // Hook & Context Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
@@ -27,34 +28,23 @@ import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
 const SeptemberRewards = () => {
 
     const { profile, loading: userLoading } = useUserProfile();
-    const [weeklyLists, setWeeklyLists] = useState < WeeklyList[] > ([]);
-    const [selectedListId, setSelectedListId] = useState < string | null > (null);
-    const [artists, setArtists] = useState < WeeklyListArtist[] > ([]);
+    const [enrichedLists, setEnrichedLists] = useState<EnrichedWeeklyList[]>([]);
+    const [selectedListId, setSelectedListId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-    const [loadingArtists, setLoadingArtists] = useState(false);
-    const [error, setError] = useState < string | null > (null);
-    const [selectedArtist, setSelectedArtist] = useState < WeeklyListArtist | null > (null);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
     const [showVideoPopup, setShowVideoPopup] = useState(false);
     const [showRatingPopup, setShowRatingPopup] = useState(false);
     const [userPoints, setUserPoints] = useState(0);
     const [showAuthDialog, setShowAuthDialog] = useState(false);
 
-    // Load weekly lists on component mount
+    // Load enriched weekly lists on component mount
     useEffect(() => {
         if (profile) {
-            loadWeeklyLists();
+            loadEnrichedWeeklyLists();
             setUserPoints(profile.total_points || 0);
         }
     }, [profile]);
-
-    // Load artists when a weekly list is selected
-    useEffect(() => {
-        if (selectedListId) {
-            loadArtistsForList(parseInt(selectedListId));
-        } else {
-            setArtists([]);
-        }
-    }, [selectedListId]);
 
     if (userLoading) {
         return <DashboardLoading />;
@@ -64,38 +54,28 @@ const SeptemberRewards = () => {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
 
-    const loadWeeklyLists = async () => {
+    const loadEnrichedWeeklyLists = async () => {
         try {
             setLoading(true);
-            const data = await septemberRewardsService.getActiveWeeklyLists();
-            setWeeklyLists(data);
+            const data = await septemberRewardsService.getActiveEnrichedWeeklyLists();
+            setEnrichedLists(data);
 
             // Auto-select the first list if available
             if (data.length > 0) {
                 setSelectedListId(data[0].id.toString());
             }
         } catch (err) {
-            console.error('Error loading weekly lists:', err);
+            console.error('Error loading enriched weekly lists:', err);
             setError('Failed to load weekly lists. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
-    const loadArtistsForList = async (listId: number) => {
-        try {
-            setLoadingArtists(true);
-            const data = await septemberRewardsService.getArtistsForWeeklyList(listId);
-            setArtists(data);
-        } catch (err) {
-            console.error('Error loading artists for list:', err);
-            setError('Failed to load artists. Please try again.');
-        } finally {
-            setLoadingArtists(false);
-        }
-    };
+    // Derive current artists from enriched data instead of making separate API call
+    const currentArtists = enrichedLists.find(list => list.id.toString() === selectedListId)?.artists || [];
 
-    const handleArtistClick = (artist: WeeklyListArtist) => {
+    const handleArtistClick = (artist: EnrichedWeeklyListArtist) => {
         setSelectedArtist(artist);
         setShowVideoPopup(true);
     };
@@ -110,7 +90,7 @@ const SeptemberRewards = () => {
         if (!profile || !selectedListId) return;
 
         try {
-            const selectedList = weeklyLists.find(list => list.id.toString() === selectedListId);
+            const selectedList = enrichedLists.find(list => list.id.toString() === selectedListId);
             const weekIdentifier = selectedList?.week_identifier || 'default';
 
             const result = await septemberRewardsService.submitRating(
@@ -140,8 +120,6 @@ const SeptemberRewards = () => {
         setShowRatingPopup(false);
         setSelectedArtist(null);
     };
-
-
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -191,12 +169,12 @@ const SeptemberRewards = () => {
                         <Calendar className="h-4 w-4" />
                         Select Week
                     </label>
-                    <Select onValueChange={setSelectedListId} value={selectedListId || ''} disabled={weeklyLists.length === 0}>
+                    <Select onValueChange={setSelectedListId} value={selectedListId || ''} disabled={enrichedLists.length === 0}>
                         <SelectTrigger id="weekly-list-selector">
                             <SelectValue placeholder="Select a week..." />
                         </SelectTrigger>
                         <SelectContent>
-                            {weeklyLists.map((list) => (
+                            {enrichedLists.map((list) => (
                                 <SelectItem key={list.id} value={list.id.toString()}>
                                     {list.title}
                                 </SelectItem>
@@ -206,24 +184,24 @@ const SeptemberRewards = () => {
                 </div>
             </div>
 
-            {/* Loading Artists */}
-            {loadingArtists && (
+            {/* Loading State */}
+            {loading && (
                 <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="text-gray-600 dark:text-gray-300 mt-2">Loading artists...</p>
+                    <p className="text-gray-600 dark:text-gray-300 mt-2">Loading weekly lists...</p>
                 </div>
             )}
 
             {/* Artists Grid */}
-            {!loadingArtists && selectedListId && (
+            {!loading && selectedListId && currentArtists.length > 0 && (
                 <SeptemberArtistGrid
-                    artists={artists}
+                    artists={currentArtists}
                     onArtistClick={handleArtistClick}
                 />
             )}
 
             {/* No List Selected */}
-            {!selectedListId && !loadingArtists && (
+            {!loading && !selectedListId && (
                 <div className="text-center py-12">
                     <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
@@ -235,6 +213,35 @@ const SeptemberRewards = () => {
                 </div>
             )}
 
+            {/* No Artists Available */}
+            {!loading && selectedListId && currentArtists.length === 0 && (
+                <div className="text-center py-12">
+                    <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                        No Artists Available
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                        There are no artists available for this week yet.
+                    </p>
+                </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+                <div className="text-center py-12">
+                    <div className="bg-red-100 dark:bg-red-900 border border-red-400 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-4">
+                        <p>{error}</p>
+                        <Button 
+                            onClick={loadEnrichedWeeklyLists} 
+                            className="mt-2"
+                            variant="outline"
+                        >
+                            Try Again
+                        </Button>
+                    </div>
+                </div>
+            )}
+
             {/* Video Popup - Step 1 */}
             {selectedArtist && showVideoPopup && (
                 <SeptemberVideoPopup
@@ -242,7 +249,7 @@ const SeptemberRewards = () => {
                     isOpen={showVideoPopup}
                     onClose={handleClosePopups}
                     onWatchComplete={handleVideoWatched}
-                    weekIdentifier={weeklyLists.find(list => list.id.toString() === selectedListId)?.week_identifier || 'default'}
+                    weekIdentifier={enrichedLists.find(list => list.id.toString() === selectedListId)?.week_identifier || 'default'}
                 />
             )}
 
