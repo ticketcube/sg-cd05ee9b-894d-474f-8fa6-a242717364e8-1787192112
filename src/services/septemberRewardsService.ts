@@ -130,23 +130,24 @@ class SeptemberRewardsService {
     /**
      */
     async submitRating(
-        userId: string;
-        engagementType: string;
-        artistUuid?: string | null;
-        weekIdentifier?: string | null;
-        x_quadrant?: number | null;
-        y_quadrant?: number | null;
-        additionalData?: Record<string, any>;
+        userId: string,
+        engagementType: string,
+        artistUuid?: string | null,
+        weekIdentifier?: string | null,
+        x_quadrant?: number | null,
+        y_quadrant?: number | null,
+        additionalData?: Record<string, any>
     ): Promise<RatingSubmissionResult> {
         try {
-            const result = await userEngagementService.recordEngagement(
+            const result = await userEngagementService.recordEngagement({
                 userId,
                 engagementType: ENGAGEMENT_TYPES.QUADRANT,
                 artistUuid,
                 weekIdentifier,
                 x_quadrant,
                 y_quadrant,
-            );
+                additionalData,
+            });
 
             if (!result.success) {
                 return {
