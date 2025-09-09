@@ -485,6 +485,8 @@ export type Database = {
                     user_id: string
                     week_identifier: string | null
                     weekly_list_id: number | null
+                    x_quadrant: number | null
+                    y_quadrant: number | null
                 }
                 Insert: {
                     artist_uuid?: string | null
@@ -496,6 +498,8 @@ export type Database = {
                     user_id: string
                     week_identifier?: string | null
                     weekly_list_id?: number | null
+                    x_quadrant?: number | null
+                    y_quadrant?: number | null
                 }
                 Update: {
                     artist_uuid?: string | null
@@ -507,6 +511,8 @@ export type Database = {
                     user_id?: string
                     week_identifier?: string | null
                     weekly_list_id?: number | null
+                    x_quadrant?: number | null
+                    y_quadrant?: number | null
                 }
                 Relationships: [
                     {
@@ -560,17 +566,10 @@ export type Database = {
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "public_user_profiles_city_id_fkey"
+                        foreignKeyName: "user_profiles_city_id_fkey"
                         columns: ["city_id"]
                         isOneToOne: false
                         referencedRelation: "city_latlong"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "public_user_profiles_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: true
-                        referencedRelation: "users"
                         referencedColumns: ["id"]
                     },
                 ]
@@ -638,60 +637,34 @@ export type Database = {
                 }
                 Relationships: []
             }
-            video_submissions: {
-                Row: {
-                    created_at: string | null
-                    id: number
-                    title: string
-                    url: string
-                    user_id: string
-                }
-                Insert: {
-                    created_at?: string | null
-                    id?: number
-                    title: string
-                    url: string
-                    user_id: string
-                }
-                Update: {
-                    created_at?: string | null
-                    id?: number
-                    title?: string
-                    url?: string
-                    user_id?: string
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "video_submissions_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: true
-                        referencedRelation: "users"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
             weekly_list_artists: {
                 Row: {
                     artist_uuid: string
                     created_at: string
                     id: number
-                    weekly_list_id: number
+                    position: number | null
+                    week_identifier: string | null
+                    weekly_list_id: number | null
                 }
                 Insert: {
                     artist_uuid: string
                     created_at?: string
                     id?: number
-                    weekly_list_id: number
+                    position?: number | null
+                    week_identifier?: string | null
+                    weekly_list_id?: number | null
                 }
                 Update: {
                     artist_uuid?: string
                     created_at?: string
                     id?: number
-                    weekly_list_id?: number
+                    position?: number | null
+                    week_identifier?: string | null
+                    weekly_list_id?: number | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "weekly_list_artists_artist_uuid_fkey"
+                        foreignKeyName: "fk_weekly_list_artists_artist"
                         columns: ["artist_uuid"]
                         isOneToOne: false
                         referencedRelation: "artists"
@@ -742,57 +715,9 @@ export type Database = {
                 }
                 Relationships: []
             }
-            weekly_votes: {
-                Row: {
-                    id: number
-                    created_at: string
-                    user_id: string
-                    artist_uuid: string
-                    week_identifier: string
-                    quadrant_x: number
-                    quadrant_y: number
-                    vote_type: string
-                }
-                Insert: {
-                    id?: number
-                    created_at?: string
-                    user_id: string
-                    artist_uuid: string
-                    week_identifier: string
-                    quadrant_x: number
-                    quadrant_y: number
-                    vote_type: string
-                }
-                Update: {
-                    id?: number
-                    created_at?: string
-                    user_id?: string
-                    artist_uuid?: string
-                    week_identifier?: string
-                    quadrant_x?: number
-                    quadrant_y?: number
-                    vote_type?: string
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "weekly_votes_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "users"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "weekly_votes_artist_uuid_fkey"
-                        columns: ["artist_uuid"]
-                        isOneToOne: false
-                        referencedRelation: "artists"
-                        referencedColumns: ["uuid"]
-                    },
-                ]
-            }
         }
         Views: {
-            [key: string]: never
+            [_ in never]: never
         }
         Functions: {
             get_artist_vote_counts: {
@@ -811,17 +736,7 @@ export type Database = {
                 Returns: Json
             }
             increment_user_points: {
-                Args:
-                | { points_to_add: number; user_auth_id: string }
-                | { points_to_add: number; user_id: string }
-                Returns: undefined
-            }
-            increment_user_points_by_auth_id: {
-                Args: { auth_id_to_update: string; points_to_add: number }
-                Returns: undefined
-            }
-            increment_user_points_by_user_id: {
-                Args: { points_to_add: number; user_id_to_update: string }
+                Args: { points_to_add: number; user_id: string }
                 Returns: undefined
             }
             insert_ticket_entry: {
