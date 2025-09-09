@@ -39,11 +39,10 @@ const SeptemberRewards = () => {
     const [userPoints, setUserPoints] = useState(0);
     const [showAuthDialog, setShowAuthDialog] = useState(false);
 
-    
     // Load weekly lists on component mount
     useEffect(() => {
-        loadWeeklyLists();
         if (profile) {
+            loadWeeklyLists();
             setUserPoints(profile.total_points || 0);
         }
     }, [profile]);
@@ -57,7 +56,6 @@ const SeptemberRewards = () => {
         }
     }, [selectedListId]);
 
-
     if (userLoading) {
         return <DashboardLoading />;
     }
@@ -65,11 +63,6 @@ const SeptemberRewards = () => {
     if (!profile) {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
-
-
-
-
-  
 
     const loadWeeklyLists = async () => {
         try {

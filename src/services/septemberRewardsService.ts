@@ -132,11 +132,10 @@ class SeptemberRewardsService {
      */
     async submitRating(
         userId: string,
-        engagementType: string,
-        artistUuid?: string | null,
-        weekIdentifier?: string | null,
-        x_quadrant?: number | null,
-        y_quadrant?: number | null,
+        artistUuid: string,
+        weekIdentifier: string,
+        x_quadrant: number,
+        y_quadrant: number,
         additionalData?: Record<string, any>
     ): Promise<RatingSubmissionResult> {
         try {
