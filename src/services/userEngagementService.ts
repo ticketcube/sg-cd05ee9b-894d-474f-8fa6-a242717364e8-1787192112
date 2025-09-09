@@ -35,7 +35,9 @@ class UserEngagementService {
                   artist_uuid: artistUuid,
                   week_identifier: weekIdentifier,
                   points_earned: points,
-                  metadata: additionalData, // JSONB column to store extra info if needed
+                  x_quadrant: additionalData?.quadrantX ?? null,   // 👈 map quadrantX
+                  y_quadrant: additionalData?.quadrantY ?? null,   // 👈 map quadrantY
+                  metadata: additionalData, // still keep everything else here if needed
                   created_at: new Date().toISOString(),
               })
               .select()
