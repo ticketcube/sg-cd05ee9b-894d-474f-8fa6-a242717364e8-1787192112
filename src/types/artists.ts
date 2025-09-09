@@ -19,6 +19,12 @@ export interface VibeArtist extends Artist {
 }
 
 export interface DisplayArtist extends Artist {
-    display_name?: string;
+    uid: string;
+    artist_name: string;
+    artist_image: string | null;
+    artist_videolink: string | null;
+    artist_genre: string | null;
+    artist_home: string | null;
+    artist_bio: string | null;
     is_featured?: boolean;
 }
