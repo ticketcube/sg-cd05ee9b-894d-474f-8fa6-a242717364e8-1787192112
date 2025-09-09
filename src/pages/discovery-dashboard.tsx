@@ -62,7 +62,7 @@ const DiscoveryDashboard = () => {
                 />
                 <div className="mt-8">{renderContent()}</div>
             </div>
-            <HowPointsWorkModal isOpen={showOnboarding} onDismiss={dismiss} isOnboarding />
+           
         </>
     );
 };
