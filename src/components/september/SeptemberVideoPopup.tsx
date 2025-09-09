@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { WeeklyListArtist } from '@/services/septemberRewardsService';
+import { EnrichedWeeklyListArtist } from '@/types/weekly';
 import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X, Star, Clock } from 'lucide-react';
 
 interface SeptemberVideoPopupProps {
-    artist: WeeklyListArtist;
+    artist: EnrichedWeeklyListArtist;
     isOpen: boolean;
     onClose: () => void;
     onWatchComplete: () => void;
@@ -89,7 +89,7 @@ export default function SeptemberVideoPopup({
                         {/* Video Player */}
                         <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden">
                             <ArtistVideoPlayer
-                                artist_videolink={artist.artist_videolink}
+                                videoUrl={artist.artist_videolink || ''}
                                 onPlay={handleVideoPlay}
                                 onPause={handleVideoPause}
                             />

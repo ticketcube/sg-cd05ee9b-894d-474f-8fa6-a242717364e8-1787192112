@@ -1,9 +1,9 @@
-import { WeeklyListArtist } from '@/services/septemberRewardsService';
+import { EnrichedWeeklyListArtist } from '@/types/weekly';
 import { Play, User } from 'lucide-react';
 
 interface SeptemberArtistGridProps {
-    artists: WeeklyListArtist[];
-    onArtistClick: (artist: WeeklyListArtist) => void;
+    artists: EnrichedWeeklyListArtist[];
+    onArtistClick: (artist: EnrichedWeeklyListArtist) => void;
 }
 
 export default function SeptemberArtistGrid({ artists, onArtistClick }: SeptemberArtistGridProps) {

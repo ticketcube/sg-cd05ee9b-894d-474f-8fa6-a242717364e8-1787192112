@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WeeklyListArtist } from '@/services/septemberRewardsService';
+import { EnrichedWeeklyListArtist } from '@/types/weekly';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { X, Star, Ticket, Users } from 'lucide-react';
 
 interface SeptemberRatingPopupProps {
-  artist: WeeklyListArtist;
+  artist: EnrichedWeeklyListArtist;
   isOpen: boolean;
   onClose: () => void;
   onRatingComplete: (artistUuid: string, quadrantX: number, quadrantY: number) => void;
