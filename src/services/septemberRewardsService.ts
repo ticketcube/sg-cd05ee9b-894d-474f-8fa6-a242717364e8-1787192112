@@ -2,16 +2,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { userEngagementService } from '@/services/userEngagementService';
 import { ENGAGEMENT_TYPES } from '@/constants/engagementTypes';
 import { EnrichedWeeklyListArtist } from '@/types/weekly';
+import { artist } from '@/types/artists';
 
-export interface WeeklyListArtist {
-    uuid: string;
-    artist_name: string;
-    artist_image: string | null;
-    artist_videolink: string | null;
-    artist_genre: string | null;
-    artist_home: string | null;
-    artist_bio: string | null;
-}
 
 export interface WeeklyList {
     id: number;
@@ -29,15 +21,6 @@ export interface EnrichedWeeklyList extends WeeklyList {
     artists: EnrichedWeeklyListArtist[];
 }
 
-export interface SeptemberArtist {
-    uuid: string;
-    artist_name: string;
-    artist_image: string | null;
-    artist_videolink: string | null;
-    artist_genre: string | null;
-    artist_home: string | null;
-    artist_bio: string | null;
-}
 
 export interface RatingSubmissionResult {
     success: boolean;
