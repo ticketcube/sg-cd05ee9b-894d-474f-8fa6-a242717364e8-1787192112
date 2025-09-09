@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { userEngagementService } from '@/services/userEngagementService';
 import { ENGAGEMENT_TYPES } from '@/constants/engagementTypes';
-import { EnrichedWeeklyListArtist } from '@/types/weekly';
+import { EnrichedWeeklyListArtist, WeeklyList, EnrichedWeeklyList } from '@/types/weekly';
 
 export interface WeeklyListArtist {
     uuid: string;
@@ -11,22 +11,6 @@ export interface WeeklyListArtist {
     artist_genre: string | null;
     artist_home: string | null;
     artist_bio: string | null;
-}
-
-export interface WeeklyList {
-    id: number;
-    title: string;
-    week_identifier: string;
-    status: string;
-    start_date: string;
-    end_date: string;
-    description: string | null;
-    voting_mode: string;
-    created_at: string;
-}
-
-export interface EnrichedWeeklyList extends WeeklyList {
-    artists: EnrichedWeeklyListArtist[];
 }
 
 export interface SeptemberArtist {
@@ -48,28 +32,8 @@ export interface RatingSubmissionResult {
 class SeptemberRewardsService {
 
     /**
-     * Get all active weekly lists with embedded artist data
-     * This replaces the need for separate getActiveWeeklyLists and getArtistsForWeeklyList calls
-     */
-    async getActiveEnrichedWeeklyLists(): Promise<EnrichedWeeklyList[]> {
-        try {
-            const response = await fetch('/api/weekly-lists/active');
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            return data as EnrichedWeeklyList[];
-        } catch (err) {
-            console.error('[getActiveEnrichedWeeklyLists] Error:', err);
-            throw new Error('Failed to fetch enriched weekly lists');
-        }
-    }
-
-    /**
      * Get all active weekly lists
-     * @deprecated Use getActiveEnrichedWeeklyLists instead
+     * @deprecated Use weeklyListService.getEnrichedActiveWeeklyLists() instead
      */
     async getActiveWeeklyLists(): Promise<WeeklyList[]> {
         try {
@@ -93,7 +57,7 @@ class SeptemberRewardsService {
 
     /**
      * Get artists for a specific weekly list
-     * @deprecated Use getActiveEnrichedWeeklyLists instead
+     * @deprecated Use weeklyListService.getEnrichedActiveWeeklyLists() instead
      */
     async getArtistsForWeeklyList(weeklyListId: number): Promise<WeeklyListArtist[]> {
         try {
@@ -156,6 +120,7 @@ class SeptemberRewardsService {
     }
 
     /**
+     * Submit a rating for an artist
      */
     async submitRating(
         userId: string,
