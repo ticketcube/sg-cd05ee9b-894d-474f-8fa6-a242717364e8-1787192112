@@ -17,10 +17,24 @@ export interface Artist {
     publisher?: string | null;
     territory?: string | null;
     uuid: string;
+    primary_vibe?: string | null;
+    secondary_vibe?: string | null;
+    related_artists?: string[] | null;
+    artist_name?: string;
+    artist_bio?: string;
+    artist_genre?: string;
+    artist_home?: string;
+    artist_image?: string;
+    artist_videolink?: string;
 }
 
 export interface ArtistWithVotes extends Artist {
     votes_count: number;
+}
+
+export interface VibeArtist extends Artist {
+    primary_vibe: string;
+    secondary_vibe?: string;
 }
 
 export interface ArtistEvent {

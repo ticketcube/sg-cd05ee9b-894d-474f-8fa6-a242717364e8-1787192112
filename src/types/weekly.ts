@@ -22,7 +22,8 @@ export interface WeeklyListArtist {
 
 // This is the artist object as it appears inside an enriched weekly list
 export interface EnrichedWeeklyListArtist extends ArtistWithVotes {
-    // any additional properties specific to the artist in the context of a list can go here
+    user_has_watched?: boolean;
+    user_has_voted?: boolean;
 }
 
 // Use Omit to avoid issues with extending and overriding properties
