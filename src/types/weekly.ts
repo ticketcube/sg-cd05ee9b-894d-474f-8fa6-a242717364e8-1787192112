@@ -29,3 +29,8 @@ export interface EnrichedWeeklyListArtist extends ArtistWithVotes {
 export type EnrichedWeeklyList = Omit<WeeklyList, 'artists'> & {
     artists: EnrichedWeeklyListArtist[];
 };
+
+export interface SubmissionResult {
+    pointsEarned: number;
+    message: string;
+}

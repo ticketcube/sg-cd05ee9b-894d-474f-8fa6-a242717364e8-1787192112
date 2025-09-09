@@ -31,10 +31,10 @@ export default function SeptemberArtistGrid({ artists, onArtistClick }: Septembe
                 >
                     {/* Artist Image/Video Thumbnail */}
                     <div className="relative aspect-video bg-gray-100 dark:bg-gray-700">
-                        {artist.artist_image ? (
+                        {artist.profile_picture_url ? (
                             <img
-                                src={artist.artist_image}
-                                alt={artist.artist_name}
+                                src={artist.profile_picture_url}
+                                alt={artist.name}
                                 className="w-full h-full object-cover"
                             />
                         ) : (
@@ -53,7 +53,7 @@ export default function SeptemberArtistGrid({ artists, onArtistClick }: Septembe
                         </div>
 
                         {/* Video indicator */}
-                        {artist.artist_videolink && (
+                        {(artist as any).artist_videolink && (
                             <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
                                 VIDEO
                             </div>
@@ -63,24 +63,24 @@ export default function SeptemberArtistGrid({ artists, onArtistClick }: Septembe
                     {/* Artist Info */}
                     <div className="p-4">
                         <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-1 line-clamp-1">
-                            {artist.artist_name}
+                            {artist.name}
                         </h3>
 
-                        {artist.artist_genre && (
+                        {(artist as any).artist_genre && (
                             <p className="text-sm text-blue-600 dark:text-blue-400 mb-1">
-                                {artist.artist_genre}
+                                {(artist as any).artist_genre}
                             </p>
                         )}
 
-                        {artist.artist_home && (
+                        {(artist as any).artist_home && (
                             <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                                📍 {artist.artist_home}
+                                📍 {(artist as any).artist_home}
                             </p>
                         )}
 
-                        {artist.artist_bio && (
+                        {(artist as any).artist_bio && (
                             <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
-                                {artist.artist_bio}
+                                {(artist as any).artist_bio}
                             </p>
                         )}
                     </div>

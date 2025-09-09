@@ -64,7 +64,7 @@ export default function SeptemberRatingPopup({
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold text-white">
-              {artist.artist_name}
+              {artist.name}
             </DialogTitle>
             <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-400 hover:text-white">
               <X className="h-5 w-5" />
@@ -76,10 +76,10 @@ export default function SeptemberRatingPopup({
           {/* Artist Image */}
           <div className="flex justify-center">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-700">
-              {artist.artist_image ? (
+              {artist.profile_picture_url ? (
                 <img
-                  src={artist.artist_image}
-                  alt={artist.artist_name}
+                  src={artist.profile_picture_url}
+                  alt={artist.name}
                   className="w-full h-full object-cover"
                 />
               ) : (
