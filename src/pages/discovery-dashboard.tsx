@@ -11,7 +11,7 @@ import MoreRewardsTab from '@/components/dashboard/MoreRewardsTab';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import HeroVideo from '@/components/dashboard/HeroVideo';
-import  HowPointsWorkModal  from '@/components/points/HowPointsWorkModal';
+import HowPointsWorkModal from '@/components/points/HowPointsWorkModal';
 import { Button } from '@/components/ui/button';
 
 // Hook & Context Imports
@@ -54,6 +54,12 @@ const DiscoveryDashboard = () => {
                 weeksActive={1} // Placeholder
             />
            
+            <div className="container mx-auto px-4 py-8 text-center">
+                <Link href="/weekly-ratings" passHref>
+                    <Button size="lg" className="mb-8">
+                        Rate This Week's Artists
+                    </Button>
+                </Link>
 
                 <TabNavigation
                     activeTab={activeTab}
@@ -62,7 +68,7 @@ const DiscoveryDashboard = () => {
                 />
                 <div className="mt-8">{renderContent()}</div>
             </div>
-           
+            <HowPointsWorkModal isOpen={showOnboarding} onDismiss={dismiss} isOnboarding />
         </>
     );
 };
