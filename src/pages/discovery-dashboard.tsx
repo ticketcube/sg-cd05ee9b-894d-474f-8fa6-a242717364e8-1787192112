@@ -55,11 +55,7 @@ const DiscoveryDashboard = () => {
             />
            
             <div className="container mx-auto px-4 py-8 text-center">
-                <Link href="/weekly-ratings" passHref>
-                    <Button size="lg" className="mb-8">
-                        Rate This Week's Artists
-                    </Button>
-                </Link>
+              
 
                 <TabNavigation
                     activeTab={activeTab}
