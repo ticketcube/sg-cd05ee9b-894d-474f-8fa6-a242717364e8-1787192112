@@ -67,7 +67,7 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
           .select("*")
-          .eq("primary_genre", genre);
+          .eq("artist_genre", genre)`
 
       if (error) {
         console.error(`Error fetching artists for genre ${genre}:`, error);
@@ -118,10 +118,10 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
         .select("*")
-        .in("name", relatedArtistNames);
+        .in("artist_name", relatedArtistNames);
 
       if (error) {
-        console.error(`Error fetching related artists for ${mainArtist.name}:`, error);
+        console.error(`Error fetching related artists for ${mainArtist.artist_name}:`, error);
         return [];
       }
 
@@ -136,7 +136,7 @@ export class ArtistService {
     try {
       const { data, error } = await supabase
           .from("artists")
-          .select("primary_genre")
+          .select("artist_genre")`
           ;
 
       if (error) {
@@ -145,8 +145,8 @@ export class ArtistService {
       }
 
       const counts = data.reduce((acc, artist) => {
-        if (artist.primary_genre) {
-          acc[artist.primary_genre] = (acc[artist.primary_genre] || 0) + 1;
+        if (artist.artist_genre) {
+            acc[artist.artist_genre] = (acc[artist.artist_genre] || 0) + 1;
         }
         return acc;
       }, {} as { [key: string]: number });
