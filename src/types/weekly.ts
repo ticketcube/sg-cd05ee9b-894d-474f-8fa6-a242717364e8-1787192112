@@ -14,7 +14,6 @@ export interface EnrichedWeeklyListArtist extends Artist {
   artist_name: string;
   artist_image?: string | null;
   artist_videolink?: string | null;
-  video_url?: string | null;
   profile_image_url?: string | null;
   user_vote: { x: number; y: number } | null;
   week_identifier: string;
