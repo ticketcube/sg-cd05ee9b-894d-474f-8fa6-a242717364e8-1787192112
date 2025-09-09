@@ -266,6 +266,6 @@ const SeptemberRewards = () => {
     );
 }
 
-export default e;
+export default SeptemberRewards;
 
 
