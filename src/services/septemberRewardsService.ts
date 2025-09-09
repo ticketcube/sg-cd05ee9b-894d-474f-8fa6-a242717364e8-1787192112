@@ -152,7 +152,7 @@ class SeptemberRewardsService {
             if (!result.success) {
                 return {
                     success: false,
-                    error: result.error || 'Failed to submit rating'
+                    error: result.error || "Failed to submit rating"
                 };
             }
 
