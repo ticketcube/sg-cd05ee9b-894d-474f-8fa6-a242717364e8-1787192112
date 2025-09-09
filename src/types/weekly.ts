@@ -3,17 +3,6 @@ export type WeeklyList = Database["public"]["Tables"]["weekly_lists"]["Row"];
 import { ArtistWithVotes } from './artists';
 
 
-export interface WeeklyList {
-    id: number;
-    week_identifier: string; 
-    start_date: string;
-    end_date: string;
-    status: 'active' | 'past' | 'upcoming';
-    title: string;
-    description: string;
-    voting_mode: 'public' | 'staff_only';
-    created_at: string;
-}
 
 // Represents the join table between weekly_lists and artists
 export interface WeeklyListArtist {
