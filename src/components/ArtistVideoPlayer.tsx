@@ -8,8 +8,8 @@ import ReactPlayer from "react-player";
 import { cn } from "@/lib/utils";
 
 interface ArtistVideoPlayerProps {
-  artist: DisplayArtist;
-  videoLinks?: string[];
+  artist_name: DisplayArtist;
+  artist_videolink?: string[];
   currentIndex?: number;
   onChangeIndex?: (index: number) => void;
   isEmbed?: boolean;
