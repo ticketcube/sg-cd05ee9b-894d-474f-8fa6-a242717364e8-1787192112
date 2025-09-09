@@ -1,9 +1,8 @@
-
 import ReactPlayer from 'react-player';
 import { VideoOff } from 'lucide-react';
 
 interface ArtistVideoPlayerProps {
-  artist_videolink: string | null;
+  videoUrl: string | null;
   onPlay?: () => void;
   onPause?: () => void;
   onEnded?: () => void;
@@ -11,13 +10,13 @@ interface ArtistVideoPlayerProps {
 }
 
 export default function ArtistVideoPlayer({
-  artist_videolink,
+  videoUrl,
   onPlay,
   onPause,
   onEnded,
   onPlayerError
 }: ArtistVideoPlayerProps) {
-  if (!artist_videolink) {
+  if (!videoUrl) {
     return (
       <div className="w-full h-full bg-black flex items-center justify-center">
         <div className="text-center text-white">
@@ -30,7 +29,7 @@ export default function ArtistVideoPlayer({
 
   return (
     <ReactPlayer
-      url={artist_videolink}
+      url={videoUrl}
       width="100%"
       height="100%"
       playing={true}
