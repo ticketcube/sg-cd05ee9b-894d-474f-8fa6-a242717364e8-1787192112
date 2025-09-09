@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Calendar, Star, Trophy } from "lucide-react";
 import SeptemberArtistGrid from "@/components/september/SeptemberArtistGrid";
 import SeptemberVideoPopup from "@/components/september/SeptemberVideoPopup";
 import SeptemberRatingPopup from "@/components/september/SeptemberRatingPopup";
 import PointsNotification from "@/components/points/PointsNotification";
 import AppLayout from '@/components/layout/AppLayout';
+import DashboardLoading from '@/components/dashboard/DashboardLoading';
+import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import AuthGuard from '@/components/AuthGuard';
 
@@ -35,13 +39,14 @@ const SeptemberRewards = () => {
             
             // Use the correct service method
             const enrichedLists = await weeklyListService.getEnrichedActiveWeeklyLists();
-            setWeeklyLists(enrichedLists);
+            setEnrichedLists(enrichedLists);
             
             if (enrichedLists.length > 0) {
               setSelectedListId(enrichedLists[0].id.toString());
             }
           } catch (error) {
             console.error('Error loading weekly lists:', error);
+            setError('Failed to load weekly lists. Please try again.');
           } finally {
             setLoading(false);
           }
@@ -57,24 +62,6 @@ const SeptemberRewards = () => {
     if (!profile) {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
-
-    const loadEnrichedWeeklyLists = async () => {
-        try {
-            setLoading(true);
-            const data = await septemberRewardsService.getActiveEnrichedWeeklyLists();
-            setEnrichedLists(data);
-
-            // Auto-select the first list if available
-            if (data.length > 0) {
-                setSelectedListId(data[0].id.toString());
-            }
-        } catch (err) {
-            console.error('Error loading enriched weekly lists:', err);
-            setError('Failed to load weekly lists. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Derive current artists from enriched data instead of making separate API call
     const currentArtists = enrichedLists.find(list => list.id.toString() === selectedListId)?.artists || [];
@@ -236,7 +223,7 @@ const SeptemberRewards = () => {
                     <div className="bg-red-100 dark:bg-red-900 border border-red-400 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-4">
                         <p>{error}</p>
                         <Button 
-                            onClick={loadEnrichedWeeklyLists} 
+                            onClick={() => window.location.reload()} 
                             className="mt-2"
                             variant="outline"
                         >
