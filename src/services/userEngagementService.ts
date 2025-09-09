@@ -8,6 +8,8 @@ export type EngagementParams = {
   engagementType: string;
   artistUuid?: string | null;
   weekIdentifier?: string | null;
+  x_quadrant?: number | null;
+  y_quadrant?: number | null;
   additionalData?: Record<string, any>;
 };
 
@@ -35,8 +37,8 @@ class UserEngagementService {
                   artist_uuid: artistUuid,
                   week_identifier: weekIdentifier,
                   points_earned: points,
-                  x_quadrant: additionalData?.quadrantX ?? null,   // 👈 map quadrantX
-                  y_quadrant: additionalData?.quadrantY ?? null,   // 👈 map quadrantY
+                  x_quadrant,  
+                  y_quadrant, 
                   metadata: additionalData, // still keep everything else here if needed
                   created_at: new Date().toISOString(),
               })
