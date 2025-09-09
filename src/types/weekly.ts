@@ -9,11 +9,11 @@ export interface WeeklyListWithArtists extends WeeklyList {
   artists: Artist[];
 }
 
-export interface EnrichedWeeklyListArtist extends Artist {
+export interface EnrichedWeeklyListArtist extends Omit<Artist, 'artist_videolink'> {
   artist_uuid: string;
   artist_name: string;
   artist_image: string | null;
-  artist_videolink?: string | null;
+  artist_videolink: string | null;
   profile_image_url?: string | null;
   user_vote: { x: number; y: number } | null;
   week_identifier: string;
