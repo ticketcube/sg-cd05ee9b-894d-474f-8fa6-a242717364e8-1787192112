@@ -1,22 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Calendar, Star, Trophy } from "lucide-react";
-import SeptemberArtistGrid from "@/components/september/SeptemberArtistGrid";
-import SeptemberVideoPopup from "@/components/september/SeptemberVideoPopup";
-import SeptemberRatingPopup from "@/components/september/SeptemberRatingPopup";
-import PointsNotification from "@/components/points/PointsNotification";
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+// Component Imports
 import AppLayout from '@/components/layout/AppLayout';
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import TabNavigation from '@/components/dashboard/TabNavigation';
+import DiscoverMoreTab from '@/components/dashboard/DiscoverMoreTab';
+import MoreRewardsTab from '@/components/dashboard/MoreRewardsTab';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
-import { useUserProfile } from '@/contexts/UserProfileContext';
-import AuthGuard from '@/components/AuthGuard';
+import HeroVideo from '@/components/dashboard/HeroVideo';
+import HowPointsWorkModal from '@/components/points/HowPointsWorkModal';
+import { Button } from '@/components/ui/button';
+import { septemberRewardsService, EnrichedWeeklyList } from '@/services/septemberRewardsService';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import SeptemberArtistGrid from '@/components/september/SeptemberArtistGrid';
+import SeptemberVideoPopup from '@/components/september/SeptemberVideoPopup';
+import SeptemberRatingPopup from '@/components/september/SeptemberRatingPopup';
+import { Trophy, Star, Calendar } from 'lucide-react';
+import { EnrichedWeeklyListArtist } from '@/types/weekly';
 
-// Import types and services correctly
-import type { EnrichedWeeklyList, EnrichedWeeklyListArtist } from "@/types/weekly";
-import { weeklyListService } from "@/services/weeklyListService";
-import { septemberRewardsService } from "@/services/septemberRewardsService";
+// Hook & Context Imports
+import { useUserProfile } from '@/contexts/UserProfileContext';
+import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
 
 const SeptemberRewards = () => {
 
@@ -33,27 +40,11 @@ const SeptemberRewards = () => {
 
     // Load enriched weekly lists on component mount
     useEffect(() => {
-        const loadData = async () => {
-          try {
-            setLoading(true);
-            
-            // Use the correct service method
-            const enrichedLists = await weeklyListService.getEnrichedActiveWeeklyLists();
-            setEnrichedLists(enrichedLists);
-            
-            if (enrichedLists.length > 0) {
-              setSelectedListId(enrichedLists[0].id.toString());
-            }
-          } catch (error) {
-            console.error('Error loading weekly lists:', error);
-            setError('Failed to load weekly lists. Please try again.');
-          } finally {
-            setLoading(false);
-          }
-        };
-
-        loadData();
-      }, []);
+        if (profile) {
+            loadEnrichedWeeklyLists();
+            setUserPoints(profile.total_points || 0);
+        }
+    }, [profile]);
 
     if (userLoading) {
         return <DashboardLoading />;
@@ -62,6 +53,24 @@ const SeptemberRewards = () => {
     if (!profile) {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
+
+    const loadEnrichedWeeklyLists = async () => {
+        try {
+            setLoading(true);
+            const data = await septemberRewardsService.getActiveEnrichedWeeklyLists();
+            setEnrichedLists(data);
+
+            // Auto-select the first list if available
+            if (data.length > 0) {
+                setSelectedListId(data[0].id.toString());
+            }
+        } catch (err) {
+            console.error('Error loading enriched weekly lists:', err);
+            setError('Failed to load weekly lists. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Derive current artists from enriched data instead of making separate API call
     const currentArtists = enrichedLists.find(list => list.id.toString() === selectedListId)?.artists || [];
@@ -223,7 +232,7 @@ const SeptemberRewards = () => {
                     <div className="bg-red-100 dark:bg-red-900 border border-red-400 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-4">
                         <p>{error}</p>
                         <Button 
-                            onClick={() => window.location.reload()} 
+                            onClick={loadEnrichedWeeklyLists} 
                             className="mt-2"
                             variant="outline"
                         >

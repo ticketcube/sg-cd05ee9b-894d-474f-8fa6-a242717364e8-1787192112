@@ -50,7 +50,7 @@ export default function SeptemberRatingPopup({
       const quadrantX = (ticketInterest - 50) / 50; // Maps 0-100 to -1 to 1
       const quadrantY = (shareInterest - 50) / 50; // Maps 0-100 to -1 to 1
 
-      await onRatingComplete(artist.id, quadrantX, quadrantY);
+      await onRatingComplete(artist.uuid, quadrantX, quadrantY);
     } catch (error) {
       console.error('Error submitting rating:', error);
     } finally {

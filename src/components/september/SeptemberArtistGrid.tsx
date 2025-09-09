@@ -25,7 +25,7 @@ export default function SeptemberArtistGrid({ artists, onArtistClick }: Septembe
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {artists.map((artist) => (
                 <div
-                    key={artist.id}
+                    key={artist.uuid}
                     onClick={() => onArtistClick(artist)}
                     className="group cursor-pointer bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
                 >

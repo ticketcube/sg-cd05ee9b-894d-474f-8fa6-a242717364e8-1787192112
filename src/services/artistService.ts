@@ -1,11 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 import type { ArtistWithVotes } from "@/types/artists";
 import type { ArtistWithLocation } from "@/types/map";
-
-// Define missing types based on database schema
-type Artist = Database['public']['Tables']['artists']['Row'];
-type ArtistWithVoteCount = Artist & { vote_count: number };
 
 export class ArtistService {
   async getArtists(
