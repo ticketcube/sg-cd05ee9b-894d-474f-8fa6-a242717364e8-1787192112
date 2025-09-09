@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { WeeklyListArtist } from '@/services/septemberRewardsService';
 import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
@@ -18,7 +19,6 @@ export default function SeptemberVideoPopup({
     isOpen,
     onClose,
     onWatchComplete,
-    weekIdentifier
 }: SeptemberVideoPopupProps) {
     const [watchTime, setWatchTime] = useState(0);
     const [isWatching, setIsWatching] = useState(false);
@@ -58,36 +58,15 @@ export default function SeptemberVideoPopup({
     }, [isWatching, watchTime]);
 
     const handleVideoPlay = () => {
-        // This will be called when the video starts playing
         setIsWatching(true);
     };
 
     const handleVideoPause = () => {
-        // This will be called when the video is paused
         setIsWatching(false);
     };
 
     const handleRateArtist = () => {
         onWatchComplete();
-    };
-
-    // Convert WeeklyListArtist to DisplayArtist format for ArtistVideoPlayer
-    const displayArtist = {
-        ...artist,
-        artist_audiolink: null,
-        artist_otwcategory: null,
-        artist_otwcoverage: null,
-        artist_otwcreateddate: null,
-        artist_relatedartists: null,
-        artist_tiktok_username: null,
-        artist_tiktok_videoid: null,
-        artist_totallisteners: null,
-        artist_totalwatchers: null,
-        attractionId: null,
-        cityid: null,
-        primary_vibe: null,
-        secondary_vibe: null,
-        Top_List: null
     };
 
     return (
@@ -108,12 +87,9 @@ export default function SeptemberVideoPopup({
                     {/* Left side - Video Player (2/3 width) */}
                     <div className="lg:col-span-2 space-y-4">
                         {/* Video Player */}
-                        <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+                        <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden">
                             <ArtistVideoPlayer
-                                artist={displayArtist}
-                                artistName={artist.artist_name}
-                                artistUuid={artist.uuid}
-                                weekIdentifier={weekIdentifier}
+                                videoUrl={artist.artist_videolink}
                                 onPlay={handleVideoPlay}
                                 onPause={handleVideoPause}
                             />
@@ -164,7 +140,6 @@ export default function SeptemberVideoPopup({
                                 </p>
                             </div>
 
-                            {/* Status Messages */}
                             {!isWatching && watchTime === 0 && (
                                 <div className="text-sm text-gray-500 mb-4">
                                     Click play to start the timer
@@ -217,7 +192,6 @@ export default function SeptemberVideoPopup({
                             )}
                         </Button>
 
-                        {/* Instructions */}
                         <div className="text-xs text-gray-500 text-center">
                             You need to watch at least 15 seconds of the video before you can rate the artist
                         </div>
