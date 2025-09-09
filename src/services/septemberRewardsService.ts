@@ -128,25 +128,24 @@ class SeptemberRewardsService {
     }
 
     /**
-     * Submit a rating for an artist using the new userEngagementService.recordWeeklyRating method
      */
     async submitRating(
-        userId: string,
-        artistUuid: string,
-        weekIdentifier: string,
-        quadrantX: number,
-        quadrantY: number
+        userId: string;
+        engagementType: string;
+        artistUuid?: string | null;
+        weekIdentifier?: string | null;
+        x_quadrant?: number | null;
+        y_quadrant?: number | null;
+        additionalData?: Record<string, any>;
     ): Promise<RatingSubmissionResult> {
         try {
-            // Use the new recordWeeklyRating method that includes points configuration
-            const result = await userEngagementService.recordWeeklyRating(
+            const result = await userEngagementService.recordEngagement(
                 userId,
+                engagementType: ENGAGEMENT_TYPES.QUADRANT,
                 artistUuid,
                 weekIdentifier,
-                quadrantX,
-                quadrantY,
-                quadrantX * 100, // Convert to ticket interest scale
-                quadrantY * 100  // Convert to share interest scale
+                x_quadrant,
+                y_quadrant,
             );
 
             if (!result.success) {
