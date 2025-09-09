@@ -1,4 +1,3 @@
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
 
@@ -20,54 +19,52 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('[API] Getting active weekly list...');
+    console.log('[API] Getting all active weekly lists...');
 
-    // Get the most recent active weekly list using service role
-    const { data: weeklyList, error: listError } = await supabaseAdmin
+    // Get all active weekly lists with embedded artists data
+    const { data: weeklyLists, error: listsError } = await supabaseAdmin
       .from('weekly_lists')
-      .select('*')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (listError) {
-      if (listError.code === 'PGRST116') {
-        console.log('[API] No active weekly lists found');
-        return res.status(404).json({ error: 'No active weekly list found' });
-      }
-      console.error('[API] Error fetching weekly list:', listError);
-      throw listError;
-    }
-
-    console.log('[API] Found active weekly list:', weeklyList.id);
-
-    // Get artists for this weekly list
-    const { data: weeklyListArtists, error: artistsError } = await supabaseAdmin
-      .from('weekly_list_artists')
       .select(`
         *,
-        artist:artists(*)
+        weekly_list_artists (
+          *,
+          artists (
+            *
+          )
+        )
       `)
-      .eq('week_identifier', weeklyList.week_identifier)
-      .order('position', { ascending: true });
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
 
-    if (artistsError) {
-      console.error('[API] Error fetching weekly list artists:', artistsError);
-      throw artistsError;
+    if (listsError) {
+      console.error('[API] Error fetching weekly lists:', listsError);
+      throw listsError;
     }
 
-    console.log('[API] Found artists for weekly list:', weeklyListArtists?.length || 0);
+    if (!weeklyLists || weeklyLists.length === 0) {
+      console.log('[API] No active weekly lists found');
+      return res.status(404).json({ error: 'No active weekly lists found' });
+    }
 
-    const result = {
-      ...weeklyList,
-      artists: weeklyListArtists || []
-    };
+    console.log('[API] Found active weekly lists:', weeklyLists.length);
+
+    // Map the data to match expected format with artists array
+    const result = weeklyLists.map(list => ({
+      ...list,
+      artists: list.weekly_list_artists?.map(wla => ({
+        ...wla,
+        artist_videolink: wla.artists?.artist_videolink,
+        artist_name: wla.artists?.artist_name,
+        artist_image: wla.artists?.artist_image,
+        // Include all artist data
+        ...wla.artists
+      })) || []
+    }));
 
     return res.status(200).json(result);
 
   } catch (error) {
-    console.error('[API] Error getting active weekly list:', error);
+    console.error('[API] Error getting active weekly lists:', error);
     return res.status(500).json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
