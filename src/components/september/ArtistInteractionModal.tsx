@@ -85,7 +85,7 @@ export function ArtistInteractionModal({
                                 </p>
                             </div>
                         ) : (
-                            <QuadrantRating onSubmit={handleRatingSubmit} />
+                                <QuadrantRating onSubmit={handleRatingSubmit} pointsEarned={pointsEarned} />
                         )}
                     </div>
                 </div>
