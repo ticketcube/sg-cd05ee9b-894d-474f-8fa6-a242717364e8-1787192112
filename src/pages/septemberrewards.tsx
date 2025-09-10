@@ -42,7 +42,7 @@ export default function SeptemberRewardsPage() {
             setLoading(false);
         }
     };
-
+    console.log("Fetched lists:", JSON.stringify(lists, null, 2));
     const handleArtistSelect = (artist: EnrichedWeeklyListArtist) => {
         setSelectedArtist(artist);
         setIsModalOpen(true);
