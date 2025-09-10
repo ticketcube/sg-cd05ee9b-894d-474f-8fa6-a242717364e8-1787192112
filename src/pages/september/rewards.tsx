@@ -9,7 +9,7 @@ import { ArtistInteractionModal } from '@/components/september/ArtistInteraction
 import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
 import { septemberRewardsService } from '@/services/septemberRewardsService';
 import { userEngagementService } from '@/services/userEngagementService';
-import { EngagementType } from '@/constants/engagementTypes';
+import  EngagementType from '@/constants/engagementTypes';
 import { useToast } from '@/hooks/use-toast';
 
 export default function SeptemberRewardsPage() {
