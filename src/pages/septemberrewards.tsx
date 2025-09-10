@@ -42,9 +42,7 @@ export default function SeptemberRewardsPage() {
             setLoading(false);
         }
     };
-    useEffect(() => {
-        console.log("Enriched lists on client:", enrichedLists);
-    }, [enrichedLists]);
+  
     const handleArtistSelect = (artist: EnrichedWeeklyListArtist) => {
         setSelectedArtist(artist);
         setIsModalOpen(true);
