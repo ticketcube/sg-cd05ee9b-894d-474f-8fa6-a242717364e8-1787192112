@@ -18,30 +18,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     const router = useRouter();
     const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
 
-    // Global error handler to redirect to home on any errors
-    useEffect(() => {
-        const handleError = (event: ErrorEvent) => {
-            console.error("Global error caught:", event.error);
-            router.push("/").catch(() => {
-                window.location.href = "/";
-            });
-        };
 
-        const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-            console.error("Unhandled promise rejection:", event.reason);
-            router.push("/").catch(() => {
-                window.location.href = "/";
-            });
-        };
-
-        window.addEventListener("error", handleError);
-        window.addEventListener("unhandledrejection", handleUnhandledRejection);
-
-        return () => {
-            window.removeEventListener("error", handleError);
-            window.removeEventListener("unhandledrejection", handleUnhandledRejection);
-        };
-    }, [router]);
 
     const handleSignOut = async () => {
         try {
