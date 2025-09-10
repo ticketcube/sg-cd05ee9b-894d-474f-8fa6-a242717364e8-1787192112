@@ -1,54 +1,68 @@
-import React from 'react';
-import dynamic from 'next/dynamic';
+import React, { useState, useRef, useEffect } from 'react';
+import ReactPlayer from 'react-player';
+import { Loader2 } from 'lucide-react';
 
-// Dynamically import ReactPlayer to prevent SSR issues
-const ReactPlayerDynamic = dynamic(() => import('react-player'), { ssr: false });
-
-// Cast to any to bypass stubborn type issue from the library
-const ReactPlayer = ReactPlayerDynamic as any;
-
-export interface ArtistVideoPlayerProps {
-  artist_videolink: string;
-  onPlay?: () => void;
-  onPause?: () => void;
-  onEnded?: () => void;
-  onError?: () => void;
-  className?: string;
-  size?: string;
+interface ArtistVideoPlayerProps {
+    videoUrl: string;
+    onWatchComplete: () => void;
 }
 
-export function ArtistVideoPlayer({
-  artist_videolink,
-  onPlay,
-  onPause,
-  onEnded,
-  onError,
-  className = "",
-  size = "w-full h-48"
-}: ArtistVideoPlayerProps) {
-  if (!artist_videolink) {
+const ArtistVideoPlayer: React.FC<ArtistVideoPlayerProps> = ({ videoUrl, onWatchComplete }) => {
+    const [isLoading, setIsLoading] = useState(true);
+    const hasCompletedRef = useRef(false);
+
+    // Reset the completion status whenever a new video URL is passed in.
+    // This is crucial for when the user closes one artist modal and opens another.
+    useEffect(() => {
+        hasCompletedRef.current = false;
+        setIsLoading(true);
+    }, [videoUrl]);
+
+    const handleProgress = ({ playedSeconds }: { playedSeconds: number }) => {
+        if (!hasCompletedRef.current && playedSeconds >= 15) {
+            console.log("15 seconds watch time reached. Calling onWatchComplete.");
+            hasCompletedRef.current = true; // Prevents the function from being called multiple times
+            onWatchComplete();
+        }
+    };
+
+    // A collection of event handlers to manage the loading state for better UX.
+    const handleReady = () => setIsLoading(false);
+    const handleBuffer = () => setIsLoading(true);
+    const handlePlay = () => setIsLoading(false);
+
+    const isPlayable = videoUrl && ReactPlayer.canPlay(videoUrl);
+
     return (
-      <div className={`${size} bg-gray-200 flex items-center justify-center ${className}`}>
-        <p className="text-gray-500">No video available</p>
-      </div>
+        <div className="w-full h-full bg-black flex items-center justify-center relative">
+            {isPlayable ? (
+                <>
+                    {isLoading && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-75 z-10">
+                            <Loader2 className="h-12 w-12 text-white animate-spin" />
+                            <p className="text-white mt-2">Loading Video...</p>
+                        </div>
+                    )}
+                    <ReactPlayer
+                        url={videoUrl}
+                        width="100%"
+                        height="100%"
+                        controls={true}
+                        playing={true} // Attempts to autoplay, browsers may block this
+                        onProgress={handleProgress}
+                        onReady={handleReady}
+                        onBuffer={handleBuffer}
+                        onPlay={handlePlay}
+                    />
+                </>
+            ) : (
+                <div className="text-center p-4">
+                    <p className="text-white">Video could not be loaded.</p>
+                    <p className="text-xs text-gray-400 mt-2">The provided URL may be invalid or unsupported.</p>
+                </div>
+            )}
+        </div>
     );
-  }
-
-  return (
-    <div className={`${size} ${className}`}>
-      <ReactPlayer 
-        url={artist_videolink}
-        width="100%"
-        height="100%"
-        playing
-        controls
-        onPlay={onPlay}
-        onPause={onPause}
-        onEnded={onEnded}
-        onError={onError}
-      />
-    </div>
-  );
-}
+};
 
 export default ArtistVideoPlayer;
