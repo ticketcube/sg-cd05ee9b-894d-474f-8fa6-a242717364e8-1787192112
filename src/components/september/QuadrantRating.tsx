@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 
 interface QuadrantRatingProps {
     onSubmit: (data: { x: number; y: number }) => void;
+    pointsEarned: number | null;
 }
 
 export function QuadrantRating({ onSubmit }: QuadrantRatingProps) {
@@ -22,6 +23,12 @@ export function QuadrantRating({ onSubmit }: QuadrantRatingProps) {
         <div className="flex flex-col justify-center h-full">
             <h3 className="text-lg font-semibold mb-2">Rate This Video</h3>
             <p className="text-sm text-muted-foreground mb-6">Your feedback helps us recommend better music and rewards.</p>
+
+         {pointsEarned !== null && pointsEarned > 0 && (
+            <div className="p-2 mb-4 bg-green-100 dark:bg-green-900/50 rounded-md text-center text-sm font-medium text-green-700 dark:text-green-300">
+                +{pointsEarned} Points for watching!
+            </div>
+              )}
 
             <div className="space-y-8">
                 <div>
