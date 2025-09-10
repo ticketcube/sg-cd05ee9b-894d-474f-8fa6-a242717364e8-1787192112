@@ -15,6 +15,7 @@ interface ArtistInteractionModalProps {
     artist: EnrichedWeeklyListArtist | null;
     isOpen: boolean;
     onClose: () => void;
+    listId: number | null; // Add this line
     onRatingComplete: (artistId: number, data: { x: number; y: number }) => void;
 }
 
@@ -22,6 +23,7 @@ export function ArtistInteractionModal({
     artist,
     isOpen,
     onClose,
+    listId, // Add this line
     onRatingComplete,
 }: ArtistInteractionModalProps) {
     const [showRating, setShowRating] = useState(false);
@@ -30,32 +32,27 @@ export function ArtistInteractionModal({
     if (!artist) return null;
 
     const handleVideoComplete = async () => {
-        if (!artist.artist_id) return;
+        // Add a guard for listId
+        if (!artist || !artist.id || !listId) return;
+
+        console.log(`Video watch complete for artist ${artist.id} on list ${listId}. Recording points...`);
         try {
-            // Record the watch and get the result
-            const result = await videoWatchService.recordVideoWatch(artist.artist_id);
-
-            // Store the earned points in our new state
-            setVideoPoints(result.pointsEarned);
-
-            // Switch to the rating view
-            setView('rating');
-
-            // No toast needed here anymore, the message will show in the rating component!
-
-        } catch (error: any) {
-            console.error("Error recording video watch:", error);
-            toast({
-                title: "Oops!",
-                description: error.message || "Could not record video watch. Please try again.",
-                variant: "destructive",
-            });
-            // We still switch to rating view, but no points will be shown.
-            setView('rating');
+            // Pass artist.id and the new listId
+            const result = await videoWatchService.recordVideoWatch(artist.id, listId);
+            setPointsEarned(result.pointsEarned); // Store the points
+        } catch (error) {
+            console.error("Failed to record video watch points:", error);
+            // We still want to show the rating UI even if this fails, just without points.
+            setPointsEarned(null);
+        } finally {
+            // This part remains the same: transition to the rating view
+            setShowRating(true);
         }
     };
 
     const handleRatingSubmit = (data: { x: number; y: number }) => {
+        // Using artist.id here as well for consistency
+        if (!artist || !artist.id) return;
         onRatingComplete(artist.id, data);
     };
 
