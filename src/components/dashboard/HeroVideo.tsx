@@ -34,7 +34,7 @@ export default function HeroVideo() {
                 </button>
             </div>
             <div className="flex justify-center mt-6">
-                <Link href="/weekly-ratings">
+                <Link href="/september/rewards">
                     <Button className="bg-blue-600 hover:bg-blue-700 text-lg px-5 py-2.5 rounded-xl shadow-lg text-white">
                         Rate This Week&apos;s Artists
                     </Button>
