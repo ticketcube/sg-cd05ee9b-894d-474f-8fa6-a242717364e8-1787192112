@@ -3,7 +3,7 @@ import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 
 interface QuadrantRatingProps {
-    onSubmit: (quadrant: number) => void;
+    onSubmit: (data: { x: number; y: number }) => void;
 }
 
 export function QuadrantRating({ onSubmit }: QuadrantRatingProps) {
@@ -15,12 +15,7 @@ export function QuadrantRating({ onSubmit }: QuadrantRatingProps) {
         const x = (shareInterest - 50) / 50;
         const y = (ticketInterest - 50) / 50;
 
-        let quadrant = 1; // Default to top-right
-        if (x < 0 && y >= 0) quadrant = 2;      // Top-left
-        else if (x < 0 && y < 0) quadrant = 3;  // Bottom-left
-        else if (x >= 0 && y < 0) quadrant = 4; // Bottom-right
-
-        onSubmit(quadrant);
+        onSubmit({ x, y });
     };
 
     return (
