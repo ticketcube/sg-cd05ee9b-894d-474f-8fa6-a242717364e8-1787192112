@@ -34,6 +34,7 @@ export default function SeptemberRewardsPage() {
         setError(null);
         try {
             const lists = await septemberRewardsService.getActiveEnrichedWeeklyLists();
+            console.log("✅ Enriched weekly lists fetched:", lists);
             setEnrichedLists(lists);
         } catch (err: any) {
             console.error("Failed to load weekly lists:", err);
