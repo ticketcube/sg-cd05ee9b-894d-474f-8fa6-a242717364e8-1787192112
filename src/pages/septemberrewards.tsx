@@ -12,6 +12,7 @@ import { userEngagementService } from '@/services/userEngagementService';
 import { EngagementType } from '@/constants/engagementTypes';
 import { useToast } from '@/hooks/use-toast';
 
+console.log("🔔 Component mounted");
 export default function SeptemberRewardsPage() {
     const { profile, loading: profileLoading, isAuthenticated } = useUserProfile();
     const [enrichedLists, setEnrichedLists] = useState<EnrichedWeeklyList[]>([]);
