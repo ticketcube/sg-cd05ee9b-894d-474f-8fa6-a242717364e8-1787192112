@@ -24,6 +24,8 @@ import { EnrichedWeeklyListArtist } from '@/types/weekly';
 // Hook & Context Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
+import { SubmissionSuccessPopup } from "@/components/points/SubmissionSuccessPopup";
+import { SubmissionResult } from "@/types/weekly";
 
 const SeptemberRewards = () => {
 
