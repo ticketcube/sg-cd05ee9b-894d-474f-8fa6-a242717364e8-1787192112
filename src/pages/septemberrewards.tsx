@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import { AppLayout } from '@/components/layout/AppLayout';
+import AppLayout from '@/components/layout/AppLayout';
 import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
 import { DashboardAuthBlock } from '@/components/dashboard/DashboardAuthBlock';
 import { SeptemberArtistGrid } from '@/components/september/SeptemberArtistGrid';
