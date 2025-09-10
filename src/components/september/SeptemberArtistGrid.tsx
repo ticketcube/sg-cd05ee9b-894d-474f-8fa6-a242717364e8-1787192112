@@ -1,98 +1,64 @@
+import React from 'react';
 import { EnrichedWeeklyListArtist } from '@/types/weekly';
-import { Play, User } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { PlayCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
 
 interface SeptemberArtistGridProps {
-    artists: EnrichedWeeklyListArtist[];
-    onArtistClick: (artist: EnrichedWeeklyListArtist) => void;
+  artists: EnrichedWeeklyListArtist[];
+  onArtistSelect: (artist: EnrichedWeeklyListArtist) => void;
 }
 
-export default function SeptemberArtistGrid({ artists, onArtistClick }: SeptemberArtistGridProps) {
-    if (!artists || artists.length === 0) {
+const SeptemberArtistGrid: React.FC<SeptemberArtistGridProps> = ({ artists, onArtistSelect }) => {
+  if (!artists || artists.length === 0) {
+    return <div className="text-center text-gray-500 mt-8">No artists to display for this week.</div>;
+  }
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 p-4 md:p-6">
+      {artists.map((artist) => {
+        // Check for essential data before rendering the card
+        if (!artist || !artist.artist_name || !artist.artist_image) {
+          return null; // Don't render a card if essential info is missing
+        }
+
         return (
-            <div className="text-center py-12">
-                <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    No Artists Available
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                    Check back later for more artists to rate!
-                </p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {artists.map((artist) => (
-                <div
-                    key={artist.uuid}
-                    onClick={() => onArtistClick(artist)}
-                    className="group cursor-pointer bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
-                >
-                    {/* Artist Image/Video Thumbnail */}
-                    <div className="relative aspect-video bg-gray-100 dark:bg-gray-700">
-                        {artist.profile_picture_url ? (
-                            <img
-                                src={artist.profile_picture_url}
-                                alt={artist.name}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                                <User className="h-12 w-12 text-gray-400" />
-                            </div>
-                        )}
-
-                        {/* Play button overlay */}
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <div className="bg-white bg-opacity-90 rounded-full p-3">
-                                    <Play className="h-6 w-6 text-blue-600 fill-current" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Video indicator */}
-                        {(artist as any).artist_videolink && (
-                            <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                                VIDEO
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Artist Info */}
-                    <div className="p-4">
-                        <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-1 line-clamp-1">
-                            {artist.name}
-                        </h3>
-
-                        {(artist as any).artist_genre && (
-                            <p className="text-sm text-blue-600 dark:text-blue-400 mb-1">
-                                {(artist as any).artist_genre}
-                            </p>
-                        )}
-
-                        {(artist as any).artist_home && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                                📍 {(artist as any).artist_home}
-                            </p>
-                        )}
-
-                        {(artist as any).artist_bio && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
-                                {(artist as any).artist_bio}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Click to rate indicator */}
-                    <div className="px-4 pb-4">
-                        <div className="text-center text-xs text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            Click to rate and earn points →
-                        </div>
-                    </div>
+          <Card
+            key={artist.id}
+            onClick={() => onArtistSelect(artist)}
+            className="group relative overflow-hidden rounded-lg shadow-lg cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+          >
+            <CardContent className="p-0">
+              <div className="aspect-square w-full relative">
+                <Image
+                  src={artist.artist_image}
+                  alt={artist.artist_name}
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
+                  <PlayCircle className="text-white h-12 w-12 opacity-80 group-hover:opacity-100 transform group-hover:scale-110 transition-transform" />
                 </div>
-            ))}
-        </div>
-    );
-}
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black via-black/70 to-transparent">
+                <h3 className="text-white font-bold text-base truncate">{artist.artist_name}</h3>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {artist.artist_genre && (
+                    <Badge variant="secondary" className="text-xs">{artist.artist_genre}</Badge>
+                  )}
+                  {artist.artist_home && (
+                    <Badge variant="outline" className="text-xs border-gray-400 text-gray-200">{artist.artist_home}</Badge>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
+};
+
+export default SeptemberArtistGrid;
