@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 
-const MoreRewardsTab = () => {
+export default function MoreRewardsTab = () => {
     return (
         <Card>
             <CardHeader>
@@ -18,4 +18,3 @@ const MoreRewardsTab = () => {
     );
 };
 
-export default MoreRewardsTab;
