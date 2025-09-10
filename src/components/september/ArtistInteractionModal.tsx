@@ -25,7 +25,8 @@ export function ArtistInteractionModal({
     onRatingComplete,
 }: ArtistInteractionModalProps) {
     const [showRating, setShowRating] = useState(false);
-    const [pointsEarned, setPointsEarned] = useState<number | null>(null);
+    const [pointsEarned, setPointsEarned] = useState < number | null > (null);
+    const [videoPoints, setVideoPoints] = useState < number | null > (null);
 
     if (!artist) return null;
 
