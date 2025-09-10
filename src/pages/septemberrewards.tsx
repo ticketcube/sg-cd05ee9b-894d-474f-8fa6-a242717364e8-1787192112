@@ -9,20 +9,17 @@ import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from "@/types/weekly";
 import { SeptemberArtistGrid } from "@/components/september/SeptemberArtistGrid";
 import { ArtistInteractionModal } from "@/components/september/ArtistInteractionModal";
 import { useToast } from "@/hooks/use-toast";
-import { SubmissionSuccessPopup } from "@/components/points/SubmissionSuccessPopup";
 
 function SeptemberRewardsPage() {
     const { user, loading: userLoading } = useUserProfile();
     const { toast } = useToast();
 
-    const [weeklyLists, setWeeklyLists] = useState < EnrichedWeeklyList[] > ([]);
+    const [weeklyLists, setWeeklyLists] = useState<EnrichedWeeklyList[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState < string | null > (null);
+    const [error, setError] = useState<string | null>(null);
 
-    const [selectedArtist, setSelectedArtist] = useState < EnrichedWeeklyListArtist | null > (null);
-    const [currentListId, setCurrentListId] = useState < number | null > (null); // <-- ADDED
-
-    const [successInfo, setSuccessInfo] = useState < { points: number; message: string } | null > (null);
+    const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
+    const [currentListId, setCurrentListId] = useState<number | null>(null);
 
     useEffect(() => {
         const loadEnrichedWeeklyLists = async () => {
@@ -46,32 +43,28 @@ function SeptemberRewardsPage() {
         }
     }, [user, userLoading]);
 
-    const handleArtistClick = (artist: EnrichedWeeklyListArtist, listId: number) => { // <-- MODIFIED
+    const handleArtistClick = (artist: EnrichedWeeklyListArtist, listId: number) => {
         setSelectedArtist(artist);
-        setCurrentListId(listId); // <-- ADDED
+        setCurrentListId(listId);
     };
 
     const handleModalClose = () => {
         setSelectedArtist(null);
-        setCurrentListId(null); // <-- ADDED
+        setCurrentListId(null);
     };
 
     const handleRatingComplete = async (artistId: number, ratingData: { x: number; y: number }) => {
         console.log(`Submitting rating for artist ${artistId}`, ratingData);
         try {
             const result = await septemberRewardsService.submitRating(artistId, ratingData);
-            handleModalClose(); // Close the main modal first
-
-            // Then show the success popup
-            setSuccessInfo({
-                points: result.pointsEarned,
-                message: "Rating submitted successfully!",
-            });
-
+            
             toast({
                 title: "Rating Submitted!",
-                description: `You earned ${result.pointsEarned} points.`,
+                description: `You earned ${result.pointsEarned} points. Great job!`,
             });
+            
+            // Close the modal after success
+            handleModalClose();
 
         } catch (error: any) {
             console.error("Failed to submit rating:", error);
@@ -120,7 +113,7 @@ function SeptemberRewardsPage() {
                         </h2>
                         <SeptemberArtistGrid
                             artists={weeklyList.artists}
-                            onArtistClick={(artist) => handleArtistClick(artist, weeklyList.id)} // <-- MODIFIED
+                            onArtistClick={(artist) => handleArtistClick(artist, weeklyList.id)}
                         />
                     </div>
                 ))}
@@ -130,15 +123,8 @@ function SeptemberRewardsPage() {
                 isOpen={!!selectedArtist}
                 onClose={handleModalClose}
                 artist={selectedArtist}
-                listId={currentListId} // <-- MODIFIED
+                listId={currentListId}
                 onRatingComplete={handleRatingComplete}
-            />
-
-            <SubmissionSuccessPopup
-                isOpen={!!successInfo}
-                onClose={() => setSuccessInfo(null)}
-                pointsEarned={successInfo?.points ?? 0}
-                message={successInfo?.message ?? ""}
             />
         </AppLayout>
     );
