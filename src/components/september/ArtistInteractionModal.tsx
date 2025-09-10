@@ -28,7 +28,7 @@ export function ArtistInteractionModal({
     onRatingComplete,
 }: ArtistInteractionModalProps) {
     const [showRating, setShowRating] = useState(false);
-    const [videoPoints, setVideoPoints] = useState < number | null > (null);
+    const [videoPoints, setVideoPoints] = useState<number | null>(null);
     const { toast } = useToast();
 
     // This is the function called by ArtistVideoPlayer after 15 seconds
