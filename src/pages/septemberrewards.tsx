@@ -104,17 +104,19 @@ export default function SeptemberRewardsPage() {
 
         return (
             <>
-                {enrichedLists.map((list) => (
+                {enrichedLists.map((list) => {
                     console.log("🎨 Rendering list:", list);
-                    <div key={list.id} className="mb-12">
-                        <h2 className="text-3xl font-bold tracking-tight mb-4">{list.name}</h2>
-                        <p className="text-muted-foreground mb-6">{list.description}</p>
-                        <SeptemberArtistGrid
-                            artists={list.artists}
-                            onArtistSelect={handleArtistSelect}
-                        />
-                    </div>
-                ))}
+                    return (
+                        <div key={list.id} className="mb-12">
+                            <h2 className="text-3xl font-bold tracking-tight mb-4">{list.name}</h2>
+                            <p className="text-muted-foreground mb-6">{list.description}</p>
+                            <SeptemberArtistGrid
+                                artists={list.artists}
+                                onArtistSelect={handleArtistSelect}
+                            />
+                        </div>
+                    );
+                })}
             </>
         );
     };
