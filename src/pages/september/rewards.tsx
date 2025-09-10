@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import AppLayout from '@/components/layout/AppLayout'; // Corrected: default import
 import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
-import { DashboardAuthBlock } from '@/components/dashboard/DashboardAuthBlock';
+import  DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import { SeptemberArtistGrid } from '@/components/september/SeptemberArtistGrid';
 import { ArtistInteractionModal } from '@/components/september/ArtistInteractionModal';
 import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
