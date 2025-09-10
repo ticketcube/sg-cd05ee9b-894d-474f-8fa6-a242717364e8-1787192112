@@ -7,7 +7,7 @@ interface DashboardAuthBlockProps {
   setShowAuthDialog: (show: boolean) => void;
 }
 
-const DashboardAuthBlock = ({ showAuthDialog, setShowAuthDialog }: DashboardAuthBlockProps) => {
+export default function DashboardAuthBlock = ({ showAuthDialog, setShowAuthDialog }: DashboardAuthBlockProps) => {
   return (
     <>
       <div className="flex h-[calc(100vh-80px)] w-full flex-col items-center justify-center gap-4 text-center bg-black p-4">
@@ -22,4 +22,3 @@ const DashboardAuthBlock = ({ showAuthDialog, setShowAuthDialog }: DashboardAuth
   );
 };
 
-export default DashboardAuthBlock;
