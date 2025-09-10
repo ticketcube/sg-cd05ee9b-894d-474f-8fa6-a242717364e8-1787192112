@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import AppLayout from '@/components/layout/AppLayout';
 import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
-import { DashboardAuthBlock } from '@/components/dashboard/DashboardAuthBlock';
+import  DashboardAuthBlock  from '@/components/dashboard/DashboardAuthBlock';
 import { SeptemberArtistGrid } from '@/components/september/SeptemberArtistGrid';
 import { ArtistInteractionModal } from '@/components/september/ArtistInteractionModal';
 import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
@@ -13,15 +13,11 @@ import { EngagementType } from '@/constants/engagementTypes';
 import { useToast } from '@/hooks/use-toast';
 
 export default function SeptemberRewardsPage() {
-    console.log("🔔 Component function executing");
-
     const { profile, loading: profileLoading, isAuthenticated } = useUserProfile();
-    console.log("👤 useUserProfile:", { profile, profileLoading, isAuthenticated });
-
-    const [enrichedLists, setEnrichedLists] = useState < EnrichedWeeklyList[] > ([]);
+    const [enrichedLists, setEnrichedLists] = useState<EnrichedWeeklyList[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState < string | null > (null);
-    const [selectedArtist, setSelectedArtist] = useState < EnrichedWeeklyListArtist | null > (null);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { toast } = useToast();
 
