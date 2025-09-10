@@ -16,7 +16,8 @@ export interface WeeklyListArtist {
 export interface EnrichedWeeklyListArtist extends Artist {
    user_has_watched?: boolean;
     user_has_voted?: boolean;
-    votes_count?: number; // Now optional! }
+    votes_count?: number; // Now optional! 
+}
 
 // Use Omit to avoid issues with extending and overriding properties
 export type EnrichedWeeklyList = Omit<WeeklyList, 'artists'> & {
