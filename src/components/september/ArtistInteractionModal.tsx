@@ -25,24 +25,33 @@ export function ArtistInteractionModal({
     onRatingComplete,
 }: ArtistInteractionModalProps) {
     const [showRating, setShowRating] = useState(false);
-    const [pointsEarned, setPointsEarned] = useState < number | null > (null);
-    const [videoPoints, setVideoPoints] = useState < number | null > (null);
+    const [pointsEarned, setPointsEarned] = useState<number | null>(null);
 
     if (!artist) return null;
 
     const handleVideoComplete = async () => {
-        if (!artist) return;
-
-        console.log("Video watch complete. Recording points...");
+        if (!artist.artist_id) return;
         try {
-            const result = await videoWatchService.recordVideoWatch(artist.id);
-            setPointsEarned(result.pointsEarned); // Store the points
-        } catch (error) {
-            console.error("Failed to record video watch points:", error);
-            // We still want to show the rating UI even if this fails.
-        } finally {
-            // This part remains the same: transition to the rating view
-            setShowRating(true);
+            // Record the watch and get the result
+            const result = await videoWatchService.recordVideoWatch(artist.artist_id);
+
+            // Store the earned points in our new state
+            setVideoPoints(result.pointsEarned);
+
+            // Switch to the rating view
+            setView('rating');
+
+            // No toast needed here anymore, the message will show in the rating component!
+
+        } catch (error: any) {
+            console.error("Error recording video watch:", error);
+            toast({
+                title: "Oops!",
+                description: error.message || "Could not record video watch. Please try again.",
+                variant: "destructive",
+            });
+            // We still switch to rating view, but no points will be shown.
+            setView('rating');
         }
     };
 
@@ -92,7 +101,5 @@ export function ArtistInteractionModal({
                 </div>
             </DialogContent>
         </Dialog>
-    
-
     );
 }
