@@ -7,7 +7,7 @@ interface QuadrantRatingProps {
     pointsEarned: number | null;
 }
 
-export function QuadrantRating({ onSubmit }: QuadrantRatingProps) {
+export function QuadrantRating({ onSubmit, pointsEarned }: QuadrantRatingProps) {
     const [ticketInterest, setTicketInterest] = useState(50);
     const [shareInterest, setShareInterest] = useState(50);
 
