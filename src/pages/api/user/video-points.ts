@@ -1,168 +1,92 @@
-
 import { NextApiRequest, NextApiResponse } from "next";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { pointsConfigService } from "@/services/pointsConfigService";
 
-interface VideoPointsRequest {
-  artistUuid: string;
-  weekIdentifier: string;
-  watchTimeSeconds: number;
-}
-
-interface VideoPointsResponse {
-  pointsEarned: number;
-  eligible: boolean;
-  message: string;
-}
-
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<VideoPointsResponse | { error: string }>
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    // Get auth token from request
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Missing or invalid authorization header" });
+    // 1. Securely get the user from the token
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Authentication token is required." });
+    }
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    if (userError || !user) {
+      return res.status(401).json({ error: "Invalid or expired user token." });
     }
 
-    const token = authHeader.split(" ")[1];
-
-    // Verify the user using the token with supabaseAdmin
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    if (authError || !user) {
-      console.error("Auth error:", authError);
-      return res.status(401).json({ error: "Invalid or expired token" });
+    // 2. Get and validate the incoming data (artistId, listId)
+    const { artistId, listId } = req.body;
+    if (!artistId || !listId) {
+      return res.status(400).json({ error: "Missing required parameters: artistId and listId are required." });
     }
 
-    const authId = user.id;
-    const { artistUuid, weekIdentifier, watchTimeSeconds }: VideoPointsRequest = req.body;
+    // 3. Fetch points configuration for 'video_view'
+    const config = await pointsConfigService.getConfigForAction('video_view');
+    if (!config || !config.is_active) {
+      return res.status(200).json({ pointsEarned: 0, message: "This action is currently not awarding points." });
+    }
+    const pointsToAward = config.points_value;
 
-    // Validate required fields
-    if (!artistUuid || !weekIdentifier || typeof watchTimeSeconds !== "number") {
-      return res.status(400).json({ error: "Missing required fields: artistUuid, weekIdentifier, watchTimeSeconds" });
+    // 4. Check for existing engagement for this specific user, artist, and list
+    const { data: existingEngagement, error: checkError } = await supabaseAdmin
+      .from('user_engagements')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('artist_id', artistId)
+      .eq('list_id', listId)
+      .eq('engagement_type', 'video_view')
+      .gt('points_earned', 0) // Only count if they actually earned points
+      .limit(1);
+
+    if (checkError) {
+      console.error('Error checking for existing engagement:', checkError);
+      return res.status(500).json({ error: "Database error while checking eligibility." });
     }
 
-    // Get points configuration using service role
-    const { data: videoConfig, error: configError } = await supabaseAdmin
-      .from("points_config")
-      .select("points_value, min_value, frequency")
-      .eq("action_name", "video_view")
+    if (existingEngagement && existingEngagement.length > 0) {
+      return res.status(200).json({ pointsEarned: 0, message: "You have already earned points for this video." });
+    }
+
+    // 5. If eligible, insert the new engagement record
+    const { error: insertError } = await supabaseAdmin.from('user_engagements').insert({
+      user_id: user.id,
+      artist_id: artistId,
+      list_id: listId,
+      engagement_type: 'video_view',
+      points_earned: pointsToAward,
+      metadata: { watch_complete: true } // Simplified metadata
+    });
+
+    if (insertError) {
+      console.error('Error inserting engagement record:', insertError);
+      return res.status(500).json({ error: "Failed to record your engagement." });
+    }
+
+    // 6. Update the user's total points (using RPC for atomicity is a future improvement)
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('user_profiles')
+      .select('total_points')
+      .eq('user_id', user.id)
       .single();
 
-    if (configError || !videoConfig) {
-      console.error("Error fetching video config:", configError);
-      return res.status(500).json({ error: "Failed to fetch points configuration" });
+    if (profile) {
+      const newTotalPoints = (profile.total_points || 0) + pointsToAward;
+      await supabaseAdmin.from('user_profiles').update({ total_points: newTotalPoints }).eq('user_id', user.id);
+    } else {
+      console.warn(`Could not find profile for user ${user.id} to update points. Profile may need to be created.`);
     }
-
-    const minWatchTime = videoConfig.min_value || 15;
-    const videoViewPoints = videoConfig.points_value || 5;
-    const frequency = videoConfig.frequency || "once_per_artist_per_week";
-
-    // Check if user meets minimum watch time requirement
-    const meetsWatchTime = watchTimeSeconds >= minWatchTime;
-    if (!meetsWatchTime) {
-      return res.status(200).json({
-        pointsEarned: 0,
-        eligible: false,
-        message: `Watch time ${watchTimeSeconds}s is below minimum ${minWatchTime}s`
-      });
-    }
-
-    // Check eligibility based on frequency rules using service role
-    let eligible = true;
-    
-    if (frequency === "once_per_artist_per_week") {
-      const { data: existingEngagement, error: eligibilityError } = await supabaseAdmin
-        .from("user_engagements")
-        .select("id")
-        .eq("user_id", authId)
-        .eq("engagement_type", "video_view")
-        .eq("artist_uuid", artistUuid)
-        .eq("week_identifier", weekIdentifier)
-        .gt("points_earned", 0)
-        .limit(1);
-
-      if (eligibilityError) {
-        console.error("Error checking eligibility:", eligibilityError);
-        return res.status(500).json({ error: "Failed to check eligibility" });
-      }
-
-      eligible = !existingEngagement || existingEngagement.length === 0;
-    }
-
-    const pointsEarned = eligible ? videoViewPoints : 0;
-
-    // Record the engagement using service role (bypasses RLS)
-    const { error: engagementError } = await supabaseAdmin
-      .from("user_engagements")
-      .insert({
-        user_id: authId,
-        engagement_type: "video_view",
-        points_earned: pointsEarned,
-        week_identifier: weekIdentifier,
-        artist_uuid: artistUuid,
-        metadata: {
-          watch_time_seconds: watchTimeSeconds,
-          points_eligible: eligible,
-          meets_watch_time: meetsWatchTime,
-          min_watch_time_required: minWatchTime
-        }
-      });
-
-    if (engagementError) {
-      console.error("Error recording engagement:", engagementError);
-      return res.status(500).json({ error: "Failed to record video engagement" });
-    }
-
-    // Update user's total points using service role
-    if (pointsEarned > 0) {
-      try {
-        // Get current points first
-        const { data: userProfile, error: fetchError } = await supabaseAdmin
-          .from("user_profiles")
-          .select("total_points")
-          .eq("user_id", authId)
-          .single();
-
-        if (fetchError) {
-          console.error("Error fetching user profile for points update:", fetchError);
-        } else if (userProfile) {
-          // Update total points atomically
-          const newTotal = (userProfile.total_points || 0) + pointsEarned;
-          const { error: updateError } = await supabaseAdmin
-            .from("user_profiles")
-            .update({ total_points: newTotal })
-            .eq("user_id", authId);
-
-          if (updateError) {
-            console.error("Error updating user total points:", updateError);
-            // Don't fail the request - engagement is already recorded
-          } else {
-            console.log(`✅ Updated user ${authId} total points to ${newTotal}`);
-          }
-        }
-      } catch (pointsUpdateError) {
-        console.error("Error updating user points:", pointsUpdateError);
-        // Don't fail the request - engagement is already recorded
-      }
-    }
-
-    console.log(`✅ Video points awarded: ${pointsEarned} to user ${authId} for artist ${artistUuid}`);
 
     return res.status(200).json({
-      pointsEarned,
-      eligible,
-      message: eligible 
-        ? `Awarded ${pointsEarned} points for watching video`
-        : "Already earned points for this video this week"
+      pointsEarned: pointsToAward,
+      message: `You earned ${pointsToAward} points for watching the video!`
     });
 
   } catch (error) {
-    console.error("Error in video-points API:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("Critical error in /api/user/video-points:", error);
+    return res.status(500).json({ error: "An unexpected internal server error occurred." });
   }
 }
