@@ -6,6 +6,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { EnrichedWeeklyListArtist } from "@/types/weekly";
+import { videoWatchService } from "@/services/videoWatchService";
 import ArtistVideoPlayer from "../ArtistVideoPlayer";
 import { QuadrantRating } from "./QuadrantRating";
 import { useState } from "react";
@@ -27,10 +28,22 @@ export function ArtistInteractionModal({
 
     if (!artist) return null;
 
-    const handleVideoComplete = () => {
-        console.log("Video watch complete for artist:", artist.id);
+   const handleVideoComplete = async () => {
+    if (!artist) return;
+
+    console.log("Video watch complete. Recording points...");
+    try {
+        // This is the new part: call the service to record the points
+        await videoWatchService.recordVideoWatch(artist.id);
+    } catch (error) {
+        console.error("Failed to record video watch points:", error);
+        // We'll add a user-facing error message later if needed.
+        // For now, we still want to show the rating UI even if this fails.
+    } finally {
+        // This part remains the same: transition to the rating view
         setShowRating(true);
-    };
+    }
+};
 
     const handleRatingSubmit = (data: { x: number; y: number }) => {
         onRatingComplete(artist.id, data);
