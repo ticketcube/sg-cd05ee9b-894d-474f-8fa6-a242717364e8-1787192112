@@ -1,133 +1,145 @@
-import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DashboardLoading } from "@/components/dashboard/DashboardLoading";
-import { DashboardAuthBlock } from "@/components/dashboard/DashboardAuthBlock";
-import { useUserProfile } from "@/hooks/useUserProfile";
-import { septemberRewardsService } from "@/services/septemberRewardsService";
-import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from "@/types/weekly";
-import { SeptemberArtistGrid } from "@/components/september/SeptemberArtistGrid";
-import { ArtistInteractionModal } from "@/components/september/ArtistInteractionModal";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from 'react';
+import Head from 'next/head';
+import { useUserProfile } from '@/contexts/UserProfileContext';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
+import { DashboardAuthBlock } from '@/components/dashboard/DashboardAuthBlock';
+import { SeptemberArtistGrid } from '@/components/september/SeptemberArtistGrid';
+import { ArtistInteractionModal } from '@/components/september/ArtistInteractionModal';
+import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
+import { septemberRewardsService } from '@/services/septemberRewardsService';
+import { userEngagementService } from '@/services/userEngagementService';
+import { EngagementType } from '@/constants/engagementTypes';
+import { useToast } from '@/hooks/use-toast';
 
-function SeptemberRewardsPage() {
-    const { user, loading: userLoading } = useUserProfile();
-    const { toast } = useToast();
-
-    const [weeklyLists, setWeeklyLists] = useState<EnrichedWeeklyList[]>([]);
+export default function SeptemberRewardsPage() {
+    const { profile, loading: profileLoading, isAuthenticated } = useUserProfile();
+    const [enrichedLists, setEnrichedLists] = useState<EnrichedWeeklyList[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
     const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
-    const [currentListId, setCurrentListId] = useState<number | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const { toast } = useToast();
 
     useEffect(() => {
-        const loadEnrichedWeeklyLists = async () => {
-            if (!user) return;
-
-            try {
-                setLoading(true);
-                const data = await septemberRewardsService.getActiveEnrichedWeeklyLists();
-                setWeeklyLists(data);
-                setError(null);
-            } catch (err: any) {
-                console.error("Failed to load weekly lists:", err);
-                setError(err.message || "An unexpected error occurred.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (!userLoading) {
+        if (isAuthenticated) {
             loadEnrichedWeeklyLists();
+        } else if (!profileLoading) {
+            setLoading(false);
         }
-    }, [user, userLoading]);
+    }, [isAuthenticated, profileLoading]);
 
-    const handleArtistClick = (artist: EnrichedWeeklyListArtist, listId: number) => {
-        setSelectedArtist(artist);
-        setCurrentListId(listId);
-    };
-
-    const handleModalClose = () => {
-        setSelectedArtist(null);
-        setCurrentListId(null);
-    };
-
-    const handleRatingComplete = async (artistId: number, ratingData: { x: number; y: number }) => {
-        console.log(`Submitting rating for artist ${artistId}`, ratingData);
+    const loadEnrichedWeeklyLists = async () => {
+        setLoading(true);
+        setError(null);
         try {
-            const result = await septemberRewardsService.submitRating(artistId, ratingData);
-            
-            toast({
-                title: "Rating Submitted!",
-                description: `You earned ${result.pointsEarned} points. Great job!`,
-            });
-            
-            // Close the modal after success
-            handleModalClose();
+            const lists = await septemberRewardsService.getActiveEnrichedWeeklyLists();
+            setEnrichedLists(lists);
+        } catch (err: any) {
+            console.error("Failed to load weekly lists:", err);
+            setError('Failed to load rewards. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        } catch (error: any) {
+    const handleArtistSelect = (artist: EnrichedWeeklyListArtist) => {
+        setSelectedArtist(artist);
+        setIsModalOpen(true);
+    };
+
+    const handleRatingComplete = async (artistId: number, data: { x: number; y: number }) => {
+        if (!profile) return;
+
+        try {
+            const result = await userEngagementService.recordEngagement({
+                userId: profile.id,
+                artistId: artistId,
+                engagementType: EngagementType.QUADRANT_RATING,
+                xQuadrant: data.x,
+                yQuadrant: data.y,
+            });
+
+            if (result.pointsEarned > 0) {
+                toast({
+                    title: "Rating Submitted!",
+                    description: `You earned ${result.pointsEarned} points.`,
+                });
+            } else {
+                 toast({
+                    title: "Rating Submitted!",
+                    description: `Your feedback is appreciated.`,
+                });
+            }
+            // Close the modal after rating
+            setIsModalOpen(false);
+
+        } catch (error) {
             console.error("Failed to submit rating:", error);
             toast({
-                title: "Error",
-                description: error.message || "Could not submit rating.",
                 variant: "destructive",
+                title: "Error",
+                description: "Failed to submit rating. You may have already rated this artist.",
             });
         }
     };
 
-    if (userLoading || (loading && !error)) {
+    const renderContent = () => {
+        if (loading || profileLoading) {
+            return <DashboardLoading />;
+        }
+
+        if (!isAuthenticated) {
+            return <DashboardAuthBlock />;
+        }
+
+        if (error) {
+            return <div className="text-center text-red-500">{error}</div>;
+        }
+
+        if (enrichedLists.length === 0) {
+            return <div className="text-center text-muted-foreground">No active rewards found this week. Check back soon!</div>;
+        }
+
         return (
-            <AppLayout>
-                <DashboardLoading />
-            </AppLayout>
-        );
-    }
-
-    if (!user) {
-        return (
-            <AppLayout>
-                <DashboardAuthBlock />
-            </AppLayout>
-        );
-    }
-
-    return (
-        <AppLayout>
-            <DashboardHeader
-                title="September Rewards"
-                description="Discover new artists and earn points by watching and rating their videos."
-            />
-
-            <main className="p-4 sm:p-6">
-                {error && <p className="text-red-500">Error: {error}</p>}
-
-                {weeklyLists.length === 0 && !loading && !error && (
-                    <p>No active weekly lists found. Check back soon!</p>
-                )}
-
-                {weeklyLists.map((weeklyList) => (
-                    <div key={weeklyList.id} className="mb-8">
-                        <h2 className="text-2xl font-bold tracking-tight mb-4">
-                            {weeklyList.title}
-                        </h2>
+            <>
+                {enrichedLists.map((list) => (
+                    <div key={list.id} className="mb-12">
+                        <h2 className="text-3xl font-bold tracking-tight mb-4">{list.name}</h2>
+                        <p className="text-muted-foreground mb-6">{list.description}</p>
                         <SeptemberArtistGrid
-                            artists={weeklyList.artists}
-                            onArtistClick={(artist) => handleArtistClick(artist, weeklyList.id)}
+                            artists={list.artists}
+                            onArtistSelect={handleArtistSelect}
                         />
                     </div>
                 ))}
-            </main>
+            </>
+        );
+    };
 
+    return (
+        <AppLayout>
+            <Head>
+                <title>September Rewards - OTW</title>
+                <meta name="description" content="Participate in this month's special rewards program." />
+            </Head>
+            <div className="container mx-auto px-4 py-8">
+                <div className="text-center mb-8">
+                    <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
+                        September Rewards
+                    </h1>
+                    <p className="mt-4 text-lg text-muted-foreground">
+                        Discover new artists, share your feedback, and earn exclusive points.
+                    </p>
+                </div>
+                {renderContent()}
+            </div>
             <ArtistInteractionModal
-                isOpen={!!selectedArtist}
-                onClose={handleModalClose}
                 artist={selectedArtist}
-                listId={currentListId}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
                 onRatingComplete={handleRatingComplete}
             />
         </AppLayout>
     );
 }
-
-export default SeptemberRewardsPage;
