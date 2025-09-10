@@ -198,6 +198,7 @@ const SeptemberRewardsPage = () => {
                     isOpen={!!selectedArtist}
                     onClose={() => setSelectedArtist(null)}
                     onRatingComplete={handleRatingComplete}
+                    listId={currentListId}
                 />
                 
                 <SubmissionSuccessPopup
