@@ -25,36 +25,33 @@ export function ArtistInteractionModal({
     onRatingComplete,
 }: ArtistInteractionModalProps) {
     const [showRating, setShowRating] = useState(false);
-    const [pointsEarned, setPointsEarned] = useState < number | null > (null);
+    const [pointsEarned, setPointsEarned] = useState<number | null>(null);
 
     if (!artist) return null;
 
-   const handleVideoComplete = async () => {
-    if (!artist) return;
+    const handleVideoComplete = async () => {
+        if (!artist) return;
 
-    console.log("Video watch complete. Recording points...");
-       try {
-           const result = await videoWatchService.recordVideoWatch(artist.id);
-           setPointsEarned(result.pointsEarned); // Store the points
-       }
-
-    } catch (error) {
-        console.error("Failed to record video watch points:", error);
-        // We'll add a user-facing error message later if needed.
-        // For now, we still want to show the rating UI even if this fails.
-    } finally {
-        // This part remains the same: transition to the rating view
-        setShowRating(true);
-    }
-};
+        console.log("Video watch complete. Recording points...");
+        try {
+            const result = await videoWatchService.recordVideoWatch(artist.id);
+            setPointsEarned(result.pointsEarned); // Store the points
+        } catch (error) {
+            console.error("Failed to record video watch points:", error);
+            // We still want to show the rating UI even if this fails.
+        } finally {
+            // This part remains the same: transition to the rating view
+            setShowRating(true);
+        }
+    };
 
     const handleRatingSubmit = (data: { x: number; y: number }) => {
         onRatingComplete(artist.id, data);
-        // Potentially close the modal or show a "thank you" message here
     };
 
     const handleModalClose = () => {
         setShowRating(false);
+        setPointsEarned(null); // Reset points when closing
         onClose();
     };
 
@@ -85,12 +82,16 @@ export function ArtistInteractionModal({
                                 </p>
                             </div>
                         ) : (
-                                <QuadrantRating onSubmit={handleRatingSubmit} pointsEarned={pointsEarned}
-                                />
+                            <QuadrantRating 
+                                onSubmit={handleRatingSubmit} 
+                                pointsEarned={pointsEarned} 
+                            />
                         )}
                     </div>
                 </div>
             </DialogContent>
         </Dialog>
+    
+
     );
 }
