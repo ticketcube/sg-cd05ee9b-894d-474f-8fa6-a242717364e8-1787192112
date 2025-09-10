@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import { AppLayout } from '@/components/layout/AppLayout'; // Corrected: default import
-import { DashboardLoading } from '@/components/dashboard/DashboardLoading';
-import { DashboardAuthBlock } from '@/components/dashboard/DashboardAuthBlock';
+import AppLayout from '@/components/layout/AppLayout';
+import DashboardLoading from '@/components/dashboard/DashboardLoading';
+import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import { SeptemberArtistGrid } from '@/components/september/SeptemberArtistGrid';
 import { ArtistInteractionModal } from '@/components/september/ArtistInteractionModal';
 import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
@@ -19,6 +21,7 @@ export default function SeptemberRewardsPage() {
     const [error, setError] = useState<string | null>(null);
     const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showAuthDialog, setShowAuthDialog] = useState(false);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -105,7 +108,7 @@ export default function SeptemberRewardsPage() {
         }
 
         if (!isAuthenticated) {
-            return <DashboardAuthBlock />;
+            return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
         }
 
         if (error) {
