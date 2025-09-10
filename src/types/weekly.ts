@@ -12,11 +12,19 @@ export interface WeeklyListArtist {
     id: number;
 }
 
-// This is the artist object as it appears inside an enriched weekly list
-export interface EnrichedWeeklyListArtist extends ArtistWithVotes {
+// This is the artist object as it appears inside an enriched weekly list 
+export interface EnrichedWeeklyListArtist extends Artist {
+    artist_name: string;
+    artist_image_url: string | null;
+    artist_genre: string | null;
+    artist_bio: string | null;
+    artist_home: string | null;
+    artist_videolink: string | null;
+    ig_username: string | null;
+    tiktok_username: string | null;
     user_has_watched?: boolean;
     user_has_voted?: boolean;
-}
+    votes_count?: number; // Now optional! }
 
 // Use Omit to avoid issues with extending and overriding properties
 export type EnrichedWeeklyList = Omit<WeeklyList, 'artists'> & {
