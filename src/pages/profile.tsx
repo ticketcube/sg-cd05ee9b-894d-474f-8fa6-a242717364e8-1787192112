@@ -9,15 +9,18 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Mail, MapPin, Calendar, ExternalLink, Heart, Share2, Ticket, Upload, AlertCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-
+interface EventInterest {
+    event_id: string;
+    interest_level: number;
+}
 
 function ProfilePageContent() {
     const { user, profile, loading: profileLoading } = useUserProfile();
-    const [artistEngagements, setArtistEngagements] = useState < any[] > ([]);
-    const [eventInterests, setEventInterests] = useState < EventInterest[] > ([]);
+    const [artistEngagements, setArtistEngagements] = useState<any[]> ([]);
+    const [eventInterests, setEventInterests] = useState <EventInterest[]> ([]);
     const [loading, setLoading] = useState(false);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
-    const [error, setError] = useState < string | null > (null);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchArtistEngagements = async () => {
         try {
@@ -227,7 +230,7 @@ const formatDate = (dateString: string) => {
                     </Card>
                 </div>
 
-              // Inside ProfilePageContent return()
+       
                 <Card className="bg-neutral-800/80 backdrop-blur-sm border-neutral-700/60 shadow-xl hover:shadow-2xl hover:shadow-green-500/10 transition-all duration-300">
                     <CardHeader className="pb-4">
                         <CardTitle className="text-lg md:text-xl text-white flex items-center gap-3">
