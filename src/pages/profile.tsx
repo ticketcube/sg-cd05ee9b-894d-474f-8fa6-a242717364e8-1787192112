@@ -9,58 +9,53 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Mail, MapPin, Calendar, ExternalLink, Heart, Share2, Ticket, Upload, AlertCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-const [artistEngagements, setArtistEngagements] = useState < any[] > ([]);
-
-const fetchArtistEngagements = async () => {
-    try {
-        setLoading(true);
-
-        const { data, error } = await supabase
-            .from("user_engagements")
-            .select("x_quadrant, y_quadrant, artists (artist_name, artist_image)")
-            .eq("user_id", user?.id);
-
-        if (error) throw error;
-
-        // Transform with score + category
-        const transformed = (data || []).map((row: any) => {
-            const score = (row.x_quadrant + row.y_quadrant) / 2; // simple average
-            let category = "Worth Exploring";
-            if (score > 0.7) category = "Top Favorite";
-            else if (score > 0.4) category = "On Your Radar";
-            return {
-                artist_name: row.artists.artist_name,
-                artist_image: row.artists.artist_image,
-                score,
-                category,
-            };
-        }).sort((a, b) => b.score - a.score);
-
-        setArtistEngagements(transformed);
-    } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load artists");
-    } finally {
-        setLoading(false);
-    }
-};
-
-useEffect(() => {
-    if (user && profile && !profileLoading) {
-        fetchArtistEngagements();
-    }
-}, [user, profile, profileLoading]);
 
 
 function ProfilePageContent() {
     const { user, profile, loading: profileLoading } = useUserProfile();
-    const [eventInterests, setEventInterests] = useState<EventInterest[]>([]);
+    const [artistEngagements, setArtistEngagements] = useState < any[] > ([]);
+    const [eventInterests, setEventInterests] = useState < EventInterest[] > ([]);
     const [loading, setLoading] = useState(false);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState < string | null > (null);
+
+    const fetchArtistEngagements = async () => {
+        try {
+            setLoading(true);
+
+            const { data, error } = await supabase
+                .from("user_engagements")
+                .select("x_quadrant, y_quadrant, artists (artist_name, artist_image)")
+                .eq("user_id", user?.id);
+
+            if (error) throw error;
+
+            const transformed = (data || [])
+                .map((row: any) => {
+                    const score = (row.x_quadrant + row.y_quadrant) / 2;
+                    let category = "Worth Exploring";
+                    if (score > 0.7) category = "Top Favorite";
+                    else if (score > 0.4) category = "On Your Radar";
+                    return {
+                        artist_name: row.artists.artist_name,
+                        artist_image: row.artists.artist_image,
+                        score,
+                        category,
+                    };
+                })
+                .sort((a, b) => b.score - a.score);
+
+            setArtistEngagements(transformed);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to load artists");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        // Since AppLayout ensures user is authenticated, fetch data when profile is ready
         if (user && profile && !profileLoading) {
+            fetchArtistEngagements();
             fetchEventInterests();
         }
     }, [user, profile, profileLoading]);
@@ -106,53 +101,7 @@ function ProfilePageContent() {
         }
     };
 
-    const fetchEventInterests = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const { data: events, error: eventsError } = await supabase
-                .from('ticketmaster_events')
-                .select('event_name, venue_name, venue_city, event_date, event_time, event_url')
-                .eq('venue_city', 'Los Angeles')
-                .gt('event_date', new Date().toISOString())
-                .or('event_name.ilike.%Addison Rae%,event_name.ilike.%Laufey%,event_name.ilike.%Japanese Breakfast%')
-                .order('event_date', { ascending: true });
-
-            if (eventsError) throw eventsError;
-
-            const eventsWithInterests: EventInterest[] = (events || []).map(event => ({
-                ...event,
-                want_tickets: 1,
-                share_with_friends: 1
-            }));
-
-            setEventInterests(eventsWithInterests);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to load event interests");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        });
-    };
-
-    const formatTime = (timeString: string) => {
-        if (!timeString) return '';
-        return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-        });
-    };
-
+    
     // Show loading only while profile is being loaded initially
     if (profileLoading) {
         return (
@@ -165,34 +114,7 @@ function ProfilePageContent() {
         );
     }
 
-    // Error state for event loading
-    if (error && !loading) {
-        return (
-            <div className="flex-1 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
-                <div className="max-w-4xl mx-auto px-4 py-6">
-                    <div className="text-center max-w-md mx-auto p-6">
-                        <div className="w-16 h-16 rounded-full bg-red-900/20 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
-                            <AlertCircle className="w-8 h-8 text-red-400" />
-                        </div>
-                        <h1 className="text-xl font-bold text-red-400 mb-4">Error Loading Data</h1>
-                        <p className="text-neutral-300 mb-6">{error}</p>
-                        <Button 
-                            onClick={() => {
-                                setError(null);
-                                fetchEventInterests();
-                            }}
-                            variant="outline"
-                            className="px-6 py-2 border-neutral-600 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-                        >
-                            <RefreshCw className="w-4 h-4 mr-2" />
-                            Try Again
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
+   
     // Main profile content - user and profile are guaranteed by AppLayout
     return (
         <div className="flex-1 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
