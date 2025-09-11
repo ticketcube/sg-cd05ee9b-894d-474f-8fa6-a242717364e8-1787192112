@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PlayCircle, ArrowRight, Calendar, Users } from 'lucide-react';
+import { PlayCircle, ArrowRight, Calendar, Users, Stars } from 'lucide-react';
 import { weeklyListService } from '@/services/weeklyListService';
 import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
 
