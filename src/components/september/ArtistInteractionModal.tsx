@@ -1,4 +1,3 @@
-
 import {
     Dialog,
     DialogContent,
@@ -40,20 +39,18 @@ export function ArtistInteractionModal({
             }
 
             try {
-                const { data, error } = await supabase
+                // Simplified query to avoid deep type instantiation
+                const response = await supabase
                     .from('user_engagements')
                     .select('id')
                     .eq('user_id', user.id)
                     .eq('artist_id', artist.id)
                     .eq('engagement_type', 'quadrant')
-                    .limit(1) as any;
+                    .limit(1)
+                    .single();
 
-                if (error) {
-                    console.error('Error checking rating:', error);
-                    setAlreadyRated(false);
-                } else {
-                    setAlreadyRated(data && data.length > 0);
-                }
+                // Check if we found a record (no error means a record exists)
+                setAlreadyRated(!response.error);
             } catch (error) {
                 console.error('Error checking rating:', error);
                 setAlreadyRated(false);

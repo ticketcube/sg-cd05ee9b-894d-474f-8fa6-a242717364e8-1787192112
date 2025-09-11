@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import AuthDialog from "@/components/AuthDialog";
 import { Badge } from "@/components/ui/badge";
 import { User, LogOut, LogIn } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -86,14 +87,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
                                 </Link>
 
                                 {/* User Avatar */}
-                                <Link href="/profile">
-                                    <Image
-                                            src= "/OTWLogocolor.png"
-                                        alt="User Avatar"
-                                        width={32}
-                                        height={32}
-                                        className="rounded-full cursor-pointer border border-gray-600 hover:border-white transition"
-                                    />
+                                <Link href="/profile" passHref>
+                                    <Avatar className="h-8 w-8 cursor-pointer border border-gray-600 hover:border-white transition">
+                                        <AvatarImage src={profile?.avatar_url || ''} alt="User Avatar" />
+                                        <AvatarFallback>
+                                            <User className="h-4 w-4" />
+                                        </AvatarFallback>
+                                    </Avatar>
                                 </Link>
 
                                 {/* Logout */}
