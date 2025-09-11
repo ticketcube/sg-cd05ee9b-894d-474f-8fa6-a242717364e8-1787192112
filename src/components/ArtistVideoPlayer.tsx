@@ -60,8 +60,11 @@ const ArtistVideoPlayer: React.FC<ArtistVideoPlayerProps> = ({ videoUrl, onWatch
                             url={videoUrl}
                             width="100%"
                             height="100%"
-                            playing
-                            controls
+                            controls={true}
+                            onProgress={handleProgress}
+                            onReady={handleReady}
+                            onBuffer={handleBuffer}
+                            onPlay={handlePlay}
                             onError={handleError}
                         />
                     </>
