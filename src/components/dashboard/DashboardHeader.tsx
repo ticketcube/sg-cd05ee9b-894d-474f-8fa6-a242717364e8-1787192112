@@ -1,6 +1,7 @@
 import type { UserProfile } from "@/contexts/UserProfileContext";
 import { Sparkles, Trophy, Star, Calendar } from "lucide-react";
 import HeroVideo from "./HeroVideo";
+import WeeklyListCard from './WeeklyListCard';
 
 interface DashboardHeaderProps {
     profile: UserProfile | null;
