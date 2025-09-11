@@ -11,12 +11,16 @@ interface Artist {
   artist_image_url: string | null;
 }
 
-interface EngagementWithArtist {
+interface EngagementData {
   created_at: string;
   engagement_type: string;
   x_quadrant: number | null;
   y_quadrant: number | null;
-  artists: Artist | null;
+  artist_uuid: string;
+}
+
+interface EngagementWithArtist extends EngagementData {
+  artist: Artist | null;
 }
 
 interface UserEngagementQuadrantsProps {
@@ -38,28 +42,68 @@ export function UserEngagementQuadrants({ userId }: UserEngagementQuadrantsProps
     if (!userId) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // First, fetch user engagements
+      const { data: engagementData, error: engagementError } = await supabase
         .from('user_engagements')
         .select(`
           created_at,
           engagement_type,
-          x_quadrant,
-          y_quadrant,
-          artists (
-            uuid,
-            artist_name,
-            artist_image_url
-          )
+          artist_uuid,
+          metadata
         `)
         .eq('user_id', userId)
         .eq('engagement_type', 'quadrant')
-        .not('x_quadrant', 'is', null)
-        .not('y_quadrant', 'is', null)
+        .not('artist_uuid', 'is', null)
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (error) throw error;
-      setEngagements(data || []);
+      if (engagementError) throw engagementError;
+
+      if (!engagementData || engagementData.length === 0) {
+        setEngagements([]);
+        setLoading(false);
+        return;
+      }
+
+      // Extract unique artist UUIDs
+      const artistUuids = [...new Set(engagementData.map(e => e.artist_uuid).filter(Boolean))];
+
+      if (artistUuids.length === 0) {
+        setEngagements([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch artist details separately
+      const { data: artistData, error: artistError } = await supabase
+        .from('artists')
+        .select('uuid, artist_name, artist_image_url')
+        .in('uuid', artistUuids);
+
+      if (artistError) throw artistError;
+
+      // Create a map of artists by UUID
+      const artistMap: { [key: string]: Artist } = {};
+      artistData?.forEach(artist => {
+        artistMap[artist.uuid] = artist;
+      });
+
+      // Combine engagement data with artist data
+      const enrichedEngagements: EngagementWithArtist[] = engagementData
+        .map(engagement => {
+          const metadata = engagement.metadata as any || {};
+          return {
+            created_at: engagement.created_at,
+            engagement_type: engagement.engagement_type,
+            artist_uuid: engagement.artist_uuid,
+            x_quadrant: metadata.x_quadrant || null,
+            y_quadrant: metadata.y_quadrant || null,
+            artist: artistMap[engagement.artist_uuid] || null
+          };
+        })
+        .filter(e => e.x_quadrant !== null && e.y_quadrant !== null && e.artist !== null);
+
+      setEngagements(enrichedEngagements);
     } catch (error) {
       console.error('Error fetching user engagements:', error);
       setError('Failed to load engagement data');
@@ -116,16 +160,9 @@ export function UserEngagementQuadrants({ userId }: UserEngagementQuadrantsProps
     );
   }
 
-  // Filter out engagements with missing data and group by artist UUID
-  const validEngagements = engagements.filter(e => 
-    e.x_quadrant !== null && 
-    e.y_quadrant !== null && 
-    e.artists !== null
-  );
-
   // Group engagements by artist (latest rating per artist)
-  const latestEngagementsByArtist = validEngagements.reduce((acc, engagement) => {
-    const artistUuid = engagement.artists!.uuid;
+  const latestEngagementsByArtist = engagements.reduce((acc, engagement) => {
+    const artistUuid = engagement.artist_uuid;
     const existing = acc[artistUuid];
     if (!existing || new Date(engagement.created_at) > new Date(existing.created_at)) {
       acc[artistUuid] = engagement;
@@ -172,8 +209,9 @@ export function UserEngagementQuadrants({ userId }: UserEngagementQuadrantsProps
 
           {/* Artist Points */}
           {uniqueEngagements.map((engagement, index) => {
-            const { x_quadrant, y_quadrant } = engagement;
-            const artist = engagement.artists!;
+            const { x_quadrant, y_quadrant, artist } = engagement;
+            
+            if (!artist) return null;
 
             // Adjust position slightly for visibility if points overlap
             const x = ((x_quadrant! + 1) / 2) * 100 + (Math.random() - 0.5) * 2;
@@ -228,7 +266,7 @@ export function UserEngagementQuadrants({ userId }: UserEngagementQuadrantsProps
           <div className="mt-4 pt-4 border-t border-neutral-700/40">
             <div className="text-center">
               <div className="text-lg font-semibold text-emerald-400">
-                {uniqueEngagements.length * 10} {/* Assuming 10 points per rating */}
+                {uniqueEngagements.length * 10}
               </div>
               <div className="text-xs text-neutral-400">Points from Ratings</div>
             </div>
