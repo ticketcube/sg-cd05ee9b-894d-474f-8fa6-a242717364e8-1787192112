@@ -1,3 +1,4 @@
+
 import {
     Dialog,
     DialogContent,
@@ -10,7 +11,7 @@ import ArtistVideoPlayer from "../ArtistVideoPlayer";
 import { QuadrantRating } from "./QuadrantRating";
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
-import { quadrantRatingService } from "@/services/quadrantRatingService";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ArtistInteractionModalProps {
     artist: EnrichedWeeklyListArtist | null;
@@ -30,10 +31,7 @@ export function ArtistInteractionModal({
     const { user } = useUserProfile();
     const [alreadyRated, setAlreadyRated] = useState<boolean>(false);
     const [checkingRating, setCheckingRating] = useState<boolean>(true);
-    
-    console.log("🎨 ArtistInteractionModal rendered", { isOpen, artist: artist ? `${artist.artist_name}` : null });
 
-    // Check if user has already rated this artist
     useEffect(() => {
         const checkRating = async () => {
             if (!user || !artist) {
@@ -41,9 +39,26 @@ export function ArtistInteractionModal({
                 return;
             }
 
-            const hasRated = await quadrantRatingService.hasUserRatedArtist(user.id, artist.id);
-            setAlreadyRated(hasRated);
-            setCheckingRating(false);
+            try {
+                const { count, error } = await supabase
+                    .from('user_engagements')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .eq('artist_id', artist.id)
+                    .eq('engagement_type', 'quadrant');
+
+                if (error) {
+                    console.error('Error checking rating:', error);
+                    setAlreadyRated(false);
+                } else {
+                    setAlreadyRated((count || 0) > 0);
+                }
+            } catch (error) {
+                console.error('Error checking rating:', error);
+                setAlreadyRated(false);
+            } finally {
+                setCheckingRating(false);
+            }
         };
 
         if (isOpen && user && artist) {
