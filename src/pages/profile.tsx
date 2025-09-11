@@ -53,6 +53,23 @@ function ProfilePageContent() {
         }
     };
 
+    const fetchEventInterests = async () => {
+  try {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("event_interests")
+      .select("event_id, interest_level")
+      .eq("user_id", user?.id);
+
+    if (error) throw error;
+    setEventInterests(data || []);
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Failed to load events");
+  } finally {
+    setLoading(false);
+  }
+};
+
     useEffect(() => {
         if (user && profile && !profileLoading) {
             fetchArtistEngagements();
@@ -113,7 +130,13 @@ function ProfilePageContent() {
             </div>
         );
     }
-
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
    
     // Main profile content - user and profile are guaranteed by AppLayout
     return (
