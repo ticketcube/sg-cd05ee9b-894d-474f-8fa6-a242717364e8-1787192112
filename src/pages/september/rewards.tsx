@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import AppLayout from '@/components/layout/AppLayout';
@@ -120,7 +119,8 @@ export default function SeptemberRewardsPage() {
         }
 
         return (
-            <>
+               <AppLayout>
+            
                 {enrichedLists.map((list) => {
                     console.log("🎨 Rendering list:", list);
                     return (
@@ -134,11 +134,12 @@ export default function SeptemberRewardsPage() {
                         </div>
                     );
                 })}
-            </>
+            </AppLayout>
         );
     };
 
     return (
+        <>
             <Head>
                 <title>September Rewards - OTW</title>
                 <meta name="description" content="Participate in this month's special rewards program." />
@@ -160,5 +161,8 @@ export default function SeptemberRewardsPage() {
                 onClose={() => setIsModalOpen(false)}
                 onRatingComplete={handleRatingComplete}
             />
+          </>
+
     );
 }
+
