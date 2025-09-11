@@ -57,10 +57,12 @@ const DiscoveryDashboard = () => {
 
     const renderContent = () => {
         switch (activeTab) {
+            case 'discover':
+                return <DiscoverMoreTab />;
             case 'rewards':
                 return <MoreRewardsTab />;
             default:
-                return <MoreRewardsTab />;
+                return <DiscoverMoreTab />;
         }
     };
 
