@@ -29,8 +29,8 @@ export function QuadrantRating({ onSubmit, artistName, artistId, userId }: Quadr
                 .eq('user_id', userId)
                 .eq('artist_id', artistId)
                 .eq('engagement_type', 'quadrant')
-                .gt('points_earned', 0)
-                .limit(1);
+    
+              .maybeSingle() i;
 
             setAlreadyRated(data ? data.length > 0 : false);
             setCheckingRating(false);
