@@ -146,6 +146,7 @@ export default function WeeklyListCard() {
                             ))}
                         </div>
 
+
                         {/* Call to Action */}
                         <div className="flex justify-center pt-4">
                             <Link href="/september/rewards">
