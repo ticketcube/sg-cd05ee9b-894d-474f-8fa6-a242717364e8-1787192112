@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
@@ -8,7 +9,6 @@ import { ArtistInteractionModal } from '@/components/september/ArtistInteraction
 import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
 import { septemberRewardsService } from '@/services/septemberRewardsService';
 import { userEngagementService } from '@/services/userEngagementService';
-import { ENGAGEMENT_TYPES } from '@/constants/engagementTypes';
 import { useToast } from '@/hooks/use-toast';
 
 export default function SeptemberRewardsPage() {
@@ -66,58 +66,83 @@ export default function SeptemberRewardsPage() {
 
     const handleRatingComplete = async (artistId: number, data: { x: number; y: number }) => {
         console.log("⭐ Rating submitted:", { artistId, data });
-        if (!profile) {
-            console.warn("⚠️ No profile found, skipping engagement");
+        if (!profile?.user_id) {
+            console.warn("⚠️ No user ID found, skipping engagement");
+            return;
+        }
+
+        // Find the current list to get week_identifier
+        const currentList = enrichedLists.find(list => list.id === selectedListId);
+        if (!currentList) {
+            console.error("❌ Could not find current list");
+            return;
+        }
+
+        // Find the artist to get their UUID
+        const artist = currentList.artists.find(a => a.id === artistId);
+        if (!artist) {
+            console.error("❌ Could not find artist");
             return;
         }
 
         try {
             const result = await userEngagementService.recordEngagement({
-                userId: profile.id,
-                artistId: artistId,
-                engagementType: ENGAGEMENT_TYPES.QUADRANT,
-                xQuadrant: data.x,
-                yQuadrant: data.y,
+                userId: profile.user_id,
+                engagementType: 'quadrant', // Use the action name from points_config
+                artistUuid: artist.uuid,
+                weekIdentifier: currentList.week_identifier,
+                x_quadrant: data.x,
+                y_quadrant: data.y,
+                additionalData: {
+                    weekly_list_id: selectedListId,
+                    artist_name: artist.artist_name
+                }
             });
 
             console.log("📊 Engagement result:", result);
 
-            if (result.pointsEarned > 0) {
-                toast({
-                    title: "Rating Submitted!",
-                    description: `You earned ${result.pointsEarned} points.`,
-                });
+            if (result.success) {
+                if (result.pointsEarned && result.pointsEarned > 0) {
+                    toast({
+                        title: "Rating Submitted!",
+                        description: `You earned ${result.pointsEarned} points for rating ${artist.artist_name}.`,
+                    });
+                } else {
+                    toast({
+                        title: "Rating Submitted!",
+                        description: `Your rating for ${artist.artist_name} has been recorded.`,
+                    });
+                }
             } else {
                 toast({
-                    title: "Rating Submitted!",
-                    description: `Your feedback is appreciated.`,
+                    variant: "destructive",
+                    title: "Already Rated",
+                    description: result.error || "You may have already rated this artist.",
                 });
             }
-            // Close the modal after rating is submitted successfully
+
+            // Close the modal after rating is submitted
             handleModalClose();
         } catch (error) {
             console.error("❌ Failed to submit rating:", error);
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: "Failed to submit rating. You may have already rated this artist.",
+                description: "Failed to submit rating. Please try again.",
             });
             // Still close the modal even if there's an error
             handleModalClose();
         }
     };
 
-    // --- FIX: Centralized function to close modal and reset state ---
     const handleModalClose = () => {
         setIsModalOpen(false);
         // Delay resetting the artist to prevent content from disappearing before the modal finishes its closing animation
         setTimeout(() => {
             setSelectedArtist(null);
             setSelectedListId(null);
-        }, 300); // 300ms is a safe delay for most modal animations
+        }, 300);
     };
-    // --- END FIX ---
-
 
     const renderContent = () => {
         console.log("🎬 Rendering content", { loading, profileLoading, error, enrichedLists });
@@ -164,12 +189,11 @@ export default function SeptemberRewardsPage() {
                         September Rewards
                     </h1>
                     <p className="mt-4 text-lg text-muted-foreground">
-                        Discover new artists, share your feedback, and earn exclusive points.
+                        Rate artists and earn 10 points each! Watch for 15 seconds, then rate.
                     </p>
                 </div>
                 {renderContent()}
             </div>
-            {/* FIX: Pass the new handleModalClose function to the onClose prop */}
             <ArtistInteractionModal
                 artist={selectedArtist}
                 listId={selectedListId}
@@ -177,6 +201,6 @@ export default function SeptemberRewardsPage() {
                 onClose={handleModalClose}
                 onRatingComplete={handleRatingComplete}
             />
-          </>
+        </>
     );
 }
