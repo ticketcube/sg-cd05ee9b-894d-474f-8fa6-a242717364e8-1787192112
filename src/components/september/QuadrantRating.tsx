@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Timer, CheckCircle, Ticket, Users, Loader2 } from 'lucide-react';
+import { Timer, CheckCircle, Ticket, Users, Loader2, Star } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 interface QuadrantRatingProps {
@@ -93,158 +94,184 @@ export function QuadrantRating({
 
     if (checkingRating) {
         return (
-            <div className="p-6 flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-                <div className="flex flex-col justify-center flex-1 text-center">
-                    <Loader2 className="w-8 h-8 mx-auto mb-3 text-blue-400 animate-spin" />
+            <div className="h-full flex flex-col justify-center items-center p-6 bg-gradient-to-br from-gray-900 to-gray-800">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center"
+                >
+                    <Loader2 className="w-8 h-8 mx-auto mb-4 text-blue-400 animate-spin" />
                     <h3 className="text-lg font-semibold text-white mb-2">
-                        Loading Rating Status...
+                        Checking Rating Status
                     </h3>
                     <p className="text-gray-400 text-sm">
-                        Checking if you've already rated {artistName}
+                        Loading your rating for {artistName}...
                     </p>
-                </div>
+                </motion.div>
             </div>
         );
     }
 
     return (
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 h-full flex flex-col">
-            <div className="p-6 flex flex-col flex-1">
-                {/* Header Section */}
-                <div className="mb-4">
-                    <h2 className="text-2xl font-bold text-white">{artistName}</h2>
-                    <p className="text-gray-400 text-sm mt-1">Rate this artist to earn points</p>
-
-                    {/* Timer and Points Display - Centered below artist name */}
-                    <div className="flex justify-center mt-3">
-                        {!isEligibleForPoints ? (
-                            <div className="bg-gray-800 px-3 py-1 rounded-lg flex items-center gap-2">
-                                <CheckCircle className="w-4 h-4 text-gray-400" />
-                                <span className="text-xs text-gray-400">Already rated</span>
-                            </div>
-                        ) : hasEarnedPoints ? (
-                            <div className="bg-green-600 px-3 py-1 rounded-lg flex items-center gap-2">
-                                <CheckCircle className="w-4 h-4 text-white" />
-                                <span className="text-xs text-white font-medium">{videoPoints} points earned!</span>
-                            </div>
-                        ) : (
-                            <div className="bg-gray-800 px-3 py-1 rounded-lg">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <Timer className="w-4 h-4 text-blue-400" />
-                                    <span className="text-xs text-white">{watchTime}s / {minWatchTime}s</span>
-                                </div>
-                                <Progress
-                                    value={(watchTime / minWatchTime) * 100}
-                                    className="w-24 h-1 bg-gray-600"
-                                />
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="flex flex-col flex-1">
-                    <AnimatePresence>
+        <div className="h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col">
+            {/* Mobile/Desktop Combined Header */}
+            <div className="p-4 lg:p-6 border-b border-gray-700">
+                {/* Points Status Display */}
+                <div className="flex justify-center mb-4">
+                    {!isEligibleForPoints ? (
+                        <div className="bg-gray-800 px-3 py-2 rounded-lg flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-gray-400" />
+                            <span className="text-xs text-gray-400 font-medium">Already rated</span>
+                        </div>
+                    ) : hasEarnedPoints ? (
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="space-y-6"
+                            initial={{ scale: 0.8 }}
+                            animate={{ scale: 1 }}
+                            className="bg-green-600 px-4 py-2 rounded-lg flex items-center gap-2"
                         >
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-semibold text-center text-white">Rate This Artist</h3>
+                            <Star className="w-4 h-4 text-white" />
+                            <span className="text-sm text-white font-bold">{videoPoints} points earned!</span>
+                        </motion.div>
+                    ) : (
+                        <div className="bg-gray-800 px-4 py-2 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Timer className="w-4 h-4 text-blue-400" />
+                                <span className="text-sm text-white font-medium">{watchTime}s / {minWatchTime}s</span>
+                            </div>
+                            <Progress
+                                value={(watchTime / minWatchTime) * 100}
+                                className="w-32 h-2 bg-gray-700"
+                            />
+                        </div>
+                    )}
+                </div>
 
-                                {/* Ticket Interest Slider */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2">
-                                        <Ticket className="w-4 h-4 text-blue-400" />
-                                        <span className="text-sm font-medium text-white">Concert Interest</span>
-                                    </div>
-                                    <div className="px-3">
-                                        <div className="relative mb-2">
-                                            <div
-                                                className="absolute inset-0 h-3 rounded-full pointer-events-none z-0"
-                                                style={{
-                                                    background: `linear-gradient(to right, #3b82f6 0%, #ef4444 100%)`,
-                                                    top: '50%',
-                                                    transform: 'translateY(-50%)'
-                                                }}
-                                            />
-                                            <Slider
-                                                value={[ticketInterest]}
-                                                onValueChange={handleTicketInterestChange}
-                                                max={100}
-                                                step={1}
-                                                disabled={userHasVoted}
-                                                className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-7 [&_[data-radix-slider-thumb]]:h-7 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-800 [&_[data-radix-slider-thumb]]:shadow-xl [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform [&_[data-radix-slider-thumb]]:z-20"
-                                            />
-                                        </div>
-                                        <div className="flex justify-between text-xs text-gray-400 mt-1">
-                                            <span>Not For Me</span>
-                                            <span className="font-medium text-white">{getTicketLabel(ticketInterest)}</span>
-                                            <span>I'd Buy Tickets</span>
-                                        </div>
-                                    </div>
+                <h3 className="text-lg lg:text-xl font-bold text-center text-white mb-2">
+                    Rate This Artist
+                </h3>
+                <p className="text-center text-gray-400 text-sm">
+                    Share your thoughts and earn {videoPoints} points
+                </p>
+            </div>
+
+            {/* Rating Controls */}
+            <div className="flex-1 p-4 lg:p-6 overflow-y-auto">
+                <AnimatePresence>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-6 lg:space-y-8"
+                    >
+                        {/* Ticket Interest Slider */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-500/20 rounded-lg">
+                                    <Ticket className="w-5 h-5 text-blue-400" />
                                 </div>
-
-                                {/* Share Interest Slider */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2">
-                                        <Users className="w-4 h-4 text-green-400" />
-                                        <span className="text-sm font-medium text-white">Sharing Interest</span>
-                                    </div>
-                                    <div className="px-3">
-                                        <div className="relative mb-2">
-                                            <div
-                                                className="absolute inset-0 h-3 rounded-full pointer-events-none z-0"
-                                                style={{
-                                                    background: `linear-gradient(to right, #3b82f6 0%, #ef4444 100%)`,
-                                                    top: '50%',
-                                                    transform: 'translateY(-50%)'
-                                                }}
-                                            />
-                                            <Slider
-                                                value={[shareInterest]}
-                                                onValueChange={handleShareInterestChange}
-                                                max={100}
-                                                step={1}
-                                                disabled={userHasVoted}
-                                                className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-7 [&_[data-radix-slider-thumb]]:h-7 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-800 [&_[data-radix-slider-thumb]]:shadow-xl [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform [&_[data-radix-slider-thumb]]:z-20"
-                                            />
-                                        </div>
-                                        <div className="flex justify-between text-xs text-gray-400 mt-1">
-                                            <span>Not For Them</span>
-                                            <span className="font-medium text-white">{getShareLabel(shareInterest)}</span>
-                                            <span>I'd Tell Friends</span>
-                                        </div>
-                                    </div>
+                                <div className="flex-1">
+                                    <h4 className="text-sm lg:text-base font-semibold text-white">Concert Interest</h4>
+                                    <p className="text-xs text-gray-400">How likely to buy tickets?</p>
                                 </div>
                             </div>
-                        </motion.div>
-                    </AnimatePresence>
-                </div>
+                            <div className="px-2">
+                                <div className="relative mb-3">
+                                    <div
+                                        className="absolute inset-0 h-3 rounded-full pointer-events-none z-0"
+                                        style={{
+                                            background: `linear-gradient(to right, #dc2626 0%, #f59e0b 25%, #10b981 75%, #059669 100%)`,
+                                            top: '50%',
+                                            transform: 'translateY(-50%)'
+                                        }}
+                                    />
+                                    <Slider
+                                        value={[ticketInterest]}
+                                        onValueChange={handleTicketInterestChange}
+                                        max={100}
+                                        step={1}
+                                        disabled={userHasVoted}
+                                        className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-6 [&_[data-radix-slider-thumb]]:h-6 lg:[&_[data-radix-slider-thumb]]:w-7 lg:[&_[data-radix-slider-thumb]]:h-7 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-2 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-xl [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform [&_[data-radix-slider-thumb]]:z-20"
+                                    />
+                                </div>
+                                <div className="flex justify-between text-xs text-gray-500">
+                                    <span>Not For Me</span>
+                                    <span className="font-semibold text-white bg-gray-800 px-2 py-1 rounded text-xs">
+                                        {getTicketLabel(ticketInterest)}
+                                    </span>
+                                    <span>I'd Buy Tickets</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Share Interest Slider */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-green-500/20 rounded-lg">
+                                    <Users className="w-5 h-5 text-green-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="text-sm lg:text-base font-semibold text-white">Sharing Interest</h4>
+                                    <p className="text-xs text-gray-400">Would you recommend this?</p>
+                                </div>
+                            </div>
+                            <div className="px-2">
+                                <div className="relative mb-3">
+                                    <div
+                                        className="absolute inset-0 h-3 rounded-full pointer-events-none z-0"
+                                        style={{
+                                            background: `linear-gradient(to right, #dc2626 0%, #f59e0b 25%, #10b981 75%, #059669 100%)`,
+                                            top: '50%',
+                                            transform: 'translateY(-50%)'
+                                        }}
+                                    />
+                                    <Slider
+                                        value={[shareInterest]}
+                                        onValueChange={handleShareInterestChange}
+                                        max={100}
+                                        step={1}
+                                        disabled={userHasVoted}
+                                        className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-6 [&_[data-radix-slider-thumb]]:h-6 lg:[&_[data-radix-slider-thumb]]:w-7 lg:[&_[data-radix-slider-thumb]]:h-7 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-2 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-xl [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform [&_[data-radix-slider-thumb]]:z-20"
+                                    />
+                                </div>
+                                <div className="flex justify-between text-xs text-gray-500">
+                                    <span>Not For Them</span>
+                                    <span className="font-semibold text-white bg-gray-800 px-2 py-1 rounded text-xs">
+                                        {getShareLabel(shareInterest)}
+                                    </span>
+                                    <span>I'd Tell Friends</span>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
             </div>
 
             {/* Footer with Submit Button */}
-            <div className="p-6 bg-gray-800">
+            <div className="p-4 lg:p-6 bg-gray-800/50 border-t border-gray-700">
                 <Button
                     onClick={handleSubmit}
-                    className={`w-full text-lg ${
+                    className={`w-full text-sm lg:text-base font-bold transition-all duration-300 ${
                         slidersChanged && !userHasVoted && watchTime >= minWatchTime
-                            ? "bg-blue-600 hover:bg-blue-700"
-                            : "bg-gray-600 hover:bg-gray-600 cursor-not-allowed"
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg"
+                            : "bg-gray-700 hover:bg-gray-700 text-gray-400 cursor-not-allowed"
                     }`}
                     disabled={isSubmitting || userHasVoted || !slidersChanged || watchTime < minWatchTime}
                 >
-                    {isSubmitting ? (
-                        <Loader2 className="animate-spin mr-2" />
-                    ) : userHasVoted ? (
-                        "You've Already Rated This Artist"
-                    ) : watchTime < minWatchTime ? (
-                        `Watch ${minWatchTime - watchTime} More Seconds`
-                    ) : !slidersChanged ? (
-                        "Adjust Sliders to Submit Rating"
-                    ) : (
-                        "Submit Rating"
-                    )}
+                    <div className="flex items-center justify-center gap-2 py-1">
+                        {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                        <span>
+                            {isSubmitting ? (
+                                "Submitting..."
+                            ) : userHasVoted ? (
+                                "You've Already Rated This Artist"
+                            ) : watchTime < minWatchTime ? (
+                                `Watch ${minWatchTime - watchTime} More Seconds`
+                            ) : !slidersChanged ? (
+                                "Adjust Sliders to Submit Rating"
+                            ) : (
+                                `Submit Rating & Earn ${videoPoints} Points`
+                            )}
+                        </span>
+                    </div>
                 </Button>
             </div>
         </div>
