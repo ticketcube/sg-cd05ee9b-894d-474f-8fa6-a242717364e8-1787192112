@@ -115,34 +115,42 @@ export default function WeeklyListCard() {
           </div>
         </CardHeader>
 
-        <CardContent className="px-6 pb-8">
-          <div className="space-y-6">
-            {/* Artist Grid */}
-            <div className="grid grid-cols-4 md:grid-cols-6 gap-3 md:gap-4">
-              {displayArtists.map((artist) => (
-                <div
-                  key={artist.id}
-                  className="group relative aspect-square overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
-                >
-                  <Image
-                    src={artist.artist_image || '/placeholder-artist.jpg'}
-                    alt={artist.artist_name || 'Artist'}
-                    fill
-                    sizes="(max-width: 768px) 25vw, 16vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <PlayCircle className="w-8 h-8 text-white drop-shadow-lg" />
+              <CardContent className="px-6 pb-8">
+                  <div className="space-y-6">
+                      {/* Artist Grid */}
+                      <div className="grid grid-cols-4 md:flex md:flex-wrap md:justify-center gap-3 md:gap-4">
+                          {displayArtists.map((artist) => (
+                              <div
+                                  key={artist.id}
+                                  className="group relative aspect-square overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
+                              >
+                                  <Image
+                                      src={artist.artist_image || "/placeholder-artist.jpg"}
+                                      alt={artist.artist_name || "Artist"}
+                                      fill
+                                      sizes="(max-width: 768px) 25vw, 16vw"
+                                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+
+                                  {/* Clickable Overlay */}
+                                  <Link
+                                      href="/september/rewards"
+                                      className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                  >
+                                      <PlayCircle className="w-8 h-8 text-white drop-shadow-lg" />
+                                  </Link>
+
+                                  <div className="absolute bottom-2 left-2 right-2">
+                                      <p className="text-white text-xs font-semibold truncate drop-shadow-md">
+                                          {artist.artist_name || "Unknown Artist"}
+                                      </p>
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
                   </div>
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <p className="text-white text-xs font-semibold truncate drop-shadow-md">
-                      {artist.artist_name || 'Unknown Artist'}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+             
 
           
 
