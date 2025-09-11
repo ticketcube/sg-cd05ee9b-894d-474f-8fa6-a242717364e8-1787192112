@@ -83,7 +83,7 @@ export function ArtistInteractionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-6xl h-[90vh] bg-black border-gray-800 text-white p-0 overflow-hidden">
+            <DialogContent className="max-w-5xl h-[80vh] bg-black border-gray-800 text-white p-0 overflow-hidden">
                 {/* Mobile: Stacked Layout, Desktop: Side by Side */}
                 <div className="h-full flex flex-col lg:flex-row">
                     {/* Video Section */}

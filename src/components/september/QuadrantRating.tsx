@@ -176,9 +176,9 @@ export function QuadrantRating({
                             <div className="px-2">
                                 <div className="relative mb-3">
                                     <div
-                                        className="absolute inset-0 h-3 rounded-full pointer-events-none z-0"
+                                        className="absolute inset-0 h-4 rounded-full pointer-events-none z-0"
                                         style={{
-                                            background: `linear-gradient(to right, #dc2626 0%, #f59e0b 25%, #10b981 75%, #059669 100%)`,
+                                            background: `linear-gradient(to right, #ef4444 0%, #f97316 15%, #eab308 30%, #84cc16 45%, #22c55e 60%, #06b6d4 75%, #3b82f6 90%, #8b5cf6 100%)`,
                                             top: '50%',
                                             transform: 'translateY(-50%)'
                                         }}
@@ -189,7 +189,7 @@ export function QuadrantRating({
                                         max={100}
                                         step={1}
                                         disabled={userHasVoted}
-                                        className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-6 [&_[data-radix-slider-thumb]]:h-6 lg:[&_[data-radix-slider-thumb]]:w-7 lg:[&_[data-radix-slider-thumb]]:h-7 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-2 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-xl [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform [&_[data-radix-slider-thumb]]:z-20"
+                                        className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-8 [&_[data-radix-slider-thumb]]:h-8 lg:[&_[data-radix-slider-thumb]]:w-10 lg:[&_[data-radix-slider-thumb]]:h-10 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-2xl [&_[data-radix-slider-thumb]]:shadow-purple-500/30 [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-125 [&_[data-radix-slider-thumb]]:transition-all [&_[data-radix-slider-thumb]]:duration-200 [&_[data-radix-slider-thumb]]:z-20"
                                     />
                                 </div>
                                 <div className="flex justify-between text-xs text-gray-500">
@@ -216,9 +216,9 @@ export function QuadrantRating({
                             <div className="px-2">
                                 <div className="relative mb-3">
                                     <div
-                                        className="absolute inset-0 h-3 rounded-full pointer-events-none z-0"
+                                        className="absolute inset-0 h-4 rounded-full pointer-events-none z-0"
                                         style={{
-                                            background: `linear-gradient(to right, #dc2626 0%, #f59e0b 25%, #10b981 75%, #059669 100%)`,
+                                            background: `linear-gradient(to right, #ef4444 0%, #f97316 15%, #eab308 30%, #84cc16 45%, #22c55e 60%, #06b6d4 75%, #3b82f6 90%, #8b5cf6 100%)`,
                                             top: '50%',
                                             transform: 'translateY(-50%)'
                                         }}
@@ -229,7 +229,7 @@ export function QuadrantRating({
                                         max={100}
                                         step={1}
                                         disabled={userHasVoted}
-                                        className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-6 [&_[data-radix-slider-thumb]]:h-6 lg:[&_[data-radix-slider-thumb]]:w-7 lg:[&_[data-radix-slider-thumb]]:h-7 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-2 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-xl [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform [&_[data-radix-slider-thumb]]:z-20"
+                                        className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-8 [&_[data-radix-slider-thumb]]:h-8 lg:[&_[data-radix-slider-thumb]]:w-10 lg:[&_[data-radix-slider-thumb]]:h-10 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-2xl [&_[data-radix-slider-thumb]]:shadow-blue-500/30 [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-125 [&_[data-radix-slider-thumb]]:transition-all [&_[data-radix-slider-thumb]]:duration-200 [&_[data-radix-slider-thumb]]:z-20"
                                     />
                                 </div>
                                 <div className="flex justify-between text-xs text-gray-500">
