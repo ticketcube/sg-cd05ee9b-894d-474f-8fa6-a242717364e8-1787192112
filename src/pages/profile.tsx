@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,42 +8,38 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { UserEngagementQuadrants } from "@/components/profile/UserEngagementQuadrants";
+import { Calendar, User, Mail, Upload, Camera } from "lucide-react";
 
-interface EventInterest {
-  event_id: string;
-  interest_level: number;
+interface Profile {
+  id: string;
+  username: string;
+  email: string;
+  avatar_url?: string;
+  created_at: string;
+  city?: string;
+  bio?: string;
 }
 
 function ProfilePageContent() {
   const supabase = createClientComponentClient();
   const user = useUser();
 
-  const [profile, setProfile] = useState<any>(null);
-  const [artistEngagements, setArtistEngagements] = useState<any[]>([]);
-  const [eventInterests, setEventInterests] = useState<EventInterest[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  // Load profile
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
   }, [user]);
 
-  // Load engagements + events once profile ready
-  useEffect(() => {
-    if (user && profile && !profileLoading) {
-      fetchArtistEngagements();
-      fetchEventInterests();
-    }
-  }, [user, profile, profileLoading]);
-
   const fetchProfile = async () => {
     try {
-      setProfileLoading(true);
+      setLoading(true);
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -54,50 +51,6 @@ function ProfilePageContent() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load profile");
     } finally {
-      setProfileLoading(false);
-    }
-  };
-
-  const fetchArtistEngagements = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("user_engagements")
-        .select(
-          `
-          artist_id,
-          engagement_type,
-          created_at,
-          weekly_lists ( list_name ),
-          weekly_list_artists ( artist_name, artist_image )
-        `
-        )
-        .eq("user_id", user?.id);
-
-      if (error) throw error;
-      setArtistEngagements(data || []);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load artist engagements"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchEventInterests = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("event_interests")
-        .select("event_id, interest_level")
-        .eq("user_id", user?.id);
-
-      if (error) throw error;
-      setEventInterests(data || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load events");
-    } finally {
       setLoading(false);
     }
   };
@@ -106,11 +59,12 @@ function ProfilePageContent() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    setAvatarFile(file);
+    setUploadingAvatar(true);
 
     try {
       const fileExt = file.name.split(".").pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
+      const fileName = `avatar_${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
@@ -129,89 +83,154 @@ function ProfilePageContent() {
 
       if (updateError) throw updateError;
 
-      fetchProfile();
+      await fetchProfile();
     } catch (err) {
       console.error("Error uploading avatar:", err);
       setError(err instanceof Error ? err.message : "Failed to upload avatar");
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
-  if (profileLoading) {
-    return <div className="text-white">Loading profile...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-white animate-pulse text-lg">Loading your profile...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6">
+        <div className="max-w-6xl mx-auto">
+          <Card className="bg-red-900/20 border-red-500/40 text-white">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-red-400 text-lg mb-2">Error Loading Profile</div>
+                <p className="text-red-300">{error}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Profile Header */}
-      <Card className="bg-neutral-800/80 border-neutral-700 text-white">
-        <CardHeader>
-          <CardTitle>My Profile</CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center gap-6">
-          <Avatar className="w-24 h-24">
-            <AvatarImage src={profile?.avatar_url} alt="Profile" />
-            <AvatarFallback>
-              {profile?.username?.[0]?.toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
+    <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Profile Header */}
+        <Card className="bg-gradient-to-br from-neutral-900/95 to-neutral-800/95 border-neutral-700/60 shadow-2xl shadow-neutral-900/40 text-white overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
+          <CardContent className="relative pt-8">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
+              {/* Avatar Section */}
+              <div className="relative group">
+                <Avatar className="w-32 h-32 border-4 border-white/10 shadow-2xl shadow-neutral-900/60">
+                  <AvatarImage src={profile?.avatar_url} alt="Profile" />
+                  <AvatarFallback className="text-3xl font-light bg-gradient-to-br from-neutral-700 to-neutral-800">
+                    {profile?.username?.[0]?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                
+                {/* Avatar Upload Overlay */}
+                <label className="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer flex items-center justify-center">
+                  <div className="flex flex-col items-center text-white">
+                    {uploadingAvatar ? (
+                      <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full"></div>
+                    ) : (
+                      <>
+                        <Camera className="w-6 h-6 mb-1" />
+                        <span className="text-xs">Change</span>
+                      </>
+                    )}
+                  </div>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                    disabled={uploadingAvatar}
+                  />
+                </label>
+              </div>
 
-          <div className="flex flex-col gap-2">
-            <p className="text-xl font-semibold">{profile?.username}</p>
-            <p className="text-sm text-neutral-400">{profile?.email}</p>
-            <p className="text-sm text-neutral-400">
-              Joined {profile?.created_at ? formatDate(profile.created_at) : ""}
-            </p>
-
-            <div className="flex items-center gap-2 mt-2">
-              <Input type="file" accept="image/*" onChange={handleAvatarChange} />
-              <Button variant="secondary" disabled={!avatarFile}>
-                Upload
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* My Artist Favorites */}
-      <Card className="bg-neutral-800/80 border-neutral-700 text-white">
-        <CardHeader>
-          <CardTitle>My Artist Favorites</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div>Loading artist engagements...</div>
-          ) : error ? (
-            <div className="text-red-500">{error}</div>
-          ) : artistEngagements.length === 0 ? (
-            <div>No artist engagements found.</div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {artistEngagements.map((engagement, index) => (
-                <div
-                  key={`${engagement.artist_id}-${index}`}
-                  className="flex flex-col items-center"
-                >
-                  <Avatar className="w-20 h-20 mb-2">
-                    <AvatarImage
-                      src={engagement.weekly_list_artists?.artist_image}
-                      alt={engagement.weekly_list_artists?.artist_name}
-                    />
-                    <AvatarFallback>
-                      {engagement.weekly_list_artists?.artist_name?.[0] || "A"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <p className="text-sm font-medium text-center">
-                    {engagement.weekly_list_artists?.artist_name}
-                  </p>
-                  <p className="text-xs text-neutral-400">
-                    {engagement.engagement_type}
-                  </p>
+              {/* Profile Info */}
+              <div className="flex-1 space-y-4">
+                <div>
+                  <h1 className="text-3xl font-light tracking-wide text-white mb-2">
+                    {profile?.username || "Anonymous User"}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-4 text-neutral-300">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-neutral-400" />
+                      <span className="text-sm">{profile?.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-neutral-400" />
+                      <span className="text-sm">
+                        Joined {profile?.created_at ? formatDate(profile.created_at) : ""}
+                      </span>
+                    </div>
+                    {profile?.city && (
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-neutral-400" />
+                        <span className="text-sm">{profile.city}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ))}
+
+                {profile?.bio && (
+                  <div className="bg-neutral-800/40 rounded-lg p-4 border border-neutral-700/40">
+                    <p className="text-neutral-300 leading-relaxed">{profile.bio}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="border-emerald-500/40 text-emerald-400 bg-emerald-500/10">
+                    Active Member
+                  </Badge>
+                  <Badge variant="outline" className="border-blue-500/40 text-blue-400 bg-blue-500/10">
+                    Music Enthusiast
+                  </Badge>
+                </div>
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* Artist Rating Quadrants */}
+        <UserEngagementQuadrants userId={user?.id || ""} />
+
+        {/* Additional Stats Card */}
+        <Card className="bg-gradient-to-br from-neutral-900/90 to-neutral-800/90 border-neutral-700/60 text-white">
+          <CardHeader>
+            <CardTitle className="text-xl font-light tracking-wide">Activity Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center p-6 bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 border border-emerald-500/20 rounded-2xl">
+                <div className="text-3xl font-bold text-emerald-400 mb-2">0</div>
+                <div className="text-sm text-neutral-400">Playlists Created</div>
+              </div>
+              <div className="text-center p-6 bg-gradient-to-br from-blue-500/10 to-blue-600/10 border border-blue-500/20 rounded-2xl">
+                <div className="text-3xl font-bold text-blue-400 mb-2">0</div>
+                <div className="text-sm text-neutral-400">Events Attended</div>
+              </div>
+              <div className="text-center p-6 bg-gradient-to-br from-purple-500/10 to-purple-600/10 border border-purple-500/20 rounded-2xl">
+                <div className="text-3xl font-bold text-purple-400 mb-2">0</div>
+                <div className="text-sm text-neutral-400">Friends Connected</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -219,7 +238,7 @@ function ProfilePageContent() {
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString(undefined, {
     year: "numeric",
-    month: "short",
+    month: "long",
     day: "numeric",
   });
 }
