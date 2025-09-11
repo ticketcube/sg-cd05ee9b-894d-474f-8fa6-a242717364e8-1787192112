@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Timer } from 'lucide-react';
-import clsx from 'clsx';
+
 
 interface QuadrantRatingProps {
     onSubmit: (data: { x: number; y: number }) => void;
