@@ -43,7 +43,7 @@ const ArtistVideoPlayer: React.FC<ArtistVideoPlayerProps> = ({ videoUrl, onWatch
     };
 
     // We can only check if the URL is playable on the client-side
-    const isPlayable = hasMounted && videoUrl;
+    const isPlayable = hasMounted && videoUrl && ReactPlayer.canPlay(videoUrl);
 
     return (
         <div className="w-full h-full bg-black flex items-center justify-center relative">
