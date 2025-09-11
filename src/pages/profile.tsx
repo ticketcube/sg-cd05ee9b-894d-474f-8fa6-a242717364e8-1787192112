@@ -377,10 +377,4 @@ function ProfilePageContent() {
     );
 }
 
-export default function ProfilePage() {
-    return (
-        <AppLayout>
-            <ProfilePageContent />
-        </AppLayout>
-    );
-}
+export default ProfilePage
