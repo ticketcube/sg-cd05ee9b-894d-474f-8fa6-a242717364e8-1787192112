@@ -8,8 +8,9 @@ import {
 import { EnrichedWeeklyListArtist } from "@/types/weekly";
 import ArtistVideoPlayer from "../ArtistVideoPlayer";
 import { QuadrantRating } from "./QuadrantRating";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ArtistInteractionModalProps {
     artist: EnrichedWeeklyListArtist | null;
@@ -27,8 +28,36 @@ export function ArtistInteractionModal({
     onRatingComplete,
 }: ArtistInteractionModalProps) {
     const { user } = useUserProfile();
+    const [alreadyRated, setAlreadyRated] = useState(false);
+    const [checkingRating, setCheckingRating] = useState(true);
     
     console.log("🎨 ArtistInteractionModal rendered", { isOpen, artist: artist ? `${artist.artist_name}` : null });
+
+    // Check if user has already rated this artist
+    useEffect(() => {
+        const checkRating = async () => {
+            if (!user || !artist) {
+                setCheckingRating(false);
+                return;
+            }
+
+            const { data } = await supabase
+                .from('user_engagements')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('artist_id', artist.id)
+                .eq('engagement_type', 'quadrant')
+                .limit(1);
+
+            setAlreadyRated(data ? data.length > 0 : false);
+            setCheckingRating(false);
+        };
+
+        if (isOpen && user && artist) {
+            setCheckingRating(true);
+            checkRating();
+        }
+    }, [isOpen, user, artist]);
 
     const handleRatingSubmit = (data: { x: number; y: number }) => {
         if (artist) {
@@ -64,6 +93,8 @@ export function ArtistInteractionModal({
                                     artistName={artist.artist_name}
                                     artistId={artist.id}
                                     userId={user.id}
+                                    alreadyRated={alreadyRated}
+                                    checkingRating={checkingRating}
                                 />
                             </div>
                         </>

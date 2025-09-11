@@ -1,43 +1,29 @@
-
 import React, { useState, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Timer } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface QuadrantRatingProps {
     onSubmit: (data: { x: number; y: number }) => void;
     artistName: string;
     artistId: number;
     userId: string;
+    alreadyRated: boolean;
+    checkingRating: boolean;
 }
 
-export function QuadrantRating({ onSubmit, artistName, artistId, userId }: QuadrantRatingProps) {
+export function QuadrantRating({ 
+    onSubmit, 
+    artistName, 
+    artistId, 
+    userId, 
+    alreadyRated, 
+    checkingRating 
+}: QuadrantRatingProps) {
     const [ticketInterest, setTicketInterest] = useState(50);
     const [shareInterest, setShareInterest] = useState(50);
     const [timeRemaining, setTimeRemaining] = useState(15);
     const [hasMovedSliders, setHasMovedSliders] = useState(false);
-    const [alreadyRated, setAlreadyRated] = useState(false);
-    const [checkingRating, setCheckingRating] = useState(true);
-
-    // Check if already rated
-    useEffect(() => {
-        const checkRating = async () => {
-            const { data } = await supabase
-                .from('user_engagements')
-                .select('id')
-                .eq('user_id', userId)
-                .eq('artist_id', artistId)
-                .eq('engagement_type', 'quadrant')
-    
-              .maybeSingle() i;
-
-            setAlreadyRated(data ? data.length > 0 : false);
-            setCheckingRating(false);
-        };
-
-        checkRating();
-    }, []);
 
     // Simple timer
     useEffect(() => {
