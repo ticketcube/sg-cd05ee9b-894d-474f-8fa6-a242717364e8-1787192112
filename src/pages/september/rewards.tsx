@@ -133,7 +133,7 @@ export default function SeptemberRewardsPage() {
     };
 
     return (
-        <AppLayout>
+        <>
             <Head>
                 <title>September Rewards - OTW</title>
                 <meta name="description" content="Participate in this month's special rewards program." />
@@ -155,7 +155,7 @@ export default function SeptemberRewardsPage() {
                 onClose={() => setIsModalOpen(false)}
                 onRatingComplete={handleRatingComplete}
             />
-          </AppLayout>
+          </>
 
     );
 }
