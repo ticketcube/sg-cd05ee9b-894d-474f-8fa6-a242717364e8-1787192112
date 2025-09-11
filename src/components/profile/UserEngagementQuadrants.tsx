@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { userEngagementService } from '@/services/userEngagementService';
 import { supabase } from '@/integrations/supabase/client';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import Link from 'next/link';
 
 interface EngagementWithArtist {
   id: number;
@@ -27,64 +29,34 @@ export function UserEngagementQuadrants({ userId }: UserEngagementQuadrantsProps
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (userId) {
-      fetchUserEngagements();
-    }
-  }, [userId]);
-
-  const fetchUserEngagements = async () => {
+  const fetchEngagements = async () => {
+    if (!user) return;
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      // Fetch user engagements with quadrant data
-      const { data: engagementsData, error: engagementsError } = await supabase
+      const { data, error } = await supabase
         .from('user_engagements')
         .select(`
-          id,
-          artist_uuid,
+          created_at,
+          engagement_type,
           x_quadrant,
           y_quadrant,
-          engagement_type,
-          created_at,
-          points_earned
+          artists (
+            uuid,
+            artist_name,
+            artist_image_url
+          )
         `)
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
+        .eq('engagement_type', 'quadrant')
         .not('x_quadrant', 'is', null)
-        .not('y_quadrant', 'is', null);
+        .not('y_quadrant', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-      if (engagementsError) throw engagementsError;
-
-      // Get unique artist UUIDs
-      const artistUuids = [...new Set(engagementsData?.map(e => e.artist_uuid) || [])];
-      
-      if (artistUuids.length === 0) {
-        setEngagements([]);
-        return;
-      }
-
-      // Fetch artist details
-      const { data: artistsData, error: artistsError } = await supabase
-        .from('weekly_list_artists')
-        .select('artist_uuid, artist_name, artist_image')
-        .in('artist_uuid', artistUuids);
-
-      if (artistsError) throw artistsError;
-
-      // Combine engagements with artist data
-      const enrichedEngagements: EngagementWithArtist[] = (engagementsData || []).map(engagement => {
-        const artist = artistsData?.find(a => a.artist_uuid === engagement.artist_uuid);
-        return {
-          ...engagement,
-          artist_name: artist?.artist_name || 'Unknown Artist',
-          artist_image: artist?.artist_image
-        };
-      });
-
-      setEngagements(enrichedEngagements);
-    } catch (err) {
-      console.error('Error fetching user engagements:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load engagement data');
+      if (error) throw error;
+      setEngagements(data || []);
+    } catch (error) {
+      console.error('Error fetching user engagements:', error);
     } finally {
       setLoading(false);
     }
@@ -207,32 +179,43 @@ export function UserEngagementQuadrants({ userId }: UserEngagementQuadrantsProps
           <div className="absolute left-2 top-1/2 transform -translate-y-1/2 -rotate-90 text-xs text-neutral-500 origin-center">Concert Interest ↑</div>
 
           {/* Artist Points */}
-          {uniqueEngagements.map((engagement) => {
-            const position = getQuadrantPosition(engagement.x_quadrant, engagement.y_quadrant);
+          {engagements.map((engagement, index) => {
+            const { x_quadrant, y_quadrant } = engagement;
+            if (x_quadrant === null || y_quadrant === null) return null;
+
+            const artist = engagement.artists;
+            if (!artist) return null;
+
+            // Adjust position slightly for visibility if points overlap
+            const x = (x_quadrant + 1) * 50 + (Math.random() - 0.5) * 2;
+            const y = (-y_quadrant + 1) * 50 + (Math.random() - 0.5) * 2;
+
             return (
-              <div
-                key={engagement.id}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-                style={position}
-              >
-                <div className="relative">
-                  <Avatar className="w-10 h-10 border-2 border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
-                    <AvatarImage src={engagement.artist_image} alt={engagement.artist_name} />
-                    <AvatarFallback className="text-xs bg-gradient-to-br from-neutral-700 to-neutral-800">
-                      {engagement.artist_name?.[0]?.toUpperCase() || 'A'}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-neutral-900/95 border border-neutral-700 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-10">
-                    <div className="text-sm font-medium">{engagement.artist_name}</div>
-                    <div className="text-xs text-neutral-400">
-                      {getQuadrantLabel(engagement.x_quadrant, engagement.y_quadrant)}
-                    </div>
-                    <div className="text-xs text-emerald-400">+{engagement.points_earned} points</div>
-                  </div>
-                </div>
-              </div>
+              <HoverCard key={index}>
+                <HoverCardTrigger asChild>
+                  <div
+                    className="absolute w-3 h-3 bg-blue-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 cursor-pointer hover:scale-150 transition-transform"
+                    style={{ left: `${x}%`, top: `${y}%` }}
+                  />
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80">
+                  <Link href={`/artist/${artist.uuid}`} passHref>
+                    <a className="flex justify-between space-x-4">
+                      <div className="space-y-1">
+                        <p className="font-bold">{artist.artist_name}</p>
+                        <p className="text-sm">
+                          Rated on: {new Date(engagement.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <img 
+                        src={artist.artist_image_url || '/placeholder.png'} 
+                        alt={artist.artist_name} 
+                        className="w-16 h-16 object-cover rounded-md"
+                      />
+                    </a>
+                  </Link>
+                </HoverCardContent>
+              </HoverCard>
             );
           })}
         </div>

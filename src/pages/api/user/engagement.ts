@@ -78,8 +78,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // 4. Update user's total points if points were earned
         if (pointsEarned > 0) {
             const { error: rpcError } = await supabaseAdmin.rpc('increment_user_points', {
-                user_id_in: user.id,
-                points_in: pointsEarned
+                user_id: user.id,
+                points_to_add: pointsEarned,
             });
 
             if (rpcError) {
