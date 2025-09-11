@@ -6,6 +6,8 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import TabNavigation from '@/components/dashboard/TabNavigation';
 import DiscoverMoreTab from '@/components/dashboard/DiscoverMoreTab';
 import MoreRewardsTab from '@/components/dashboard/MoreRewardsTab';
+import StaffModuleCard from '@/components/dashboard/MoreRewardsTab';
+
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import HeroVideo from '@/components/dashboard/HeroVideo';
@@ -62,7 +64,7 @@ const DiscoveryDashboard = () => {
             case 'rewards':
                 return <MoreRewardsTab />;
             default:
-                return <DiscoverMoreTab />;
+                return <StaffM />;
         }
     };
 
