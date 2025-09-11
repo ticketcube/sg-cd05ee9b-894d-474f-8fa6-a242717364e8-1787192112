@@ -132,7 +132,7 @@ export default function SeptemberRewardsPage() {
                             <p className="text-muted-foreground mb-6">{list.description}</p>
                             <SeptemberArtistGrid
                                 artists={list.artists}
-                                onArtistSelect={handleArtistSelect}
+                               (artist) => handleArtistSelect(artist, list.id)}
                             />
                         </div>
                     );
