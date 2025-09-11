@@ -18,6 +18,7 @@ export default function SeptemberRewardsPage() {
     const [error, setError] = useState<string | null>(null);
     const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
     const [selectedListId, setSelectedListId] = useState<number | null>(null);
+    const [selectedWeekIdentifier, setSelectedWeekIdentifier] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     const { toast } = useToast();
@@ -58,9 +59,13 @@ export default function SeptemberRewardsPage() {
     };
 
     const handleArtistSelect = (artist: EnrichedWeeklyListArtist, listId: number) => {
+        const list = enrichedLists.find(l => l.id === listId);
+        if (!list) return;
+
         console.log("🎤 Artist selected:", artist, "from list:", listId);
         setSelectedArtist(artist);
         setSelectedListId(listId);
+        setSelectedWeekIdentifier(list.week_identifier);
         setIsModalOpen(true);
     };
 
@@ -141,6 +146,7 @@ export default function SeptemberRewardsPage() {
         setTimeout(() => {
             setSelectedArtist(null);
             setSelectedListId(null);
+            setSelectedWeekIdentifier(null);
         }, 300);
     };
 
@@ -197,6 +203,7 @@ export default function SeptemberRewardsPage() {
             <ArtistInteractionModal
                 artist={selectedArtist}
                 listId={selectedListId}
+                weekIdentifier={selectedWeekIdentifier}
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
                 onRatingComplete={handleRatingComplete}

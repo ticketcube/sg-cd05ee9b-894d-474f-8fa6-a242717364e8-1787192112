@@ -1,3 +1,24 @@
+
+# Plan: Implement Uniqueness Check for User Engagements
+
+**Problem:** The current `/api/user/engagement` API endpoint does not check if a user has already submitted a rating for a specific artist within the same week. This allows users to submit multiple ratings for the same artist and earn points repeatedly, which undermines the points system.
+
+**Solution:** Modify the API endpoint to perform a "look before you leap" check. Before inserting a new engagement record, it will query the `user_engagements` table to see if a record already exists for the same `user_id`, `artist_uuid`, and `week_identifier`.
+
+## Implementation Steps
+
+1.  **File to Modify:** `src/pages/api/user/engagement.ts`
+2.  **Logic to Add:**
+    *   Before the `insert` operation, add a `SELECT` query to check for an existing engagement matching `user.id`, `artist_uuid`, and `week_identifier`.
+    *   If a record is found, immediately return a `200` status with `{ success: false, error: 'You have already completed this action for this artist this week.' }`.
+    *   If no record is found, proceed with the existing `insert` and point update logic.
+    *   For improved security and consistency, the `points_earned` should be determined on the backend based on the `engagementType`, not trusted from the client.
+
+## Proposed New Code for `src/pages/api/user/engagement.ts`
+
+This new code implements the uniqueness check and centralizes point logic on the backend.
+
+```typescript
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -94,3 +115,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(500).json({ error: error.message, success: false });
     }
 }
+
+-- We also need to create a postgres function for atomically updating points to prevent race conditions.
+-- This can be run in the Supabase SQL Editor.
+/*
+create or replace function increment_user_points (user_id_in uuid, points_in int)
+returns void as $$
+  update user_profiles
+  set total_points = total_points + points_in,
+      updated_at = now()
+  where user_id = user_id_in;
+$$ language sql volatile;
+*/
+
+```

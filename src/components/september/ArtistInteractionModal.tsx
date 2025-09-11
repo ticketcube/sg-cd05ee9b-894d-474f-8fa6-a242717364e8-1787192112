@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface ArtistInteractionModalProps {
     artist: EnrichedWeeklyListArtist | null;
     listId: number | null;
+    weekIdentifier: string | null;
     isOpen: boolean;
     onClose: () => void;
     onRatingComplete: (artistId: number, data: { x: number; y: number }) => void;
@@ -23,6 +24,7 @@ interface ArtistInteractionModalProps {
 export function ArtistInteractionModal({
     artist,
     listId,
+    weekIdentifier,
     isOpen,
     onClose,
     onRatingComplete,
@@ -32,37 +34,45 @@ export function ArtistInteractionModal({
     const [checkingRating, setCheckingRating] = useState<boolean>(true);
 
     useEffect(() => {
+        // Reset state when the modal is not open or when artist changes
+        if (!isOpen || !artist) {
+            setAlreadyRated(false);
+            setCheckingRating(true); // Reset to loading for next open
+            return;
+        }
+
         const checkRating = async () => {
-            if (!user?.id || !artist?.id) {
+            if (!user?.id || !artist.uuid || !weekIdentifier) {
                 setCheckingRating(false);
                 return;
             }
 
+            setCheckingRating(true);
             try {
-                // Use a simple count query to avoid deep type instantiation
-                const response = await supabase
+                const { count, error } = await supabase
                     .from('user_engagements')
                     .select('id', { count: 'exact', head: true })
                     .eq('user_id', user.id)
-                    .eq('artist_id', artist.id)
+                    .eq('artist_uuid', artist.uuid)
+                    .eq('week_identifier', weekIdentifier)
                     .eq('engagement_type', 'quadrant');
 
-                setAlreadyRated((response.count || 0) > 0);
+                if (error) {
+                    throw error;
+                }
+
+                setAlreadyRated((count || 0) > 0);
             } catch (error) {
                 console.error('Error checking rating:', error);
-                setAlreadyRated(false);
+                setAlreadyRated(false); // Fail open, allow rating attempt
             } finally {
                 setCheckingRating(false);
             }
         };
 
-        if (isOpen && user?.id && artist?.id) {
-            setCheckingRating(true);
-            checkRating();
-        } else {
-            setCheckingRating(false);
-        }
-    }, [isOpen, user?.id, artist?.id]);
+        checkRating();
+        
+    }, [isOpen, user, artist, weekIdentifier]);
 
     const handleRatingSubmit = (data: { x: number; y: number }) => {
         if (artist) {
