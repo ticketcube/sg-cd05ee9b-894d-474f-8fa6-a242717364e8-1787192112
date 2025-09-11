@@ -6,7 +6,7 @@ import { useUserProfile } from '@/contexts/UserProfileContext';
 import AppLayout from '@/components/layout/AppLayout';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
-import  SeptemberArtistGrid  from '@/components/september/SeptemberArtistGrid';
+import { SeptemberArtistGrid }  from '@/components/september/SeptemberArtistGrid';
 import { ArtistInteractionModal } from '@/components/september/ArtistInteractionModal';
 import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
 import { septemberRewardsService } from '@/services/septemberRewardsService';
