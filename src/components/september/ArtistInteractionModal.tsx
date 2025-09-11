@@ -10,7 +10,7 @@ import ArtistVideoPlayer from "../ArtistVideoPlayer";
 import { QuadrantRating } from "./QuadrantRating";
 import { useState, useEffect } from "react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
-import { supabase } from "@/integrations/supabase/client";
+import { quadrantRatingService } from "@/services/quadrantRatingService";
 
 interface ArtistInteractionModalProps {
     artist: EnrichedWeeklyListArtist | null;
@@ -41,22 +41,9 @@ export function ArtistInteractionModal({
                 return;
             }
 
-            try {
-                const { data } = await supabase
-                    .from('user_engagements')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .eq('artist_id', artist.id)
-                    .eq('engagement_type', 'quadrant')
-                    .maybeSingle();
-
-                setAlreadyRated(!!data);
-            } catch (error) {
-                console.error('Error checking rating:', error);
-                setAlreadyRated(false);
-            } finally {
-                setCheckingRating(false);
-            }
+            const hasRated = await quadrantRatingService.hasUserRatedArtist(user.id, artist.id);
+            setAlreadyRated(hasRated);
+            setCheckingRating(false);
         };
 
         if (isOpen && user && artist) {
