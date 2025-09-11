@@ -19,6 +19,7 @@ export default function SeptemberRewardsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState < string | null > (null);
     const [selectedArtist, setSelectedArtist] = useState < EnrichedWeeklyListArtist | null > (null);
+    const [selectedListId, setSelectedListId] = useState < number | null > (null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     const { toast } = useToast();
@@ -43,6 +44,11 @@ export default function SeptemberRewardsPage() {
         try {
             const lists = await septemberRewardsService.getActiveEnrichedWeeklyLists();
             console.log("📦 Lists fetched from service:", lists);
+
+            if (lists && lists.length > 0 && lists[0].artists && lists[0].artists.length > 0) {
+                console.log("🕵️ INSPECTING FIRST ARTIST OF FIRST LIST:", lists[0].artists[0]);
+            }
+
             setEnrichedLists(lists);
         } catch (err: any) {
             console.error("❌ Failed to load weekly lists:", err);
@@ -161,4 +167,3 @@ export default function SeptemberRewardsPage() {
 
     );
 }
-
