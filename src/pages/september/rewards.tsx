@@ -54,6 +54,8 @@ export default function SeptemberRewardsPage() {
     };
 
     const handleArtistSelect = (artist: EnrichedWeeklyListArtist) => {
+            console.log("STEP 1: Artist object received by handleArtistSelect:", artist);
+
         console.log("🎤 Artist selected:", artist);
         setSelectedArtist(artist);
         setIsModalOpen(true);
