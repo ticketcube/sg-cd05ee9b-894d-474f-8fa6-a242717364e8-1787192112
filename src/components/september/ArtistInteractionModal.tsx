@@ -81,84 +81,76 @@ export function ArtistInteractionModal({
         }
     };
 
-    return (
+   return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-5xl h-[80vh] bg-black border-gray-800 text-white p-0 overflow-hidden">
+            <DialogContent className="max-w-5xl h-[70vh] bg-black border border-gray-800 text-white p-0 overflow-hidden rounded-2xl shadow-xl">
                 {/* Mobile: Stacked Layout, Desktop: Side by Side */}
                 <div className="h-full flex flex-col lg:flex-row">
-                    {/* Video Section */}
-                    <div className="flex-1 lg:flex-[2] bg-black relative">
+
+                    {/* Video Section (60%) */}
+                    <div className="flex-1 lg:flex-[3] bg-black relative">
                         {artist && (
                             <>
-                                {/* Mobile Header - Show artist info over video on small screens */}
+                                {/* Mobile Header */}
                                 <div className="lg:hidden absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/80 via-black/60 to-transparent p-4">
                                     <DialogHeader>
                                         <DialogTitle className="text-xl font-bold text-white">
                                             {artist.artist_name}
                                         </DialogTitle>
                                         <DialogDescription className="text-gray-300 text-sm">
-                                            {artist.artist_genre} {artist.artist_home && `• ${artist.artist_home}`}
+                                            {artist.artist_genre}{" "}
+                                            {artist.artist_home && `• ${artist.artist_home}`}
                                         </DialogDescription>
                                     </DialogHeader>
                                 </div>
-                                
-                                <ArtistVideoPlayer
-                                    artist={artist}
-                                    isEmbed={true}
-                                />
+
+                                <ArtistVideoPlayer artist={artist} isEmbed={true} />
                             </>
                         )}
                     </div>
 
-                    {/* Rating Section */}
-                    <div className="flex-1 lg:flex-[1] bg-gradient-to-br from-gray-900 via-gray-800 to-black border-t lg:border-t-0 lg:border-l border-gray-700">
+                    {/* Rating Section (40%) */}
+                    <div className="flex-1 lg:flex-[2] bg-gradient-to-br from-gray-900 via-gray-800 to-black border-t lg:border-t-0 lg:border-l border-gray-700 flex flex-col">
                         {artist && user ? (
                             <>
-                                {/* Desktop Header - Hidden on mobile since it's shown over video */}
-                                <div className="hidden lg:block p-6 border-b border-gray-700">
+                                {/* Desktop Header */}
+                                <div className="hidden lg:block px-6 py-4 border-b border-gray-700">
                                     <DialogHeader>
                                         <DialogTitle className="text-2xl font-bold text-white">
                                             {artist.artist_name}
                                         </DialogTitle>
                                         <DialogDescription className="text-gray-400 mt-1">
-                                            {artist.artist_genre} {artist.artist_home && `• ${artist.artist_home}`}
+                                            {artist.artist_genre}{" "}
+                                            {artist.artist_home && `• ${artist.artist_home}`}
                                         </DialogDescription>
                                     </DialogHeader>
                                 </div>
 
                                 {/* Rating Component */}
-                                <div className="h-full lg:h-[calc(100%-120px)]">
-                                    <QuadrantRating
-                                        onSubmit={handleRatingSubmit}
-                                        artistName={artist.artist_name}
-                                        artistId={artist.id}
-                                        userId={user.id}
-                                        alreadyRated={alreadyRated}
-                                        checkingRating={checkingRating}
-                                    />
+                                <div className="flex-1 flex items-center justify-center px-6 py-6">
+                                    <div className="w-full max-w-md">
+                                        <QuadrantRating
+                                            onSubmit={handleRatingSubmit}
+                                            artistName={artist.artist_name}
+                                            artistId={artist.id}
+                                            userId={user.id}
+                                            alreadyRated={alreadyRated}
+                                            checkingRating={checkingRating}
+                                        />
+                                    </div>
                                 </div>
                             </>
                         ) : artist && !user ? (
-                            <div className="flex flex-col justify-center items-center h-full p-6">
-                                <div className="text-center">
-                                    <h3 className="text-xl font-bold text-white mb-3">
-                                        Sign In Required
-                                    </h3>
-                                    <p className="text-gray-400">
-                                        Please sign in to rate artists and earn points
-                                    </p>
-                                </div>
+                            <div className="flex flex-col justify-center items-center h-full p-8 text-center space-y-4">
+                                <h3 className="text-xl font-bold text-white">Sign In Required</h3>
+                                <p className="text-gray-400">
+                                    Please sign in to rate artists and earn points
+                                </p>
                             </div>
                         ) : (
-                            <div className="flex flex-col justify-center items-center h-full p-6">
-                                <div className="text-center">
-                                    <h3 className="text-xl font-bold text-white mb-3">
-                                        Loading...
-                                    </h3>
-                                    <p className="text-gray-400">
-                                        Preparing artist information
-                                    </p>
-                                </div>
+                            <div className="flex flex-col justify-center items-center h-full p-8 text-center space-y-4">
+                                <h3 className="text-xl font-bold text-white">Loading...</h3>
+                                <p className="text-gray-400">Preparing artist information</p>
                             </div>
                         )}
                     </div>
@@ -166,4 +158,10 @@ export function ArtistInteractionModal({
             </DialogContent>
         </Dialog>
     );
+
+ 
+ 
+ 
+
+
 }
