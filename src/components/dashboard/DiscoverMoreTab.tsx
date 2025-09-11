@@ -42,7 +42,7 @@ export default function DiscoverMoreTab() {
                 </Link>
 
                 {/* Global Vibes Chart */}
-                <Link href="/vibes" className="block group">
+                <Link href="/discovery-dashboard" className="block group">
                     <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 rounded-xl md:rounded-2xl p-4 md:p-6 border border-purple-500/30 hover:border-purple-400/50 transition-all hover:scale-[1.02] cursor-pointer backdrop-blur-sm">
                         <div className="flex items-center gap-3 md:gap-6">
                             <div className="w-14 md:w-20 h-14 md:h-20 rounded-xl md:rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center group-hover:from-purple-400 group-hover:to-indigo-400 transition-all shadow-lg shadow-purple-500/25 flex-shrink-0">
