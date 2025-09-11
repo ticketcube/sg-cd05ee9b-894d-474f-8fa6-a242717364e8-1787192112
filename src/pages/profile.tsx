@@ -23,16 +23,14 @@ interface EventInterest {
 function ProfilePageContent() {
     const { user, profile, loading: profileLoading } = useUserProfile();
     const [eventInterests, setEventInterests] = useState<EventInterest[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (profileLoading) return;
-        if (user && profile) {
+        // Since AppLayout ensures user is authenticated, fetch data when profile is ready
+        if (user && profile && !profileLoading) {
             fetchEventInterests();
-        } else {
-            setLoading(false);
         }
     }, [user, profile, profileLoading]);
 
@@ -124,8 +122,8 @@ function ProfilePageContent() {
         });
     };
 
-    // Loading state while profile data loads
-    if (profileLoading || loading) {
+    // Show loading only while profile is being loaded initially
+    if (profileLoading) {
         return (
             <div className="flex-1 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex items-center justify-center min-h-[60vh]">
                 <div className="text-center">
@@ -136,33 +134,35 @@ function ProfilePageContent() {
         );
     }
 
-    // Error state for profile-specific errors
-    if (error) {
+    // Error state for event loading
+    if (error && !loading) {
         return (
-            <div className="flex-1 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex items-center justify-center min-h-[60vh]">
-                <div className="text-center max-w-md mx-auto p-6">
-                    <div className="w-16 h-16 rounded-full bg-red-900/20 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
-                        <AlertCircle className="w-8 h-8 text-red-400" />
+            <div className="flex-1 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
+                <div className="max-w-4xl mx-auto px-4 py-6">
+                    <div className="text-center max-w-md mx-auto p-6">
+                        <div className="w-16 h-16 rounded-full bg-red-900/20 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+                            <AlertCircle className="w-8 h-8 text-red-400" />
+                        </div>
+                        <h1 className="text-xl font-bold text-red-400 mb-4">Error Loading Data</h1>
+                        <p className="text-neutral-300 mb-6">{error}</p>
+                        <Button 
+                            onClick={() => {
+                                setError(null);
+                                fetchEventInterests();
+                            }}
+                            variant="outline"
+                            className="px-6 py-2 border-neutral-600 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        >
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Try Again
+                        </Button>
                     </div>
-                    <h1 className="text-xl font-bold text-red-400 mb-4">Profile Error</h1>
-                    <p className="text-neutral-300 mb-6">{error}</p>
-                    <Button 
-                        onClick={() => {
-                            setError(null);
-                            fetchEventInterests();
-                        }}
-                        variant="outline"
-                        className="px-6 py-2 border-neutral-600 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-                    >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Try Again
-                    </Button>
                 </div>
             </div>
         );
     }
 
-    // Main profile content (user and profile are guaranteed to exist here)
+    // Main profile content - user and profile are guaranteed by AppLayout
     return (
         <div className="flex-1 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
             <div className="max-w-4xl mx-auto px-4 py-6">
@@ -263,7 +263,12 @@ function ProfilePageContent() {
                         </p>
                     </CardHeader>
                     <CardContent>
-                        {eventInterests.length > 0 ? (
+                        {loading ? (
+                            <div className="text-center py-8">
+                                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                <p className="text-neutral-400">Loading events...</p>
+                            </div>
+                        ) : eventInterests.length > 0 ? (
                             <div className="rounded-lg border border-neutral-600/50 overflow-hidden">
                                 <Table>
                                     <TableHeader>
