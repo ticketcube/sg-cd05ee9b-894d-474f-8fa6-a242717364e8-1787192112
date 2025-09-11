@@ -16,7 +16,7 @@ export default function DiscoverMoreTab() {
 
             <div className="grid gap-4 md:gap-6">
                 {/* Weekly Featured Artists */}
-                <Link href="/weekly-ratings" className="block group">
+                <Link href="/september/rewards" className="block group">
                     <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl md:rounded-2xl p-4 md:p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-105 cursor-pointer backdrop-blur-sm">
                         <div className="flex items-center gap-3 md:gap-6">
                             <div className="w-14 md:w-20 h-14 md:h-20 rounded-xl md:rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center group-hover:from-green-400 group-hover:to-emerald-400 transition-all shadow-lg shadow-green-500/25 flex-shrink-0">
