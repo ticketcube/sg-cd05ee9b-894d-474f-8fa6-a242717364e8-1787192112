@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import AppLayout from '@/components/layout/AppLayout';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import SeptemberArtistGrid from '@/components/september/SeptemberArtistGrid';
@@ -15,11 +14,11 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function SeptemberRewardsPage() {
     const { profile, loading: profileLoading, isAuthenticated } = useUserProfile();
-    const [enrichedLists, setEnrichedLists] = useState <EnrichedWeeklyList[]> ([]);
+    const [enrichedLists, setEnrichedLists] = useState<EnrichedWeeklyList[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState < string | null > (null);
-    const [selectedArtist, setSelectedArtist] = useState < EnrichedWeeklyListArtist | null > (null);
-    const [selectedListId, setSelectedListId] = useState < number | null > (null);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedArtist, setSelectedArtist] = useState<EnrichedWeeklyListArtist | null>(null);
+    const [selectedListId, setSelectedListId] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     const { toast } = useToast();
@@ -60,11 +59,9 @@ export default function SeptemberRewardsPage() {
     };
 
     const handleArtistSelect = (artist: EnrichedWeeklyListArtist, listId: number) => {
-        console.log("STEP 1: Artist object received by handleArtistSelect:", artist);
-
-        console.log("🎤 Artist selected:", artist);
+        console.log("🎤 Artist selected:", artist, "from list:", listId);
         setSelectedArtist(artist);
-        setSelectedListId(listId); 
+        setSelectedListId(listId);
         setIsModalOpen(true);
     };
 
@@ -132,7 +129,7 @@ export default function SeptemberRewardsPage() {
                             <p className="text-muted-foreground mb-6">{list.description}</p>
                             <SeptemberArtistGrid
                                 artists={list.artists}
-                               (artist) => handleArtistSelect(artist, list.id)}
+                                onArtistSelect={(artist) => handleArtistSelect(artist, list.id)}
                             />
                         </div>
                     );
@@ -166,6 +163,5 @@ export default function SeptemberRewardsPage() {
                 onRatingComplete={handleRatingComplete}
             />
           </>
-
     );
 }
