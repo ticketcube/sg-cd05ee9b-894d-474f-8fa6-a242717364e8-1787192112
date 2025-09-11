@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { pointsConfigService } from "@/services/pointsConfigService";
+import { ENGAGEMENT_TYPES } from "@/constants/engagementTypes";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -25,44 +26,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // 3. Fetch points configuration for 'video_view'
-    const config = await pointsConfigService.getConfigForAction('video_view');
+    const config = await pointsConfigService.getConfigForAction(ENGAGEMENT_TYPES.VIDEO_VIEW);
     if (!config || !config.is_active) {
       return res.status(200).json({ pointsEarned: 0, message: "This action is currently not awarding points." });
     }
     const pointsToAward = config.points_value;
 
     // 4. Check for existing engagement for this specific user, artist, and list
-    const { data: existingEngagement, error: checkError } = await supabaseAdmin
-      .from('user_engagements')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('artist_id', artistId)
-      .eq('list_id', listId)
-      .eq('engagement_type', 'video_view')
-      .gt('points_earned', 0) // Only count if they actually earned points
-      .limit(1);
+    const { data: existingWatch, error: selectError } = await supabaseAdmin
+            .from('video_watches')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('artist_id', artistId)
+            .eq('weekly_list_id', listId)
+            .single();
 
-    if (checkError) {
-      console.error('Error checking for existing engagement:', checkError);
+    if (selectError && selectError.code !== 'PGRST116') { // Ignore 'range not satisfiable' error
+      console.error('Error checking for existing engagement:', selectError);
       return res.status(500).json({ error: "Database error while checking eligibility." });
     }
 
-    if (existingEngagement && existingEngagement.length > 0) {
+    if (existingWatch) {
       return res.status(200).json({ pointsEarned: 0, message: "You have already earned points for this video." });
     }
 
     // 5. If eligible, insert the new engagement record
-    const { error: insertError } = await supabaseAdmin.from('user_engagements').insert({
-      user_id: user.id,
-      artist_id: artistId,
-      list_id: listId,
-      engagement_type: 'video_view',
-      points_earned: pointsToAward,
-      metadata: { watch_complete: true } // Simplified metadata
-    });
+    const { data, error } = await supabaseAdmin
+            .from('video_watches')
+            .insert({
+                user_id: user.id,
+                artist_id: artistId,
+                weekly_list_id: listId,
+                points_earned: pointsToAward,
+            })
+            .select();
 
-    if (insertError) {
-      console.error('Error inserting engagement record:', insertError);
+    if (error) {
+      console.error('Error inserting engagement record:', error);
       return res.status(500).json({ error: "Failed to record your engagement." });
     }
 
