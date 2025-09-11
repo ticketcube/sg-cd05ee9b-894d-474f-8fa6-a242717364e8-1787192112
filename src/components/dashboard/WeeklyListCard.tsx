@@ -135,7 +135,7 @@ export default function WeeklyListCard() {
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <PlayCircle className="w-8 h-8 text-white drop-shadow-lg" />
                   </div>
-                  <div className="absolute bottom-2 left-2 right-2">
+                      <div className="absolute bottom-2 justify-center">
                     <p className="text-white text-xs font-semibold truncate drop-shadow-md">
                       {artist.artist_name || 'Unknown Artist'}
                     </p>
