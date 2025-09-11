@@ -78,8 +78,8 @@ export default async function handler(
         artist_name,
         artist_genre,
         artist_home,
-        artist_image_url,
-        youtube_url
+        artist_image,
+        artist_videolink
       `)
       .in('uuid', artistUuids);
 

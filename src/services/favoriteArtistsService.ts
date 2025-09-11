@@ -5,8 +5,8 @@ export interface FavoriteArtist {
   artist_name: string;
   artist_genre: string;
   artist_home: string;
-  artist_image_url: string | null;
-  youtube_url: string | null;
+  artist_image: string | null;
+  artist_videolink: string | null;
   engagementCount: number;
 }
 
