@@ -149,17 +149,7 @@ export default function WeeklyListCard() {
               ))}
             </div>
 
-            {/* Show more indicator if there are more artists */}
-            {totalArtists > 12 && (
-              <div className="flex justify-center">
-                <Badge 
-                  variant="secondary" 
-                  className="bg-neutral-100 text-neutral-600 border-neutral-200"
-                >
-                  +{totalArtists - 12} more artists to discover
-                </Badge>
-              </div>
-            )}
+          
 
             {/* Call to Action */}
             <div className="flex justify-center pt-4">
