@@ -47,9 +47,9 @@ export function ArtistInteractionModal({
                 .eq('user_id', user.id)
                 .eq('artist_id', artist.id)
                 .eq('engagement_type', 'quadrant')
-                .limit(1);
+                .maybeSingle();
 
-            setAlreadyRated(data ? data.length > 0 : false);
+            setAlreadyRated(!!data);
             setCheckingRating(false);
         };
 
