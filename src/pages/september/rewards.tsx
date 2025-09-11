@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
@@ -94,7 +93,8 @@ export default function SeptemberRewardsPage() {
                     description: `Your feedback is appreciated.`,
                 });
             }
-            setIsModalOpen(false);
+            // Close the modal after rating is submitted successfully
+            handleModalClose();
         } catch (error) {
             console.error("❌ Failed to submit rating:", error);
             toast({
@@ -102,8 +102,22 @@ export default function SeptemberRewardsPage() {
                 title: "Error",
                 description: "Failed to submit rating. You may have already rated this artist.",
             });
+            // Still close the modal even if there's an error
+            handleModalClose();
         }
     };
+
+    // --- FIX: Centralized function to close modal and reset state ---
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+        // Delay resetting the artist to prevent content from disappearing before the modal finishes its closing animation
+        setTimeout(() => {
+            setSelectedArtist(null);
+            setSelectedListId(null);
+        }, 300); // 300ms is a safe delay for most modal animations
+    };
+    // --- END FIX ---
+
 
     const renderContent = () => {
         console.log("🎬 Rendering content", { loading, profileLoading, error, enrichedLists });
@@ -155,11 +169,12 @@ export default function SeptemberRewardsPage() {
                 </div>
                 {renderContent()}
             </div>
+            {/* FIX: Pass the new handleModalClose function to the onClose prop */}
             <ArtistInteractionModal
                 artist={selectedArtist}
                 listId={selectedListId}
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={handleModalClose}
                 onRatingComplete={handleRatingComplete}
             />
           </>
