@@ -164,7 +164,7 @@ export default function SeptemberRewardsPage() {
                     console.log("🎨 Rendering list:", list);
                     return (
                         <div key={list.id} className="mb-12">
-                            <h2 className="text-3xl font-bold tracking-tight mb-4">{list.name}</h2>
+                            <h2 className="text-3xl font-bold tracking-tight mb-4">{list.list_name}</h2>
                             <p className="text-muted-foreground mb-6">{list.description}</p>
                             <SeptemberArtistGrid
                                 artists={list.artists}

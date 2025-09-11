@@ -1,3 +1,4 @@
+
 // types/artist.ts
 import type { Database } from "@/integrations/supabase/types";
 
@@ -12,7 +13,7 @@ export interface ArtistWithVotes extends Artist {
 // Artist with guaranteed vibes (nulls eliminated for UI display)
 export interface VibeArtist extends Artist {
     primary_vibe: string;        // override to non-null
-    secondary_vibe?: string;     // make optional instead of nullable
+    secondary_vibe: string;     // make this non-null as well, assuming it's required for vibe artists
 }
 
 // For frontend event rendering
