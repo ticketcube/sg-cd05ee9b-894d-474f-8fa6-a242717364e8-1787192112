@@ -76,8 +76,8 @@ export default async function handler(
     // Award 25 points using the increment function
     const { error: pointsError } = await supabaseAdmin
       .rpc('increment_user_points', {
-        user_id_in: user.id,
-        points_in: 25
+        user_id: user.id,
+        points_to_add: 25
       });
 
     if (pointsError) {
