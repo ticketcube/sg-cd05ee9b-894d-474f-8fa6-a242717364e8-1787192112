@@ -15,9 +15,9 @@ interface EventInterest {
 }
 
 function ProfilePageContent() {
-    const { user, profile, loading: profileLoading } = useUserProfile();
-    const [artistEngagements, setArtistEngagements] = useState<any[]> ([]);
-    const [eventInterests, setEventInterests] = useState <EventInterest[]> ([]);
+    const {user, profile, loading: profileLoading } = useUserProfile();
+    const [artistEngagements, setArtistEngagements] = useState<any[]>([]);
+    const [eventInterests, setEventInterests] = useState <EventInterest[]>([]);
     const [loading, setLoading] = useState(false);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [error, setError] = useState<string | null>(null);
