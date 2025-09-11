@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import AppLayout from '@/components/layout/AppLayout';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
