@@ -9,16 +9,47 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Mail, MapPin, Calendar, ExternalLink, Heart, Share2, Ticket, Upload, AlertCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-interface EventInterest {
-  event_name: string;
-  venue_name: string;
-  venue_city: string;
-  event_date: string;
-  event_time: string;
-  event_url: string;
-  want_tickets: number;
-  share_with_friends: number;
-}
+const [artistEngagements, setArtistEngagements] = useState < any[] > ([]);
+
+const fetchArtistEngagements = async () => {
+    try {
+        setLoading(true);
+
+        const { data, error } = await supabase
+            .from("user_engagements")
+            .select("x_quadrant, y_quadrant, artists (artist_name, artist_image)")
+            .eq("user_id", user?.id);
+
+        if (error) throw error;
+
+        // Transform with score + category
+        const transformed = (data || []).map((row: any) => {
+            const score = (row.x_quadrant + row.y_quadrant) / 2; // simple average
+            let category = "Worth Exploring";
+            if (score > 0.7) category = "Top Favorite";
+            else if (score > 0.4) category = "On Your Radar";
+            return {
+                artist_name: row.artists.artist_name,
+                artist_image: row.artists.artist_image,
+                score,
+                category,
+            };
+        }).sort((a, b) => b.score - a.score);
+
+        setArtistEngagements(transformed);
+    } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load artists");
+    } finally {
+        setLoading(false);
+    }
+};
+
+useEffect(() => {
+    if (user && profile && !profileLoading) {
+        fetchArtistEngagements();
+    }
+}, [user, profile, profileLoading]);
+
 
 function ProfilePageContent() {
     const { user, profile, loading: profileLoading } = useUserProfile();
@@ -251,108 +282,80 @@ function ProfilePageContent() {
                     </Card>
                 </div>
 
-                {/* Event Interests Section */}
-                <Card className="bg-neutral-800/80 backdrop-blur-sm border-neutral-700/60 shadow-xl hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300">
+              // Inside ProfilePageContent return()
+                <Card className="bg-neutral-800/80 backdrop-blur-sm border-neutral-700/60 shadow-xl hover:shadow-2xl hover:shadow-green-500/10 transition-all duration-300">
                     <CardHeader className="pb-4">
                         <CardTitle className="text-lg md:text-xl text-white flex items-center gap-3">
-                            <Heart className="w-5 h-5 text-red-400" />
-                            My Event Interests
+                            <Heart className="w-5 h-5 text-pink-400" />
+                            My Artist Favorites
                         </CardTitle>
                         <p className="text-sm text-neutral-400">
-                            Events for artists you're interested in • Los Angeles area
+                            Based on your ratings • sorted by strongest interest
                         </p>
                     </CardHeader>
                     <CardContent>
                         {loading ? (
                             <div className="text-center py-8">
-                                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                                <p className="text-neutral-400">Loading events...</p>
+                                <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                <p className="text-neutral-400">Loading your artists...</p>
                             </div>
-                        ) : eventInterests.length > 0 ? (
+                        ) : artistEngagements.length > 0 ? (
                             <div className="rounded-lg border border-neutral-600/50 overflow-hidden">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-neutral-700/50 hover:bg-neutral-700/50">
-                                            <TableHead className="font-semibold text-neutral-200 text-sm">Event</TableHead>
-                                            <TableHead className="font-semibold text-neutral-200 text-sm">Date & Time</TableHead>
-                                            <TableHead className="text-center font-semibold text-neutral-200 text-sm hidden md:table-cell">Interest</TableHead>
-                                            <TableHead className="text-center font-semibold text-neutral-200 text-sm hidden lg:table-cell">Share</TableHead>
-                                            <TableHead className="text-center font-semibold text-neutral-200 text-sm">Action</TableHead>
+                                            <TableHead className="font-semibold text-neutral-200 text-sm">Artist</TableHead>
+                                            <TableHead className="font-semibold text-neutral-200 text-sm text-center">Category</TableHead>
+                                            <TableHead className="font-semibold text-neutral-200 text-sm text-center">Score</TableHead>
+                                            <TableHead className="font-semibold text-neutral-200 text-sm text-center">Action</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {eventInterests.map((event, index) => (
+                                        {artistEngagements.map((artist, index) => (
                                             <TableRow key={index} className="hover:bg-neutral-700/30 transition-colors border-b border-neutral-600/30">
-                                                <TableCell className="font-medium">
-                                                    <div>
-                                                        <p className="text-white font-semibold text-sm">
-                                                            {event.event_name}
-                                                        </p>
-                                                        <p className="text-xs text-neutral-400 mt-1">
-                                                            {event.venue_name}
-                                                        </p>
-                                                    </div>
+                                                {/* Artist Avatar + Name */}
+                                                <TableCell className="flex items-center gap-3 py-3">
+                                                    <Avatar className="w-10 h-10 border border-neutral-600">
+                                                        {artist.artist_image ? (
+                                                            <img src={artist.artist_image} alt={artist.artist_name} className="w-full h-full object-cover rounded-full" />
+                                                        ) : (
+                                                            <AvatarFallback>{artist.artist_name.charAt(0).toUpperCase()}</AvatarFallback>
+                                                        )}
+                                                    </Avatar>
+                                                    <span className="text-white font-medium">{artist.artist_name}</span>
                                                 </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-start gap-2">
-                                                        <Calendar className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                                                        <div>
-                                                            <p className="text-sm font-medium text-neutral-200">
-                                                                {formatDate(event.event_date)}
-                                                            </p>
-                                                            {event.event_time && (
-                                                                <p className="text-xs text-neutral-400">
-                                                                    {formatTime(event.event_time)}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-center hidden md:table-cell">
-                                                    <Badge 
-                                                        className={`${
-                                                            event.want_tickets > 0 
-                                                                ? 'bg-green-900/40 text-green-300 border-green-600/40 hover:bg-green-900/60' 
-                                                                : 'bg-neutral-800/60 text-neutral-400 border-neutral-600/40'
-                                                        } text-xs px-2 py-1`}
+
+                                                {/* Friendly Category */}
+                                                <TableCell className="text-center">
+                                                    <Badge
+                                                        className={
+                                                            artist.category === "Top Favorite"
+                                                                ? "bg-green-900/40 text-green-300 border-green-600/40"
+                                                                : artist.category === "On Your Radar"
+                                                                    ? "bg-blue-900/40 text-blue-300 border-blue-600/40"
+                                                                    : "bg-neutral-700/60 text-neutral-300 border-neutral-600/40"
+                                                        }
                                                         variant="outline"
+                                                    >
+                                                        {artist.category}
+                                                    </Badge>
+                                                </TableCell>
+
+                                                {/* Score visualization */}
+                                                <TableCell className="text-center text-neutral-300">
+                                                    {(artist.score * 100).toFixed(0)}%
+                                                </TableCell>
+
+                                                {/* Ticket button (popup placeholder) */}
+                                                <TableCell className="text-center">
+                                                    <Button
+                                                        size="sm"
+                                                        className="bg-pink-600 hover:bg-pink-700 text-white px-3 py-1 text-xs h-8 shadow-lg hover:shadow-pink-500/20"
+                                                        onClick={() => alert("Coming Soon 🚀")}
                                                     >
                                                         <Ticket className="w-3 h-3 mr-1" />
-                                                        {event.want_tickets > 0 ? 'Interested' : 'Not interested'}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-center hidden lg:table-cell">
-                                                    <Badge 
-                                                        className={`${
-                                                            event.share_with_friends > 0 
-                                                                ? 'bg-blue-900/40 text-blue-300 border-blue-600/40 hover:bg-blue-900/60' 
-                                                                : 'bg-neutral-800/60 text-neutral-400 border-neutral-600/40'
-                                                        } text-xs px-2 py-1`}
-                                                        variant="outline"
-                                                    >
-                                                        <Share2 className="w-3 h-3 mr-1" />
-                                                        {event.share_with_friends > 0 ? 'Will share' : 'Won\'t share'}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    {event.event_url && (
-                                                        <Button
-                                                            asChild
-                                                            size="sm"
-                                                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-xs h-8 shadow-lg hover:shadow-blue-500/20 transition-all"
-                                                        >
-                                                            <a 
-                                                                href={event.event_url} 
-                                                                target="_blank" 
-                                                                rel="noopener noreferrer"
-                                                                className="flex items-center gap-1"
-                                                            >
-                                                                <span className="hidden sm:inline">Get Tickets</span>
-                                                                <span className="sm:hidden">Tickets</span>
-                                                                <ExternalLink className="w-3 h-3" />
-                                                            </a>
-                                                        </Button>
-                                                    )}
+                                                        Tickets
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -364,15 +367,15 @@ function ProfilePageContent() {
                                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-neutral-700 to-neutral-800 border border-neutral-600 flex items-center justify-center mx-auto mb-6 shadow-lg">
                                     <Heart className="w-8 h-8 text-neutral-400" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-white mb-2">No events found</h3>
+                                <h3 className="text-lg font-semibold text-white mb-2">No artists rated yet</h3>
                                 <p className="text-neutral-400 max-w-sm mx-auto">
-                                    We couldn't find any events for your favorite artists in Los Angeles right now. Check back soon!
+                                    Rate some artists to see your personalized favorites here!
                                 </p>
                             </div>
                         )}
                     </CardContent>
                 </Card>
-            </div>
+
         </div>
     );
 }
