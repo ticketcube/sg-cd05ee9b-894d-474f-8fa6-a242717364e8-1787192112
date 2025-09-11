@@ -46,7 +46,7 @@ export function ArtistInteractionModal({
                     .eq('user_id', user.id)
                     .eq('artist_id', artist.id)
                     .eq('engagement_type', 'quadrant')
-                    .limit(1);
+                    .limit(1) as any;
 
                 if (error) {
                     console.error('Error checking rating:', error);
