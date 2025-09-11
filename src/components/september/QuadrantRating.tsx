@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Timer } from 'lucide-react';
@@ -12,13 +13,13 @@ interface QuadrantRatingProps {
 }
 
 export function QuadrantRating({ onSubmit, artistName, artistId, userId }: QuadrantRatingProps) {
-    const [ticketInterest, setTicketInterest] = useState(50);
-    const [shareInterest, setShareInterest] = useState(50);
-    const [timeRemaining, setTimeRemaining] = useState(15);
-    const [hasMovedSliders, setHasMovedSliders] = useState(false);
-    const [canSubmit, setCanSubmit] = useState(false);
-    const [alreadyRated, setAlreadyRated] = useState(false);
-    const [checkingRating, setCheckingRating] = useState(true);
+    const [ticketInterest, setTicketInterest] = useState<number>(50);
+    const [shareInterest, setShareInterest] = useState<number>(50);
+    const [timeRemaining, setTimeRemaining] = useState<number>(15);
+    const [hasMovedSliders, setHasMovedSliders] = useState<boolean>(false);
+    const [canSubmit, setCanSubmit] = useState<boolean>(false);
+    const [alreadyRated, setAlreadyRated] = useState<boolean>(false);
+    const [checkingRating, setCheckingRating] = useState<boolean>(true);
 
     // Check if user has already rated this artist
     useEffect(() => {
