@@ -3,7 +3,7 @@ import { Compass, Gift, Settings } from "lucide-react";
 
 interface TabNavigationProps {
     activeTab: string;
-    setActiveTab: (tab: "discover" | "rewards" | "staff") => void;
+    setActiveTab: (tab: "rewards" | "staff") => void;
     role: string | null;
 }
 
