@@ -8,7 +8,7 @@ import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import  SeptemberArtistGrid  from '@/components/september/SeptemberArtistGrid';
 import { ArtistInteractionModal } from '@/components/september/ArtistInteractionModal';
 import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
-import { septemberRewardsService } from '@/services/septemberRewardsService';
+import { getActiveEnrichedWeeklyLists } from '@/services/septemberRewardsService';
 import { userEngagementService } from '@/services/userEngagementService';
 import { EngagementType } from '@/constants/engagementTypes';
 import { useToast } from '@/hooks/use-toast';
