@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Timer } from 'lucide-react';
@@ -17,94 +17,63 @@ export function QuadrantRating({ onSubmit, artistName, artistId, userId }: Quadr
     const [shareInterest, setShareInterest] = useState(50);
     const [timeRemaining, setTimeRemaining] = useState(15);
     const [hasMovedSliders, setHasMovedSliders] = useState(false);
-    const [canSubmit, setCanSubmit] = useState(false);
     const [alreadyRated, setAlreadyRated] = useState(false);
     const [checkingRating, setCheckingRating] = useState(true);
 
-    // Check if user has already rated this artist
+    // Check if already rated
     useEffect(() => {
-        const checkExistingRating = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('user_engagements')
-                    .select('id')
-                    .eq('user_id', userId)
-                    .eq('artist_id', artistId)
-                    .eq('engagement_type', 'quadrant_rating')
-                    .gt('points_earned', 0)
-                    .limit(1);
+        const checkRating = async () => {
+            const { data } = await supabase
+                .from('user_engagements')
+                .select('id')
+                .eq('user_id', userId)
+                .eq('artist_id', artistId)
+                .eq('engagement_type', 'quadrant_rating')
+                .gt('points_earned', 0)
+                .limit(1);
 
-                if (error) {
-                    console.error('Error checking existing rating:', error);
-                    setAlreadyRated(false);
-                } else {
-                    setAlreadyRated(Boolean(data && data.length > 0));
-                }
-            } catch (error) {
-                console.error('Error checking existing rating:', error);
-                setAlreadyRated(false);
-            } finally {
-                setCheckingRating(false);
-            }
+            setAlreadyRated(data ? data.length > 0 : false);
+            setCheckingRating(false);
         };
 
-        if (userId && artistId) {
-            checkExistingRating();
-        }
-    }, [userId, artistId]);
+        checkRating();
+    }, []);
 
-    // Timer countdown effect
+    // Simple timer
     useEffect(() => {
-        if (alreadyRated) {
-            return;
+        if (timeRemaining > 0 && !alreadyRated) {
+            const timer = setTimeout(() => {
+                setTimeRemaining(timeRemaining - 1);
+            }, 1000);
+            return () => clearTimeout(timer);
         }
+    });
 
-        if (timeRemaining <= 0) {
-            setCanSubmit(true);
-            return;
-        }
-
-        const timer = setTimeout(() => {
-            setTimeRemaining(timeRemaining - 1);
-        }, 1000);
-
-        return () => clearTimeout(timer);
-    }, [timeRemaining, alreadyRated]);
-
-    // Handle slider movement
-    const handleTicketChange = useCallback((value: number[]) => {
+    const handleTicketChange = (value: number[]) => {
         if (alreadyRated) return;
         setTicketInterest(value[0]);
         setHasMovedSliders(true);
-        if (timeRemaining <= 0) {
-            setCanSubmit(true);
-        }
-    }, [alreadyRated, timeRemaining]);
+    };
 
-    const handleShareChange = useCallback((value: number[]) => {
+    const handleShareChange = (value: number[]) => {
         if (alreadyRated) return;
         setShareInterest(value[0]);
         setHasMovedSliders(true);
-        if (timeRemaining <= 0) {
-            setCanSubmit(true);
-        }
-    }, [alreadyRated, timeRemaining]);
+    };
 
-    const handleRatingSubmit = useCallback(() => {
+    const handleSubmit = () => {
         if (alreadyRated) return;
         
-        // Convert slider values (0-100) to quadrant coordinates (-1 to 1)
         const x = (shareInterest - 50) / 50;
         const y = (ticketInterest - 50) / 50;
-
         onSubmit({ x, y });
-    }, [alreadyRated, shareInterest, ticketInterest, onSubmit]);
+    };
 
     if (checkingRating) {
         return (
             <div className="flex flex-col justify-center h-full">
                 <h3 className="text-lg font-semibold mb-2">Rate {artistName}</h3>
-                <p className="text-sm text-muted-foreground mb-6">Checking rating status...</p>
+                <p className="text-sm text-muted-foreground mb-6">Loading...</p>
             </div>
         );
     }
@@ -113,7 +82,7 @@ export function QuadrantRating({ onSubmit, artistName, artistId, userId }: Quadr
         return (
             <div className="flex flex-col justify-center h-full">
                 <h3 className="text-lg font-semibold mb-2">Rate {artistName}</h3>
-                <p className="text-sm text-muted-foreground mb-6">You've already earned points for rating this artist!</p>
+                <p className="text-sm text-muted-foreground mb-6">Already rated!</p>
                 <Button 
                     className="mt-8 w-full bg-gray-500 hover:bg-gray-500"
                     disabled={true}
@@ -124,14 +93,8 @@ export function QuadrantRating({ onSubmit, artistName, artistId, userId }: Quadr
         );
     }
 
+    const canSubmit = timeRemaining <= 0 && hasMovedSliders;
     const isTimerActive = timeRemaining > 0;
-    const buttonText = isTimerActive 
-        ? `Watch video for ${timeRemaining} seconds then rate artist`
-        : canSubmit 
-            ? "Submit Rating" 
-            : hasMovedSliders 
-                ? "Submit Rating" 
-                : "Move sliders to submit rating";
 
     return (
         <div className="flex flex-col justify-center h-full">
@@ -169,12 +132,17 @@ export function QuadrantRating({ onSubmit, artistName, artistId, userId }: Quadr
             </div>
 
             <Button 
-                onClick={handleRatingSubmit} 
+                onClick={handleSubmit} 
                 className="mt-8 w-full"
-                disabled={!canSubmit && !hasMovedSliders}
+                disabled={!canSubmit}
             >
                 {isTimerActive && <Timer className="w-4 h-4 mr-2" />}
-                {buttonText}
+                {isTimerActive 
+                    ? `Watch video for ${timeRemaining} seconds then rate artist`
+                    : canSubmit 
+                        ? "Submit Rating" 
+                        : "Move sliders to submit rating"
+                }
             </Button>
         </div>
     );
