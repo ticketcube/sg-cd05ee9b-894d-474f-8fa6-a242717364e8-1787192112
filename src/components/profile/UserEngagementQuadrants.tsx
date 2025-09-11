@@ -70,18 +70,18 @@ export function UserEngagementQuadrants() {
       // Transform the data to match our interface
       const transformedData = data
         .map(item => {
-          const artist = item.artists;
-          
+          const artist: { uuid: string, artist_name: string, artist_image: string | null } | null | any[] = item.artists as any;
+
           // Handle case where artist lookup fails
-          if (!artist || typeof artist === 'string') {
+          if (!artist) {
             console.warn('Artist lookup failed for engagement:', item);
             return null;
           }
 
           // Handle array case (shouldn't happen with single artist lookup, but being safe)
           const artistData = Array.isArray(artist) ? artist[0] : artist;
-          
-          if (!artistData || typeof artistData === 'string') {
+
+          if (!artistData || typeof artistData !== 'object' || !('uuid' in artistData)) {
             console.warn('Invalid artist data:', artistData);
             return null;
           }

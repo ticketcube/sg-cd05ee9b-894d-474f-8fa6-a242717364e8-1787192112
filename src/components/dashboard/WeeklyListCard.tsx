@@ -102,7 +102,7 @@ export default function WeeklyListCard() {
                     This Week's Artists
                   </CardTitle>
                   <p className="text-neutral-600 font-medium">
-                    Week of {new Date(latestWeek.week_start_date).toLocaleDateString('en-US', { 
+                    Week of {new Date(latestWeek.start_date).toLocaleDateString('en-US', { 
                       month: 'short', 
                       day: 'numeric',
                       year: 'numeric'
