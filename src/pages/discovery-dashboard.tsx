@@ -47,7 +47,6 @@ const DiscoveryDashboard = () => {
                 historyLoading={false} // Placeholder
                 total_points={profile.total_points || 0}
                 totalVotes={0} // Placeholder
-                totalVideos={0} // Placeholder
                 weeksActive={1} // Placeholder
             />
            
