@@ -23,7 +23,7 @@ export default function DiscoverMoreTab() {
                             <div className="flex-1 min-w-0">
                                 <h3 className="font-bold text-white text-lg md:text-xl group-hover:text-green-300 transition-colors mb-1 md:mb-2">Weekly Featured Artists</h3>
                                 <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">Watch & Rate emerging artists and earn points for each discovery</p>
-                                <Badge variant="outline" className="border-orange-500 text-orange-400 px-2 md:px-3 py-1 text-xs md:text-sm">10 points per rating</Badge>
+                            
                             </div>
                         </div>
                     </div>
