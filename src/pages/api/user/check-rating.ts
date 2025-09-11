@@ -14,20 +14,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { data, error } = await supabaseAdmin
-      .from('user_engagements')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('artist_id', artistId)
-      .eq('engagement_type', engagementType)
-      .limit(1);
+    // Use raw SQL query to avoid complex type inference
+    const { data, error } = await supabaseAdmin.rpc('check_user_engagement', {
+      p_user_id: userId,
+      p_artist_id: artistId,
+      p_engagement_type: engagementType
+    });
 
     if (error) {
       console.error('Error checking rating:', error);
       return res.status(500).json({ error: 'Database error' });
     }
 
-    return res.status(200).json({ hasRated: data && data.length > 0 });
+    return res.status(200).json({ hasRated: data || false });
   } catch (error) {
     console.error('Error checking rating:', error);
     return res.status(500).json({ error: 'Internal server error' });
