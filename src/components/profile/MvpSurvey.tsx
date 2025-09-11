@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -104,9 +105,9 @@ export function MvpSurvey() {
 
   if (loading) {
     return (
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/60 shadow-lg shadow-blue-900/5">
+      <Card className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-neutral-700 shadow-lg shadow-black/20">
         <CardContent className="flex items-center justify-center p-8">
-          <div className="animate-pulse text-blue-600">Loading survey...</div>
+          <div className="animate-pulse text-neutral-400">Loading survey...</div>
         </CardContent>
       </Card>
     );
@@ -114,23 +115,23 @@ export function MvpSurvey() {
 
   if (isCompleted) {
     return (
-      <Card className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/60 shadow-lg shadow-emerald-900/5">
+      <Card className="bg-gradient-to-br from-emerald-900/60 to-green-900/60 border border-emerald-700/60 shadow-lg shadow-black/20 backdrop-blur-sm">
         <CardHeader className="text-center pb-4">
           <div className="flex justify-center mb-3">
-            <div className="p-3 bg-emerald-500 rounded-full shadow-lg">
+            <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full shadow-lg shadow-emerald-500/20">
               <CheckCircle className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-xl font-semibold text-emerald-800">
+          <CardTitle className="text-xl font-semibold text-emerald-200">
             Survey Completed!
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          <p className="text-emerald-700">
+          <p className="text-emerald-300">
             Thank you for sharing your valuable feedback with us.
           </p>
           <div className="flex justify-center">
-            <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2">
+            <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-4 py-2 shadow-lg">
               +25 Points Earned
             </Badge>
           </div>
@@ -140,18 +141,18 @@ export function MvpSurvey() {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/60 shadow-lg shadow-blue-900/5 hover:shadow-xl hover:shadow-blue-900/10 transition-all duration-500">
+    <Card className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-neutral-700 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-500 hover:-translate-y-1">
       <CardHeader>
-        <CardTitle className="flex items-center gap-3 text-xl font-semibold text-blue-800">
-          <div className="p-2 bg-blue-500 rounded-lg shadow-md">
+        <CardTitle className="flex items-center gap-3 text-xl font-semibold text-white">
+          <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg shadow-md shadow-blue-500/20">
             <Star className="h-5 w-5 text-white" />
           </div>
           MVP Feedback Survey
-          <Badge variant="secondary" className="bg-blue-200/60 text-blue-800 border-blue-300/60">
+          <Badge variant="secondary" className="bg-gradient-to-r from-amber-800/60 to-yellow-800/60 text-amber-200 border-amber-700/50 shadow-sm">
             25 Points
           </Badge>
         </CardTitle>
-        <p className="text-blue-700 text-sm">
+        <p className="text-neutral-300 text-sm">
           Help us improve OTW Chart by sharing your experience and suggestions.
         </p>
       </CardHeader>
@@ -163,15 +164,17 @@ export function MvpSurvey() {
             
             return (
               <div key={question.id} className="space-y-3">
-                <Label className="flex items-center gap-2 text-sm font-medium text-blue-800">
-                  <Icon className="h-4 w-4 text-blue-600" />
+                <Label className="flex items-center gap-2 text-sm font-medium text-neutral-200">
+                  <div className="p-1 bg-neutral-700/60 rounded-md">
+                    <Icon className="h-4 w-4 text-neutral-300" />
+                  </div>
                   {question.question}
                 </Label>
                 <Textarea
                   value={responses[question.id] || ""}
                   onChange={(e) => handleResponseChange(question.id, e.target.value)}
                   placeholder={question.placeholder}
-                  className="min-h-[100px] bg-white/60 border-blue-200/60 focus:border-blue-400 focus:ring-blue-400/20 resize-none"
+                  className="min-h-[100px] bg-neutral-800/60 border-neutral-700/60 text-white placeholder:text-neutral-500 focus:border-blue-500/60 focus:ring-blue-500/20 resize-none hover:bg-neutral-800/80 transition-colors duration-300"
                   required
                 />
               </div>
@@ -182,7 +185,7 @@ export function MvpSurvey() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5"
             >
               {submitting ? (
                 <div className="flex items-center gap-2">
