@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Timer } from 'lucide-react';
-import clsx from 'clsx';
 
 interface QuadrantRatingProps {
     onSubmit: (data: { x: number; y: number }) => void;
@@ -13,25 +12,28 @@ interface QuadrantRatingProps {
     checkingRating: boolean;
 }
 
-export default function QuadrantRating({
-    onSubmit,
-    artistName,
-    artistId,
-    userId,
-    alreadyRated,
-    checkingRating,
+export function QuadrantRating({ 
+    onSubmit, 
+    artistName, 
+    artistId, 
+    userId, 
+    alreadyRated, 
+    checkingRating 
 }: QuadrantRatingProps) {
     const [ticketInterest, setTicketInterest] = useState(50);
     const [shareInterest, setShareInterest] = useState(50);
     const [timeRemaining, setTimeRemaining] = useState(15);
     const [hasMovedSliders, setHasMovedSliders] = useState(false);
 
+    // Simple timer
     useEffect(() => {
         if (timeRemaining > 0 && !alreadyRated) {
-            const timer = setTimeout(() => setTimeRemaining(timeRemaining - 1), 1000);
+            const timer = setTimeout(() => {
+                setTimeRemaining(timeRemaining - 1);
+            }, 1000);
             return () => clearTimeout(timer);
         }
-    }, [timeRemaining, alreadyRated]);
+    });
 
     const handleTicketChange = (value: number[]) => {
         if (alreadyRated) return;
@@ -47,6 +49,7 @@ export default function QuadrantRating({
 
     const handleSubmit = () => {
         if (alreadyRated) return;
+        
         const x = (shareInterest - 50) / 50;
         const y = (ticketInterest - 50) / 50;
         onSubmit({ x, y });
@@ -54,23 +57,23 @@ export default function QuadrantRating({
 
     if (checkingRating) {
         return (
-            <div className="flex flex-col justify-center items-center h-full text-white">
+            <div className="flex flex-col justify-center h-full">
                 <h3 className="text-lg font-semibold mb-2">Rate {artistName}</h3>
-                <p className="text-sm text-gray-400 mb-6">Loading...</p>
+                <p className="text-sm text-muted-foreground mb-6">Loading...</p>
             </div>
         );
     }
 
     if (alreadyRated) {
         return (
-            <div className="flex flex-col justify-center items-center h-full text-white">
+            <div className="flex flex-col justify-center h-full">
                 <h3 className="text-lg font-semibold mb-2">Rate {artistName}</h3>
-                <p className="text-sm text-gray-400 mb-6">Already rated!</p>
-                <Button
-                    className="mt-6 w-full bg-gradient-to-r from-pink-500 to-green-400 text-black font-bold rounded-xl"
-                    disabled
+                <p className="text-sm text-muted-foreground mb-6">Already rated!</p>
+                <Button 
+                    className="mt-8 w-full bg-gray-500 hover:bg-gray-500"
+                    disabled={true}
                 >
-                    ALREADY RATED
+                    ALREADY RATED!
                 </Button>
             </div>
         );
@@ -80,74 +83,52 @@ export default function QuadrantRating({
     const isTimerActive = timeRemaining > 0;
 
     return (
-        <div className="flex flex-col h-full p-4 bg-black rounded-2xl shadow-lg">
-            <h3 className="text-lg font-semibold mb-2 text-white text-center">
-                Rate {artistName}
-            </h3>
-            <p className="text-sm text-gray-400 mb-6 text-center">
-                Rate this artist to earn <span className="text-gradient">10 points!</span>
-            </p>
+        <div className="flex flex-col justify-center h-full">
+            <h3 className="text-lg font-semibold mb-2">Rate {artistName}</h3>
+            <p className="text-sm text-muted-foreground mb-6">Rate this artist to earn 10 points!</p>
 
             <div className="space-y-8">
-                {/* Ticket Interest */}
                 <div>
-                    <label className="text-sm font-medium text-white">
-                        How likely are you to buy a ticket?
-                    </label>
+                    <label className="text-sm font-medium">How likely are you to buy a ticket to their show?</label>
                     <Slider
                         value={[ticketInterest]}
                         onValueChange={handleTicketChange}
+                        className="my-4"
                         disabled={isTimerActive}
-                        className={clsx(
-                            "my-4",
-                            "[&_.track]:bg-gradient-to-r [&_.track]:from-purple-400 [&_.track]:to-green-400",
-                            "[&_.thumb]:bg-white [&_.thumb]:border-2 [&_.thumb]:border-pink-500"
-                        )}
                     />
-                    <div className="flex justify-between text-xs text-gray-400">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Not Likely</span>
                         <span>Very Likely</span>
                     </div>
                 </div>
 
-                {/* Share Interest */}
                 <div>
-                    <label className="text-sm font-medium text-white">
-                        How likely are you to share with a friend?
-                    </label>
+                    <label className="text-sm font-medium">How likely are you to share this with a friend?</label>
                     <Slider
                         value={[shareInterest]}
                         onValueChange={handleShareChange}
+                        className="my-4"
                         disabled={isTimerActive}
-                        className={clsx(
-                            "my-4",
-                            "[&_.track]:bg-gradient-to-r [&_.track]:from-yellow-400 [&_.track]:to-pink-500",
-                            "[&_.thumb]:bg-white [&_.thumb]:border-2 [&_.thumb]:border-green-400"
-                        )}
                     />
-                    <div className="flex justify-between text-xs text-gray-400">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Not Likely</span>
                         <span>Very Likely</span>
                     </div>
                 </div>
             </div>
 
-            <Button
-                onClick={handleSubmit}
-                className={clsx(
-                    "mt-8 w-full py-3 rounded-xl font-bold transition",
-                    canSubmit
-                        ? "bg-gradient-to-r from-pink-500 via-yellow-400 to-green-400 text-black"
-                        : "bg-gray-700 text-gray-400"
-                )}
+            <Button 
+                onClick={handleSubmit} 
+                className="mt-8 w-full"
                 disabled={!canSubmit}
             >
                 {isTimerActive && <Timer className="w-4 h-4 mr-2" />}
-                {isTimerActive
-                    ? `Watch video for ${timeRemaining}s`
-                    : canSubmit
-                        ? "Submit Rating"
-                        : "Move sliders to submit"}
+                {isTimerActive 
+                    ? `Watch video for ${timeRemaining} seconds then rate artist`
+                    : canSubmit 
+                        ? "Submit Rating" 
+                        : "Move sliders to submit rating"
+                }
             </Button>
         </div>
     );
