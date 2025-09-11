@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { useUser } from "@supabase/auth-helpers-react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
-import AuthGuard from "@/components/AuthGuard";
+import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Mail, MapPin, Calendar, ExternalLink, Heart, Share2, Ticket, Upload, ArrowLeft } from "lucide-react";
+import { User, Mail, MapPin, Calendar, ExternalLink, Heart, Share2, Ticket, Upload, AlertCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface EventInterest {
@@ -22,8 +21,7 @@ interface EventInterest {
 }
 
 function ProfilePageContent() {
-    const user = useUser();
-    const { profile, loading: profileLoading } = useUserProfile();
+    const { user, profile, loading: profileLoading } = useUserProfile();
     const [eventInterests, setEventInterests] = useState<EventInterest[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -31,13 +29,11 @@ function ProfilePageContent() {
 
     useEffect(() => {
         if (profileLoading) return;
-
-        if (!user || !profile) {
+        if (user && profile) {
+            fetchEventInterests();
+        } else {
             setLoading(false);
-            return;
         }
-
-        fetchEventInterests();
     }, [user, profile, profileLoading]);
 
     const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,12 +43,10 @@ function ProfilePageContent() {
         try {
             setUploadingAvatar(true);
             
-            // Create a unique file name
             const fileExt = file.name.split('.').pop();
             const fileName = `avatar-${user.id}-${Date.now()}.${fileExt}`;
             const filePath = `avatars/${fileName}`;
 
-            // Upload the file to Supabase Storage
             const { error: uploadError } = await supabase.storage
                 .from('user-uploads')
                 .upload(filePath, file, {
@@ -62,20 +56,17 @@ function ProfilePageContent() {
 
             if (uploadError) throw uploadError;
 
-            // Get the public URL
             const { data: { publicUrl } } = supabase.storage
                 .from('user-uploads')
                 .getPublicUrl(filePath);
 
-            // Update user profile with new avatar URL
             const { error: updateError } = await supabase
                 .from('user_profiles')
                 .update({ avatar_url: publicUrl })
-                .eq('user_id', user.id); // ✅ FIXED: Use user_id instead of auth_id
+                .eq('user_id', user.id);
 
             if (updateError) throw updateError;
 
-            // Refresh profile to show new avatar
             window.location.reload();
 
         } catch (error) {
@@ -91,7 +82,6 @@ function ProfilePageContent() {
             setLoading(true);
             setError(null);
 
-            // Fetch events for our target artists in Los Angeles
             const { data: events, error: eventsError } = await supabase
                 .from('ticketmaster_events')
                 .select('event_name, venue_name, venue_city, event_date, event_time, event_url')
@@ -102,7 +92,6 @@ function ProfilePageContent() {
 
             if (eventsError) throw eventsError;
 
-            // Add hard-coded interest levels
             const eventsWithInterests: EventInterest[] = (events || []).map(event => ({
                 ...event,
                 want_tickets: 1,
@@ -135,55 +124,37 @@ function ProfilePageContent() {
         });
     };
 
-    // Show loading while auth is initializing
+    // Loading state while profile data loads
     if (profileLoading || loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-blue-50 flex items-center justify-center">
+            <div className="flex-1 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex items-center justify-center min-h-[60vh]">
                 <div className="text-center">
                     <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <h1 className="text-xl font-semibold text-neutral-700">Loading your profile...</h1>
+                    <h1 className="text-xl font-semibold text-neutral-300">Loading your profile...</h1>
                 </div>
             </div>
         );
     }
 
-    // Handle authentication and profile setup cases
-    if (!user || !profile) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-blue-50 flex items-center justify-center">
-                <div className="text-center max-w-md mx-auto p-6">
-                    <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                        <User className="w-8 h-8 text-blue-600" />
-                    </div>
-                    <h1 className="text-2xl font-bold text-neutral-800 mb-4">Profile Setup Required</h1>
-                    <p className="text-neutral-600 mb-6">
-                        {!user ? 
-                            "Please sign in to view your profile." : 
-                            "Complete your profile setup to access all features."
-                        }
-                    </p>
-                    <Button 
-                        onClick={() => window.location.href = "/discovery-dashboard"} 
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
-                    >
-                        {!user ? "Sign In" : "Complete Setup"}
-                    </Button>
-                </div>
-            </div>
-        );
-    }
-
+    // Error state for profile-specific errors
     if (error) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-blue-50 flex items-center justify-center">
+            <div className="flex-1 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 flex items-center justify-center min-h-[60vh]">
                 <div className="text-center max-w-md mx-auto p-6">
-                    <h1 className="text-xl font-bold text-red-600 mb-4">Profile Error</h1>
-                    <p className="text-neutral-600 mb-6">{error}</p>
+                    <div className="w-16 h-16 rounded-full bg-red-900/20 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="w-8 h-8 text-red-400" />
+                    </div>
+                    <h1 className="text-xl font-bold text-red-400 mb-4">Profile Error</h1>
+                    <p className="text-neutral-300 mb-6">{error}</p>
                     <Button 
-                        onClick={() => window.location.reload()} 
+                        onClick={() => {
+                            setError(null);
+                            fetchEventInterests();
+                        }}
                         variant="outline"
-                        className="px-6 py-2"
+                        className="px-6 py-2 border-neutral-600 text-neutral-300 hover:bg-neutral-800 hover:text-white"
                     >
+                        <RefreshCw className="w-4 h-4 mr-2" />
                         Try Again
                     </Button>
                 </div>
@@ -191,27 +162,27 @@ function ProfilePageContent() {
         );
     }
 
+    // Main profile content (user and profile are guaranteed to exist here)
     return (
-        <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-blue-50">
-            <div className="max-w-4xl mx-auto px-4 py-4">
-                {/* Page Header - Made much more compact */}
-                <div className="mb-3 md:mb-4 flex flex-col sm:flex-row items-start justify-between gap-2">
+        <div className="flex-1 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900">
+            <div className="max-w-4xl mx-auto px-4 py-6">
+                {/* Page Header */}
+                <div className="mb-6 flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-neutral-800 mb-1">My Profile</h1>
-                        <p className="text-xs md:text-sm text-neutral-600">Manage your account and track your music interests</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">My Profile</h1>
+                        <p className="text-sm md:text-base text-neutral-400">Manage your account and track your music interests</p>
                     </div>
-                  
                 </div>
 
-                {/* Compact Profile Header - Made even more mobile friendly */}
-                <div className="mb-4 md:mb-6">
-                    <Card className="bg-white/80 backdrop-blur-sm border-neutral-200/60 shadow-sm hover:shadow-md transition-all">
-                        <CardContent className="p-3 md:p-4">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-6">
-                                {/* Left: Avatar and Name */}
-                                <div className="flex items-center gap-3 md:gap-4">
+                {/* Profile Header Card */}
+                <div className="mb-8">
+                    <Card className="bg-neutral-800/80 backdrop-blur-sm border-neutral-700/60 shadow-xl hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
+                        <CardContent className="p-4 md:p-6">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6">
+                                {/* Avatar Section */}
+                                <div className="flex items-center gap-4">
                                     <div className="relative group">
-                                        <Avatar className="w-12 md:w-16 h-12 md:h-16 border-2 border-blue-100">
+                                        <Avatar className="w-16 md:w-20 h-16 md:h-20 border-2 border-blue-400/40 ring-2 ring-blue-500/20">
                                             {profile?.avatar_url ? (
                                                 <img 
                                                     src={profile.avatar_url} 
@@ -219,12 +190,11 @@ function ProfilePageContent() {
                                                     className="w-full h-full object-cover rounded-full"
                                                 />
                                             ) : (
-                                                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg md:text-xl font-bold">
-                                                    {profile?.username?.charAt(0).toUpperCase() || 'U'}
+                                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xl md:text-2xl font-bold">
+                                                    {profile?.username?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                                                 </AvatarFallback>
                                             )}
                                         </Avatar>
-                                        {/* Avatar Upload Button */}
                                         <input
                                             type="file"
                                             id="avatar-upload"
@@ -235,42 +205,42 @@ function ProfilePageContent() {
                                         />
                                         <label
                                             htmlFor="avatar-upload"
-                                            className={`absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${uploadingAvatar ? 'opacity-100' : ''}`}
+                                            className={`absolute inset-0 bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer ${uploadingAvatar ? 'opacity-100' : ''}`}
                                         >
                                             {uploadingAvatar ? (
-                                                <div className="w-4 md:w-5 h-4 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                             ) : (
-                                                <Upload className="w-4 md:w-5 h-4 md:h-5 text-white" />
+                                                <Upload className="w-5 h-5 text-white" />
                                             )}
                                         </label>
                                     </div>
                                     <div>
-                                        <h2 className="text-lg md:text-xl font-bold text-neutral-800">{profile?.username || 'User'}</h2>
-                                        <p className="text-xs md:text-sm text-neutral-600">Music Enthusiast</p>
+                                        <h2 className="text-xl md:text-2xl font-bold text-white">{profile?.username || 'Music Lover'}</h2>
+                                        <p className="text-sm text-blue-400">Music Enthusiast</p>
                                     </div>
                                 </div>
 
-                                {/* Right: User Details Grid - More compact on mobile */}
-                                <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-                                    <div className="flex items-center gap-2">
-                                        <Mail className="w-3 md:w-4 h-3 md:h-4 text-blue-600 flex-shrink-0" />
+                                {/* User Info Grid */}
+                                <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-neutral-700/40 border border-neutral-600/30">
+                                        <Mail className="w-4 h-4 text-blue-400 flex-shrink-0" />
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-xs font-medium text-neutral-700">Email</p>
-                                            <p className="text-xs md:text-sm text-neutral-600 truncate">{profile?.email || user?.email}</p>
+                                            <p className="text-xs font-medium text-neutral-300">Email</p>
+                                            <p className="text-sm text-white truncate">{profile?.email || user?.email}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <MapPin className="w-3 md:w-4 h-3 md:h-4 text-green-600 flex-shrink-0" />
+                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-neutral-700/40 border border-neutral-600/30">
+                                        <MapPin className="w-4 h-4 text-green-400 flex-shrink-0" />
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-xs font-medium text-neutral-700">Location</p>
-                                            <p className="text-xs md:text-sm text-neutral-600">{profile?.raw_city_input || 'Not specified'}</p>
+                                            <p className="text-xs font-medium text-neutral-300">Location</p>
+                                            <p className="text-sm text-white">{profile?.raw_city_input || 'Not specified'}</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="w-3 md:w-4 h-3 md:h-4 text-purple-600 flex-shrink-0" />
+                                    <div className="flex items-center gap-3 p-3 rounded-lg bg-neutral-700/40 border border-neutral-600/30 sm:col-span-2 lg:col-span-1">
+                                        <Calendar className="w-4 h-4 text-purple-400 flex-shrink-0" />
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-xs font-medium text-neutral-700">Member Since</p>
-                                            <p className="text-xs md:text-sm text-neutral-600">
+                                            <p className="text-xs font-medium text-neutral-300">Member Since</p>
+                                            <p className="text-sm text-white">
                                                 {profile?.created_at ? formatDate(profile.created_at) : 'Recently'}
                                             </p>
                                         </div>
@@ -281,136 +251,131 @@ function ProfilePageContent() {
                     </Card>
                 </div>
 
-                {/* Event Interests Table - Mobile optimized with removed columns */}
-                <div>
-                    <Card className="bg-white/80 backdrop-blur-sm border-neutral-200/60 shadow-sm hover:shadow-md transition-all">
-                        <CardHeader className="pb-2 md:pb-3">
-                            <CardTitle className="text-base md:text-lg text-neutral-800 flex items-center gap-2">
-                                <Heart className="w-3 md:w-4 h-3 md:h-4 text-red-500" />
-                                My Event Interests
-                            </CardTitle>
-                            <p className="text-xs text-neutral-600">
-                                Events for artists you're interested in • Los Angeles area
-                            </p>
-                        </CardHeader>
-                        <CardContent>
-                            {eventInterests.length > 0 ? (
-                                <div className="rounded-lg border border-neutral-200 overflow-hidden">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-neutral-50/50">
-                                                <TableHead className="font-semibold text-neutral-700 text-xs md:text-sm">Event</TableHead>
-                                                <TableHead className="font-semibold text-neutral-700 text-xs md:text-sm">Date and Time</TableHead>
-                                                {/* Hide Want Tickets and Share columns on mobile */}
-                                                <TableHead className="text-center font-semibold text-neutral-700 text-xs md:text-sm hidden md:table-cell">Want Tickets</TableHead>
-                                                <TableHead className="text-center font-semibold text-neutral-700 text-xs md:text-sm hidden md:table-cell">Share</TableHead>
-                                                <TableHead className="text-center font-semibold text-neutral-700 text-xs md:text-sm">Action</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {eventInterests.map((event, index) => (
-                                                <TableRow key={index} className="hover:bg-blue-50/30 transition-colors">
-                                                    <TableCell className="font-medium">
+                {/* Event Interests Section */}
+                <Card className="bg-neutral-800/80 backdrop-blur-sm border-neutral-700/60 shadow-xl hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-lg md:text-xl text-white flex items-center gap-3">
+                            <Heart className="w-5 h-5 text-red-400" />
+                            My Event Interests
+                        </CardTitle>
+                        <p className="text-sm text-neutral-400">
+                            Events for artists you're interested in • Los Angeles area
+                        </p>
+                    </CardHeader>
+                    <CardContent>
+                        {eventInterests.length > 0 ? (
+                            <div className="rounded-lg border border-neutral-600/50 overflow-hidden">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-neutral-700/50 hover:bg-neutral-700/50">
+                                            <TableHead className="font-semibold text-neutral-200 text-sm">Event</TableHead>
+                                            <TableHead className="font-semibold text-neutral-200 text-sm">Date & Time</TableHead>
+                                            <TableHead className="text-center font-semibold text-neutral-200 text-sm hidden md:table-cell">Interest</TableHead>
+                                            <TableHead className="text-center font-semibold text-neutral-200 text-sm hidden lg:table-cell">Share</TableHead>
+                                            <TableHead className="text-center font-semibold text-neutral-200 text-sm">Action</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {eventInterests.map((event, index) => (
+                                            <TableRow key={index} className="hover:bg-neutral-700/30 transition-colors border-b border-neutral-600/30">
+                                                <TableCell className="font-medium">
+                                                    <div>
+                                                        <p className="text-white font-semibold text-sm">
+                                                            {event.event_name}
+                                                        </p>
+                                                        <p className="text-xs text-neutral-400 mt-1">
+                                                            {event.venue_name}
+                                                        </p>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-start gap-2">
+                                                        <Calendar className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
                                                         <div>
-                                                            <p className="text-neutral-800 font-semibold text-xs md:text-sm">
-                                                                {event.event_name}
+                                                            <p className="text-sm font-medium text-neutral-200">
+                                                                {formatDate(event.event_date)}
                                                             </p>
-                                                            <p className="text-xs text-neutral-600 mt-1">
-                                                                {event.venue_name}
-                                                            </p>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="flex items-start gap-1 md:gap-2">
-                                                            <Calendar className="w-3 md:w-4 h-3 md:h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                                                            <div>
-                                                                <p className="text-xs md:text-sm font-medium text-neutral-700">
-                                                                    {formatDate(event.event_date)}
+                                                            {event.event_time && (
+                                                                <p className="text-xs text-neutral-400">
+                                                                    {formatTime(event.event_time)}
                                                                 </p>
-                                                                {event.event_time && (
-                                                                    <p className="text-xs text-neutral-500">
-                                                                        {formatTime(event.event_time)}
-                                                                    </p>
-                                                                )}
-                                                            </div>
+                                                            )}
                                                         </div>
-                                                    </TableCell>
-                                                    {/* Hide Want Tickets column on mobile */}
-                                                    <TableCell className="text-center hidden md:table-cell">
-                                                        <div className="flex justify-center">
-                                                            <Badge 
-                                                                className={`${
-                                                                    event.want_tickets > 0 
-                                                                        ? 'bg-green-100 text-green-700 border-green-200' 
-                                                                        : 'bg-neutral-100 text-neutral-600 border-neutral-200'
-                                                                } text-xs px-2 py-1`}
-                                                                variant="outline"
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center hidden md:table-cell">
+                                                    <Badge 
+                                                        className={`${
+                                                            event.want_tickets > 0 
+                                                                ? 'bg-green-900/40 text-green-300 border-green-600/40 hover:bg-green-900/60' 
+                                                                : 'bg-neutral-800/60 text-neutral-400 border-neutral-600/40'
+                                                        } text-xs px-2 py-1`}
+                                                        variant="outline"
+                                                    >
+                                                        <Ticket className="w-3 h-3 mr-1" />
+                                                        {event.want_tickets > 0 ? 'Interested' : 'Not interested'}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-center hidden lg:table-cell">
+                                                    <Badge 
+                                                        className={`${
+                                                            event.share_with_friends > 0 
+                                                                ? 'bg-blue-900/40 text-blue-300 border-blue-600/40 hover:bg-blue-900/60' 
+                                                                : 'bg-neutral-800/60 text-neutral-400 border-neutral-600/40'
+                                                        } text-xs px-2 py-1`}
+                                                        variant="outline"
+                                                    >
+                                                        <Share2 className="w-3 h-3 mr-1" />
+                                                        {event.share_with_friends > 0 ? 'Will share' : 'Won\'t share'}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {event.event_url && (
+                                                        <Button
+                                                            asChild
+                                                            size="sm"
+                                                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-xs h-8 shadow-lg hover:shadow-blue-500/20 transition-all"
+                                                        >
+                                                            <a 
+                                                                href={event.event_url} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer"
+                                                                className="flex items-center gap-1"
                                                             >
-                                                                <Ticket className="w-3 h-3 mr-1" />
-                                                                {event.want_tickets > 0 ? 'Interested' : 'Not interested'}
-                                                            </Badge>
-                                                        </div>
-                                                    </TableCell>
-                                                    {/* Hide Share column on mobile */}
-                                                    <TableCell className="text-center hidden md:table-cell">
-                                                        <div className="flex justify-center">
-                                                            <Badge 
-                                                                className={`${
-                                                                    event.share_with_friends > 0 
-                                                                        ? 'bg-blue-100 text-blue-700 border-blue-200' 
-                                                                        : 'bg-neutral-100 text-neutral-600 border-neutral-200'
-                                                                } text-xs px-2 py-1`}
-                                                                variant="outline"
-                                                            >
-                                                                <Share2 className="w-3 h-3 mr-1" />
-                                                                {event.share_with_friends > 0 ? 'Will share' : 'Won\'t share'}
-                                                            </Badge>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {event.event_url && (
-                                                            <Button
-                                                                asChild
-                                                                size="sm"
-                                                                className="bg-blue-600 hover:bg-blue-700 text-white px-2 md:px-3 py-1 text-xs h-6 md:h-8"
-                                                            >
-                                                                <a 
-                                                                    href={event.event_url} 
-                                                                    target="_blank" 
-                                                                    rel="noopener noreferrer"
-                                                                    className="flex items-center gap-1"
-                                                                >
-                                                                    <span className="hidden sm:inline">Get Tickets</span>
-                                                                    <span className="sm:hidden">Tickets</span>
-                                                                    <ExternalLink className="w-3 h-3" />
-                                                                </a>
-                                                            </Button>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                                                <span className="hidden sm:inline">Get Tickets</span>
+                                                                <span className="sm:hidden">Tickets</span>
+                                                                <ExternalLink className="w-3 h-3" />
+                                                            </a>
+                                                        </Button>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        ) : (
+                            <div className="text-center py-16">
+                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-neutral-700 to-neutral-800 border border-neutral-600 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                                    <Heart className="w-8 h-8 text-neutral-400" />
                                 </div>
-                            ) : (
-                                <div className="text-center py-12">
-                                    <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-4">
-                                        <Heart className="w-8 h-8 text-neutral-400" />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-neutral-700 mb-2">No events found</h3>
-                                    <p className="text-neutral-600 max-w-sm mx-auto">
-                                        We couldn't find any events for your favorite artists in Los Angeles right now.
-                                    </p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
+                                <h3 className="text-lg font-semibold text-white mb-2">No events found</h3>
+                                <p className="text-neutral-400 max-w-sm mx-auto">
+                                    We couldn't find any events for your favorite artists in Los Angeles right now. Check back soon!
+                                </p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
 }
 
 export default function ProfilePage() {
-    return <AuthGuard><ProfilePageContent /></AuthGuard>;
+    return (
+        <AppLayout>
+            <ProfilePageContent />
+        </AppLayout>
+    );
 }
