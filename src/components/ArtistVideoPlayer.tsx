@@ -48,7 +48,7 @@ const ArtistVideoPlayer: React.FC<ArtistVideoPlayerProps> = ({ videoUrl, onWatch
                         width="100%"
                         height="100%"
                         controls={true}
-                        playing={true} // Attempts to autoplay, browsers may block this
+                     
                         onProgress={handleProgress}
                         onReady={handleReady}
                         onBuffer={handleBuffer}
