@@ -1,13 +1,11 @@
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Star, Music, BarChart } from 'lucide-react';
-import WeeklyListCard from './WeeklyListCard';
 
 export default function DiscoverMoreTab() {
     return (
         <div className="space-y-6 md:space-y-8">
             {/* Weekly List Card - Hero Section */}
-            <WeeklyListCard />
             
             {/* Discovery Options */}
             <div className="text-center mb-6 md:mb-8">
