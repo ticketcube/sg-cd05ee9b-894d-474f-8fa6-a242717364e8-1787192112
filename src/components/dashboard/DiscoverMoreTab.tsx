@@ -68,7 +68,7 @@ export default function DiscoverMoreTab() {
                 </Link>
 
                 {/* OTW Ten Year 750 */}
-                <Link href="/discovery-charts" className="block group">
+                <Link href="/discovery-dashboard" className="block group">
                     <div className="bg-gradient-to-r from-orange-900/40 to-red-900/40 rounded-xl md:rounded-2xl p-4 md:p-6 border border-orange-500/30 hover:border-orange-400/50 transition-all hover:scale-[1.02] cursor-pointer backdrop-blur-sm">
                         <div className="flex items-center gap-3 md:gap-6">
                             <div className="w-14 md:w-20 h-14 md:h-20 rounded-xl md:rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center group-hover:from-orange-400 group-hover:to-red-400 transition-all shadow-lg shadow-orange-500/25 flex-shrink-0">
@@ -86,7 +86,7 @@ export default function DiscoverMoreTab() {
                                     variant="outline"
                                     className="border-orange-500 text-orange-400 px-2 md:px-3 py-1 text-xs md:text-sm"
                                 >
-                                    5 points per vote
+                                    Coming Soon!
                                 </Badge>
                             </div>
                         </div>
