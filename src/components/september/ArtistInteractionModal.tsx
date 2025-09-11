@@ -40,18 +40,19 @@ export function ArtistInteractionModal({
             }
 
             try {
-                const { count, error } = await supabase
+                const { data, error } = await supabase
                     .from('user_engagements')
-                    .select('*', { count: 'exact', head: true })
+                    .select('id')
                     .eq('user_id', user.id)
                     .eq('artist_id', artist.id)
-                    .eq('engagement_type', 'quadrant');
+                    .eq('engagement_type', 'quadrant')
+                    .limit(1);
 
                 if (error) {
                     console.error('Error checking rating:', error);
                     setAlreadyRated(false);
                 } else {
-                    setAlreadyRated((count || 0) > 0);
+                    setAlreadyRated(data && data.length > 0);
                 }
             } catch (error) {
                 console.error('Error checking rating:', error);
