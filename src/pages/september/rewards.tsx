@@ -10,7 +10,7 @@ import { ArtistInteractionModal } from '@/components/september/ArtistInteraction
 import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
 import { septemberRewardsService } from '@/services/septemberRewardsService';
 import { userEngagementService } from '@/services/userEngagementService';
-import { EngagementType } from '@/constants/engagementTypes';
+import { ENGAGEMENT_TYPES } from '@/constants/engagementTypes';
 import { useToast } from '@/hooks/use-toast';
 
 export default function SeptemberRewardsPage() {
@@ -70,7 +70,7 @@ export default function SeptemberRewardsPage() {
             const result = await userEngagementService.recordEngagement({
                 userId: profile.id,
                 artistId: artistId,
-                engagementType: EngagementType.QUADRANT_RATING,
+                engagementType: ENGAGEMENT_TYPES.QUADRANT,
                 xQuadrant: data.x,
                 yQuadrant: data.y,
             });
