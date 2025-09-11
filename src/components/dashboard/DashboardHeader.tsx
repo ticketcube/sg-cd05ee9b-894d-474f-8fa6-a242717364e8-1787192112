@@ -52,7 +52,8 @@ export default function DashboardHeader({
                             <div className="text-xs text-gray-400">Weeks</div>
                         </div>
                     </div>
-                   
+                    <WeeklyListCard />
+
                 </div>
             </div>
         </div>
