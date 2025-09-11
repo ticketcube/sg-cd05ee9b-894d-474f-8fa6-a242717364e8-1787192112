@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function SeptemberRewardsPage() {
     const { profile, loading: profileLoading, isAuthenticated } = useUserProfile();
-    const [enrichedLists, setEnrichedLists] = useState < EnrichedWeeklyList[] > ([]);
+    const [enrichedLists, setEnrichedLists] = useState <EnrichedWeeklyList[]> ([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState < string | null > (null);
     const [selectedArtist, setSelectedArtist] = useState < EnrichedWeeklyListArtist | null > (null);
@@ -101,26 +101,20 @@ export default function SeptemberRewardsPage() {
 
     const renderContent = () => {
         console.log("🎬 Rendering content", { loading, profileLoading, error, enrichedLists });
-
         if (loading || profileLoading) {
             return <DashboardLoading />;
         }
-
         if (!isAuthenticated) {
             return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
         }
-
         if (error) {
             return <div className="text-center text-red-500">{error}</div>;
         }
-
         if (enrichedLists.length === 0) {
             return <div className="text-center text-muted-foreground">No active rewards found this week. Check back soon!</div>;
         }
-
         return (
-            
-            
+            <>
                 {enrichedLists.map((list) => {
                     console.log("🎨 Rendering list:", list);
                     return (
@@ -134,7 +128,7 @@ export default function SeptemberRewardsPage() {
                         </div>
                     );
                 })}
-            
+            </>
         );
     };
 
