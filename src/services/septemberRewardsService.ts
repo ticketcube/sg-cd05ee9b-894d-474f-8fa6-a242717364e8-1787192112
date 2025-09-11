@@ -1,5 +1,4 @@
 import { SubmissionResult, EnrichedWeeklyList } from '@/types/weekly';
-import { quadrantToVibe } from '@/lib/quadrant';
 import { userEngagementService } from './userEngagementService';
 import { ENGAGEMENT_TYPES } from '@/constants/engagementTypes';
 
