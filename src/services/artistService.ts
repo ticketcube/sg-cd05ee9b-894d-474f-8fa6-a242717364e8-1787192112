@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import type { Artist, ArtistWithVotes } from "@/types/artists";
 import type { ArtistWithLocation } from "@/types/map";
@@ -44,7 +45,7 @@ export class ArtistService {
     const { data, error, count } = await supabase
       .from('artists')
       .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false })
       .range(from, to);
 
     if (error) {
@@ -66,8 +67,8 @@ export class ArtistService {
     try {
       const { data, error } = await supabase
         .from("artists")
-          .select("*")
-          .eq("artist_genre", genre)`
+        .select("*")
+        .eq("artist_genre", genre);
 
       if (error) {
         console.error(`Error fetching artists for genre ${genre}:`, error);
@@ -136,8 +137,7 @@ export class ArtistService {
     try {
       const { data, error } = await supabase
           .from("artists")
-          .select("artist_genre")`
-          ;
+          .select("artist_genre");
 
       if (error) {
         console.error("Error fetching genre counts:", error);
@@ -162,9 +162,8 @@ export class ArtistService {
     try {
       const { data, error } = await supabase
         .from("artists")
-        .select("*")
-        .eq("Top_List", "100")
-        .select("primary_vibe, secondary_vibe");
+        .select("primary_vibe, secondary_vibe")
+        .eq("Top_List", "100");
 
       if (error) {
         console.error("Error fetching vibe counts:", error);
@@ -264,7 +263,7 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
         .select("*")
-        .order("spotify_monthly_listeners", { ascending: false })
+        .order("spotify_monthly_listeners", { ascending: false, nullsFirst: false })
         .limit(limit);
 
       if (error) {
@@ -402,7 +401,7 @@ export class ArtistService {
         if (b.votes_count !== a.votes_count) {
           return b.votes_count - a.votes_count;
         }
-        return a.artist.artist_name.localeCompare(b.artist_name);
+        return a.artist_name.localeCompare(b.artist_name);
       });
       
       const paginatedArtists = artistsWithVotes.slice(from, to + 1);

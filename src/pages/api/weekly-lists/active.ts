@@ -57,7 +57,7 @@ export default async function handler(
         })
         .filter((artist): artist is EnrichedWeeklyListArtist => artist !== null);
       
-      // @ts-ignore
+      // @ts-expect-error weekly_list_artists is intentionally removed from the final object
       const { weekly_list_artists, ...restOfList } = list;
 
       return {

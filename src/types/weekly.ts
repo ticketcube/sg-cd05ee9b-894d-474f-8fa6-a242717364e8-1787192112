@@ -10,7 +10,7 @@ type WeeklyListArtistJoin = Database["public"]["Tables"]["weekly_list_artists"][
 // This is the definitive type for an artist object as it appears inside an enriched weekly list.
 // It combines the full Artist record with the unique ID from the join table,
 // which is used by the frontend for keys and interactions.
-export type EnrichedWeeklyListArtist = Artist &amp; {
+export type EnrichedWeeklyListArtist = Artist & {
     // This `id` is the numeric primary key from the `weekly_list_artists` join table.
     // It's used as the unique key for React rendering and interactions within a specific list.
     id: WeeklyListArtistJoin['id'];
@@ -20,7 +20,7 @@ export type EnrichedWeeklyListArtist = Artist &amp; {
 };
 
 // This represents a full weekly list, with its array of artists correctly typed.
-export type EnrichedWeeklyList = Omit&lt;WeeklyList, 'artists'&gt; &amp; {
+export type EnrichedWeeklyList = Omit<WeeklyList, 'artists'> & {
     artists: EnrichedWeeklyListArtist[];
 };
 
