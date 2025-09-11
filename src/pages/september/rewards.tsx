@@ -160,6 +160,7 @@ export default function SeptemberRewardsPage() {
             </div>
             <ArtistInteractionModal
                 artist={selectedArtist}
+                listId={selectedListId}
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onRatingComplete={handleRatingComplete}
