@@ -1,3 +1,4 @@
+
 import {
     Dialog,
     DialogContent,
@@ -9,12 +10,12 @@ import { EnrichedWeeklyListArtist } from "@/types/weekly";
 import { videoWatchService } from "@/services/videoWatchService";
 import ArtistVideoPlayer from "../ArtistVideoPlayer";
 import { QuadrantRating } from "./QuadrantRating";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ArtistInteractionModalProps {
     artist: EnrichedWeeklyListArtist | null;
-    listId: number | null; // <-- ADDED: We need the list ID for uniqueness
+    listId: number | null;
     isOpen: boolean;
     onClose: () => void;
     onRatingComplete: (artistId: number, data: { x: number; y: number }) => void;
@@ -22,7 +23,7 @@ interface ArtistInteractionModalProps {
 
 export function ArtistInteractionModal({
     artist,
-    listId, // <-- ADDED
+    listId,
     isOpen,
     onClose,
     onRatingComplete,
@@ -32,19 +33,42 @@ export function ArtistInteractionModal({
     const [videoPoints, setVideoPoints] = useState<number | null>(null);
     const { toast } = useToast();
 
-    // This is the function called by ArtistVideoPlayer after 15 seconds
-    const handleWatchComplete = async () => {
-        if (!artist || !listId) { // <-- ADDED: Guard against missing data
-            console.error("handleWatchComplete called without artist or listId");
+    // NEW: Decoupled timer logic
+    useEffect(() => {
+        // Reset the rating view whenever a new artist is loaded in an open modal
+        if (isOpen && artist) {
+            setShowRating(false);
+        }
+
+        // Don't do anything if the modal isn't open or if we are already showing the rating
+        if (!isOpen || showRating || !artist || !listId) {
             return;
         }
 
-        console.log(`Video watch complete for artist ${artist.id} on list ${listId}. Recording points...`);
+        console.log("Modal opened for a new artist. Starting 15-second timer to show rating.");
+
+        const timer = setTimeout(() => {
+            console.log("15-second timer finished.");
+            handleTimerComplete();
+        }, 15000); // 15 seconds
+
+        // Cleanup function to clear the timer if the modal is closed early
+        return () => {
+            console.log("Cleaning up rating timer.");
+            clearTimeout(timer);
+        };
+    }, [isOpen, artist, listId]); // Rerun when modal opens, artist, or listId changes
+
+    // This function is called after the 15-second timer completes
+    const handleTimerComplete = async () => {
+        if (!artist || !artist.id || !listId) {
+            console.error("handleTimerComplete called without artist, artist.id, or listId", { artist, listId });
+            return;
+        }
+
+        console.log(`Timer complete for artist ${artist.id} on list ${listId}. Recording points...`);
         try {
-            const result = await videoWatchService.recordVideoWatch({
-                artistId: artist.id,
-                listId: listId, // <-- ADDED: Pass the listId to the service
-            });
+            const result = await videoWatchService.recordVideoWatch(artist.id, listId);
 
             // Store points earned to show in the UI
             setVideoPoints(result.pointsEarned);
@@ -53,15 +77,15 @@ export function ArtistInteractionModal({
             if (result.pointsEarned > 0) {
                 toast({
                     title: "Points Earned!",
-                    description: `You earned ${result.pointsEarned} points for watching the video.`,
+                    description: `You earned ${result.pointsEarned} points. You can now rate the artist.`,
                 });
             }
 
         } catch (error) {
             console.error("Failed to record video watch points:", error);
-            // Even if points fail, we can still show the rating UI
         } finally {
             // Transition to the rating view
+            console.log("Switching to rating view.");
             setShowRating(true);
         }
     };
@@ -85,8 +109,8 @@ export function ArtistInteractionModal({
                 <div className="col-span-2 h-full">
                     {artist && (
                         <ArtistVideoPlayer
-                            videoUrl={artist.artist_videolink ?? ''}
-                            onWatchComplete={handleWatchComplete}
+                            artist={artist}
+                            isEmbed={true}
                         />
                     )}
                 </div>
@@ -106,13 +130,13 @@ export function ArtistInteractionModal({
                                     <div className="prose prose-sm dark:prose-invert">
                                         <p>{artist.artist_bio}</p>
                                         <p className="text-xs text-muted-foreground mt-4">
-                                            Watch at least 15 seconds of the video to enable rating.
+                                            The rating panel will unlock in 15 seconds.
                                         </p>
                                     </div>
                                 ) : (
                                     <QuadrantRating
                                         onSubmit={handleRatingSubmit}
-                                        videoPointsEarned={videoPoints} // Pass video points to rating component
+                                        videoPointsEarned={videoPoints}
                                     />
                                 )}
                             </div>

@@ -1,88 +1,195 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import ReactPlayer from 'react-player';
-import { Loader2 } from 'lucide-react';
+import { useState, useMemo } from "react";
+import Image from "next/image";
+import { Play, VideoOff } from "lucide-react";
+import { motion } from "framer-motion";
+import { EnrichedWeeklyListArtist } from "@/types/weekly";
 
-interface ArtistVideoPlayerProps {
-    videoUrl: string;
-    onWatchComplete: () => void;
+interface ArtistForPlayer {
+  artist_name: string;
+  artist_tiktok_username?: string | null;
+  artist_tiktok_videoid?: string | null;
+  artist_videolink?: string | null;
+  artist_image?: string | null;
 }
 
-const ArtistVideoPlayer: React.FC<ArtistVideoPlayerProps> = ({ videoUrl, onWatchComplete }) => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [hasMounted, setHasMounted] = useState(false); // State to track client-side mount
-    const hasCompletedRef = useRef(false);
+// Combine types to be more flexible
+type PlayerArtist = EnrichedWeeklyListArtist | ArtistForPlayer;
 
-    // This effect runs only once on the client, after the component mounts.
-    useEffect(() => {
-        setHasMounted(true);
-    }, []);
+interface ArtistVideoPlayerProps {
+  artist: PlayerArtist;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+  onPlayerError?: () => void;
+  videoOverrideId?: string;
+  videoLinks?: string[];
+  currentIndex?: number;
+  onChangeIndex?: (newIndex: number) => void;
+  isEmbed?: boolean;
+  showNavigationControls?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
+}
 
-    // Reset completion status when video changes
-    useEffect(() => {
-        console.log(`Artist Video Player: The videoUrl prop is ${videoUrl ? 'present' : 'absent'}. URL: "${videoUrl || 'Not provided'}"`);
-        hasCompletedRef.current = false;
-        // We set it to true here to show the spinner when a new video is loaded in.
-        setIsLoading(true);
-    }, [videoUrl]);
-
-    const handleProgress = ({ playedSeconds }: { playedSeconds: number }) => {
-        if (!hasCompletedRef.current && playedSeconds >= 15) {
-            console.log("15 seconds watch time reached. Calling onWatchComplete.");
-            hasCompletedRef.current = true;
-            onWatchComplete();
-        }
-    };
-
-    const handleReady = () => setIsLoading(false);
-    const handleBuffer = () => setIsLoading(true);
-    const handlePlay = () => setIsLoading(false);
-    const handleError = (e: any) => {
-        console.error('ReactPlayer Error:', e);
-        setIsLoading(false);
-    };
-
-    // We can only check if the URL is playable on the client-side
-    const isPlayable = hasMounted && videoUrl && ReactPlayer.canPlay(videoUrl);
-
-    return (
-        <div className="w-full h-full bg-black flex items-center justify-center relative">
-            {hasMounted ? (
-                isPlayable ? (
-                    <>
-                        {isLoading && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-75 z-10">
-                                <Loader2 className="h-12 w-12 text-white animate-spin" />
-                                <p className="text-white mt-2">Loading Video...</p>
-                            </div>
-                        )}
-                        <ReactPlayer
-                            url={videoUrl}
-                            width="100%"
-                            height="100%"
-                            controls={true}
-                            onProgress={handleProgress}
-                            onReady={handleReady}
-                            onBuffer={handleBuffer}
-                            onPlay={handlePlay}
-                            onError={handleError}
-                        />
-                    </>
-                ) : (
-                    <div className="text-center p-4">
-                        <p className="text-white">Video could not be loaded.</p>
-                        <p className="text-xs text-gray-400 mt-2">The provided URL may be invalid or unsupported.</p>
-                    </div>
-                )
-            ) : (
-                // Initial state before client-side hydration, showing a generic loader
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-75 z-10">
-                    <Loader2 className="h-12 w-12 text-white animate-spin" />
-                    <p className="text-white mt-2">Initializing Player...</p>
-                </div>
-            )}
-        </div>
-    );
+const extractYouTubeVideoId = (url: string): string | null => {
+  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/,
+    /youtube\.com\/v\/([^&?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&?#]+)/
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  return null;
 };
 
-export default ArtistVideoPlayer;
+const isValidImageUrl = (url: string | null | undefined): url is string => {
+  if (!url || typeof url !== "string" || url.trim() === "" || url === "null" || url === "undefined") {
+    return false;
+  }
+  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("/");
+};
+
+export default function ArtistVideoPlayer({
+  artist,
+  size = "lg",
+  className,
+  onPlayerError,
+  videoOverrideId,
+  videoLinks = [],
+  currentIndex = 0,
+  isEmbed = false,
+  onClick,
+}: ArtistVideoPlayerProps) {
+  const [videoError, setVideoError] = useState(false);
+
+  const processedVideoLinks = useMemo(() => {
+    if (videoLinks.length > 0) return videoLinks;
+    if (artist.artist_videolink) {
+      return artist.artist_videolink.split(",").map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  }, [artist.artist_videolink, videoLinks]);
+
+  const videoContent = useMemo(() => {
+    let extractedVideoId: string | null = null;
+    const sourceUrl = videoOverrideId || 
+      (processedVideoLinks.length > 0 ? processedVideoLinks[currentIndex] : null) ||
+      (artist.artist_videolink ? artist.artist_videolink.split(",")[0].trim() : null);
+    
+    if (sourceUrl) {
+      extractedVideoId = extractYouTubeVideoId(sourceUrl);
+      if (extractedVideoId) {
+        return {
+          type: "youtube" as const,
+          videoId: extractedVideoId,
+          embedUrl: `https://www.youtube.com/embed/${extractedVideoId}?autoplay=1&rel=0&modestbranding=1`,
+          thumbnailUrl: `https://img.youtube.com/vi/${extractedVideoId}/hqdefault.jpg`,
+        };
+      }
+    }
+    
+    // Check for TikTok ID if YouTube fails
+    if (!extractedVideoId && 'artist_tiktok_videoid' in artist && artist.artist_tiktok_videoid) {
+      const tiktokVideoId = artist.artist_tiktok_videoid;
+      const tiktokThumbnail = isValidImageUrl(artist.artist_image) ? artist.artist_image : null;
+      return {
+        type: "tiktok" as const,
+        videoId: tiktokVideoId,
+        embedUrl: `https://www.tiktok.com/embed/v2/${tiktokVideoId}?autoplay=1`,
+        thumbnailUrl: tiktokThumbnail,
+      };
+    }
+
+    return { 
+      type: "none" as const, 
+      videoId: null, 
+      embedUrl: null, 
+      thumbnailUrl: isValidImageUrl(artist.artist_image) ? artist.artist_image : null 
+    };
+  }, [artist, videoOverrideId, processedVideoLinks, currentIndex]);
+
+  const handleVideoError = (e: any) => {
+    console.error("Video player error:", e);
+    setVideoError(true);
+    if (onPlayerError) {
+      onPlayerError();
+    }
+  };
+
+  const videoEmbed = (
+    <div className="relative w-full h-full bg-black">
+      {!videoError && videoContent.embedUrl ? (
+        <iframe
+          key={videoContent.embedUrl} // Force re-render on URL change
+          src={videoContent.embedUrl}
+          className="absolute top-0 left-0 w-full h-full"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          onError={handleVideoError}
+        />
+      ) : (
+        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gray-900 text-white rounded-lg">
+          <div className="text-center">
+            <VideoOff className="w-12 h-12 mx-auto mb-2 text-gray-500" />
+            <p className="text-lg">Video Not Available</p>
+            <p className="text-sm text-gray-400">There may be an issue with the video link.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  if (isEmbed) {
+    return videoEmbed;
+  }
+
+  // This part renders a thumbnail with a play button, suitable for grids.
+  const sizeClasses = { sm: "w-12 h-12", md: "w-24 h-24", lg: "w-full h-full" };
+  const playButtonSizes = { sm: "w-4 h-4", md: "w-8 h-8", lg: "w-12 h-12" };
+  const fallbackImage = videoContent.thumbnailUrl || artist.artist_image;
+
+  return (
+    <div 
+      className={`relative ${sizeClasses[size]} rounded-lg overflow-hidden cursor-pointer group ${className}`}
+      onClick={onClick}
+    >
+      <div className="w-full h-full bg-cover bg-center bg-gray-800 relative">
+        {isValidImageUrl(fallbackImage) ? (
+          <Image 
+            src={fallbackImage} 
+            alt={`${artist.artist_name} video thumbnail`}
+            fill
+            style={{ objectFit: "cover" }}
+            onError={() => setVideoError(true)} // If thumbnail fails, set error
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-600">
+            <span className="text-white text-xs font-bold text-center px-2">
+              {artist.artist_name}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-60 transition-all duration-200" />
+      
+      {videoContent.type !== "none" && !videoError && (
+        <motion.div 
+          className="absolute inset-0 flex items-center justify-center"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="bg-white bg-opacity-90 rounded-full p-2 group-hover:bg-opacity-100 group-hover:scale-110 transition-all duration-200">
+            <Play className={`${playButtonSizes[size]} text-black fill-black`} />
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+}
