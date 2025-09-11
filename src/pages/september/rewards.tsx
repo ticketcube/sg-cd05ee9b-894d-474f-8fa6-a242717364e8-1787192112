@@ -174,10 +174,7 @@ export default function SeptemberRewardsPage() {
                 artist={selectedArtist}
                 listId={selectedListId}
                 isOpen={isModalOpen}
-                onClose={() => {
-                    setIsModalOpen(false);
-                    setSelectedArtist(null);
-                }}
+                onClose={handleModalClose}
                 onRatingComplete={handleRatingComplete}
             />
           </>
