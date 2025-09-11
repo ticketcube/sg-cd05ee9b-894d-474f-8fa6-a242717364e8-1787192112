@@ -95,7 +95,7 @@ export default function WeeklyListCard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center shadow-lg">
-                  <Users className="w-6 h-6 text-white" />
+                  <Stars className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
