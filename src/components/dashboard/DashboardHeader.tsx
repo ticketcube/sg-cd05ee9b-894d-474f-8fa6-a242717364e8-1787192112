@@ -52,7 +52,7 @@ export default function DashboardHeader({
                             <div className="text-xs text-gray-400">Weeks</div>
                         </div>
                     </div>
-                    <HeroVideo />
+                   
                 </div>
             </div>
         </div>
