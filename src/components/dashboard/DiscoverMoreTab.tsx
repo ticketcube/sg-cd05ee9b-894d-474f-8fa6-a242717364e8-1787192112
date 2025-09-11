@@ -9,8 +9,8 @@ export default function DiscoverMoreTab() {
             
             {/* Discovery Options */}
             <div className="text-center mb-6 md:mb-8">
-                <h2 className="text-xl md:text-2xl font-bold text-white mb-2">More Ways to Discover</h2>
-                <p className="text-gray-400 text-sm md:text-base px-4">Explore different ways to find your next favorite artist</p>
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Discovery Activities </h2>
+            
             </div>
             
             <div className="grid gap-4 md:gap-6">
@@ -21,12 +21,9 @@ export default function DiscoverMoreTab() {
                                 <Star className="w-7 md:w-10 h-7 md:h-10 text-white" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-white text-lg md:text-xl group-hover:text-green-300 transition-colors mb-1 md:mb-2">Weekly Artist Ratings</h3>
+                                <h3 className="font-bold text-white text-lg md:text-xl group-hover:text-green-300 transition-colors mb-1 md:mb-2">Weekly Featured Artists</h3>
                                 <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">Watch & Rate emerging artists and earn points for each discovery</p>
-                                <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-                                    <Badge className="bg-green-600 text-white px-2 md:px-3 py-1 text-xs md:text-sm">10 per rating</Badge>
-                                    <Badge variant="outline" className="border-green-500 text-green-400 px-2 md:px-3 py-1 text-xs md:text-sm">5 per video</Badge>
-                                </div>
+                                <Badge variant="outline" className="border-orange-500 text-orange-400 px-2 md:px-3 py-1 text-xs md:text-sm">10 points per rating</Badge>
                             </div>
                         </div>
                     </div>
@@ -41,7 +38,7 @@ export default function DiscoverMoreTab() {
                             <div className="flex-1 min-w-0">
                                 <h3 className="font-bold text-white text-lg md:text-xl group-hover:text-purple-300 transition-colors mb-1 md:mb-2">Global Vibes Chart</h3>
                                 <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">Explore artists by mood and discover new sounds that match your vibe</p>
-                                <Badge variant="outline" className="border-purple-500 text-purple-400 px-2 md:px-3 py-1 text-xs md:text-sm">Mood-Based Discovery</Badge>
+                                <Badge variant="outline" className="border-purple-500 text-purple-400 px-2 md:px-3 py-1 text-xs md:text-sm">Coming Soon!</Badge>
                             </div>
                         </div>
                     </div>
@@ -54,9 +51,9 @@ export default function DiscoverMoreTab() {
                                 <BarChart className="w-7 md:w-10 h-7 md:h-10 text-white" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-white text-lg md:text-xl group-hover:text-orange-300 transition-colors mb-1 md:mb-2">Discovery Charts</h3>
-                                <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">Interactive lists and trending artist rankings updated in real-time</p>
-                                <Badge variant="outline" className="border-orange-500 text-orange-400 px-2 md:px-3 py-1 text-xs md:text-sm">Live Rankings</Badge>
+                                <h3 className="font-bold text-white text-lg md:text-xl group-hover:text-orange-300 transition-colors mb-1 md:mb-2">OTW Ten Year 750</h3>
+                                <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">Watch and Vote on all 750 artists OTW has covered over our 10 year history/p>
+                                <Badge variant="outline" className="border-orange-500 text-orange-400 px-2 md:px-3 py-1 text-xs md:text-sm">5 points per vote</Badge>
                             </div>
                         </div>
                     </div>
