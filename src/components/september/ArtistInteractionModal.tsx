@@ -27,6 +27,7 @@ export function ArtistInteractionModal({
     onClose,
     onRatingComplete,
 }: ArtistInteractionModalProps) {
+    console.log("🎨 ArtistInteractionModal re-rendered", { isOpen, artist: artist ? `Artist ID: ${artist.id}` : null });
     const [showRating, setShowRating] = useState(false);
     const [videoPoints, setVideoPoints] = useState<number | null>(null);
     const { toast } = useToast();
