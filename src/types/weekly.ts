@@ -20,7 +20,7 @@ export type EnrichedWeeklyListArtist = Artist & {
 };
 
 // This represents a full weekly list, with its array of artists correctly typed.
-export type EnrichedWeeklyList = Omit<WeeklyList, 'artists'> & {
+export type EnrichedWeeklyList = WeeklyList & {
     artists: EnrichedWeeklyListArtist[];
 };
 
