@@ -1,6 +1,7 @@
 import type { UserProfile } from "@/contexts/UserProfileContext";
 import { Sparkles, Trophy, Star, Calendar } from "lucide-react";
-import HeroVideo from "./HeroVideo";
+import WeeklyListCard from './WeeklyListCard';
+
 
 interface DashboardHeaderProps {
     profile: UserProfile | null;
@@ -52,7 +53,7 @@ export default function DashboardHeader({
                             <div className="text-xs text-gray-400">Weeks</div>
                         </div>
                     </div>
-                   
+                    <WeeklyListCard />
                 </div>
             </div>
         </div>
