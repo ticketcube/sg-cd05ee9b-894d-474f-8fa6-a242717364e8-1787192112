@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
@@ -9,7 +8,7 @@ import { ArtistInteractionModal } from '@/components/september/ArtistInteraction
 import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
 import { septemberRewardsService } from '@/services/septemberRewardsService';
 import { userEngagementService } from '@/services/userEngagementService';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export default function SeptemberRewardsPage() {
     const { profile, loading: profileLoading, isAuthenticated } = useUserProfile();
@@ -21,7 +20,6 @@ export default function SeptemberRewardsPage() {
     const [selectedWeekIdentifier, setSelectedWeekIdentifier] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showAuthDialog, setShowAuthDialog] = useState(false);
-    const { toast } = useToast();
 
     useEffect(() => {
         console.log("📡 useEffect triggered", { isAuthenticated, profileLoading });
@@ -108,21 +106,20 @@ export default function SeptemberRewardsPage() {
 
             if (result.success) {
                 if (result.pointsEarned && result.pointsEarned > 0) {
-                    toast({
-                        title: "Rating Submitted!",
+                    toast.success(`🎉 Rating Submitted!`, {
                         description: `You earned ${result.pointsEarned} points for rating ${artist.artist_name}.`,
+                        duration: 4000,
                     });
                 } else {
-                    toast({
-                        title: "Rating Submitted!",
+                    toast.success('✅ Rating Submitted!', {
                         description: `Your rating for ${artist.artist_name} has been recorded.`,
+                        duration: 3000,
                     });
                 }
             } else {
-                toast({
-                    variant: "destructive",
-                    title: "Already Rated",
+                toast.error('Already Rated', {
                     description: result.error || "You may have already rated this artist.",
+                    duration: 3000,
                 });
             }
 
@@ -130,10 +127,9 @@ export default function SeptemberRewardsPage() {
             handleModalClose();
         } catch (error) {
             console.error("❌ Failed to submit rating:", error);
-            toast({
-                variant: "destructive",
-                title: "Error",
+            toast.error('Error', {
                 description: "Failed to submit rating. Please try again.",
+                duration: 3000,
             });
             // Still close the modal even if there's an error
             handleModalClose();

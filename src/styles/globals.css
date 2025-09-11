@@ -91,3 +91,36 @@ body {
     @apply mx-auto px-4 md:px-6 lg:px-8 max-w-7xl w-full;
   }
 }
+
+/* Custom slider styles for quadrant rating */
+.slider-custom [data-orientation="horizontal"] {
+  height: 8px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.3) 0%, rgba(139, 92, 246, 0.5) 50%, rgba(236, 72, 153, 0.3) 100%);
+  border-radius: 9999px;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+.slider-custom [data-orientation="horizontal"] [role="slider"] {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4), 0 0 0 0 rgba(139, 92, 246, 0.3);
+  transition: all 0.2s ease;
+}
+
+.slider-custom [data-orientation="horizontal"] [role="slider"]:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5), 0 0 0 4px rgba(139, 92, 246, 0.2);
+}
+
+.slider-custom [data-orientation="horizontal"] [role="slider"]:focus-visible {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5), 0 0 0 4px rgba(139, 92, 246, 0.3);
+}
+
+.slider-custom [data-orientation="horizontal"] [role="slider"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
