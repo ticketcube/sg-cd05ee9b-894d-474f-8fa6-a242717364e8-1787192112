@@ -130,7 +130,10 @@ export default function WeeklyListCard() {
                                         src={artist.artist_image || '/placeholder-artist.jpg'}
                                         alt={artist.artist_name || 'Artist'}
                                         fill
-                                        sizes="(max-width: 768px) 25vw, 16vw"
+                                       sizes="(max-width: 640px) 50vw, 
+               (max-width: 768px) 33vw, 
+               (max-width: 1024px) 25vw, 
+               16vw"
                                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
