@@ -7,7 +7,7 @@ export const weeklyListService = {
     const { data, error } = await supabase
       .from('weekly_lists')
       .select('*')
-      .eq('is_active', true)
+      .eq('status', 'active')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
