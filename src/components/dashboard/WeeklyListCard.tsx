@@ -110,12 +110,7 @@ export default function WeeklyListCard() {
                   </p>
                 </div>
               </div>
-              <Badge 
-                variant="outline" 
-                className="bg-emerald-50 border-emerald-200 text-emerald-700 font-semibold px-3 py-1"
-              >
-                {totalArtists} Artists
-              </Badge>
+            
             </div>
           </div>
         </CardHeader>
