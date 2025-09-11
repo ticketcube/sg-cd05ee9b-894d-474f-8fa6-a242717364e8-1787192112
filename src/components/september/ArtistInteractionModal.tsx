@@ -1,4 +1,3 @@
-
 import {
     Dialog,
     DialogContent,
@@ -10,6 +9,7 @@ import { EnrichedWeeklyListArtist } from "@/types/weekly";
 import ArtistVideoPlayer from "../ArtistVideoPlayer";
 import { QuadrantRating } from "./QuadrantRating";
 import { useState } from "react";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 
 interface ArtistInteractionModalProps {
     artist: EnrichedWeeklyListArtist | null;
@@ -26,6 +26,8 @@ export function ArtistInteractionModal({
     onClose,
     onRatingComplete,
 }: ArtistInteractionModalProps) {
+    const { user } = useUserProfile();
+    
     console.log("🎨 ArtistInteractionModal rendered", { isOpen, artist: artist ? `${artist.artist_name}` : null });
 
     const handleRatingSubmit = (data: { x: number; y: number }) => {
@@ -47,7 +49,7 @@ export function ArtistInteractionModal({
                 </div>
 
                 <div className="col-span-1 p-6 bg-background h-full overflow-y-auto">
-                    {artist && (
+                    {artist && user && (
                         <>
                             <DialogHeader className="mb-4">
                                 <DialogTitle className="text-lg">{artist.artist_name}</DialogTitle>
@@ -60,9 +62,16 @@ export function ArtistInteractionModal({
                                 <QuadrantRating
                                     onSubmit={handleRatingSubmit}
                                     artistName={artist.artist_name}
+                                    artistId={artist.id}
+                                    userId={user.id}
                                 />
                             </div>
                         </>
+                    )}
+                    {artist && !user && (
+                        <div className="flex flex-col justify-center h-full">
+                            <p className="text-center text-muted-foreground">Please sign in to rate artists</p>
+                        </div>
                     )}
                 </div>
             </DialogContent>
