@@ -28,8 +28,8 @@ export function ArtistInteractionModal({
     onRatingComplete,
 }: ArtistInteractionModalProps) {
     const { user } = useUserProfile();
-    const [alreadyRated, setAlreadyRated] = useState(false);
-    const [checkingRating, setCheckingRating] = useState(true);
+    const [alreadyRated, setAlreadyRated] = useState<boolean>(false);
+    const [checkingRating, setCheckingRating] = useState<boolean>(true);
     
     console.log("🎨 ArtistInteractionModal rendered", { isOpen, artist: artist ? `${artist.artist_name}` : null });
 
@@ -41,23 +41,31 @@ export function ArtistInteractionModal({
                 return;
             }
 
-            const { data } = await supabase
-                .from('user_engagements')
-                .select('id')
-                .eq('user_id', user.id)
-                .eq('artist_id', artist.id)
-                .eq('engagement_type', 'quadrant')
-                .maybeSingle();
+            try {
+                const { data } = await supabase
+                    .from('user_engagements')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .eq('artist_id', artist.id)
+                    .eq('engagement_type', 'quadrant')
+                    .maybeSingle();
 
-            setAlreadyRated(!!data);
-            setCheckingRating(false);
+                setAlreadyRated(!!data);
+            } catch (error) {
+                console.error('Error checking rating:', error);
+                setAlreadyRated(false);
+            } finally {
+                setCheckingRating(false);
+            }
         };
 
         if (isOpen && user && artist) {
             setCheckingRating(true);
             checkRating();
+        } else {
+            setCheckingRating(false);
         }
-    }, [isOpen, user, artist]);
+    }, [isOpen, user?.id, artist?.id]);
 
     const handleRatingSubmit = (data: { x: number; y: number }) => {
         if (artist) {
