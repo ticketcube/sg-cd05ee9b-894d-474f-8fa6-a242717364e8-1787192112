@@ -99,7 +99,7 @@ export default function WeeklyListCard() {
                 </div>
                 <div>
                   <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-                    This Week's Artists
+                    Rising Stars
                   </CardTitle>
                   <p className="text-neutral-600 font-medium">
                     Week of {new Date(latestWeek.start_date).toLocaleDateString('en-US', { 
@@ -154,7 +154,7 @@ export default function WeeklyListCard() {
                   className="group bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white font-semibold px-8 py-3 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-0.5"
                 >
                   <span className="flex items-center space-x-2">
-                    <span>Rate This Week's Artists</span>
+                    <span>Watch & Earn</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
                 </Button>
