@@ -196,8 +196,9 @@ export default function HomePage() {
         onClose={handleAuthClose}
         title="Join OnesToWatch"
       />
-      </div>
-    </div >
+        </div>
+        </div >
+     </div >
   );
 }
 
