@@ -192,38 +192,44 @@ function DiscoverMoreTab() {
 function MoreRewardsTab() {
     return (
         <div className="space-y-6">
-          <div className="grid gap-6">
-            <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-white mb-2">Your Rewards & Achievements</h2>
-                <p className="text-gray-400 text-base">
-                    Track your progress and unlock exclusive rewards
-                </p>
-            </div>
             <div className="grid gap-6">
-                <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
-                    <div className="flex items-center gap-6">
-                        <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
-                            <Trophy className="w-10 h-10 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-white text-xl mb-2">
-                             We Reward Discovery
-                            </h3>
-                            <p className="text-gray-400 text-base pb-4">
-                                Explore different ways to find your next favorite artist
-                            </p>
-                             <div className="flex justify-evenly gap-2 mt-4">
-                                  <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
-                                 September: 240 Points= Nine OnesToWatch Zines!
-                                  </Badge>
-                                  <Badge variant="outline" className="border-dark-blue-500 text-dark-blue-400 px-3 py-1">
-                               October: Coming Soon!
-                             </Badge>
-                             
-                            </div>
-                          </div>
-                     </div>
+                <div className="text-center mb-6">
+                    <h2 className="text-2xl font-bold text-white mb-2">Your Rewards & Achievements</h2>
+                    <p className="text-gray-400 text-base">
+                        Track your progress and unlock exclusive rewards
+                    </p>
                 </div>
+
+                <div className="grid gap-6">
+                    <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
+                        <div className="flex items-center gap-6">
+                            <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
+                                <Trophy className="w-10 h-10 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-white text-xl mb-2">
+                                    We Reward Discovery
+                                </h3>
+                                <p className="text-gray-400 text-base pb-4">
+                                    Earn points for exclusive merch, insider access and even free tix!
+                                </p>
+                                {/* Badges row */}
+                                <div className="flex justify-evenly gap-4 mt-4">
+                                    <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
+                                        September: 240 Points = 9 OTW Zines
+                                    </Badge>
+                                    <Badge variant="outline" className="border-purple-500 text-purple-400 px-3 py-1">
+                                        October: Coming Soon!
+                                    </Badge>
+                                    <Badge variant="outline" className="border-pink-500 text-pink-400 px-3 py-1">
+                                        November: Coming Soon!
+                                    </Badge>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     );
