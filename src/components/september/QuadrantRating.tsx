@@ -114,42 +114,34 @@ export function QuadrantRating({
 
     return (
         <div className="h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col">
-            {/* Mobile/Desktop Combined Header */}
-            <div className="p-4 lg:p-6 border-b border-gray-700">
-                {/* Points Status Display */}
-                <div className="flex justify-center mb-4">
-                    {!isEligibleForPoints ? (
-                        <div className="bg-gray-800 px-3 py-2 rounded-lg flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4 text-gray-400" />
-                            <span className="text-xs text-gray-400 font-medium">Already rated</span>
-                        </div>
-                    ) : hasEarnedPoints ? (
-                        <motion.div
-                            initial={{ scale: 0.8 }}
-                            animate={{ scale: 1 }}
-                            className="bg-green-600 px-4 py-2 rounded-lg flex items-center gap-2"
-                        >
-                            <Star className="w-4 h-4 text-white" />
-                            <span className="text-sm text-white font-bold">{videoPoints} points earned!</span>
-                        </motion.div>
-                    ) : (
-                        <div className="bg-gray-800 px-4 py-2 rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Timer className="w-4 h-4 text-blue-400" />
-                                <span className="text-sm text-white font-medium">{watchTime}s / {minWatchTime}s</span>
+            {/* Mobile/Desktop Combined Header - Now Clean and Focused */}
+            <div className="p-4 lg:p-6 border-b border-gray-700 flex-shrink-0">
+                {/* Points Status Display - Only Success States */}
+                {(hasEarnedPoints || !isEligibleForPoints) && (
+                    <div className="flex justify-center mb-4">
+                        {!isEligibleForPoints ? (
+                            <div className="bg-gray-800 px-3 py-2 rounded-lg flex items-center gap-2">
+                                <CheckCircle className="w-4 h-4 text-gray-400" />
+                                <span className="text-sm text-gray-400 font-medium">Already rated</span>
                             </div>
-                            <Progress
-                                value={(watchTime / minWatchTime) * 100}
-                                className="w-32 h-2 bg-gray-700"
-                            />
-                        </div>
-                    )}
-                </div>
+                        ) : hasEarnedPoints ? (
+                            <motion.div
+                                initial={{ scale: 0.8 }}
+                                animate={{ scale: 1 }}
+                                className="bg-green-600 px-4 py-2 rounded-lg flex items-center gap-2"
+                            >
+                                <Star className="w-4 h-4 text-white" />
+                                <span className="text-sm text-white font-bold">{videoPoints} points earned!</span>
+                            </motion.div>
+                        ) : null}
+                    </div>
+                )}
 
-                <h3 className="text-lg lg:text-xl font-bold text-center text-white mb-2">
+                {/* Artist Name - Now Bigger and More Prominent */}
+                <h3 className="text-xl lg:text-2xl xl:text-3xl font-bold text-center text-white mb-2">
                     {artistName}
                 </h3>
-                <p className="text-center text-gray-400 text-sm">
+                <p className="text-center text-gray-400 text-sm lg:text-base">
                     Watch & Rate = 10 Points
                 </p>
             </div>
@@ -245,32 +237,55 @@ export function QuadrantRating({
                 </AnimatePresence>
             </div>
 
-            {/* Footer with Submit Button */}
-            <div className="p-4 lg:p-6 bg-gray-800/50 border-t border-gray-700">
+            {/* Footer with Submit Button - Now includes Timer */}
+            <div className="p-4 lg:p-6 bg-gray-800/50 border-t border-gray-700 flex-shrink-0">
                 <Button
                     onClick={handleSubmit}
-                    className={`w-full text-sm lg:text-base font-bold transition-all duration-300 ${
+                    className={`w-full text-sm lg:text-base font-bold transition-all duration-300 relative overflow-hidden ${
                         slidersChanged && !userHasVoted && watchTime >= minWatchTime
                             ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg"
                             : "bg-gray-700 hover:bg-gray-700 text-gray-400 cursor-not-allowed"
                     }`}
                     disabled={isSubmitting || userHasVoted || !slidersChanged || watchTime < minWatchTime}
                 >
-                    <div className="flex items-center justify-center gap-2 py-1">
+                    {/* Progress bar for watch time - embedded in button */}
+                    {!userHasVoted && watchTime < minWatchTime && (
+                        <div 
+                            className="absolute top-0 left-0 h-1 bg-blue-400 transition-all duration-1000 ease-out"
+                            style={{ width: `${(watchTime / minWatchTime) * 100}%` }}
+                        />
+                    )}
+                    
+                    <div className="flex items-center justify-center gap-2 py-2">
+                        {/* Timer icon when counting down */}
+                        {!userHasVoted && watchTime < minWatchTime && (
+                            <Timer className="w-4 h-4 text-blue-400" />
+                        )}
+                        
+                        {/* Spinner when submitting */}
                         {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                        
+                        {/* Button text with countdown */}
                         <span>
                             {isSubmitting ? (
-                                "Submitting..."
+                                "Submitting Rating..."
                             ) : userHasVoted ? (
                                 "You've Already Rated This Artist"
                             ) : watchTime < minWatchTime ? (
-                                `Watch ${minWatchTime - watchTime} More Seconds`
+                                `Watch ${minWatchTime - watchTime}s More to Submit`
                             ) : !slidersChanged ? (
                                 "Adjust Sliders to Submit Rating"
                             ) : (
                                 `Submit Rating & Earn ${videoPoints} Points`
                             )}
                         </span>
+
+                        {/* Watch progress indicator in button */}
+                        {!userHasVoted && watchTime < minWatchTime && (
+                            <span className="text-xs bg-blue-600 px-2 py-1 rounded-full ml-1">
+                                {watchTime}/{minWatchTime}s
+                            </span>
+                        )}
                     </div>
                 </Button>
             </div>
