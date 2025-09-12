@@ -88,9 +88,9 @@ export function MvpSurvey() {
 
   if (loading) {
     return (
-      <Card className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-neutral-700 shadow-lg shadow-black/20">
+      <Card className="bg-white border border-gray-100 shadow-sm">
         <CardContent className="flex items-center justify-center p-8">
-          <div className="animate-pulse text-neutral-400">Loading survey...</div>
+          <div className="animate-pulse text-gray-400">Loading survey...</div>
         </CardContent>
       </Card>
     );
@@ -98,23 +98,23 @@ export function MvpSurvey() {
 
   if (isCompleted) {
     return (
-      <Card className="bg-gradient-to-br from-emerald-900/60 to-green-900/60 border border-emerald-700/60 shadow-lg shadow-black/20 backdrop-blur-sm">
+      <Card className="bg-green-50 border border-green-200 shadow-sm">
         <CardHeader className="text-center pb-4">
-          <div className="flex justify-center mb-3">
-            <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full shadow-lg shadow-emerald-500/20">
+          <div className="flex justify-center mb-4">
+            <div className="p-3 bg-green-500 rounded-full">
               <CheckCircle className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-xl font-semibold text-emerald-200">
+          <CardTitle className="text-xl font-medium text-green-800">
             Survey Completed!
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          <p className="text-emerald-300">
+          <p className="text-green-700">
             Thank you for sharing your valuable feedback with us.
           </p>
           <div className="flex justify-center">
-            <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-4 py-2 shadow-lg">
+            <Badge className="bg-green-600 text-white border-0 px-4 py-2">
               +25 Points Earned
             </Badge>
           </div>
@@ -124,27 +124,27 @@ export function MvpSurvey() {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-neutral-700 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 transition-all duration-500 hover:-translate-y-1">
+    <Card className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
       <CardHeader>
-        <CardTitle className="flex items-center gap-3 text-lg md:text-xl font-semibold text-white">
-          <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg shadow-md shadow-blue-500/20">
-            <Star className="h-5 w-5 text-white" />
+        <CardTitle className="flex items-center gap-3 text-lg font-medium text-black">
+          <div className="p-2 bg-gray-100 rounded-lg">
+            <Star className="h-5 w-5 text-gray-600" />
           </div>
           MVP Feedback Survey
-          <Badge variant="secondary" className="bg-gradient-to-r from-amber-800/60 to-yellow-800/60 text-amber-200 border-amber-700/50 shadow-sm">
+          <Badge className="bg-black text-white border-0 px-3 py-1">
             25 Points
           </Badge>
         </CardTitle>
-        <p className="text-neutral-300 text-sm">
+        <p className="text-gray-600 text-sm">
           Help us improve OTW Chart by sharing your experience and suggestions.
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
-            <Label className="flex items-center gap-2 text-sm font-medium text-neutral-200">
-              <div className="p-1 bg-neutral-700/60 rounded-md">
-                <MessageSquare className="h-4 w-4 text-neutral-300" />
+            <Label className="flex items-center gap-2 text-sm font-medium text-black">
+              <div className="p-1 bg-gray-100 rounded-md">
+                <MessageSquare className="h-4 w-4 text-gray-600" />
               </div>
               {SURVEY_QUESTION.question}
             </Label>
@@ -152,7 +152,7 @@ export function MvpSurvey() {
               value={response}
               onChange={(e) => setResponse(e.target.value)}
               placeholder={SURVEY_QUESTION.placeholder}
-              className="min-h-[120px] bg-neutral-800/60 border-neutral-700/60 text-white placeholder:text-neutral-500 focus:border-blue-500/60 focus:ring-blue-500/20 resize-none hover:bg-neutral-800/80 transition-colors duration-300"
+              className="min-h-[120px] bg-white border-gray-200 text-black placeholder:text-gray-400 focus:border-gray-400 focus:ring-0 resize-none"
               required
             />
           </div>
@@ -161,7 +161,7 @@ export function MvpSurvey() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-0.5"
+              className="w-full bg-black hover:bg-gray-800 text-white border-0"
             >
               {submitting ? (
                 <div className="flex items-center gap-2">
