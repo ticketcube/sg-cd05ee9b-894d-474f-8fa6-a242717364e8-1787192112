@@ -38,7 +38,7 @@ export default function WeeklyListCard() {
     if (loading) {
         return (
             <div className="mt-8">
-                <Card className="overflow-hidden border-0 shadow-2xl bg-[hsl(279,92%,25%)]0">
+                <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-neutral-50 via-white to-neutral-50/80">
                     <CardContent className="p-8">
                         <div className="animate-pulse space-y-6">
                             <div className="space-y-3">
@@ -92,7 +92,7 @@ export default function WeeklyListCard() {
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center shadow-lg">
+                                <div className="w-12 h-12 rounded-2xl bg-[hsl(279,92%,25%)]">
                                     <Stars className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
