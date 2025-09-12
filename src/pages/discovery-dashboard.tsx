@@ -58,16 +58,7 @@ const DiscoveryDashboard = () => {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
 
-    const renderContent = () => {
-        switch (activeTab) {
-            case 'discover':
-                return <DiscoverMoreTab />;
-            case 'rewards':
-                return <MoreRewardsTab />;
-            default:
-                return <StaffPortalTab />;
-        }
-    };
+  
 
     return (
         <div className="min-h-screen bg-white">
@@ -79,129 +70,6 @@ const DiscoveryDashboard = () => {
                 weeksActive={dashboardStats.weeksActive}
             />
            
-            <div className="max-w-6xl mx-auto px-4 py-8">
-                {/* Tab Navigation */}
-                <div className="flex justify-center mb-8">
-                    <div className="flex bg-gray-50 rounded-lg p-1">
-                        <button
-                            onClick={() => setActiveTab('discover')}
-                            className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                                activeTab === 'discover'
-                                    ? 'bg-white text-black shadow-sm border border-gray-200'
-                                    : 'text-gray-600 hover:text-black'
-                            }`}
-                        >
-                            Discover
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('rewards')}
-                            className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                                activeTab === 'rewards'
-                                    ? 'bg-white text-black shadow-sm border border-gray-200'
-                                    : 'text-gray-600 hover:text-black'
-                            }`}
-                        >
-                            Rewards
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('staff')}
-                            className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                                activeTab === 'staff'
-                                    ? 'bg-white text-black shadow-sm border border-gray-200'
-                                    : 'text-gray-600 hover:text-black'
-                            }`}
-                        >
-                            Staff Portal
-                        </button>
-                    </div>
-                </div>
-
-                {/* Main Content */}
-                <div className="space-y-6">
-                    {activeTab === 'discover' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <Card className="bg-white border border-gray-100 hover:border-gray-200 transition-all">
-                                <CardHeader className="pb-4">
-                                    <div className="flex items-center justify-between">
-                                        <CardTitle className="text-lg font-medium text-black">Weekly Discoveries</CardTitle>
-                                        <Play className="w-5 h-5 text-gray-400" />
-                                    </div>
-                                    <CardDescription className="text-gray-500">
-                                        Rate new artists and earn points
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Link href="/september/rewards">
-                                        <Button className="w-full bg-black hover:bg-gray-800 text-white border-0">
-                                            Start Rating
-                                        </Button>
-                                    </Link>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="bg-white border border-gray-100 hover:border-gray-200 transition-all">
-                                <CardHeader className="pb-4">
-                                    <div className="flex items-center justify-between">
-                                        <CardTitle className="text-lg font-medium text-black">Music Exploration</CardTitle>
-                                        <Music className="w-5 h-5 text-gray-400" />
-                                    </div>
-                                    <CardDescription className="text-gray-500">
-                                        Discover your next favorite artist
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Button variant="outline" className="w-full border-gray-200 text-black hover:bg-gray-50">
-                                        Explore Now
-                                    </Button>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="bg-white border border-gray-100 hover:border-gray-200 transition-all">
-                                <CardHeader className="pb-4">
-                                    <div className="flex items-center justify-between">
-                                        <CardTitle className="text-lg font-medium text-black">Trending Artists</CardTitle>
-                                        <TrendingUp className="w-5 h-5 text-gray-400" />
-                                    </div>
-                                    <CardDescription className="text-gray-500">
-                                        See what's popular right now
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Button variant="outline" className="w-full border-gray-200 text-black hover:bg-gray-50">
-                                        View Trends
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    )}
-
-                    {activeTab === 'rewards' && (
-                        <div className="text-center py-16">
-                            <Award className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                            <h3 className="text-xl font-medium text-black mb-2">Rewards Coming Soon</h3>
-                            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                                Keep discovering artists to earn points and unlock exclusive rewards
-                            </p>
-                            <Button className="bg-black hover:bg-gray-800 text-white">
-                                Learn More
-                            </Button>
-                        </div>
-                    )}
-
-                    {activeTab === 'staff' && (
-                        <div className="bg-gray-50 rounded-lg p-12 text-center">
-                            <h3 className="text-xl font-medium text-black mb-2">Staff Portal</h3>
-                            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                                Access administrative tools and features
-                            </p>
-                            <Button variant="outline" className="border-gray-200 text-black hover:bg-white">
-                                Access Portal
-                            </Button>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
     );
 };
 
