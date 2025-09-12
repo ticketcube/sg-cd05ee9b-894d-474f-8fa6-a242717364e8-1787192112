@@ -18,37 +18,37 @@ export default function DashboardHeader({
     weeksActive
 }: DashboardHeaderProps) {
     return (
-        <div className="relative overflow-hidden bg-black">
-            <div className="relative max-w-6xl mx-auto px-4 py-8">
+        <div className="bg-white">
+            <div className="max-w-6xl mx-auto px-4 py-12">
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6 border border-white/20">
-                        <Sparkles className="w-4 h-4 text-white" />
-                        <span className="text-white font-medium">Discovery Dashboard</span>
+                    <div className="inline-flex items-center gap-3 bg-gray-100 rounded-full px-4 py-2 mb-6">
+                        <Sparkles className="w-4 h-4 text-black" />
+                        <span className="text-black font-medium">Discovery Dashboard</span>
                     </div>
 
-                    <h1 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                    <h1 className="text-3xl md:text-4xl font-bold text-black mb-3">
                         Welcome back, {profile?.username || 'Explorer'}
                     </h1>
                     
-                    <p className="text-lg text-gray-300 mb-8">
+                    <p className="text-lg text-gray-600 mb-8">
                         Your gateway to discovering amazing new artists and earning rewards
                     </p>
 
-                    <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mb-8">
-                        <div className="bg-white/5 rounded-lg p-4 text-center border border-white/10">
-                            <Trophy className="w-5 h-5 text-white mx-auto mb-2" />
-                            <div className="text-lg font-bold text-white">{historyLoading ? '...' : total_points}</div>
-                            <div className="text-xs text-gray-400">Points</div>
+                    <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto mb-8">
+                        <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
+                            <Trophy className="w-5 h-5 text-gray-600 mx-auto mb-2" />
+                            <div className="text-xl font-bold text-black">{historyLoading ? '...' : total_points}</div>
+                            <div className="text-sm text-gray-500">Points</div>
                         </div>
-                        <div className="bg-white/5 rounded-lg p-4 text-center border border-white/10">
-                            <Star className="w-5 h-5 text-white mx-auto mb-2" />
-                            <div className="text-lg font-bold text-white">{historyLoading ? '...' : artistsRated}</div>
-                            <div className="text-xs text-gray-400">Artists</div>
+                        <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
+                            <Star className="w-5 h-5 text-gray-600 mx-auto mb-2" />
+                            <div className="text-xl font-bold text-black">{historyLoading ? '...' : artistsRated}</div>
+                            <div className="text-sm text-gray-500">Artists</div>
                         </div>
-                        <div className="bg-white/5 rounded-lg p-4 text-center border border-white/10">
-                            <Calendar className="w-5 h-5 text-white mx-auto mb-2" />
-                            <div className="text-lg font-bold text-white">{historyLoading ? '...' : weeksActive}</div>
-                            <div className="text-xs text-gray-400">Weeks</div>
+                        <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
+                            <Calendar className="w-5 h-5 text-gray-600 mx-auto mb-2" />
+                            <div className="text-xl font-bold text-black">{historyLoading ? '...' : weeksActive}</div>
+                            <div className="text-sm text-gray-500">Weeks</div>
                         </div>
                     </div>
 
