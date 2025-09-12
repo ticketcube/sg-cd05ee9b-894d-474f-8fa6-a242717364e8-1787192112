@@ -232,7 +232,19 @@ function DiscoverMoreTab() {
                 className="border-green-500 text-green-400 px-3 py-1"
               >
                 Watch & Rate for Points
-              </Badge>
+                          </Badge>
+                          <Badge
+                              variant="outline"
+                              className="border-purple-500 text-purple-400 px-3 py-1"
+                          >
+                              Mood-Based Discovery
+                          </Badge>
+                          <Badge
+                              variant="outline"
+                              className="border-orange-500 text-orange-400 px-3 py-1"
+                          >
+                              Live Rankings
+                          </Badge>
             </div>
             <TrendingUp className="w-4 h-4 text-white" />
           </div>
