@@ -10,7 +10,7 @@ interface TabNavigationProps {
 export default function TabNavigation({ activeTab, setActiveTab, role }: TabNavigationProps) {
     return (
         <div className="flex justify-center mb-6 md:mb-8">
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl md:rounded-2xl p-1.5 md:p-2 border border-white/10 w-full max-w-lg">
+            <div className="bg-gradient-to-br from-gray-900 via-black to-gray-900r-sm rounded-xl md:rounded-2xl p-1.5 md:p-2 border border-white/10 w-full max-w-lg">
                 <div className="flex gap-1 md:gap-2">
                     <button
                         onClick={() => setActiveTab("discover")}
