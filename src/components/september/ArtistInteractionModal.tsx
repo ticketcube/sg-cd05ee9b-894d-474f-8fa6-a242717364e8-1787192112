@@ -1,7 +1,9 @@
 import {
     Dialog,
     DialogContent,
+    DialogClose,
 } from "@/components/ui/dialog";
+import { X } from "lucide-react";
 import { EnrichedWeeklyListArtist } from "@/types/weekly";
 import ArtistVideoPlayer from "../ArtistVideoPlayer";
 import { QuadrantRating } from "./QuadrantRating";
@@ -79,7 +81,18 @@ export function ArtistInteractionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-6xl w-[95vw] h-[90vh] bg-black border-gray-800 text-white m-4 overflow-hidden rounded-2xl shadow-2xl p-0">
+            <DialogContent className="max-w-6xl w-[95vw] h-[90vh] bg-black border-4 border-white text-white m-4 overflow-hidden rounded-2xl shadow-2xl p-0">
+                {/* Custom Close Button - Bigger and Bolder */}
+                <DialogClose asChild>
+                    <button 
+                        className="absolute right-4 top-4 z-50 rounded-full bg-black/50 backdrop-blur-sm p-2 text-white hover:bg-black/70 transition-all duration-200 hover:scale-110"
+                        onClick={onClose}
+                    >
+                        <X className="h-8 w-8 font-bold stroke-[3]" />
+                        <span className="sr-only">Close</span>
+                    </button>
+                </DialogClose>
+
                 {/* Modal wrapper with padding to show grid underneath */}
                 <div className="h-full flex flex-col">
                     {/* 50/50 Content Split - No header bar */}
