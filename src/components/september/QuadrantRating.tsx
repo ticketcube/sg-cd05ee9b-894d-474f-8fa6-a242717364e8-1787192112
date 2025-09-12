@@ -147,7 +147,7 @@ export function QuadrantRating({
             </div>
 
             {/* Rating Controls */}
-            <div className="flex-1 p-4 lg:p-6 overflow-y-auto">
+            <div className="flex-1 p-4 lg:p-6 min-h-0">
                 <AnimatePresence>
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
