@@ -226,7 +226,9 @@ function DiscoverMoreTab() {
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-white text-xl group-hover:text-green-300 transition-colors mb-2">
                 Weekly Artist Ratings
-              </h3>
+                          </h3>
+             <div className="space-y-6">
+
               <Badge
                 variant="outline"
                 className="border-green-500 text-green-400 px-3 py-1"
@@ -244,7 +246,8 @@ function DiscoverMoreTab() {
                               className="border-orange-500 text-orange-400 px-3 py-1"
                           >
                               Live Rankings
-                          </Badge>
+                              </Badge>
+             </div>   
             </div>
             <TrendingUp className="w-4 h-4 text-white" />
           </div>
