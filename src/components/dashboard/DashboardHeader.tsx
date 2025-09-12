@@ -29,9 +29,7 @@ export default function DashboardHeader({
                         <span className="text-white font-medium text-sm md:text-base">Discovery Dashboard</span>
                     </div>
 
-                    <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-2 md:mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent px-2">
-                        Welcome back, {profile?.username || 'Explorer'}!
-                    </h1>
+                    
                     <p className="text-base md:text-xl text-gray-300 mb-6 md:mb-8 px-4">
                         Your gateway to discovering amazing new artists and earning rewards
                     </p>
@@ -40,17 +38,17 @@ export default function DashboardHeader({
   <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
     <Trophy className="w-4 h-4 text-blue-400 mx-auto mb-1" />
     <div className="text-sm font-bold text-white">{historyLoading ? '...' : total_points}</div>
-    <div className="text-[10px] text-gray-400">Reward Points</div>
+    <div className="text-[14px] text-gray-400">Reward Points</div>
   </div>
   <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
     <Star className="w-4 h-4 text-green-400 mx-auto mb-1" />
                             <div className="text-sm font-bold text-white">{historyLoading ? '...' : total_engagements}</div>
-    <div className="text-[10px] text-gray-400">Artists Discovered</div>
+    <div className="text-[14px] text-gray-400">Artists Discovered</div>
   </div>
   <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
     <Calendar className="w-4 h-4 text-orange-400 mx-auto mb-1" />
     <div className="text-sm font-bold text-white">{historyLoading ? '...' : weeksActive}</div>
-    <div className="text-[10px] text-gray-400">Weeks</div>
+    <div className="text-[14px] text-gray-400">Weeks</div>
   </div>
 </div>
 
