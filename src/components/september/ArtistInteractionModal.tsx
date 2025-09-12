@@ -94,11 +94,12 @@ export function ArtistInteractionModal({
                 </DialogClose>
 
                 {/* Modal wrapper with padding to show grid underneath */}
-                <div className="h-full flex flex-col">
-                    {/* 50/50 Content Split - Maintained at all screen sizes */}
-                    <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                        {/* Video Section - Always 50%, scales with viewport */}
-                        <div className="flex-1 bg-black relative">
+                <div className="flex flex-col h-full min-h-0 max-h-screen">
+                    {/* Container: stacks vertically on mobile, row on md+ */}
+                    <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+
+                        {/* Video Section */}
+                        <div className="flex-1 min-h-0 bg-black relative">
                             {artist && (
                                 <ArtistVideoPlayer
                                     artist={artist}
@@ -107,10 +108,10 @@ export function ArtistInteractionModal({
                             )}
                         </div>
 
-                        {/* Rating Section - Always 50%, scales with viewport */}
-                        <div className="flex-1 bg-gradient-to-br from-gray-900 via-gray-800 to-black border-t md:border-t-0 md:border-l border-gray-700">
+                        {/* Rating Section */}
+                        <div className="flex-1 min-h-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black border-t md:border-t-0 md:border-l border-gray-700 overflow-y-auto">
                             {artist && user ? (
-                                <div className="h-full">
+                                <div className="h-full min-h-0 p-4">
                                     <QuadrantRating
                                         onSubmit={handleRatingSubmit}
                                         artistName={artist.artist_name}
@@ -144,8 +145,10 @@ export function ArtistInteractionModal({
                                 </div>
                             )}
                         </div>
+
                     </div>
                 </div>
+
             </DialogContent>
         </Dialog>
     );
