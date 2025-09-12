@@ -36,23 +36,24 @@ export default function DashboardHeader({
                         Your gateway to discovering amazing new artists and earning rewards
                     </p>
 
-                   <div className="grid grid-cols-3 gap-2 max-w-md mx-auto sm:max-w-sm">
-                        <div className="bg-white/5 rounded-lg p-3 text-center border border-white/10">
-                            <Trophy className="w-5 h-5 text-blue-400 mx-auto mb-2" />
-                            <div className="text-lg font-bold text-white">{historyLoading ? '...' : total_points}</div>
-                            <div className="text-xs text-gray-400">Points</div>
-                        </div>
-                        <div className="bg-white/5 rounded-lg p-3 text-center border border-white/10">
-                            <Star className="w-5 h-5 text-green-400 mx-auto mb-2" />
-                            <div className="text-lg font-bold text-white">{historyLoading ? '...' : totalVotes}</div>
-                            <div className="text-xs text-gray-400">Artists Rated</div>
-                        </div>
-                        <div className="bg-white/5 rounded-lg p-3 text-center border border-white/10">
-                            <Calendar className="w-5 h-5 text-orange-400 mx-auto mb-2" />
-                            <div className="text-lg font-bold text-white">{historyLoading ? '...' : weeksActive}</div>
-                            <div className="text-xs text-gray-400">Weeks</div>
-                        </div>
-                    </div>
+                  <div className="grid grid-cols-3 gap-2 max-w-lg mx-auto">
+  <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
+    <Trophy className="w-4 h-4 text-blue-400 mx-auto mb-1" />
+    <div className="text-sm font-bold text-white">{historyLoading ? '...' : total_points}</div>
+    <div className="text-[10px] text-gray-400">Points</div>
+  </div>
+  <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
+    <Star className="w-4 h-4 text-green-400 mx-auto mb-1" />
+    <div className="text-sm font-bold text-white">{historyLoading ? '...' : totalVotes}</div>
+    <div className="text-[10px] text-gray-400">Artists Rated</div>
+  </div>
+  <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
+    <Calendar className="w-4 h-4 text-orange-400 mx-auto mb-1" />
+    <div className="text-sm font-bold text-white">{historyLoading ? '...' : weeksActive}</div>
+    <div className="text-[10px] text-gray-400">Weeks</div>
+  </div>
+</div>
+
                     <WeeklyListCard />
 
                 </div>
