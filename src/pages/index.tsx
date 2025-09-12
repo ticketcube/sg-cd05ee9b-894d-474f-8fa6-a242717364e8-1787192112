@@ -93,7 +93,7 @@
                 </div>
 
                 {/* Tabs */}
-                <div className="max-w-4xl mx-auto px-3 md:px-4 py-8 md:py-12">
+                <div className="max-w-4xl mx-auto px-3 md:px-4 py-8 md:py-12 bg-black">
                     <div className="flex justify-center mb-6 md:mb-8">
                         <div className="bg-white/5 backdrop-blur-sm rounded-xl p-1.5 border border-white/10 w-full max-w-lg">
                             <div className="flex gap-2">
