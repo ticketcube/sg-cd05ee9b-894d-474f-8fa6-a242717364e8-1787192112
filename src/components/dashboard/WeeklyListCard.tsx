@@ -96,7 +96,7 @@ export default function WeeklyListCard() {
                                     <Stars className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                                    <CardTitle className="text-2xl font-bold text-white">
                                         This Week's Rising Stars
                                     </CardTitle>
                                     <p className="text-neutral-600 font-medium">
