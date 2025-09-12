@@ -1,9 +1,6 @@
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
 } from "@/components/ui/dialog";
 import { EnrichedWeeklyListArtist } from "@/types/weekly";
 import ArtistVideoPlayer from "../ArtistVideoPlayer";
@@ -82,22 +79,10 @@ export function ArtistInteractionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-6xl w-[95vw] h-[90vh] bg-black border-gray-800 text-white m-4 overflow-hidden rounded-2xl shadow-2xl">
+            <DialogContent className="max-w-6xl w-[95vw] h-[90vh] bg-black border-gray-800 text-white m-4 overflow-hidden rounded-2xl shadow-2xl p-0">
                 {/* Modal wrapper with padding to show grid underneath */}
                 <div className="h-full flex flex-col">
-                    {/* Header Section - Always visible */}
-                    <div className="px-6 py-4 border-b border-gray-700 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm">
-                        <DialogHeader>
-                            <DialogTitle className="text-2xl font-bold text-white">
-                                {artist?.artist_name || 'Loading...'}
-                            </DialogTitle>
-                            <DialogDescription className="text-gray-300 text-sm">
-                                Watch & Rate = 10 Points
-                            </DialogDescription>
-                        </DialogHeader>
-                    </div>
-
-                    {/* 50/50 Content Split */}
+                    {/* 50/50 Content Split - No header bar */}
                     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
                         {/* Video Section - 50% */}
                         <div className="flex-1 bg-black relative">

@@ -147,10 +147,10 @@ export function QuadrantRating({
                 </div>
 
                 <h3 className="text-lg lg:text-xl font-bold text-center text-white mb-2">
-                    Rate This Artist
+                    {artistName}
                 </h3>
                 <p className="text-center text-gray-400 text-sm">
-                    Share your thoughts and earn {videoPoints} points
+                    Watch & Rate = 10 Points
                 </p>
             </div>
 
