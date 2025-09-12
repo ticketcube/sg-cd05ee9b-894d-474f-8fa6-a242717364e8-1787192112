@@ -207,16 +207,6 @@ export default function HomePage() {
 // Discover Tab
 function DiscoverMoreTab() {
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">
-          Discover Amazing New Artists
-        </h2>
-        <p className="text-gray-400 text-base">
-          Explore different ways to find your next favorite artist
-        </p>
-      </div>
-
       <div className="grid gap-6">
         <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
           <div className="flex items-center gap-6">
