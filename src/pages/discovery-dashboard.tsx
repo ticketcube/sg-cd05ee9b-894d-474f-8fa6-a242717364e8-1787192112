@@ -5,6 +5,7 @@ import Link from 'next/link';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
+import { SeptemberReward } from '@/components/dashboard/SeptemberReward';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Play, Music, Award, TrendingUp, AlertCircle } from 'lucide-react';
@@ -103,59 +104,69 @@ const DiscoveryDashboard = () => {
         switch (activeTab) {
             case 'discover':
                 return (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <Card className="bg-white border border-gray-100 hover:border-gray-200 transition-all">
-                            <CardHeader className="pb-4">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-lg font-medium text-black">Weekly Discoveries</CardTitle>
-                                    <Play className="w-5 h-5 text-gray-400" />
-                                </div>
-                                <CardDescription className="text-gray-500">
-                                    Rate new artists and earn points
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Link href="/september/rewards">
-                                    <Button className="w-full bg-black hover:bg-gray-800 text-white border-0">
-                                        Start Rating
+                    <div className="space-y-12">
+                        {/* Discovery Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <Card className="bg-white border border-gray-100 hover:border-gray-200 transition-all">
+                                <CardHeader className="pb-4">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="text-lg font-medium text-black">Weekly Discoveries</CardTitle>
+                                        <Play className="w-5 h-5 text-gray-400" />
+                                    </div>
+                                    <CardDescription className="text-gray-500">
+                                        Rate new artists and earn points
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Link href="/september/rewards">
+                                        <Button className="w-full bg-black hover:bg-gray-800 text-white border-0">
+                                            Start Rating
+                                        </Button>
+                                    </Link>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-white border border-gray-100 hover:border-gray-200 transition-all">
+                                <CardHeader className="pb-4">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="text-lg font-medium text-black">Music Exploration</CardTitle>
+                                        <Music className="w-5 h-5 text-gray-400" />
+                                    </div>
+                                    <CardDescription className="text-gray-500">
+                                        Discover your next favorite artist
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Button variant="outline" className="w-full border-gray-200 text-black hover:bg-gray-50">
+                                        Explore Now
                                     </Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
+                                </CardContent>
+                            </Card>
 
-                        <Card className="bg-white border border-gray-100 hover:border-gray-200 transition-all">
-                            <CardHeader className="pb-4">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-lg font-medium text-black">Music Exploration</CardTitle>
-                                    <Music className="w-5 h-5 text-gray-400" />
-                                </div>
-                                <CardDescription className="text-gray-500">
-                                    Discover your next favorite artist
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Button variant="outline" className="w-full border-gray-200 text-black hover:bg-gray-50">
-                                    Explore Now
-                                </Button>
-                            </CardContent>
-                        </Card>
+                            <Card className="bg-white border border-gray-100 hover:border-gray-200 transition-all">
+                                <CardHeader className="pb-4">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="text-lg font-medium text-black">Trending Artists</CardTitle>
+                                        <TrendingUp className="w-5 h-5 text-gray-400" />
+                                    </div>
+                                    <CardDescription className="text-gray-500">
+                                        See what's popular right now
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <Button variant="outline" className="w-full border-gray-200 text-black hover:bg-gray-50">
+                                        View Trends
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </div>
 
-                        <Card className="bg-white border border-gray-100 hover:border-gray-200 transition-all">
-                            <CardHeader className="pb-4">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-lg font-medium text-black">Trending Artists</CardTitle>
-                                    <TrendingUp className="w-5 h-5 text-gray-400" />
-                                </div>
-                                <CardDescription className="text-gray-500">
-                                    See what's popular right now
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Button variant="outline" className="w-full border-gray-200 text-black hover:bg-gray-50">
-                                    View Trends
-                                </Button>
-                            </CardContent>
-                        </Card>
+                        {/* September Reward Component - Centered and narrower */}
+                        <div className="flex justify-center">
+                            <div className="w-full max-w-3xl">
+                                <SeptemberReward />
+                            </div>
+                        </div>
                     </div>
                 );
             case 'rewards':
@@ -207,8 +218,11 @@ const DiscoveryDashboard = () => {
                 artistsRated={dashboardStats.artistsRated}
                 weeksActive={dashboardStats.weeksActive}
             />
-           
-           
+
+            {/* Main Content */}
+            <div className="max-w-6xl mx-auto px-4 pb-12">
+                {renderContent()}
+            </div>
         </div>
     );
 };
