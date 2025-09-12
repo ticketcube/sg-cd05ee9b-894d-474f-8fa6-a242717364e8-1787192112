@@ -11,7 +11,7 @@ interface AppLayoutProps {
 
 export default function AppLayout({
     children,
-    title = "OTW Chart",
+    title = "We Reward Discovery",
     description = "Discover the future of music.",
 }: AppLayoutProps) {
 // Notice all the state and event handlers that were here are now gone!
