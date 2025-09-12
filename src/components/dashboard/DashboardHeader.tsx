@@ -21,7 +21,7 @@ export default function DashboardHeader({
     return (
         <div className="relative overflow-hidden">
             <div className="container mx-auto px-4 py-8"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
+           
             <div className="relative max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-12">
                 <div className="text-center mb-6 md:mb-12">
                     <div className="inline-flex items-center gap-2 md:gap-3 bg-white/5 backdrop-blur-sm rounded-full px-3 md:px-6 py-2 md:py-3 mb-4 md:mb-6 border border-white/10">
