@@ -70,6 +70,8 @@ const DiscoveryDashboard = () => {
                 weeksActive={dashboardStats.weeksActive}
             />
            
+            
+        </div>
     );
 };
 
