@@ -193,12 +193,7 @@ function MoreRewardsTab() {
     return (
         <div className="space-y-6">
             <div className="grid gap-6">
-                <div className="text-center mb-6">
-                    <h2 className="text-2xl font-bold text-white mb-2">Your Rewards & Achievements</h2>
-                    <p className="text-gray-400 text-base">
-                        Track your progress and unlock exclusive rewards
-                    </p>
-                </div>
+                
 
                 <div className="grid gap-6">
                     <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
