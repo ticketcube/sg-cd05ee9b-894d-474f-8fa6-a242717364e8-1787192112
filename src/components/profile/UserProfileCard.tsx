@@ -153,54 +153,59 @@ export function UserProfileCard() {
       </CardHeader>
       
       <CardContent className="pt-0">
-        {/* Three Horizontal Sections Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Three Horizontal Sections Grid - Mobile Responsive */}
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-4 sm:gap-3 md:gap-4">
           {/* Username Section */}
-          <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-            <User className="h-4 w-4 text-gray-400 flex-shrink-0 mt-1" />
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100/50 transition-all">
+            <User className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
             <div className="flex-1 min-w-0">
-              <span className="text-sm text-gray-500 block">Username</span>
+              <span className="text-sm font-medium text-gray-600 block mb-1">Username</span>
               {isEditingUsername ? (
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-1">
                   <Input
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
-                    className="h-8 text-sm bg-white border-gray-200 text-black"
+                    className="h-10 text-sm bg-white border-gray-200 text-black flex-1"
                     placeholder="Enter username"
                   />
-                  <div className="flex gap-1 flex-shrink-0">
+                  <div className="flex gap-2 flex-shrink-0">
                     <Button
                       size="sm"
                       onClick={handleUsernameSave}
                       disabled={isSaving}
-                      className="h-8 w-8 p-0 bg-black hover:bg-gray-800"
+                      className="h-10 px-4 bg-black hover:bg-gray-800 flex-1 sm:flex-initial"
                     >
                       {isSaving ? (
-                        <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
-                        <Save className="h-3 w-3" />
+                        <>
+                          <Save className="h-4 w-4 mr-1" />
+                          <span className="sm:hidden">Save</span>
+                        </>
                       )}
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={handleUsernameCancel}
-                      className="h-8 w-8 p-0 border-gray-200"
+                      className="h-10 px-4 border-gray-200 flex-1 sm:flex-initial"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-4 w-4 mr-1" />
+                      <span className="sm:hidden">Cancel</span>
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between mt-1">
-                  <p className="text-black font-medium truncate">{profile.username || "Not set"}</p>
+                <div className="flex items-center justify-between mt-1 gap-2">
+                  <p className="text-black font-medium truncate flex-1">{profile.username || "Not set"}</p>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={handleUsernameEdit}
-                    className="h-7 px-2 text-gray-500 hover:text-black hover:bg-gray-100 flex-shrink-0"
+                    className="h-9 px-3 text-gray-500 hover:text-black hover:bg-gray-100 flex-shrink-0 rounded-md"
                   >
-                    <Edit className="h-3 w-3" />
+                    <Edit className="h-4 w-4" />
+                    <span className="ml-1 text-sm sm:hidden">Edit</span>
                   </Button>
                 </div>
               )}
@@ -208,33 +213,34 @@ export function UserProfileCard() {
           </div>
 
           {/* Email Section */}
-          <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-            <Mail className="h-4 w-4 text-gray-400 flex-shrink-0 mt-1" />
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <Mail className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
             <div className="flex-1 min-w-0">
-              <span className="text-sm text-gray-500 block">Email</span>
-              <p className="text-black font-medium truncate mt-1">{user.email}</p>
+              <span className="text-sm font-medium text-gray-600 block mb-1">Email Address</span>
+              <p className="text-black font-medium truncate text-sm sm:text-base">{user.email}</p>
             </div>
           </div>
 
           {/* Password Reset Section */}
-          <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-            <Key className="h-4 w-4 text-gray-400 flex-shrink-0 mt-1" />
-            <div className="flex-1 flex items-start justify-between min-w-0">
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <Key className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
+            <div className="flex-1 flex flex-col sm:flex-row items-start sm:items-center justify-between min-w-0 gap-3 sm:gap-2">
               <div className="min-w-0 flex-1">
-                <span className="text-sm text-gray-500 block">Password</span>
-                <p className="text-black font-medium mt-1">••••••••</p>
+                <span className="text-sm font-medium text-gray-600 block mb-1">Password</span>
+                <p className="text-black font-medium text-sm sm:text-base">••••••••</p>
               </div>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 px-3 border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-black flex-shrink-0 ml-2"
+                    className="h-10 px-4 border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-black flex-shrink-0 w-full sm:w-auto justify-center"
                   >
-                    Reset
+                    <Key className="h-4 w-4 mr-2" />
+                    Reset Password
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md bg-white border border-gray-200">
+                <DialogContent className="sm:max-w-md mx-4 bg-white border border-gray-200">
                   <DialogHeader>
                     <DialogTitle className="text-black">Reset Password</DialogTitle>
                   </DialogHeader>
@@ -245,7 +251,7 @@ export function UserProfileCard() {
                         type="email"
                         value={resetEmail}
                         onChange={(e) => setResetEmail(e.target.value)}
-                        className="bg-white border-gray-200 text-black"
+                        className="bg-white border-gray-200 text-black h-11"
                         placeholder="Enter your email"
                       />
                     </div>
@@ -256,7 +262,7 @@ export function UserProfileCard() {
                       <Button
                         onClick={handlePasswordReset}
                         disabled={isResettingPassword || !resetEmail}
-                        className="flex-1 bg-black hover:bg-gray-800 text-white"
+                        className="flex-1 bg-black hover:bg-gray-800 text-white h-11"
                       >
                         {isResettingPassword ? (
                           <div className="flex items-center gap-2">
