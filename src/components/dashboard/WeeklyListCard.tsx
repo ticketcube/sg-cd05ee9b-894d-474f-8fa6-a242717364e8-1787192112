@@ -99,7 +99,7 @@ export default function WeeklyListCard() {
                                     <CardTitle className="text-2xl font-bold text-white">
                                         This Week's Rising Stars
                                     </CardTitle>
-                                    <p className="text-neutral-600 font-medium">
+                                    <p className="text-white-600 font-medium">
                                         Week of {new Date(latestWeek.start_date).toLocaleDateString('en-US', {
                                             month: 'short',
                                             day: 'numeric',
