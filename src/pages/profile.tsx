@@ -46,16 +46,16 @@ export default function ProfilePage() {
             <div className="max-w-md mx-auto">
               <UserProfileCard />
             </div>
+                {/* Favorite Artists Section */}
+                <div>
+                 <FavoriteArtistsGrid />
+                 </div>
 
             {/* Survey Section */}
             <div>
               <MvpSurvey />
             </div>
 
-            {/* Favorite Artists Section */}
-            <div>
-              <FavoriteArtistsGrid />
-            </div>
           </div>
         </div>
       </div>
