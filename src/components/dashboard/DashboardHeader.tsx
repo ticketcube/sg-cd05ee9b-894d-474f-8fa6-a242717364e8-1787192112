@@ -7,7 +7,7 @@ interface DashboardHeaderProps {
     profile: UserProfile | null;
     historyLoading: boolean;
     total_points: number;
-    videoviews: number;
+    video_views: number;
     weeksActive: number;
 }
 
@@ -15,7 +15,7 @@ export default function DashboardHeader({
     profile,
     historyLoading,
     total_points,
-    videoviews,
+    video_views,
     weeksActive
 }: DashboardHeaderProps) {
     return (
