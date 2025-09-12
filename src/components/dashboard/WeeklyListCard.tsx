@@ -87,12 +87,12 @@ export default function WeeklyListCard() {
 
     return (
         <div className="mt-8">
-            <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-emerald-50/60 via-white to-blue-50/40 backdrop-blur-sm">
+            <Card className="overflow-hidden border-0 shadow-2xl bg-[hsl(279,92%,25%)]">
                 <CardHeader className="pb-6">
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
-                                <div className="w-12 h-12 rounded-2xl bg-[hsl(279,92%,25%)]">
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-blue-500 flex items-center justify-center shadow-lg">
                                     <Stars className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
