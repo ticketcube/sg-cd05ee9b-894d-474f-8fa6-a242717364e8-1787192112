@@ -44,7 +44,7 @@ export default function DashboardHeader({
   </div>
   <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
     <Star className="w-4 h-4 text-green-400 mx-auto mb-1" />
-    <div className="text-sm font-bold text-white">{historyLoading ? '...' : totalVotes}</div>
+                            <div className="text-sm font-bold text-white">{historyLoading ? '...' : video_views}</div>
     <div className="text-[10px] text-gray-400">Artists Discovered</div>
   </div>
   <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
