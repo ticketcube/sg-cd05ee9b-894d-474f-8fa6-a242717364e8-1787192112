@@ -86,7 +86,7 @@
                 <div className="flex justify-center mt-10">
                     <Button
                         onClick={handleRegisterClick}
-                        className="bg-red-600 hover:bg-red-700 text-lg px-6 py-3 rounded-xl shadow-lg text-white"
+                        className="bg-red-600 hover:bg-red-700 text-lg px-6 py-4 rounded-xl shadow-lg text-white "
                     >
                         {isAuthenticated ? 'Go to Dashboard' : 'Register to Discover Rewards'}
                     </Button>
