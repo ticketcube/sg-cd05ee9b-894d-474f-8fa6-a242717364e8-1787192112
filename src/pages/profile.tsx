@@ -29,7 +29,7 @@ export default function ProfilePage() {
       </Head>
       
       <div className="min-h-screen bg-white">
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Simple Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-3 bg-gray-100 rounded-full px-4 py-2 mb-6">
@@ -46,21 +46,24 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          {/* Clean Layout */}
-          <div className="space-y-8">
-            {/* Profile Card */}
-            <div className="max-w-2xl mx-auto">
+          {/* Layout with better proportions */}
+          <div className="space-y-12">
+            {/* Profile Admin Section - Compact */}
+            <div className="max-w-4xl mx-auto">
               <UserProfileCard />
             </div>
 
-            {/* Favorite Artists Section */}
-            <div className="max-w-4xl mx-auto">
-              <FavoriteArtistsGrid />
-            </div>
+            {/* Main Content Grid - Favorite Artists and Survey get more space */}
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Favorite Artists Section - Takes 2/3 of the width on large screens */}
+              <div className="lg:col-span-2">
+                <FavoriteArtistsGrid />
+              </div>
 
-            {/* Survey Section */}
-            <div className="max-w-3xl mx-auto">
-              <MvpSurvey />
+              {/* Survey Section - Takes 1/3 of the width on large screens */}
+              <div className="lg:col-span-1">
+                <MvpSurvey />
+              </div>
             </div>
           </div>
         </div>
