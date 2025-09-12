@@ -122,7 +122,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
-      {/* Hero Video Header */}
+     
       <div className="relative overflow-hidden">
         <video
           ref={videoRef}
@@ -151,7 +151,7 @@ export default function HomePage() {
         >
           Register to Discover Rewards
         </Button>
-      </div>
+        </div>
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-3 md:px-4 py-8 md:py-12">
@@ -196,7 +196,8 @@ export default function HomePage() {
         onClose={handleAuthClose}
         title="Join OnesToWatch"
       />
-    </div>
+      </div>
+    </div >
   );
 }
 
@@ -290,21 +291,21 @@ function DiscoverMoreTab() {
 function MoreRewardsTab() {
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">
+        <div className="text-center mb-6">
+             <h2 className="text-2xl font-bold text-white mb-2">
           Your Rewards & Achievements
-        </h2>
-        <p className="text-gray-400 text-base">
+            </h2>
+             <p className="text-gray-400 text-base">
           Track your progress and unlock exclusive rewards
-        </p>
-      </div>
+         </p>
+        </div>
 
       <div className="grid gap-6">
         <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
           <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
-              <Trophy className="w-10 h-10 text-white" />
-            </div>
+                <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
+                 <Trophy className="w-10 h-10 text-white" />
+                </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-white text-xl group-hover:text-green-300 transition-colors mb-2">
                 September Discovery Reward
@@ -316,7 +317,6 @@ function MoreRewardsTab() {
                 Earn 240 Points for all Nine OnesToWatch Zines!
               </Badge>
             </div>
-          </div>
         </div>
       </div>
     </div>
