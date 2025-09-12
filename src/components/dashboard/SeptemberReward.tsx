@@ -46,13 +46,13 @@ export function SeptemberReward() {
 
   if (loading) {
     return (
-      <Card className="relative overflow-hidden border-0 shadow-xl shadow-amber-500/10 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/60">
+      <Card className="relative overflow-hidden shadow-xl bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60" style={{ borderColor: 'hsl(279, 92%, 25%)' }}>
         <CardContent className="p-8">
           <div className="animate-pulse space-y-4">
-            <div className="h-12 w-12 bg-amber-200/50 rounded-full"></div>
-            <div className="h-6 bg-amber-200/50 rounded-lg w-3/4"></div>
-            <div className="h-4 bg-amber-200/50 rounded w-full"></div>
-            <div className="h-2 bg-amber-200/50 rounded-full w-full"></div>
+            <div className="h-12 w-12 bg-purple-200/50 rounded-full"></div>
+            <div className="h-6 bg-purple-200/50 rounded-lg w-3/4"></div>
+            <div className="h-4 bg-purple-200/50 rounded w-full"></div>
+            <div className="h-2 bg-purple-200/50 rounded-full w-full"></div>
           </div>
         </CardContent>
       </Card>
@@ -60,16 +60,16 @@ export function SeptemberReward() {
   }
 
   return (
-    <Card className="relative overflow-hidden border-0 shadow-xl shadow-amber-500/10 bg-gradient-to-br from-amber-50/80 via-white to-orange-50/60 hover:shadow-2xl hover:shadow-amber-500/20 transition-all duration-700 hover:-translate-y-1 group">
+    <Card className="relative overflow-hidden shadow-xl bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60 hover:shadow-2xl transition-all duration-700 hover:-translate-y-1 group" style={{ borderColor: 'hsl(279, 92%, 25%)', borderWidth: '2px' }}>
       {/* Decorative background elements */}
-      <div className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-amber-200/30 to-orange-200/30 rounded-full blur-2xl"></div>
-      <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-tr from-yellow-200/40 to-amber-200/40 rounded-full blur-xl"></div>
+      <div className="absolute -top-8 -right-8 w-24 h-24 bg-purple-200/30 rounded-full blur-2xl"></div>
+      <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-purple-200/40 rounded-full blur-xl"></div>
       
       <CardContent className="relative p-4 space-y-6">
         {/* Trophy Icon & Header */}
         <div className="flex items-start gap-4">
           <div className="relative">
-            <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform duration-500">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500" style={{ backgroundColor: 'hsl(279, 92%, 25%)', boxShadow: '0 10px 25px -5px hsl(279, 92%, 25%, 0.3)' }}>
               <Trophy className="w-7 h-7 text-white" />
             </div>
             {progressPercentage === 100 && (
@@ -80,7 +80,7 @@ export function SeptemberReward() {
           </div>
           
           <div className="flex-1 space-y-1">
-            <h3 className="text-xl font-semibold text-neutral-800 leading-tight">
+            <h3 className="text-xl font-semibold leading-tight" style={{ color: 'hsl(279, 92%, 25%)' }}>
               September Discovery Reward!
             </h3>
             <p className="text-neutral-600 text-sm leading-relaxed">
@@ -95,17 +95,20 @@ export function SeptemberReward() {
             <span className="font-medium text-neutral-700">
               {totalPoints} / {TARGET_POINTS} points
             </span>
-            <span className="font-semibold text-amber-600">
+            <span className="font-semibold" style={{ color: 'hsl(279, 92%, 25%)' }}>
               {progressPercentage.toFixed(0)}% complete
             </span>
           </div>
 
           {/* Custom Progress Bar */}
           <div className="relative">
-            <div className="w-full h-3 bg-neutral-200/60 rounded-full overflow-hidden shadow-inner">
+            <div className="w-full h-3 bg-neutral-200/60 rounded-full overflow-hidden shadow-inner" style={{ borderColor: 'hsl(279, 92%, 25%)', borderWidth: '1px' }}>
               <div 
-                className="h-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 rounded-full transition-all duration-1000 ease-out shadow-sm relative"
-                style={{ width: `${progressPercentage}%` }}
+                className="h-full rounded-full transition-all duration-1000 ease-out shadow-sm relative"
+                style={{ 
+                  width: `${progressPercentage}%`,
+                  background: `linear-gradient(to right, hsl(279, 92%, 25%), hsl(279, 92%, 30%), hsl(279, 92%, 25%))`
+                }}
               >
                 {progressPercentage > 0 && (
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
@@ -129,15 +132,15 @@ export function SeptemberReward() {
                 </p>
               </div>
             ) : progressPercentage >= 75 ? (
-              <p className="text-orange-600 font-medium text-sm">
+              <p className="font-medium text-sm" style={{ color: 'hsl(279, 92%, 25%)' }}>
                 Almost there! Just {TARGET_POINTS - totalPoints} more points to go!
               </p>
             ) : progressPercentage >= 50 ? (
-              <p className="text-amber-600 font-medium text-sm">
+              <p className="font-medium text-sm" style={{ color: 'hsl(279, 92%, 25%)' }}>
                 Great progress! You're halfway to your reward!
               </p>
             ) : progressPercentage >= 25 ? (
-              <p className="text-yellow-600 font-medium text-sm">
+              <p className="font-medium text-sm" style={{ color: 'hsl(279, 92%, 25%)' }}>
                 Keep going! You're making solid progress!
               </p>
             ) : (
@@ -149,7 +152,7 @@ export function SeptemberReward() {
         </div>
 
         {/* Floating accent */}
-        <div className="absolute top-4 right-4 w-2 h-2 bg-amber-400/50 rounded-full group-hover:animate-bounce"></div>
+        <div className="absolute top-4 right-4 w-2 h-2 rounded-full group-hover:animate-bounce" style={{ backgroundColor: 'hsl(279, 92%, 25%, 0.5)' }}></div>
       </CardContent>
     </Card>
   );
