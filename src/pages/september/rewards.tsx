@@ -9,6 +9,7 @@ import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
 import { septemberRewardsService } from '@/services/septemberRewardsService';
 import { userEngagementService } from '@/services/userEngagementService';
 import { toast } from 'sonner';
+import SeptemberReward frp, '@components/dashboard'
 
 export default function SeptemberRewardsPage() {
     const { profile, loading: profileLoading, isAuthenticated } = useUserProfile();
@@ -193,6 +194,7 @@ export default function SeptemberRewardsPage() {
                     <p className="mt-4 text-lg text-muted-foreground">
                         Rate artists and earn 10 points each! Watch for 15 seconds, then rate.
                     </p>
+                     <SeptemberReward />
                 </div>
                 {renderContent()}
             </div>
