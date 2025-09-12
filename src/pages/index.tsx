@@ -167,7 +167,7 @@ function DiscoverMoreTab() {
                             <h3 className="font-bold text-white text-xl mb-2">
                                 Discover Amazing New Artists
                             </h3>
-                            <p className="text-gray-400 text-base">
+                            <p className="text-gray-400 text-base pb-4">
                                 Explore different ways to find your next favorite artist
                             </p>
                             <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
