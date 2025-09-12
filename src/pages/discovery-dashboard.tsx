@@ -74,7 +74,7 @@ const DiscoveryDashboard = () => {
                 profile={profile}
                 historyLoading={statsLoading}
                 total_points={dashboardStats.totalPoints}
-                total_engagements={dashboardStats.artistsRated}
+                artistsRated={dashboardStats.artistsRated}
                 weeksActive={dashboardStats.weeksActive}
             />
            
