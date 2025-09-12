@@ -36,7 +36,7 @@ export default function DashboardHeader({
                         Your gateway to discovering amazing new artists and earning rewards
                     </p>
 
-                    <div className="grid grid-cols-3 gap-3 max-w-lg mx-auto">
+                   <div className="grid grid-cols-3 gap-2 max-w-md mx-auto sm:max-w-sm">
                         <div className="bg-white/5 rounded-lg p-3 text-center border border-white/10">
                             <Trophy className="w-5 h-5 text-blue-400 mx-auto mb-2" />
                             <div className="text-lg font-bold text-white">{historyLoading ? '...' : total_points}</div>
