@@ -207,44 +207,38 @@ export default function HomePage() {
 // Discover Tab
 function DiscoverMoreTab() {
   return (
- 
-
       <div className="grid gap-6">
         <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
           <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
-              <Star className="w-10 h-10 text-white" />
+                 <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
+                 <Star className="w-10 h-10 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-white text-xl group-hover:text-green-300 transition-colors mb-2">
-                 Discover Amazing New Artists
-                          </h3>
-                          <p className="text-gray-400 text-base">
-                              Explore different ways to find your next favorite artist
+                      <h3 className="font-bold text-white text-xl group-hover:text-green-300 transition-colors mb-2">Discover Amazing New Artists
+                      </h3>
+                 <p className="text-gray-400 text-base">
+                          Explore different ways to find your next favorite artist
                       </p>
                 <br>
              <div className="flex items-center gap-6">
-              <Badge
+                <Badge
                 variant="outline"
-                className="border-green-500 text-green-400 px-3 py-1"
-              >
-                Watch & Rate for Points
-                          </Badge>
-                          <Badge
-                              variant="outline"
-                              className="border-purple-500 text-purple-400 px-3 py-1"
-                          >
-                              Mood-Based Discovery
-                          </Badge>
-                          <Badge
-                              variant="outline"
-                              className="border-orange-500 text-orange-400 px-3 py-1"
-                          >
-                              Live Rankings
-                              </Badge>
-                          </div>   
+                className="border-green-500 text-green-400 px-3 py-1">
+                    Watch & Rate for Points
+                </Badge>
+                <Badge
+                variant="outline"
+                className="border-purple-500 text-purple-400 px-3 py-1">
+                    Mood-Based Discovery
+                </Badge>
+                <Badge
+                variant="outline"
+                className="border-orange-500 text-orange-400 px-3 py-1">
+                    Live Rankings
+                </Badge>
+            </div>   
              
-            </div>
+        </div>
             <TrendingUp className="w-4 h-4 text-white" />
           </div>
         </div>
@@ -288,7 +282,6 @@ function DiscoverMoreTab() {
             <TrendingUp className="w-4 h-4 text-white" />
           </div>
         </div>
-      </div>
     </div>
   );
 }
