@@ -1,146 +1,151 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
-import { UserProfile, getUserProfile } from '@/services/userProfileService';
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { getUserProfile, getUserEngagementHistory, type UserProfile } from "@/services/userProfileService";
 
 interface UserProfileContextType {
-    user: User | null;
-    profile: UserProfile | null;
-    loading: boolean;
-    isAdmin: boolean;
-    isAuthenticated: boolean;
-    role: string | null;
-    refreshProfile: () => Promise<void>;
-    logout: () => Promise<void>;
+  user: User | null;
+  profile: UserProfile | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
-const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
-
-export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [isAdmin, setIsAdmin] = useState(false);
-
-    const refreshProfile = async () => {
-        if (!user) return;
-        try {
-            const userProfile = await getUserProfile(user.id);
-            setProfile(userProfile);
-            setIsAdmin(userProfile?.role === 'otwstaff');
-        } catch (profileError) {
-            console.error("Error refreshing user profile:", profileError);
-            setProfile(null);
-            setIsAdmin(false);
-        }
-    };
-
-    useEffect(() => {
-        let isMounted = true;
-
-        const getSessionAndProfile = async () => {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!isMounted) return;
-
-                if (session?.user) {
-                    setUser(session.user);
-                    const userProfile = await getUserProfile(session.user.id);
-                    if (!isMounted) return;
-                    setProfile(userProfile);
-                    setIsAdmin(userProfile?.role === 'otwstaff');
-                } else {
-                    setUser(null);
-                    setProfile(null);
-                    setIsAdmin(false);
-                }
-            } catch (err) {
-                console.error("Error loading session/profile:", err);
-                if (isMounted) {
-                    setUser(null);
-                    setProfile(null);
-                    setIsAdmin(false);
-                }
-            } finally {
-                if (isMounted) setLoading(false);
-            }
-        };
-
-        getSessionAndProfile();
-
-        const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            if (session?.user) {
-                setUser(session.user);
-                try {
-                    const userProfile = await getUserProfile(session.user.id);
-                    if (!isMounted) return;
-                    setProfile(userProfile);
-                    setIsAdmin(userProfile?.role === 'otwstaff');
-                } catch (profileError) {
-                    console.error("Error fetching user profile on auth change:", profileError);
-                    if (isMounted) {
-                        setProfile(null);
-                        setIsAdmin(false);
-                    }
-                }
-            } else {
-                if (isMounted) {
-                    setUser(null);
-                    setProfile(null);
-                    setIsAdmin(false);
-                }
-            }
-            if (isMounted) setLoading(false);
-        });
-
-        return () => {
-            isMounted = false;
-            authListener.subscription.unsubscribe();
-        };
-    }, []); // 👈 run once only (no [user] dep)
-
-
-    const logout = async () => {
-        await supabase.auth.signOut();
-        setUser(null);
-        setProfile(null);
-        setIsAdmin(false);
-    };
-
-    const value = {
-        user,
-        profile,
-        loading,
-        isAdmin,
-        isAuthenticated: !!user,
-        role: profile?.role || null,
-        refreshProfile,
-        logout,
-    };
-
-    return (
-        <UserProfileContext.Provider value={value}>
-            {children}
-        </UserProfileContext.Provider>
-    );
-};
+const UserProfileContext = createContext<UserProfileContextType | null>(null);
 
 export const useUserProfile = () => {
-    const context = useContext(UserProfileContext);
-    if (context === undefined) {
-        throw new Error('useUserProfile must be used within a UserProfileProvider');
-    }
-    return context;
+  const context = useContext(UserProfileContext);
+  if (!context) {
+    throw new Error("useUserProfile must be used within a UserProfileProvider");
+  }
+  return context;
 };
 
-// Export UserProfile type for components that need it
-export type { UserProfile };
+interface UserProfileProviderProps {
+  children: React.ReactNode;
+}
 
-// Kept for backwards compatibility if other components use it, but useUserProfile is preferred
-export const useAuth = () => {
-    const context = useContext(UserProfileContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within a UserProfileProvider');
+export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const refreshProfile = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      // Get user profile and calculate total points from user_engagements
+      const userProfile = await getUserProfile(user.id);
+      if (!userProfile) return;
+
+      // Get engagement history to calculate accurate total points
+      const engagementHistory = await getUserEngagementHistory(user.id);
+      
+      // Update the profile with the calculated total points
+      const updatedProfile = {
+        ...userProfile,
+        total_points: engagementHistory.total_points
+      };
+
+      setProfile(updatedProfile);
+    } catch (error) {
+      console.error("Error refreshing profile:", error);
     }
-    return context;
+  }, [user?.id]);
+
+  const loadUserProfile = useCallback(async (currentUser: User) => {
+    try {
+      setLoading(true);
+      
+      // Get user profile
+      const userProfile = await getUserProfile(currentUser.id);
+      
+      if (!userProfile) {
+        console.error("No profile found for user:", currentUser.id);
+        setProfile(null);
+        return;
+      }
+
+      // Get engagement history to calculate accurate total points
+      const engagementHistory = await getUserEngagementHistory(currentUser.id);
+      
+      // Update the profile with the calculated total points from engagements
+      const updatedProfile = {
+        ...userProfile,
+        total_points: engagementHistory.total_points
+      };
+
+      setProfile(updatedProfile);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error("Error loading user profile:", error);
+      setProfile(null);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Initial session check
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session error:", error);
+          setLoading(false);
+          return;
+        }
+
+        if (session?.user) {
+          setUser(session.user);
+          await loadUserProfile(session.user);
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error getting initial session:", error);
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.email);
+        
+        if (session?.user) {
+          setUser(session.user);
+          await loadUserProfile(session.user);
+        } else {
+          setUser(null);
+          setProfile(null);
+          setIsAuthenticated(false);
+          setLoading(false);
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [loadUserProfile]);
+
+  const value: UserProfileContextType = {
+    user,
+    profile,
+    isAuthenticated,
+    loading,
+    refreshProfile,
+  };
+
+  return (
+    <UserProfileContext.Provider value={value}>
+      {children}
+    </UserProfileContext.Provider>
+  );
 };

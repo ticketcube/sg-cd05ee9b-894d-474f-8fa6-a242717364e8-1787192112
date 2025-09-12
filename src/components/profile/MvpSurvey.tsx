@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, Star, MessageSquare } from "lucide-react";
 import { mvpSurveyService, SurveyResponse } from "@/services/mvpSurveyService";
 import { useToast } from "@/hooks/use-toast";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 
 const SURVEY_QUESTION = {
   id: "overall_feedback",
@@ -21,6 +21,7 @@ export function MvpSurvey() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [response, setResponse] = useState<string>("");
   const { toast } = useToast();
+  const { refreshProfile } = useUserProfile();
 
   useEffect(() => {
     checkSurveyStatus();
@@ -61,6 +62,8 @@ export function MvpSurvey() {
       
       if (result.success) {
         setIsCompleted(true);
+        // Refresh profile to update points display
+        await refreshProfile();
         toast({
           title: "Survey Submitted!",
           description: `Thank you for your feedback! You earned ${result.pointsEarned} points.`

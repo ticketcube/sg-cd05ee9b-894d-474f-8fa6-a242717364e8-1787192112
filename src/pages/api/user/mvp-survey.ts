@@ -1,3 +1,4 @@
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '@/integrations/supabase/client';
 import { createClient } from '@supabase/supabase-js';
@@ -32,8 +33,9 @@ export default async function handler(
 
     const { responses } = req.body;
     
-    if (!responses || !Array.isArray(responses) || responses.length !== 3) {
-      return res.status(400).json({ error: 'Invalid survey responses' });
+    // Updated to expect 1 response instead of 3
+    if (!responses || !Array.isArray(responses) || responses.length !== 1) {
+      return res.status(400).json({ error: 'Invalid survey response - expected exactly 1 response' });
     }
 
     // Check if user has already completed the MVP survey
@@ -52,17 +54,19 @@ export default async function handler(
     if (existingSurvey && existingSurvey.length > 0) {
       return res.status(400).json({ 
         error: 'Survey already completed',
-        success: false 
+        success: false,
+        message: 'You have already completed the MVP survey'
       });
     }
 
-    // Record the survey completion in user_engagements
+    // Record the survey completion in user_engagements with 25 points
     const { error: insertError } = await supabaseAdmin
       .from('user_engagements')
       .insert({
         user_id: user.id,
         engagement_type: 'mvp_survey',
-        additional_data: {
+        points_earned: 25,
+        metadata: {
           responses: responses,
           completed_at: new Date().toISOString()
         }
@@ -85,15 +89,15 @@ export default async function handler(
       // Survey was recorded but points failed - still return success
       return res.status(200).json({
         success: true,
-        pointsEarned: 0,
-        message: 'Survey completed but points could not be awarded'
+        pointsEarned: 25,
+        message: 'Survey completed! Points may take a moment to appear in your profile.'
       });
     }
 
     return res.status(200).json({
       success: true,
       pointsEarned: 25,
-      message: 'Survey completed successfully'
+      message: 'Survey completed successfully! You earned 25 points.'
     });
 
   } catch (error) {
