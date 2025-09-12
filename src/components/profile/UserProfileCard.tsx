@@ -151,13 +151,15 @@ export function UserProfileCard() {
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4 pt-0">
-        <div className="grid grid-cols-1 gap-4">
+      
+      <CardContent className="pt-0">
+        {/* Three Horizontal Sections Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Username Section */}
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-            <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
-            <div className="flex-1">
-              <span className="text-sm text-gray-500">Username</span>
+          <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <User className="h-4 w-4 text-gray-400 flex-shrink-0 mt-1" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm text-gray-500 block">Username</span>
               {isEditingUsername ? (
                 <div className="flex items-center gap-2 mt-1">
                   <Input
@@ -166,35 +168,37 @@ export function UserProfileCard() {
                     className="h-8 text-sm bg-white border-gray-200 text-black"
                     placeholder="Enter username"
                   />
-                  <Button
-                    size="sm"
-                    onClick={handleUsernameSave}
-                    disabled={isSaving}
-                    className="h-8 w-8 p-0 bg-black hover:bg-gray-800"
-                  >
-                    {isSaving ? (
-                      <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <Save className="h-3 w-3" />
-                    )}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleUsernameCancel}
-                    className="h-8 w-8 p-0 border-gray-200"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button
+                      size="sm"
+                      onClick={handleUsernameSave}
+                      disabled={isSaving}
+                      className="h-8 w-8 p-0 bg-black hover:bg-gray-800"
+                    >
+                      {isSaving ? (
+                        <div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Save className="h-3 w-3" />
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleUsernameCancel}
+                      className="h-8 w-8 p-0 border-gray-200"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-between mt-1">
-                  <p className="text-black font-medium">{profile.username || "Not set"}</p>
+                  <p className="text-black font-medium truncate">{profile.username || "Not set"}</p>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={handleUsernameEdit}
-                    className="h-7 px-2 text-gray-500 hover:text-black hover:bg-gray-100"
+                    className="h-7 px-2 text-gray-500 hover:text-black hover:bg-gray-100 flex-shrink-0"
                   >
                     <Edit className="h-3 w-3" />
                   </Button>
@@ -204,28 +208,28 @@ export function UserProfileCard() {
           </div>
 
           {/* Email Section */}
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-            <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
-            <div className="flex-1">
-              <span className="text-sm text-gray-500">Email</span>
-              <p className="text-black font-medium truncate">{user.email}</p>
+          <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <Mail className="h-4 w-4 text-gray-400 flex-shrink-0 mt-1" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm text-gray-500 block">Email</span>
+              <p className="text-black font-medium truncate mt-1">{user.email}</p>
             </div>
           </div>
 
           {/* Password Reset Section */}
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-            <Key className="h-4 w-4 text-gray-400 flex-shrink-0" />
-            <div className="flex-1 flex items-center justify-between">
-              <div>
-                <span className="text-sm text-gray-500">Password</span>
-                <p className="text-black font-medium">••••••••</p>
+          <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <Key className="h-4 w-4 text-gray-400 flex-shrink-0 mt-1" />
+            <div className="flex-1 flex items-start justify-between min-w-0">
+              <div className="min-w-0 flex-1">
+                <span className="text-sm text-gray-500 block">Password</span>
+                <p className="text-black font-medium mt-1">••••••••</p>
               </div>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 px-3 border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-black"
+                    className="h-8 px-3 border-gray-200 text-gray-600 hover:bg-gray-100 hover:text-black flex-shrink-0 ml-2"
                   >
                     Reset
                   </Button>
