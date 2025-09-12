@@ -1,212 +1,268 @@
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
+import AuthDialog from "@/components/AuthDialog";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX, Gift, Compass, Star, Trophy, Users, Calendar, Music } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 
-    import { useState, useEffect, useRef } from "react";
-    import { useRouter } from "next/router";
-    import AuthDialog from "@/components/AuthDialog";
-    import { Button } from "@/components/ui/button";
-    import { Volume2, VolumeX, Gift, Compass, Star, Trophy } from "lucide-react";
-    import { Badge } from "@/components/ui/badge";
-    import { useUserProfile } from "@/contexts/UserProfileContext";
+export default function HomePage() {
+    const router = useRouter();
+    const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState("discover");
+    const [isMuted, setIsMuted] = useState(true);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
-    export default function HomePage() {
-        const router = useRouter();
-        const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
-        const [activeTab, setActiveTab] = useState("discover");
-        const [isMuted, setIsMuted] = useState(true);
-        const videoRef = useRef<HTMLVideoElement>(null);
+    const { isAuthenticated, sessionLoading } = useUserProfile();
 
-        const { isAuthenticated, sessionLoading } = useUserProfile();
-
-        // Redirect effect based on the fast session check
-        useEffect(() => {
-            // Wait until the initial session check is complete
-            if (sessionLoading) {
-                return;
-            }
-
-            // If the check is done and the user is logged in, redirect immediately.
-            if (isAuthenticated) {
-                router.replace("/discovery-dashboard");
-            }
-        }, [sessionLoading, isAuthenticated, router]);
-
-        const handleRegisterClick = () => {
-            if (isAuthenticated) {
-                router.push("/discovery-dashboard");
-            } else {
-                setAuthDialogOpen(true);
-            }
-        };
-
-        const toggleMute = () => {
-            if (videoRef.current) {
-                videoRef.current.muted = !videoRef.current.muted;
-                setIsMuted(videoRef.current.muted);
-            }
-        };
-
-        const handleAuthClose = () => {
-            setAuthDialogOpen(false);
-        };
-
-        // Show a full-page loader while checking the auth session.
-        // This prevents the "flash" of the homepage for logged-in users before they redirect.
-        if (sessionLoading || isAuthenticated) {
-            return (
-                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
-                    <div className="text-center space-y-4">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-                        <p className="text-white text-lg">Loading...</p>
-                    </div>
-                </div>
-            );
+    // Redirect effect based on the fast session check
+    useEffect(() => {
+        // Wait until the initial session check is complete
+        if (sessionLoading) {
+            return;
         }
 
+        // If the check is done and the user is logged in, redirect immediately.
+        if (isAuthenticated) {
+            router.replace("/discovery-dashboard");
+        }
+    }, [sessionLoading, isAuthenticated, router]);
+
+    const handleRegisterClick = () => {
+        if (isAuthenticated) {
+            router.push("/discovery-dashboard");
+        } else {
+            setAuthDialogOpen(true);
+        }
+    };
+
+    const toggleMute = () => {
+        if (videoRef.current) {
+            videoRef.current.muted = !videoRef.current.muted;
+            setIsMuted(videoRef.current.muted);
+        }
+    };
+
+    const handleAuthClose = () => {
+        setAuthDialogOpen(false);
+    };
+
+    // Show a full-page loader while checking the auth session.
+    // This prevents the "flash" of the homepage for logged-in users before they redirect.
+    if (sessionLoading || isAuthenticated) {
         return (
-            <div className="min-h-screen bg-gray-200">
-                {/* Hero Video */}
-                <div className="relative overflow-hidden">
-                    <video
-                        ref={videoRef}
-                        className="w-full h-auto max-h-[80vh] object-cover"
-                        src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                    />
-                    <button
-                        onClick={toggleMute}
-                        className="absolute bottom-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg"
-                    >
-                        {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-                    </button>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
+                <div className="text-center space-y-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+                    <p className="text-white text-lg">Loading...</p>
                 </div>
+            </div>
+        );
+    }
 
-                {/* Register CTA */}
-                <div className="flex justify-center mt-10 pb-4">
-                    <Button
-                        onClick={handleRegisterClick}
-                        className="bg-red-600 hover:bg-red-700 text-lg px-6 py-4 rounded-xl shadow-lg text-white "
-                    >
-                        {isAuthenticated ? 'Go to Dashboard' : 'Register to Discover Rewards'}
-                    </Button>
-                </div>
+    return (
+        <div className="min-h-screen bg-white">
+            {/* Hero Video */}
+            <div className="relative overflow-hidden">
+                <video
+                    ref={videoRef}
+                    className="w-full h-auto max-h-[80vh] object-cover"
+                    src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                />
+                <button
+                    onClick={toggleMute}
+                    className="absolute bottom-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
+                >
+                    {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                </button>
+            </div>
 
-                {/* Tabs */}
-                <div className="max-w-4xl mx-auto px-3 md:px-4 py-8 md:py-12 bg-black">
-                    <div className="flex justify-center mb-6 md:mb-8">
-                        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-1.5 border border-white/10 w-full max-w-lg">
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => setActiveTab("discover")}
-                                    className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all text-base ${activeTab === "discover"
-                                            ? "bg-blue-600 text-white shadow-lg shadow-blue-600/25"
-                                            : "text-gray-400 hover:text-white hover:bg-white/5"
-                                        }`}
-                                >
-                                    <Compass className="w-4 h-4 inline mr-2" />
-                                    Discover
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab("rewards")}
-                                    className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all text-base ${activeTab === "rewards"
-                                            ? "bg-purple-600 text-white shadow-lg shadow-purple-600/25"
-                                            : "text-gray-400 hover:text-white hover:bg-white/5"
-                                        }`}
-                                >
-                                    <Gift className="w-4 h-4 inline mr-2" />
-                                    Rewards
-                                </button>
-                            </div>
+            {/* Register CTA */}
+            <div className="flex justify-center py-8 bg-white">
+                <Button
+                    onClick={handleRegisterClick}
+                    className="bg-black hover:bg-gray-800 text-white text-lg px-8 py-4 rounded-lg shadow-sm transition-all hover:shadow-md"
+                >
+                    {isAuthenticated ? 'Go to Dashboard' : 'Register to Discover Rewards'}
+                </Button>
+            </div>
+
+            {/* Modern Clean Tabs Section */}
+            <div className="bg-white">
+                <div className="max-w-4xl mx-auto px-4 py-12">
+                    {/* Tab Navigation */}
+                    <div className="flex justify-center mb-12">
+                        <div className="flex bg-gray-50 rounded-lg p-1 border border-gray-200">
+                            <button
+                                onClick={() => setActiveTab("discover")}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium transition-all ${
+                                    activeTab === "discover"
+                                        ? "bg-white text-black shadow-sm border border-gray-200"
+                                        : "text-gray-600 hover:text-black hover:bg-white/50"
+                                }`}
+                            >
+                                <Compass className="w-4 h-4" />
+                                Discover
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("rewards")}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium transition-all ${
+                                    activeTab === "rewards"
+                                        ? "bg-white text-black shadow-sm border border-gray-200"
+                                        : "text-gray-600 hover:text-black hover:bg-white/50"
+                                }`}
+                            >
+                                <Gift className="w-4 h-4" />
+                                Rewards
+                            </button>
                         </div>
                     </div>
 
                     {/* Tab Content */}
-                    {activeTab === "discover" && <DiscoverMoreTab />}
-                    {activeTab === "rewards" && <MoreRewardsTab />}
+                    <div className="transition-all duration-300">
+                        {activeTab === "discover" && <DiscoverMoreTab />}
+                        {activeTab === "rewards" && <MoreRewardsTab />}
+                    </div>
                 </div>
-
-                {/* Signup Dialog */}
-                <AuthDialog isOpen={isAuthDialogOpen} onClose={handleAuthClose} title="Join OnesToWatch" />
             </div>
-        );
-    }
 
-    /* -------------------------------
-    Tab Components
-    -------------------------------- */
+            {/* Signup Dialog */}
+            <AuthDialog isOpen={isAuthDialogOpen} onClose={handleAuthClose} title="Join OnesToWatch" />
+        </div>
+    );
+}
 
-    function DiscoverMoreTab() {
-        return (
-            <div className="space-y-6">
-                <div className="grid gap-6">
-                    <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
-                        <div className="flex items-center gap-6">
-                            <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
-                                <Star className="w-10 h-10 text-white" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-white text-xl mb-2">
-                                    Discover Amazing New Artists
-                                </h3>
-                                <p className="text-gray-400 text-base pb-4">
-                                    Explore different ways to find your next favorite artist
+/* -------------------------------
+Tab Components
+-------------------------------- */
+
+function DiscoverMoreTab() {
+    return (
+        <div className="space-y-8">
+            {/* Main Discovery Card */}
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-all duration-300">
+                <div className="flex items-start gap-6">
+                    <div className="p-4 bg-black rounded-xl">
+                        <Star className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="text-2xl font-bold text-black mb-3">
+                            Discover Amazing New Artists
+                        </h3>
+                        <p className="text-gray-600 text-lg mb-6 leading-relaxed">
+                            Explore different ways to find your next favorite artist through our curated discovery tools
+                        </p>
+                        
+                        {/* Discovery Methods Grid */}
+                        <div className="grid md:grid-cols-3 gap-4">
+                            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <Calendar className="w-5 h-5 text-gray-500" />
+                                    <span className="font-medium text-black">Weekly Lists</span>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                    Watch, vote & earn with our curated weekly artist selections
                                 </p>
-                                <div className="flex justify-evenly gap-2 mt-4">
-                                <Badge variant="outline" className="border-white text-white px-3 py-1">
-                                    Weekly Artists Watch, Vote & Earn List
-                                </Badge>
-                                <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
-                                    Global Vibes Discovery Matrix
-                                </Badge>
-                                <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
-                                    OTW Trending Artists Chart
+                            </div>
+                            
+                            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <Users className="w-5 h-5 text-gray-500" />
+                                    <span className="font-medium text-black">Vibes Matrix</span>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                    Find artists through our global discovery matrix
+                                </p>
+                            </div>
+                            
+                            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <Music className="w-5 h-5 text-gray-500" />
+                                    <span className="font-medium text-black">Trending Chart</span>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                    Explore what's trending on the OTW charts
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function MoreRewardsTab() {
+    return (
+        <div className="space-y-8">
+            {/* Main Rewards Card */}
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-all duration-300">
+                <div className="flex items-start gap-6">
+                    <div className="p-4 bg-black rounded-xl">
+                        <Trophy className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="text-2xl font-bold text-black mb-3">
+                            We Reward Discovery
+                        </h3>
+                        <p className="text-gray-600 text-lg mb-6 leading-relaxed">
+                            Earn points for exclusive merchandise, insider access, and even free tickets to shows
+                        </p>
+                        
+                        {/* Rewards Timeline */}
+                        <div className="space-y-4">
+                            <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 bg-black rounded-full"></div>
+                                        <span className="font-semibold text-black">September 2025</span>
+                                    </div>
+                                    <Badge className="bg-black text-white border-0">
+                                        Active
                                     </Badge>
                                 </div>
+                                <p className="text-gray-600 pl-6">
+                                    <strong>240 Points</strong> = 9 Exclusive OTW Zines
+                                </p>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    function MoreRewardsTab() {
-        return (
-            <div className="space-y-6">
-                <div className="grid gap-6">
-                    <div className="grid gap-6">
-                        <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
-                            <div className="flex items-center gap-6">
-                                <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
-                                    <Trophy className="w-10 h-10 text-white" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-bold text-white text-xl mb-2">
-                                        We Reward Discovery
-                                    </h3>
-                                    <p className="text-gray-400 text-base pb-4">
-                                        Earn points for exclusive merch, insider access and even free tix!
-                                    </p>
-                                    {/* Badges row */}
-                                    <div className="flex justify-evenly gap-4 mt-4">
-                                        <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
-                                            September: 240 Points = 9 OTW Zines
-                                        </Badge>
-                                        <Badge variant="outline" className="border-purple-500 text-purple-400 px-3 py-1">
-                                            October: Coming Soon!
-                                        </Badge>
-                                        <Badge variant="outline" className="border-pink-500 text-pink-400 px-3 py-1">
-                                            November: Coming Soon!
-                                        </Badge>
+                            
+                            <div className="bg-white border border-gray-200 rounded-lg p-4 opacity-75">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                                        <span className="font-semibold text-gray-500">October 2025</span>
                                     </div>
+                                    <Badge variant="outline" className="border-gray-300 text-gray-500">
+                                        Coming Soon
+                                    </Badge>
                                 </div>
+                                <p className="text-gray-500 pl-6">
+                                    New rewards dropping soon...
+                                </p>
+                            </div>
+                            
+                            <div className="bg-white border border-gray-200 rounded-lg p-4 opacity-75">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                                        <span className="font-semibold text-gray-500">November 2025</span>
+                                    </div>
+                                    <Badge variant="outline" className="border-gray-300 text-gray-500">
+                                        Coming Soon
+                                    </Badge>
+                                </div>
+                                <p className="text-gray-500 pl-6">
+                                    Holiday rewards & special events
+                                </p>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
-        );
-    }
-  
+        </div>
+    );
+}
