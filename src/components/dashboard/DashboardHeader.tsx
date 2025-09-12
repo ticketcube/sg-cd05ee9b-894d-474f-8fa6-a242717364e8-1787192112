@@ -20,7 +20,7 @@ export default function DashboardHeader({
 }: DashboardHeaderProps) {
     return (
         <div className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900"></div>
+            <div className="container mx-auto px-4 py-8"></div>
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1),transparent_70%)]"></div>
             <div className="relative max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-12">
                 <div className="text-center mb-6 md:mb-12">
