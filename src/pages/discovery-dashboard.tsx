@@ -210,40 +210,7 @@ const DiscoveryDashboard = () => {
            
             <div className="max-w-6xl mx-auto px-4 py-8">
                 {/* Tab Navigation */}
-                <div className="flex justify-center mb-8">
-                    <div className="flex bg-gray-50 rounded-lg p-1">
-                        <button
-                            onClick={() => setActiveTab('discover')}
-                            className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                                activeTab === 'discover'
-                                    ? 'bg-white text-black shadow-sm border border-gray-200'
-                                    : 'text-gray-600 hover:text-black'
-                            }`}
-                        >
-                            Discover
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('rewards')}
-                            className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                                activeTab === 'rewards'
-                                    ? 'bg-white text-black shadow-sm border border-gray-200'
-                                    : 'text-gray-600 hover:text-black'
-                            }`}
-                        >
-                            Rewards
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('staff')}
-                            className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
-                                activeTab === 'staff'
-                                    ? 'bg-white text-black shadow-sm border border-gray-200'
-                                    : 'text-gray-600 hover:text-black'
-                            }`}
-                        >
-                            Staff Portal
-                        </button>
-                    </div>
-                </div>
+                
 
                 {/* Main Content */}
                 <div className="space-y-6">
