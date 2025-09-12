@@ -171,10 +171,10 @@ function DiscoverMoreTab() {
                                 Explore different ways to find your next favorite artist
                             </p>
                             <div className="flex justify-evenly gap-2 mt-4">
-                              <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
+                              <Badge variant="outline" className="border-dark-blue-500 text-dark-blue-400 px-3 py-1">
                                 Weekly Artists Watch, Vote & Earn List
                              </Badge>
-                              <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
+                              <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
                                 Global Vibes Discovery Matrix
                              </Badge>
                              <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
