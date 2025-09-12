@@ -8,6 +8,8 @@ interface UserProfileContextType {
   profile: UserProfile | null;
   isAuthenticated: boolean;
   loading: boolean;
+  role: string | null;
+  logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -30,6 +32,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<string | null>(null);
 
   const refreshProfile = useCallback(async () => {
     if (!user?.id) return;
@@ -49,6 +52,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       };
 
       setProfile(updatedProfile);
+      setRole(updatedProfile.role);
     } catch (error) {
       console.error("Error refreshing profile:", error);
     }
@@ -77,6 +81,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       };
 
       setProfile(updatedProfile);
+      setRole(updatedProfile.role);
       setIsAuthenticated(true);
     } catch (error) {
       console.error("Error loading user profile:", error);
@@ -124,6 +129,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
         } else {
           setUser(null);
           setProfile(null);
+          setRole(null);
           setIsAuthenticated(false);
           setLoading(false);
         }
@@ -135,11 +141,21 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     };
   }, [loadUserProfile]);
 
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    setRole(null);
+    setIsAuthenticated(false);
+  };
+
   const value: UserProfileContextType = {
     user,
     profile,
     isAuthenticated,
     loading,
+    role,
+    logout,
     refreshProfile,
   };
 

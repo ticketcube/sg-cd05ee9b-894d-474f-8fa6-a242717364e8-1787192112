@@ -1,4 +1,4 @@
-import type { UserProfile } from "@/contexts/UserProfileContext";
+import type { UserProfile } from "@/services/userProfileService";
 import { Sparkles, Trophy, Star, Calendar } from "lucide-react";
 import HeroVideo from "./HeroVideo";
 import WeeklyListCard from './WeeklyListCard';
