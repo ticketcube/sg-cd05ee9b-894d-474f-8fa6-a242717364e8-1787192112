@@ -225,8 +225,11 @@ function DiscoverMoreTab() {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-white text-xl group-hover:text-green-300 transition-colors mb-2">
-                Weekly Artist Ratings
+                 Discover Amazing New Artists
                           </h3>
+                          <p className="text-gray-400 text-base">
+                              Explore different ways to find your next favorite artist
+                          </p>
              <div className="flex items-center gap-6">
               <Badge
                 variant="outline"
