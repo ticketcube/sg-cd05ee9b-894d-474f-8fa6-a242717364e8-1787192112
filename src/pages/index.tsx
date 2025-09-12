@@ -170,15 +170,17 @@ function DiscoverMoreTab() {
                             <p className="text-gray-400 text-base pb-4">
                                 Explore different ways to find your next favorite artist
                             </p>
-                            <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
+                            <div className="flex justify-center bg-gray-800 p-4">
+                              <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
                                 Watch & Rate for Points
-                            </Badge>
-                            <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
+                             </Badge>
+                              <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
                                 Watch & Rate for Points
-                            </Badge>
-                            <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
+                             </Badge>
+                             <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
                                 Watch & Rate for Points
-                            </Badge>
+                                </Badge>
+                            </div>
                         </div>
                     </div>
                 </div>
