@@ -192,6 +192,7 @@ function DiscoverMoreTab() {
 function MoreRewardsTab() {
     return (
         <div className="space-y-6">
+          <div className="grid gap-6">
             <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-white mb-2">Your Rewards & Achievements</h2>
                 <p className="text-gray-400 text-base">
