@@ -170,7 +170,7 @@ function DiscoverMoreTab() {
                             <p className="text-gray-400 text-base pb-4">
                                 Explore different ways to find your next favorite artist
                             </p>
-                            <div className="flex justify-center bg-gray-800 p-4">
+                            <div className="flex justify-evenly gap-2 mt-4">
                               <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
                                 Watch & Rate for Points
                              </Badge>
