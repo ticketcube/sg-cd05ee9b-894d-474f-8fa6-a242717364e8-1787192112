@@ -94,7 +94,7 @@ export function QuadrantRating({
 
     if (checkingRating) {
         return (
-            <div className="h-full flex flex-col justify-center items-center p-6 bg-gradient-to-br from-gray-900 to-gray-800">
+            <div className="flex flex-col flex-1 min-h-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -113,9 +113,9 @@ export function QuadrantRating({
     }
 
     return (
-        <div className="h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col">
+        <div className="flex flex-col flex-1 min-h-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
             {/* Mobile/Desktop Combined Header - Now Clean and Focused */}
-            <div className="p-4 lg:p-6 border-b border-gray-700 flex-shrink-0">
+            <div className="p-3 sm:p-4 lg:p-6 border-b border-gray-700 flex-shrink-0">
                 {/* Points Status Display - Only Success States */}
                 {(hasEarnedPoints || !isEligibleForPoints) && (
                     <div className="flex justify-center mb-4">
