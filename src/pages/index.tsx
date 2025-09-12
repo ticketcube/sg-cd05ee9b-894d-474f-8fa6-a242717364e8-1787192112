@@ -83,7 +83,7 @@
                 </div>
 
                 {/* Register CTA */}
-                <div className="flex justify-center mt-10">
+                <div className="flex justify-center mt-10 pb-4">
                     <Button
                         onClick={handleRegisterClick}
                         className="bg-red-600 hover:bg-red-700 text-lg px-6 py-4 rounded-xl shadow-lg text-white "
@@ -153,7 +153,7 @@
                                     Explore different ways to find your next favorite artist
                                 </p>
                                 <div className="flex justify-evenly gap-2 mt-4">
-                                <Badge variant="outline" className="border-light-blue-500 text-light-blue-400 px-3 py-1">
+                                <Badge variant="outline" className="border-white text-white px-3 py-1">
                                     Weekly Artists Watch, Vote & Earn List
                                 </Badge>
                                 <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
