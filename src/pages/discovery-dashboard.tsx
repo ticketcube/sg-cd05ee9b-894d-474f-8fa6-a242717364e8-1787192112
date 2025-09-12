@@ -11,13 +11,11 @@ import { Play, Music, Award, TrendingUp, AlertCircle } from 'lucide-react';
 
 // Hook & Context Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import { usePointsOnboarding } from '@/hooks/usePointsOnboarding';
 import { dashboardStatsService, DashboardStats } from '@/services/dashboardStatsService';
 
 const DiscoveryDashboard = () => {
-    const { profile, loading: userLoading, user, isAuthenticated } = useUserProfile();
+    const { profile, loading: userLoading, user, isAuthenticated, sessionLoading } = useUserProfile();
     const [activeTab, setActiveTab] = useState('discover');
-    const { showOnboarding, dismiss } = usePointsOnboarding();
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
         totalPoints: 0,
@@ -27,13 +25,18 @@ const DiscoveryDashboard = () => {
     const [statsLoading, setStatsLoading] = useState(false);
     const [statsError, setStatsError] = useState<string | null>(null);
 
-    // Fetch dashboard stats when profile is available - with proper cleanup and error handling
+    // Fetch dashboard stats - FIXED: Better dependency management and cleanup
     useEffect(() => {
-        let isMounted = true;
+        let cancelled = false;
         
         const fetchStats = async () => {
-            // Only fetch if we have a user ID and profile
-            if (!user?.id || !profile) {
+            // Only fetch if we have a user ID - simplified condition
+            if (!user?.id) {
+                return;
+            }
+
+            // Don't fetch if we're already loading or user is still loading
+            if (userLoading || statsLoading) {
                 return;
             }
 
@@ -45,19 +48,18 @@ const DiscoveryDashboard = () => {
                 
                 const stats = await dashboardStatsService.getUserStats(user.id);
                 
-                // Only update state if component is still mounted
-                if (isMounted) {
+                // Only update state if not cancelled
+                if (!cancelled) {
                     setDashboardStats(stats);
+                    console.log('[DiscoveryDashboard] Stats loaded successfully:', stats);
                 }
-                
-                console.log('[DiscoveryDashboard] Stats fetched successfully:', stats);
                 
             } catch (error) {
                 console.error('[DiscoveryDashboard] Error fetching dashboard stats:', error);
                 
-                if (isMounted) {
+                if (!cancelled) {
                     setStatsError('Failed to load dashboard statistics');
-                    // Use profile total_points as fallback
+                    // Use profile as fallback
                     setDashboardStats({
                         totalPoints: profile?.total_points || 0,
                         artistsRated: 0,
@@ -65,21 +67,29 @@ const DiscoveryDashboard = () => {
                     });
                 }
             } finally {
-                if (isMounted) {
+                if (!cancelled) {
                     setStatsLoading(false);
                 }
             }
         };
 
-        fetchStats();
+        // Only run when we have a stable user ID
+        if (user?.id && !userLoading && !sessionLoading) {
+            fetchStats();
+        }
 
-        // Cleanup function to prevent state updates if component unmounts
+        // Cleanup function
         return () => {
-            isMounted = false;
+            cancelled = true;
         };
-    }, [user?.id, profile?.user_id]); // Only depend on IDs to prevent excessive re-renders
+    }, [user?.id, userLoading, sessionLoading]); // FIXED: Removed profile from deps to prevent infinite loops
 
-    // Show loading while checking authentication
+    // Show loading during session check
+    if (sessionLoading) {
+        return <DashboardLoading />;
+    }
+
+    // Show loading during user profile loading
     if (userLoading) {
         return <DashboardLoading />;
     }
@@ -193,7 +203,7 @@ const DiscoveryDashboard = () => {
             <DashboardHeader
                 profile={profile}
                 historyLoading={statsLoading}
-                total_points={dashboardStats.totalPoints}
+                total_points={statsLoading ? (profile?.total_points || 0) : dashboardStats.totalPoints}
                 artistsRated={dashboardStats.artistsRated}
                 weeksActive={dashboardStats.weeksActive}
             />
