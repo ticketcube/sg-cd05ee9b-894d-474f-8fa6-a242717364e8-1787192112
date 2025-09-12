@@ -38,7 +38,7 @@ export default function WeeklyListCard() {
     if (loading) {
         return (
             <div className="mt-8">
-                <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-neutral-50 via-white to-neutral-50/80">
+                <Card className="overflow-hidden border-0 shadow-2xl bg-[hsl(279,92%,25%)]0">
                     <CardContent className="p-8">
                         <div className="animate-pulse space-y-6">
                             <div className="space-y-3">
