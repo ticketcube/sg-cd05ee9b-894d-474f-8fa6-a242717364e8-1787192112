@@ -239,50 +239,12 @@ function DiscoverMoreTab() {
                 </Badge>
             </div>   
              
-        </div>
-            <TrendingUp className="w-4 h-4 text-white" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 rounded-xl p-6 border border-purple-500/30 hover:border-purple-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/25">
-              <Music className="w-10 h-10 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-white text-xl group-hover:text-purple-300 transition-colors mb-2">
-                Global Vibes Chart
-              </h3>
-              <Badge
-                variant="outline"
-                className="border-purple-500 text-purple-400 px-3 py-1"
-              >
-                Mood-Based Discovery
-              </Badge>
-            </div>
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-r from-orange-900/40 to-red-900/40 rounded-xl p-6 border border-orange-500/30 hover:border-orange-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/25">
-              <BarChart className="w-10 h-10 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-white text-xl group-hover:text-orange-300 transition-colors mb-2">
-                Discovery Charts
-              </h3>
-              <Badge
-                variant="outline"
-                className="border-orange-500 text-orange-400 px-3 py-1"
-              >
-                Live Rankings
-              </Badge>
             </div>
             <TrendingUp className="w-4 h-4 text-white" />
           </div>
         </div>
+
+      
     </div>
   );
 }
