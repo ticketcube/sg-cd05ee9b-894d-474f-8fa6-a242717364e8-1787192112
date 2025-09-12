@@ -7,7 +7,7 @@ interface DashboardHeaderProps {
     profile: UserProfile | null;
     historyLoading: boolean;
     total_points: number;
-    totalVotes: number;
+    videoviews: number;
     weeksActive: number;
 }
 
@@ -15,7 +15,7 @@ export default function DashboardHeader({
     profile,
     historyLoading,
     total_points,
-    totalVotes,
+    videoviews,
     weeksActive
 }: DashboardHeaderProps) {
     return (
@@ -40,12 +40,12 @@ export default function DashboardHeader({
   <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
     <Trophy className="w-4 h-4 text-blue-400 mx-auto mb-1" />
     <div className="text-sm font-bold text-white">{historyLoading ? '...' : total_points}</div>
-    <div className="text-[10px] text-gray-400">Points</div>
+    <div className="text-[10px] text-gray-400">Reward Points</div>
   </div>
   <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
     <Star className="w-4 h-4 text-green-400 mx-auto mb-1" />
     <div className="text-sm font-bold text-white">{historyLoading ? '...' : totalVotes}</div>
-    <div className="text-[10px] text-gray-400">Artists Rated</div>
+    <div className="text-[10px] text-gray-400">Artists Discovered</div>
   </div>
   <div className="bg-white/5 rounded-lg px-2 py-1 text-center border border-white/10">
     <Calendar className="w-4 h-4 text-orange-400 mx-auto mb-1" />

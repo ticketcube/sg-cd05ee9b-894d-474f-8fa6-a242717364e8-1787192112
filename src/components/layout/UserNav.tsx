@@ -31,7 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function UserNav() {
   const { user, profile, loading } = useUserProfile();
   const isMobile = useMobile();
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
 
   const handleLogout = async () => {
     await authService.signOut();
@@ -48,10 +48,19 @@ export default function UserNav() {
 
   if (!user) {
     return (
-      <>
-        <Button onClick={() => setShowAuthDialog(true)}>Login</Button>
-        <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
-      </>
+        <>
+            <div className="flex items-center gap-3">
+                <Button onClick={() => setAuthDialogOpen(true)}>Login</Button>
+            </div>
+
+            {/* Auth Dialog for header login button */}
+            <AuthDialog 
+                isOpen={isAuthDialogOpen} 
+                onClose={() => setAuthDialogOpen(false)}
+                title="Join OnesToWatch"
+                description="Create your account to start earning rewards and voting on discoveries!"
+            />
+        </>
     );
   }
 
