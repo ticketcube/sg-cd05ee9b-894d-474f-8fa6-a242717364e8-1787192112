@@ -79,7 +79,7 @@ const DiscoveryDashboard = () => {
                 weeksActive={dashboardStats.weeksActive}
             />
            
-            <div className="container mx-auto px-4 py-8 text-center">
+            <div className="container mx-auto bg-gradient-to-br from-gray-900 via-black to-gray-900 px-4 py-8 text-center">
                 <TabNavigation
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
