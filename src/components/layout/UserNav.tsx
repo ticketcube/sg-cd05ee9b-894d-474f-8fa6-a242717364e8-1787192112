@@ -67,8 +67,11 @@ export default function UserNav() {
   const menuItems = (
     <>
       <DropdownMenuItem asChild>
-        <Link href="/discovery-dashboard">Discover</Link>
-      </DropdownMenuItem>
+        <Link href="/discovery-dashboard">Discovery</Link>
+          </DropdownMenuItem>
+    <DropdownMenuItem asChild>
+              <Link href="/september/rewards">Rewards</Link>
+          </DropdownMenuItem>
       <DropdownMenuItem asChild>
         <Link href="/profile">Profile</Link>
       </DropdownMenuItem>
