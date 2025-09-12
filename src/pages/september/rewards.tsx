@@ -191,7 +191,7 @@ export default function SeptemberRewardsPage() {
                     <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
                        Weekly Discovery Rewards
                     </h1>
-                    <p className="mt-4 text-lg text-muted-foreground" pb-2  >
+                    <p className="mt-4 text-lg text-muted-foreground pb-2" >
                         Rate artists and earn 10 points each! Watch for 15 seconds, then rate.
                     </p>
                      <SeptemberReward />
