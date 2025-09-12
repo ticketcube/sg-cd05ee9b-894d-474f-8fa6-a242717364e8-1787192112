@@ -206,11 +206,20 @@ function MoreRewardsTab() {
                         </div>
                         <div className="flex-1 min-w-0">
                             <h3 className="font-bold text-white text-xl mb-2">
-                                September Discovery Reward
+                             We Reward Discovery
                             </h3>
-                            <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
-                                Earn 240 Points for all Nine OnesToWatch Zines!
+                            <p className="text-gray-400 text-base pb-4">
+                                Explore different ways to find your next favorite artist
+                            </p>
+                             <div className="flex justify-evenly gap-2 mt-4">
+                            <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
+                               September: 240 Points= Nine OnesToWatch Zines!
                             </Badge>
+                         <Badge variant="outline" className="border-dark-blue-500 text-dark-blue-400 px-3 py-1">
+                               October: Coming Soon!
+                             </Badge>
+                             
+
                         </div>
                     </div>
                 </div>
