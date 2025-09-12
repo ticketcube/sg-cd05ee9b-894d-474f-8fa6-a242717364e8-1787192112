@@ -95,10 +95,10 @@ export function ArtistInteractionModal({
 
                 {/* Modal wrapper with padding to show grid underneath */}
                 <div className="h-full flex flex-col">
-                    {/* 50/50 Content Split - No header bar */}
-                    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-                        {/* Video Section - 50% */}
-                        <div className="flex-1 bg-black relative">
+                    {/* 50/50 Content Split - Maintained at all screen sizes */}
+                    <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                        {/* Video Section - Always 50% */}
+                        <div className="flex-1 bg-black relative min-h-[300px] md:min-h-0">
                             {artist && (
                                 <ArtistVideoPlayer
                                     artist={artist}
@@ -107,8 +107,8 @@ export function ArtistInteractionModal({
                             )}
                         </div>
 
-                        {/* Rating Section - 50% */}
-                        <div className="flex-1 bg-gradient-to-br from-gray-900 via-gray-800 to-black border-t lg:border-t-0 lg:border-l border-gray-700">
+                        {/* Rating Section - Always 50% */}
+                        <div className="flex-1 bg-gradient-to-br from-gray-900 via-gray-800 to-black border-t md:border-t-0 md:border-l border-gray-700 min-h-[400px] md:min-h-0">
                             {artist && user ? (
                                 <div className="h-full">
                                     <QuadrantRating
