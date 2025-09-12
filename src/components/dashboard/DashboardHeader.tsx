@@ -26,7 +26,7 @@ export default function DashboardHeader({
                 <div className="text-center mb-6 md:mb-12">
                     <div className="inline-flex items-center gap-2 md:gap-3 bg-white/5 backdrop-blur-sm rounded-full px-3 md:px-6 py-2 md:py-3 mb-4 md:mb-6 border border-white/10">
                         <Sparkles className="w-3 md:w-4 h-3 md:h-4 text-white" />
-                        <span className="text-white font-medium text-sm md:text-base">Discovery Dashboard</span>
+                        <span className="text-white font-large text-sm md:text-base">Discovery Dashboard</span>
                     </div>
 
                     
