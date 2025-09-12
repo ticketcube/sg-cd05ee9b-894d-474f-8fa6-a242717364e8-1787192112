@@ -185,10 +185,10 @@ export default function SeptemberRewardsPage() {
                 <title>September Rewards - OTW</title>
                 <meta name="description" content="Participate in this month's special rewards program." />
             </Head>
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-2 py-2">
                 <div className="text-center mb-8">
                     <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-                        September Rewards
+                       Weekly Discovery Rewards
                     </h1>
                     <p className="mt-4 text-lg text-muted-foreground">
                         Rate artists and earn 10 points each! Watch for 15 seconds, then rate.
