@@ -65,7 +65,7 @@ export function SeptemberReward() {
       <div className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-amber-200/30 to-orange-200/30 rounded-full blur-2xl"></div>
       <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-tr from-yellow-200/40 to-amber-200/40 rounded-full blur-xl"></div>
       
-      <CardContent className="relative p-8 space-y-6">
+      <CardContent className="relative p-4 space-y-6">
         {/* Trophy Icon & Header */}
         <div className="flex items-start gap-4">
           <div className="relative">
