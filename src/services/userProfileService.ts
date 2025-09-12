@@ -47,6 +47,7 @@ export interface UserEngagementHistory {
     user_profile: UserProfile;
     weekly_summaries: UserEngagementSummary[];
     total_points: number;
+    total_engagements: number; 
 }
 
 /** Get a user's profile by user_id */
@@ -181,21 +182,18 @@ export const recordEngagement = async (
     return engagement as UserEngagement;
 
 };
-
 /** Get user's engagement history with weekly summaries - ✅ FIXED: Direct Supabase queries only */
 export const getUserEngagementHistory = async (userId: string): Promise<UserEngagementHistory> => {
     console.log(`[UserProfileService] Getting engagement history for user: ${userId}`);
 
-    // ✅ ENHANCED: Get user profile with retries (using direct Supabase)
+    // ✅ Get user profile
     const userProfile = await getUserProfile(userId);
     if (!userProfile) {
         throw new Error("User profile not found - engagement history cannot be loaded");
     }
 
-    // ✅ FIXED: Direct Supabase query with better error handling
+    // ✅ Fetch engagements
     console.log(`[UserProfileService] Fetching engagements for user_id: ${userId}`);
-
-    // Simple single query instead of retries
     const { data: engagements, error } = await supabase
         .from("user_engagements")
         .select("*")
@@ -207,10 +205,12 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
         throw error;
     }
 
-
     console.log(`✅ [UserProfileService] Found ${engagements?.length || 0} engagement records`);
 
-    // Process weekly summaries
+    // ✅ Total engagements
+    const totalEngagements = engagements?.length || 0;
+
+    // ✅ Process weekly summaries
     const weeklyMap = new Map < string, UserEngagementSummary> ();
     let calculatedTotalPoints = 0;
 
@@ -249,8 +249,10 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
             b.week_identifier.localeCompare(a.week_identifier)
         ),
         total_points: calculatedTotalPoints,
+        total_engagements: totalEngagements, // 👈 new field
     };
 };
+
 
 /** Get total points for a given week - ✅ FIXED: Direct Supabase only */
 export const getWeeklyStats = async (userId: string, weekIdentifier: string): Promise<{ total_points: number }> => {
