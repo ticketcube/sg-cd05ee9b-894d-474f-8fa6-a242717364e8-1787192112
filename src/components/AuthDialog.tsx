@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { LogIn, Mail } from "lucide-react";
+import { LogIn } from "lucide-react";
 
 interface AuthDialogProps {
   isOpen: boolean;
@@ -49,16 +48,16 @@ export default function AuthDialog({ isOpen, onClose, title = "Welcome to OnesTo
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-white">
+      <DialogContent className="sm:max-w-md bg-white border border-gray-200">
         <DialogHeader className="text-center space-y-3">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto">
             <LogIn className="w-8 h-8 text-white" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-neutral-900">
+          <DialogTitle className="text-2xl font-bold text-black">
             {title}
           </DialogTitle>
           {description && (
-            <DialogDescription className="text-neutral-600">
+            <DialogDescription className="text-gray-600">
               {description}
             </DialogDescription>
           )}
@@ -77,7 +76,7 @@ export default function AuthDialog({ isOpen, onClose, title = "Welcome to OnesTo
             className="w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 py-3 font-medium flex items-center justify-center gap-3"
           >
             {isLoading ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
             ) : (
               <>
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -92,7 +91,7 @@ export default function AuthDialog({ isOpen, onClose, title = "Welcome to OnesTo
           </Button>
 
           <div className="text-center">
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-gray-500">
               By continuing, you agree to our Terms of Service and Privacy Policy.
               Your account will be created automatically with a generated username that you can change later.
             </p>
