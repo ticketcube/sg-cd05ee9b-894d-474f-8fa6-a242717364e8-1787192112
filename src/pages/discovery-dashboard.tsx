@@ -26,7 +26,8 @@ const DiscoveryDashboard = () => {
     const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
         totalPoints: 0,
         artistsRated: 0,
-        weeksActive: 0
+        weeksActive: 0,
+        total_engagements:0
     });
     const [statsLoading, setStatsLoading] = useState(false);
 
@@ -74,7 +75,7 @@ const DiscoveryDashboard = () => {
                 profile={profile}
                 historyLoading={statsLoading}
                 total_points={dashboardStats.totalPoints}
-                totalVotes={dashboardStats.artistsRated}
+                total_engagements={dashboardStats.artistsRated}
                 weeksActive={dashboardStats.weeksActive}
             />
            
