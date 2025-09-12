@@ -11,12 +11,12 @@ export default function Header() {
             <Image
               src="/OTWLogocolor.png"
               alt="OTW Chart Logo"
-              width={40}
-              height={40}
+              width={100}
+              height={100}
               className="rounded-md"
             />
             <span className="hidden font-bold sm:inline-block">
-              OTW Chart
+              We Reward Discovery
             </span>
           </Link>
         </div>
