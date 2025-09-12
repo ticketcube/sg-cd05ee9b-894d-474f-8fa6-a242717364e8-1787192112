@@ -9,7 +9,7 @@ import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
 import { septemberRewardsService } from '@/services/septemberRewardsService';
 import { userEngagementService } from '@/services/userEngagementService';
 import { toast } from 'sonner';
-import SeptemberReward frp, '@components/dashboard'
+import { SeptemberReward } from "@/components/dashboard';
 
 export default function SeptemberRewardsPage() {
     const { profile, loading: profileLoading, isAuthenticated } = useUserProfile();
