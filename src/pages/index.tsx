@@ -93,7 +93,7 @@ export default function HomePage() {
 
             {/* Modern Clean Tabs Section */}
             <div className="bg-white">
-                <div className="max-w-4xl mx-auto px-4 py-12">
+                <div className="max-w-4xl mx-auto px-4 py-2">
                     {/* Tab Navigation - Made narrower and tighter */}
                     <div className="flex justify-center mb-8">
                         <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
