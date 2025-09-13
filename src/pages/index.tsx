@@ -181,34 +181,37 @@ function DiscoverMoreTab() {
 function MoreRewardsTab() {
     return (
         <div className="space-y-6">
-            <div className="text-center mb-8">
-                <h2 className="text-lg font-bold text-black mb-2">
-We Reward Discovery                </h2>
-                <p className="text-gray-600 text-sm">
-Earn points for exclusive merch, insider access and even free tix!                </p>
-            </div>
-
             <div className="grid gap-6">
-                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center">
-                            <Trophy className="w-8 h-8 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex justify-evenly gap-4 mt-4">
-                                <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
-                                    September: 240 Points = 9 OTW Zines
-                                </Badge>
-                                <Badge variant="outline" className="border-purple-500 text-purple-400 px-3 py-1">
-                                    October: Coming Soon!
-                                </Badge>
-                                <Badge variant="outline" className="border-pink-500 text-pink-400 px-3 py-1">
-                                    November: Coming Soon!
-                                </Badge>
+                <div className="grid gap-6">
+                    <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
+                        <div className="flex items-center gap-6">
+                            <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
+                                <Trophy className="w-10 h-10 text-white" />
                             </div>
-                        <Gift className="w-5 h-5 text-gray-400" />
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-white text-xl mb-2">
+                                    We Reward Discovery
+                                </h3>
+                                <p className="text-gray-400 text-base pb-4">
+                                    Earn points for exclusive merch, insider access and even free tix!
+                                </p>
+                                {/* Badges row */}
+                                <div className="flex justify-evenly gap-4 mt-4">
+                                    <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
+                                        September: 240 Points = 9 OTW Zines
+                                    </Badge>
+                                    <Badge variant="outline" className="border-purple-500 text-purple-400 px-3 py-1">
+                                        October: Coming Soon!
+                                    </Badge>
+                                    <Badge variant="outline" className="border-pink-500 text-pink-400 px-3 py-1">
+                                        November: Coming Soon!
+                                    </Badge>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     );
