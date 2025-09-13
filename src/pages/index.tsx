@@ -141,8 +141,8 @@ Tab Components
 function DiscoverMoreTab() {
     return (
         <div className="space-y-6">
-            <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-black mb-2">
+            <div className="text-center mb-4">
+                <h2 className="text-lg font-bold text-black mb-2">
                     Discover Amazing New Artists
                 </h2>
                 <p className="text-gray-600 text-base">
