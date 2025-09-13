@@ -43,18 +43,18 @@ export default function DashboardHeader({
                     </p>
 
                     <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto mb-8">
-                        <div className="bg-white rounded-lg p-4 text-center border border-purple-med">
-                            <Trophy className="w-5 h-5 text-gray-600 mx-auto mb-2" />
+                        <div className="bg-white rounded-lg p-4 text-center border border-purple-deep">
+                            <Trophy className="w-5 h-5 text-purple-deep mx-auto mb-2" />
                             <div className="text-xl font-bold text-purple-med">{historyLoading ? '...' : total_points}</div>
-                            <div className="text-sm text-gray-500">Points</div>
+                            <div className="text-sm text-purple-deep">Points</div>
                         </div>
-                        <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
-                            <Star className="w-5 h-5 text-gray-600 mx-auto mb-2" />
+                        <div className="bg-white rounded-lg p-4 text-center border border-purple-deep">
+                            <Star className="w-5 h-5 text-purple-deep mx-auto mb-2" />
                             <div className="text-xl font-bold text-purple-med">{historyLoading ? '...' : artistsRated}</div>
-                            <div className="text-sm text-gray-500">Artists</div>
+                            <div className="text-sm text-purple-deep">Artists</div>
                         </div>
-                        <div className="bg-white rounded-lg p-4 text-center border border-gray-200">
-                            <Calendar className="w-5 h-5 text-gray-600 mx-auto mb-2" />
+                        <div className="bg-white rounded-lg p-4 text-center border border-purple-deep">
+                            <Calendar className="w-5 h-5 text-purple-deep mx-auto mb-2" />
                             <div className="text-xl font-bold text-purple-med">{historyLoading ? '...' : weeksActive}</div>
                             <div className="text-sm text-gray-500">Weeks</div>
                         </div>
