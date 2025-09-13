@@ -148,15 +148,16 @@ function DiscoverMoreTab() {
                     <div className="w-10 h-10 rounded-xl bg-purple-lit flex items-center justify-center shadow-lg shadow-green-500/25">
                         <Star className="w-6 h-6 text-white" />
                     </div>
+
                     <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-black text-lg mb-1">
                             Discover Amazing New Artists
                         </h3>
-                   
-                  
+
                         <p className="text-gray-700 text-sm pb-4">
                             Explore different ways to find your next favorite artist.
                         </p>
+
                         <div className="flex flex-wrap gap-2 mt-2">
                             <Badge variant="outline" className="border-gray-500 text-black px-3 py-1">
                                 Weekly Artists Watch, Vote & Earn List
@@ -167,7 +168,6 @@ function DiscoverMoreTab() {
                             <Badge variant="outline" className="border-gray-500 text-black px-3 py-1">
                                 OTW Trending Artists Chart
                             </Badge>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -175,6 +175,7 @@ function DiscoverMoreTab() {
         </div>
     );
 }
+
 
 
 function MoreRewardsTab() {
