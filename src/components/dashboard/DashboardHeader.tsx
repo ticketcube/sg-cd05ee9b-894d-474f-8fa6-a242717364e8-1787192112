@@ -38,8 +38,8 @@ export default function DashboardHeader({
                 
                  
                     
-                    <p className="text-lg text-gray-600 mb-8">
-                        Your gateway to discovering amazing new artists and earning rewards
+                    <p className="text-sm text-gray-600 mb-8">
+                       This dashboard is your gateway to discovering amazing new artists and earning rewards!
                     </p>
 
                     <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto mb-8">
