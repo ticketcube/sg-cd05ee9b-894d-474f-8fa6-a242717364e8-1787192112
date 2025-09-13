@@ -113,7 +113,7 @@ export function QuadrantRating({
     }
 
     return (
-        <div className="flex flex-col flex-1 min-h-0 bg-purple-deep">
+        <div className="flex flex-col flex-1 min-h-0 bg-black">
             {/* Mobile/Desktop Combined Header - Now Clean and Focused */}
             <div className="p-3 sm:p-4 lg:p-6 border-b border-gray-700 flex-shrink-0">
                 {/* Points Status Display - Only Success States */}
@@ -236,10 +236,10 @@ export function QuadrantRating({
             </div>
 
             {/* Footer with Submit Button - Now includes Timer */}
-            <div className="p-4 lg:p-6 bg-purple-deep border-t border-gray-700 flex-shrink-0">
+            <div className="p-4 lg:p-6 bg-black border-t border-gray-700 flex-shrink-0">
                 <Button
                     onClick={handleSubmit}
-                    className={`w-full text-lg font-bold transition-all duration-300 relative overflow-hidden ${
+                    className={`w-full bg-purple-lit text-lg font-bold transition-all duration-300 relative overflow-hidden ${
                         slidersChanged && !userHasVoted && watchTime >= minWatchTime
                             ? "bg-purple-lit hover:from-blue-500 hover:to-purple-med text-white shadow-lg"
                             : "bg-purple-lit hover:bg-purple-med text-gray-400 cursor-not-allowed"
