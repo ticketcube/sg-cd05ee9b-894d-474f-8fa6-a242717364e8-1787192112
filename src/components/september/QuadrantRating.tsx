@@ -120,9 +120,9 @@ export function QuadrantRating({
                 {(hasEarnedPoints || !isEligibleForPoints) && (
                     <div className="flex justify-center mb-4">
                         {!isEligibleForPoints ? (
-                            <div className="bg-gray-800 px-3 py-2 rounded-lg flex items-center gap-2">
+                            <div className="bg-purple-lit px-3 py-2 rounded-lg flex items-center gap-2">
                                 <CheckCircle className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm text-gray-400 font-medium">Already rated</span>
+                                <span className="text-lg text-white font-medium">Already rated</span>
                             </div>
                         ) : hasEarnedPoints ? (
                             <motion.div
@@ -141,9 +141,7 @@ export function QuadrantRating({
                 <h3 className="text-xl lg:text-2xl xl:text-3xl font-bold text-center text-white mb-2">
                     {artistName}
                 </h3>
-                <p className="text-center text-gray-400 text-sm lg:text-base">
-                    Watch & Rate = 10 Points
-                </p>
+             
             </div>
 
             {/* Rating Controls */}
@@ -161,8 +159,8 @@ export function QuadrantRating({
                                     <Ticket className="w-5 h-5 text-blue-400" />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="text-sm lg:text-base font-semibold text-white">Concert Interest</h4>
-                                    <p className="text-xs text-gray-400">How likely to buy tickets?</p>
+                                    <h4 className="text-lg lg:text-base font-semibold text-white">Concert Interest</h4>
+                                    <p className="text-ss text-white">How likely to buy tickets?</p>
                                 </div>
                             </div>
                             <div className="px-2">
