@@ -47,11 +47,11 @@ export function SeptemberReward() {
 
             {/* Row 1: Icon + Title */}
             <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-700 text-white">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-lit text-white">
                     <Trophy className="w-6 h-6" />
                 </div>
                 <div>
-                    <h3 className="text-lg font-semibold text-purple-700">September Reward Tracker</h3>
+                    <h3 className="text-lg font-semibold text-purple-lit">September Reward Tracker</h3>
                     <p className="text-sm text-neutral-600">Earn 240 points to unlock all nine OnesToWatch Zines</p>
                 </div>
                 {progressPercentage === 100 && (
@@ -63,11 +63,11 @@ export function SeptemberReward() {
             <div className="mb-4">
                 <div className="flex justify-between text-sm mb-1">
                     <span>{totalPoints} / {TARGET_POINTS} points</span>
-                    <span className="font-semibold text-purple-700">{progressPercentage.toFixed(0)}%</span>
+                    <span className="font-semibold text-purple-lit">{progressPercentage.toFixed(0)}%</span>
                 </div>
                 <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
                     <div
-                        className="h-full rounded-full bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 transition-all duration-1000"
+                        className="h-full rounded-full bg-gradient-to-r from-purple-lit via-purple-deep to-purple-700 transition-all duration-1000"
                         style={{ width: `${progressPercentage}%` }}
                     />
                 </div>
