@@ -237,56 +237,75 @@ export function QuadrantRating({
 
             {/* Footer with Submit Button - Now includes Timer */}
             <div className="p-4 lg:p-6 bg-black border-t border-gray-700 flex-shrink-0">
-                <Button
-                    onClick={handleSubmit}
-                    className={`w-full bg-purple-lit text-lg font-bold transition-all duration-300 relative overflow-hidden ${
-                        slidersChanged && !userHasVoted && watchTime >= minWatchTime
-                            ? "bg-purple-lit hover:from-blue-500 hover:to-purple-med text-white shadow-lg"
-                            : "bg-purple-lit hover:bg-purple-med text-gray-400 cursor-not-allowed"
-                    }`}
-                    disabled={isSubmitting || userHasVoted || !slidersChanged || watchTime < minWatchTime}
-                >
-                    {/* Progress bar for watch time - embedded in button */}
-                    {!userHasVoted && watchTime < minWatchTime && (
-                        <div 
-                            className="absolute top-0 left-0 h-1 bg-blue-400 transition-all duration-1000 ease-out"
-                            style={{ width: `${(watchTime / minWatchTime) * 100}%` }}
-                        />
-                    )}
-                    
-                    <div className="flex items-center justify-center gap-2 py-2">
-                        {/* Timer icon when counting down */}
-                        {!userHasVoted && watchTime < minWatchTime && (
-                            <Timer className="w-4 h-4 text-white" />
-                        )}
-                        
-                        {/* Spinner when submitting */}
-                        {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                        
-                        {/* Button text with countdown */}
-                        <span>
-                            {isSubmitting ? (
-                                "Submitting Rating..."
-                            ) : userHasVoted ? (
-                                "You've Already Rated This Artist"
-                            ) : watchTime < minWatchTime ? (
-                                `Watch ${minWatchTime - watchTime}s More to Submit`
-                            ) : !slidersChanged ? (
-                                "Adjust Sliders to Submit Rating"
-                            ) : (
-                                `Submit Rating & Earn ${videoPoints} Points`
-                            )}
-                        </span>
+                {(() => {
+                    let buttonColor = "";
+                    let hoverColor = "";
+                    let extraEffect = "";
+                    let isDisabled =
+                        isSubmitting || userHasVoted || !slidersChanged || watchTime < minWatchTime;
 
-                        {/* Watch progress indicator in button */}
-                        {!userHasVoted && watchTime < minWatchTime && (
-                            <span className="text-xs bg-blue-600 px-2 py-1 rounded-full ml-1">
-                                {watchTime}/{minWatchTime}s
-                            </span>
-                        )}
-                    </div>
-                </Button>
+                    if (userHasVoted) {
+                        buttonColor = "bg-purple-deep";
+                        hoverColor = "hover:bg-purple-deep"; // locked
+                    } else if (watchTime < minWatchTime) {
+                        buttonColor = "bg-purple-med";
+                        hoverColor = "hover:bg-purple-deep";
+                    } else if (slidersChanged) {
+                        buttonColor = "bg-purple-lit";
+                        hoverColor = "hover:bg-purple-med";
+                        extraEffect = "animate-pulse"; // pulse only when ready to submit
+                    }
+
+                    return (
+                        <Button
+                            onClick={handleSubmit}
+                            className={`w-full ${buttonColor} ${hoverColor} ${extraEffect} text-lg font-bold transition-all duration-300 relative overflow-hidden ${isDisabled
+                                    ? "text-gray-400 cursor-not-allowed opacity-70"
+                                    : "text-white shadow-lg"
+                                }`}
+                            disabled={isDisabled}
+                        >
+                            {/* Progress bar when counting down */}
+                            {!userHasVoted && watchTime < minWatchTime && (
+                                <div
+                                    className="absolute top-0 left-0 h-1 bg-blue-400 transition-all duration-1000 ease-out"
+                                    style={{ width: `${(watchTime / minWatchTime) * 100}%` }}
+                                />
+                            )}
+
+                            <div className="flex items-center justify-center gap-2 py-2">
+                                {/* Timer icon */}
+                                {!userHasVoted && watchTime < minWatchTime && (
+                                    <Timer className="w-4 h-4 text-white" />
+                                )}
+
+                                {/* Spinner */}
+                                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+
+                                {/* Text */}
+                                <span>
+                                    {isSubmitting
+                                        ? "Submitting Rating..."
+                                        : userHasVoted
+                                            ? "You've Already Rated This Artist"
+                                            : watchTime < minWatchTime
+                                                ? `Watch ${minWatchTime - watchTime}s More to Submit`
+                                                : !slidersChanged
+                                                    ? "Adjust Sliders to Submit Rating"
+                                                    : `Submit Rating & Earn ${videoPoints} Points`}
+                                </span>
+
+                                {/* Watch progress */}
+                                {!userHasVoted && watchTime < minWatchTime && (
+                                    <span className="text-xs bg-blue-600 px-2 py-1 rounded-full ml-1">
+                                        {watchTime}/{minWatchTime}s
+                                    </span>
+                                )}
+                            </div>
+                        </Button>
+                    );
+                })()}
             </div>
-        </div>
+
     );
 }
