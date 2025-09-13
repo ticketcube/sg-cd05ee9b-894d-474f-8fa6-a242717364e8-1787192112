@@ -113,7 +113,7 @@ export function QuadrantRating({
     }
 
     return (
-        <div className="flex flex-col flex-1 min-h-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="flex flex-col flex-1 min-h-0 bg-purple-deep">
             {/* Mobile/Desktop Combined Header - Now Clean and Focused */}
             <div className="p-3 sm:p-4 lg:p-6 border-b border-gray-700 flex-shrink-0">
                 {/* Points Status Display - Only Success States */}
