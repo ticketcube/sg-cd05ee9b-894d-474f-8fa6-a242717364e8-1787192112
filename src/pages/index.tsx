@@ -152,7 +152,7 @@ function DiscoverMoreTab() {
                         <h3 className="font-bold text-black text-lg mb-1">
                             Discover Amazing New Artists
                         </h3>
-                    </div>
+                   
                     <div className="flex items-start gap-6">
                         <p className="text-gray-700 text-sm pb-4">
                             Explore different ways to find your next favorite artist.
