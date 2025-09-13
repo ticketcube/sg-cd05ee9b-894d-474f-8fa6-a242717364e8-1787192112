@@ -183,11 +183,9 @@ function MoreRewardsTab() {
         <div className="space-y-6">
             <div className="text-center mb-8">
                 <h2 className="text-lg font-bold text-black mb-2">
-                    Your Rewards & Achievements
-                </h2>
+We Reward Discovery                </h2>
                 <p className="text-gray-600 text-sm">
-                    Track your progress and unlock exclusive rewards
-                </p>
+Earn points for exclusive merch, insider access and even free tix!                </p>
             </div>
 
             <div className="grid gap-6">
@@ -197,16 +195,17 @@ function MoreRewardsTab() {
                             <Trophy className="w-8 h-8 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-black text-xl mb-2">
-                                September Discovery Reward
-                            </h3>
-                            <Badge
-                                variant="outline"
-                                className="border-gray-300 text-gray-600 px-3 py-1"
-                            >
-                                Earn 240 Points for all Nine OnesToWatch Zines!
-                            </Badge>
-                        </div>
+                            <div className="flex justify-evenly gap-4 mt-4">
+                                <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
+                                    September: 240 Points = 9 OTW Zines
+                                </Badge>
+                                <Badge variant="outline" className="border-purple-500 text-purple-400 px-3 py-1">
+                                    October: Coming Soon!
+                                </Badge>
+                                <Badge variant="outline" className="border-pink-500 text-pink-400 px-3 py-1">
+                                    November: Coming Soon!
+                                </Badge>
+                            </div>
                         <Gift className="w-5 h-5 text-gray-400" />
                     </div>
                 </div>
