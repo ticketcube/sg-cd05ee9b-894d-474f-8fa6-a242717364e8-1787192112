@@ -51,7 +51,7 @@ export default function ProfilePage() {
 
                     {/* Profile Card - Compact */}
                     <div className="mb-8">
-                        <UserProfileCard className="p-4 sm:p-6 rounded-lg shadow-md" />
+                        <UserProfileCard />
                     </div>
 
                     {/* Main Grid */}
@@ -64,7 +64,7 @@ export default function ProfilePage() {
                         {/* Survey */}
                         <div className="lg:col-span-1">
                             <div className="bg-purple-deep/10 p-4 sm:p-6 rounded-lg shadow-md">
-                                <MvpSurvey highlightColor="purple-deep" />
+                                <MvpSurvey />
                             </div>
                         </div>
                     </div>
