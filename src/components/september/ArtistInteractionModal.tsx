@@ -85,7 +85,7 @@ export function ArtistInteractionModal({
                 {/* Custom Close Button - Bigger and Bolder */}
                 <DialogClose asChild>
                     <button 
-                        className="absolute right-4 top-4 z-50 rounded-full bg-black/50 backdrop-blur-sm p-2 text-white hover:bg-black/70 transition-all duration-200 hover:scale-110"
+                        className="absolute right-4 top-4 z-50 rounded-full bg-purple-deep/50 backdrop-blur-sm p-2 text-white hover:bg-purple-deep/70 transition-all duration-200 hover:scale-110"
                         onClick={onClose}
                     >
                         <X className="h-8 w-8 font-bold stroke-[3]" />
@@ -109,7 +109,7 @@ export function ArtistInteractionModal({
                         </div>
 
                         {/* Rating Section */}
-                        <div className="flex-1 min-h-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black border-t md:border-t-0 md:border-l border-gray-700 overflow-y-auto">
+                        <div className="flex-1 min-h-0 bg-purple-deep border-t md:border-t-0 md:border-l border-gray-700 overflow-y-auto">
                             {artist && user ? (
                                 <div className="h-full min-h-0 p-4">
                                     <QuadrantRating
