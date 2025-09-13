@@ -166,9 +166,9 @@ export default function SeptemberRewardsPage() {
                 {enrichedLists.map((list) => {
                     console.log("🎨 Rendering list:", list);
                     return (
-                        <div key={list.id} className="mb-12">
-                            <h2 className="text-3xl font-bold tracking-tight mb-4">{list.title}</h2>
-                            <p className="text-muted-foreground mb-6">{list.description}</p>
+                        <div key={list.id} className="mb-8">
+                            <h2 className="text-3xl font-bold tracking-tight mb-2">{list.title}</h2>
+                            
                             <SeptemberArtistGrid
                                 artists={list.artists}
                                 onArtistSelect={(artist) => handleArtistSelect(artist, list.id)}
