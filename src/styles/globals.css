@@ -108,6 +108,10 @@
   }
 }
 
+.bg-purple-deep {
+    background-color: hsl(279, 92%, 25%);
+}
+
 /* Simplified black and white slider styles */
 .slider-custom [data-orientation="horizontal"] {
   height: 8px;
