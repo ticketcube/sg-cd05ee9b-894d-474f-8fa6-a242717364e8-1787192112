@@ -256,7 +256,7 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
         ),
         total_points: calculatedTotalPoints,
         total_engagements: totalEngagements,
-        artistsDiscovered, 
+        artistsDiscovered: artistsDiscovered,
     };
 };
 
