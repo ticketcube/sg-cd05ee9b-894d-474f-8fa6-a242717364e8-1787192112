@@ -99,7 +99,7 @@ export default function HomePage() {
                         <div className="flex bg-gray-100 rounded-md p-0.5 sm:p-1 border border-gray-200">
                             <button
                                 onClick={() => setActiveTab("discover")}
-                                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xl sm:text-sm font-medium transition-all ${activeTab === "discover"
+                                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xl sm:text-sm font-bold transition-all ${activeTab === "discover"
                                         ? "bg-white text-black shadow-sm border border-gray-200"
                                         : "text-gray-600 hover:text-black hover:bg-white/50"
                                     }`}
@@ -109,7 +109,7 @@ export default function HomePage() {
                             </button>
                             <button
                                 onClick={() => setActiveTab("rewards")}
-                                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xl sm:text-sm font-medium transition-all ${activeTab === "rewards"
+                                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xl sm:text-sm font-bold transition-all ${activeTab === "rewards"
                                         ? "bg-white text-black shadow-sm border border-gray-200"
                                         : "text-gray-600 hover:text-black hover:bg-white/50"
                                     }`}
