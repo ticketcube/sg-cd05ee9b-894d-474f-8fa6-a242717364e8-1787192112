@@ -97,10 +97,10 @@ export default function WeeklyListCard() {
                                 </div>
                                 <div>
                                     <CardTitle className="text-2xl font-bold text-purple-deep">
-                                       September Discovery Reward
+                                       September Artist Discoveries
                                     </CardTitle>
                                     <p className="text-purple-deep font-medium">
-                                        Week of {new Date(latestWeek.start_date).toLocaleDateString('en-US', {
+                                        Current Week: {new Date(latestWeek.start_date).toLocaleDateString('en-US', {
                                             month: 'short',
                                             day: 'numeric',
                                             year: 'numeric'
