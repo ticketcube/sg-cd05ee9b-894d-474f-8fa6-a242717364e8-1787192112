@@ -1,159 +1,92 @@
 import { useState, useEffect } from "react";
 import { Trophy, Gift } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import { supabase } from "@/integrations/supabase/client";
 
 export function SeptemberReward() {
-  const { user } = useUserProfile();
-  const [totalPoints, setTotalPoints] = useState(0);
-  const [loading, setLoading] = useState(true);
+    const { user } = useUserProfile();
+    const [totalPoints, setTotalPoints] = useState(0);
+    const [loading, setLoading] = useState(true);
 
-  const TARGET_POINTS = 240;
-  const progressPercentage = Math.min((totalPoints / TARGET_POINTS) * 100, 100);
-  
-  useEffect(() => {
-    const fetchUserPoints = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+    const TARGET_POINTS = 240;
+    const progressPercentage = Math.min((totalPoints / TARGET_POINTS) * 100, 100);
 
-      try {
-        const { data, error } = await supabase
-          .from("user_engagements")
-          .select("points_earned")
-          .eq("user_id", user.id);
+    useEffect(() => {
+        const fetchPoints = async () => {
+            if (!user) return setLoading(false);
 
-        if (error) {
-          console.error("Error fetching user points:", error);
-          setTotalPoints(0);
-        } else {
-          const total = data?.reduce((sum, engagement) => sum + (engagement.points_earned || 0), 0) || 0;
-          setTotalPoints(total);
-        }
-      } catch (err) {
-        console.error("Unexpected error fetching points:", err);
-        setTotalPoints(0);
-      } finally {
-        setLoading(false);
-      }
-    };
+            try {
+                const { data, error } = await supabase
+                    .from("user_engagements")
+                    .select("points_earned")
+                    .eq("user_id", user.id);
 
-    fetchUserPoints();
-  }, [user]);
+                if (error) {
+                    console.error(error);
+                    setTotalPoints(0);
+                } else {
+                    const total = data?.reduce((sum, e) => sum + (e.points_earned || 0), 0) || 0;
+                    setTotalPoints(total);
+                }
+            } catch (err) {
+                console.error(err);
+                setTotalPoints(0);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-  if (loading) {
+        fetchPoints();
+    }, [user]);
+
+    if (loading) return <Card className="p-6 animate-pulse">Loading...</Card>;
+
     return (
-      <Card className="relative overflow-hidden shadow-xl bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60" style={{ borderColor: 'hsl(279, 92%, 25%)' }}>
-        <CardContent className="p-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-12 w-12 bg-purple-200/50 rounded-full"></div>
-            <div className="h-6 bg-purple-200/50 rounded-lg w-3/4"></div>
-            <div className="h-4 bg-purple-200/50 rounded w-full"></div>
-            <div className="h-2 bg-purple-200/50 rounded-full w-full"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+        <Card className="relative p-4 overflow-hidden shadow-xl bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60 border-2 border-purple-700">
 
-  return (
-    <Card className="relative overflow-hidden shadow-xl bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60 hover:shadow-2xl transition-all duration-700 hover:-translate-y-1 group" style={{ borderColor: 'hsl(279, 92%, 25%)', borderWidth: '2px' }}>
-      {/* Decorative background elements */}
-      <div className="absolute -top-8 -right-8 w-24 h-24 bg-purple-200/30 rounded-full blur-2xl"></div>
-      <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-purple-200/40 rounded-full blur-xl"></div>
-      
-      <CardContent className="relative p-4 space-y-6">
-        {/* Trophy Icon & Header */}
-        <div className="flex items-start gap-4">
-          <div className="relative">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500" style={{ backgroundColor: 'hsl(279, 92%, 25%)', boxShadow: '0 10px 25px -5px hsl(279, 92%, 25%, 0.3)' }}>
-              <Trophy className="w-7 h-7 text-white" />
-            </div>
-            {progressPercentage === 100 && (
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center animate-pulse">
-                <Gift className="w-3 h-3 text-white" />
-              </div>
-            )}
-          </div>
-          
-          <div className="flex-1 space-y-1">
-            <h3 className="text-xl font-semibold leading-tight" style={{ color: 'hsl(279, 92%, 25%)' }}>
-              September Discovery Reward!
-            </h3>
-            <p className="text-neutral-600 text-sm leading-relaxed">
-              Earn 240 points to receive all nine OnesToWatch Zines!
-            </p>
-          </div>
-        </div>
-
-        {/* Progress Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-neutral-700">
-              {totalPoints} / {TARGET_POINTS} points
-            </span>
-            <span className="font-semibold" style={{ color: 'hsl(279, 92%, 25%)' }}>
-              {progressPercentage.toFixed(0)}% complete
-            </span>
-          </div>
-
-          {/* Custom Progress Bar */}
-          <div className="relative">
-            <div className="w-full h-3 bg-neutral-200/60 rounded-full overflow-hidden shadow-inner" style={{ borderColor: 'hsl(279, 92%, 25%)', borderWidth: '1px' }}>
-              <div 
-                className="h-full rounded-full transition-all duration-1000 ease-out shadow-sm relative"
-                style={{ 
-                  width: `${progressPercentage}%`,
-                  background: `linear-gradient(to right, hsl(279, 92%, 25%), hsl(279, 92%, 30%), hsl(279, 92%, 25%))`
-                }}
-              >
-                {progressPercentage > 0 && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+            {/* Row 1: Icon + Title */}
+            <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-700 text-white">
+                    <Trophy className="w-6 h-6" />
+                </div>
+                <div>
+                    <h3 className="text-lg font-semibold text-purple-700">September Discovery Reward!</h3>
+                    <p className="text-sm text-neutral-600">Earn 240 points to unlock all nine OnesToWatch Zines</p>
+                </div>
+                {progressPercentage === 100 && (
+                    <Gift className="w-6 h-6 text-emerald-500 ml-auto animate-pulse" />
                 )}
-              </div>
             </div>
-            
-            {/* Milestone markers */}
-            <div className="absolute top-0 left-1/4 w-0.5 h-3 bg-white/60"></div>
-            <div className="absolute top-0 left-1/2 w-0.5 h-3 bg-white/60"></div>
-            <div className="absolute top-0 left-3/4 w-0.5 h-3 bg-white/60"></div>
-          </div>
 
-          {/* Status Message */}
-          <div className="text-center">
-            {progressPercentage === 100 ? (
-              <div className="bg-emerald-50 border border-emerald-200/60 rounded-xl p-3">
-                <p className="text-emerald-700 font-medium text-sm flex items-center justify-center gap-2">
-                  <Gift className="w-4 h-4" />
-                  Congratulations! You've earned all nine zines!
-                </p>
-              </div>
-            ) : progressPercentage >= 75 ? (
-              <p className="font-medium text-sm" style={{ color: 'hsl(279, 92%, 25%)' }}>
-                Almost there! Just {TARGET_POINTS - totalPoints} more points to go!
-              </p>
-            ) : progressPercentage >= 50 ? (
-              <p className="font-medium text-sm" style={{ color: 'hsl(279, 92%, 25%)' }}>
-                Great progress! You're halfway to your reward!
-              </p>
-            ) : progressPercentage >= 25 ? (
-              <p className="font-medium text-sm" style={{ color: 'hsl(279, 92%, 25%)' }}>
-                Keep going! You're making solid progress!
-              </p>
-            ) : (
-              <p className="text-neutral-600 font-medium text-sm">
-                Start exploring to earn your first points!
-              </p>
-            )}
-          </div>
-        </div>
+            {/* Row 2: Progress Bar + Numbers */}
+            <div className="mb-4">
+                <div className="flex justify-between text-sm mb-1">
+                    <span>{totalPoints} / {TARGET_POINTS} points</span>
+                    <span className="font-semibold text-purple-700">{progressPercentage.toFixed(0)}%</span>
+                </div>
+                <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
+                    <div
+                        className="h-full rounded-full bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 transition-all duration-1000"
+                        style={{ width: `${progressPercentage}%` }}
+                    />
+                </div>
+            </div>
 
-        {/* Floating accent */}
-        <div className="absolute top-4 right-4 w-2 h-2 rounded-full group-hover:animate-bounce" style={{ backgroundColor: 'hsl(279, 92%, 25%, 0.5)' }}></div>
-      </CardContent>
-    </Card>
-  );
+            {/* Row 3: Status message */}
+            <div className="text-center text-sm font-medium">
+                {progressPercentage === 100
+                    ? <span className="text-emerald-700">🎉 Congratulations! You earned all zines!</span>
+                    : progressPercentage >= 75
+                        ? <span className="text-purple-700">Almost there! Only {TARGET_POINTS - totalPoints} more points!</span>
+                        : progressPercentage >= 50
+                            ? <span className="text-purple-700">Halfway there! Keep going!</span>
+                            : progressPercentage >= 25
+                                ? <span className="text-purple-700">Good progress! Keep exploring!</span>
+                                : <span className="text-neutral-600">Start exploring to earn your first points!</span>
+                }
+            </div>
+
+        </Card>
+    );
 }
