@@ -101,7 +101,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setActiveTab("discover")}
                                 className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === "discover"
-                                        ? "bg-black text-white"
+                                        ? "bg-purple-med text-white"
                                         : "text-black hover:bg-gray-100"
                                     }`}
                             >
@@ -111,7 +111,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setActiveTab("rewards")}
                                 className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === "rewards"
-                                        ? "bg-black text-white"
+                                    ? "bg-purple-med text-white"
                                         : "text-black hover:bg-gray-100"
                                     }`}
                             >
