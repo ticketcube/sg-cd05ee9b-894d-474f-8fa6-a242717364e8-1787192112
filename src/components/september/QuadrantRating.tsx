@@ -182,7 +182,7 @@ export function QuadrantRating({
                                         className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-8 [&_[data-radix-slider-thumb]]:h-8 lg:[&_[data-radix-slider-thumb]]:w-10 lg:[&_[data-radix-slider-thumb]]:h-10 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-2xl [&_[data-radix-slider-thumb]]:shadow-purple-500/30 [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-125 [&_[data-radix-slider-thumb]]:transition-all [&_[data-radix-slider-thumb]]:duration-200 [&_[data-radix-slider-thumb]]:z-20"
                                     />
                                 </div>
-                                <div className="flex justify-between text-xs text-gray-500">
+                                <div className="flex justify-between text-xs text-white">
                                     <span>Not For Me</span>
                                     <span className="font-semibold text-white bg-gray-800 px-2 py-1 rounded text-xs">
                                         {getTicketLabel(ticketInterest)}
@@ -199,8 +199,8 @@ export function QuadrantRating({
                                     <Users className="w-5 h-5 text-green-400" />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="text-sm lg:text-base font-semibold text-white">Sharing Interest</h4>
-                                    <p className="text-xs text-gray-400">Would you recommend this?</p>
+                                    <h4 className="text-lg lg:text-base font-semibold text-white">Sharing Interest</h4>
+                                    <p className="text-xs text-white">Would you recommend this?</p>
                                 </div>
                             </div>
                             <div className="px-2">
@@ -222,7 +222,7 @@ export function QuadrantRating({
                                         className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-8 [&_[data-radix-slider-thumb]]:h-8 lg:[&_[data-radix-slider-thumb]]:w-10 lg:[&_[data-radix-slider-thumb]]:h-10 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-2xl [&_[data-radix-slider-thumb]]:shadow-blue-500/30 [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-125 [&_[data-radix-slider-thumb]]:transition-all [&_[data-radix-slider-thumb]]:duration-200 [&_[data-radix-slider-thumb]]:z-20"
                                     />
                                 </div>
-                                <div className="flex justify-between text-xs text-gray-500">
+                                <div className="flex justify-between text-xs text-white0">
                                     <span>Not For Them</span>
                                     <span className="font-semibold text-white bg-gray-800 px-2 py-1 rounded text-xs">
                                         {getShareLabel(shareInterest)}
