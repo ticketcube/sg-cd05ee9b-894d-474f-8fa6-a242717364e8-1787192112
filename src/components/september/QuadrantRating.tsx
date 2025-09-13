@@ -180,6 +180,7 @@ export function QuadrantRating({
                                         step={1}
                                         disabled={userHasVoted}
                                         className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-8 [&_[data-radix-slider-thumb]]:h-8 lg:[&_[data-radix-slider-thumb]]:w-10 lg:[&_[data-radix-slider-thumb]]:h-10 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-2xl [&_[data-radix-slider-thumb]]:shadow-purple-500/30 [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-125 [&_[data-radix-slider-thumb]]:transition-all [&_[data-radix-slider-thumb]]:duration-200 [&_[data-radix-slider-thumb]]:z-20"
+                                        style={{ minWidth: 0 }}
                                     />
                                 </div>
                                 <div className="flex justify-between text-xs text-white">
@@ -220,6 +221,7 @@ export function QuadrantRating({
                                         step={1}
                                         disabled={userHasVoted}
                                         className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-8 [&_[data-radix-slider-thumb]]:h-8 lg:[&_[data-radix-slider-thumb]]:w-10 lg:[&_[data-radix-slider-thumb]]:h-10 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-3 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-2xl [&_[data-radix-slider-thumb]]:shadow-blue-500/30 [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-125 [&_[data-radix-slider-thumb]]:transition-all [&_[data-radix-slider-thumb]]:duration-200 [&_[data-radix-slider-thumb]]:z-20"
+                                        style={{ minWidth: 0 }}
                                     />
                                 </div>
                                 <div className="flex justify-between text-xs text-white0">
