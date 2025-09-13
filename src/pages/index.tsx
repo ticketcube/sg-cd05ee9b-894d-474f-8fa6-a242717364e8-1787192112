@@ -85,7 +85,7 @@ export default function HomePage() {
             <div className="flex justify-center py-8 bg-white">
                 <Button
                     onClick={handleRegisterClick}
-                    className="bg-purple-lit hover:bg-red-700 text-white text-lg px-8 py-4 rounded-lg shadow-sm transition-all hover:shadow-md"
+                    className="bg-purple-deep hover:bg-red-700 text-white text-lg px-8 py-4 rounded-lg shadow-sm transition-all hover:shadow-md"
                 >
                     {isAuthenticated ? 'Go to Dashboard' : 'Register to Discover Rewards'}
                 </Button>
@@ -101,7 +101,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setActiveTab("discover")}
                                 className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === "discover"
-                                        ? "bg-purple-med text-white"
+                                        ? "bg-purple-lit text-white"
                                         : "text-black hover:bg-gray-100"
                                     }`}
                             >
@@ -111,7 +111,7 @@ export default function HomePage() {
                             <button
                                 onClick={() => setActiveTab("rewards")}
                                 className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === "rewards"
-                                    ? "bg-purple-med text-white"
+                                    ? "bg-purple-lit text-white"
                                         : "text-black hover:bg-gray-100"
                                     }`}
                             >
