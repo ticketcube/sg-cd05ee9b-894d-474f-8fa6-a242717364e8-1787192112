@@ -85,7 +85,7 @@ export default function HomePage() {
             <div className="flex justify-center py-8 bg-red">
                 <Button
                     onClick={handleRegisterClick}
-                    className="bg-black hover:bg-gray-800 text-white text-lg px-8 py-4 rounded-lg shadow-sm transition-all hover:shadow-md"
+                    className="hover:bg-gray-800 text-white text-lg px-8 py-4 rounded-lg shadow-sm transition-all hover:shadow-md"
                 >
                     {isAuthenticated ? 'Go to Dashboard' : 'Register to Discover Rewards'}
                 </Button>
