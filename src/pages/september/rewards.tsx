@@ -183,18 +183,18 @@ export default function SeptemberRewardsPage() {
     return (
         <>
             <Head>
-                <title>September Rewards - OTW</title>
+                <title>Weekly Artist Discovery - OTW</title>
                 <meta name="description" content="Participate in this month's special rewards program." />
             </Head>
             <div className="container mx-auto px-2 py-2">
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-                       Weekly Discovery Rewards
+                    <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
+                       Watch & Rate Every Week! 
                     </h1>
-                    <p className="mt-4 text-lg text-muted-foreground pb-2" >
-                        Rate artists and earn 10 points each! Watch for 15 seconds, then rate.
+                    <p className="mt-4 text-sm text-muted-foreground pb-2" >
+                       Watch for at least 15 second, use sliders to rate your interest and earn 10 points per artist discovered!
                     </p>
-                     <SeptemberReward />
+                  
                 </div>
                 {renderContent()}
             </div>
