@@ -28,7 +28,7 @@ const config: Config = {
   				DEFAULT: 'hsl(var(--secondary))',
   				foreground: 'hsl(var(--secondary-foreground))'
                 },
-            purpleDeep: { 'hsl(279, 92%, 25%)' },
+                purpleDeep: 'hsl(279, 92%, 25%)',
           },
   			muted: {
   				DEFAULT: 'hsl(var(--muted))',
