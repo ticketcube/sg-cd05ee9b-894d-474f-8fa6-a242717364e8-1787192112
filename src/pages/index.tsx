@@ -167,6 +167,7 @@ function DiscoverMoreTab() {
                             <Badge variant="outline" className="border-gray-500 text-black px-3 py-1">
                                 OTW Trending Artists Chart
                             </Badge>
+                            </div>
                         </div>
                     </div>
                 </div>
