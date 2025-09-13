@@ -181,9 +181,9 @@ const DiscoveryDashboard = () => {
             <DashboardHeader
                 profile={profile}
                 historyLoading={statsLoading}
-                total_points={statsLoading ? (profile?.total_points || 0) : dashboardStats.totalPoints}
-                artistsRated={dashboardStats.artistsRated}
-                weeksActive={dashboardStats.weeksActive}
+                total_points={statsLoading ? (profile?.total_points || 0) : history.total_points}
+                artistsDiscovered={history.artistsDiscovered}   // 👈 all-time unique artist_uuids
+                weeksActive={history.total_engagements}     
             />
 
             {/* Main Content */}
