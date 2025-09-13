@@ -93,28 +93,26 @@ export default function HomePage() {
 
             {/* Modern Clean Tabs Section */}
             <div className="bg-white">
-                <div className="max-w-4xl mx-auto px-4 py-2">
-                    {/* Tab Navigation - Made narrower and tighter */}
-                    <div className="flex justify-center mb-8">
-                        <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
+                <div className="max-w-4xl mx-auto px-2 py-1 sm:px-4 sm:py-2">
+                    {/* Tab Navigation */}
+                    <div className="flex justify-center mb-4 sm:mb-8">
+                        <div className="flex bg-gray-100 rounded-md p-0.5 sm:p-1 border border-gray-200">
                             <button
                                 onClick={() => setActiveTab("discover")}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                                    activeTab === "discover"
+                                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${activeTab === "discover"
                                         ? "bg-white text-black shadow-sm border border-gray-200"
                                         : "text-gray-600 hover:text-black hover:bg-white/50"
-                                }`}
+                                    }`}
                             >
                                 <Compass className="w-4 h-4" />
                                 Discover
                             </button>
                             <button
                                 onClick={() => setActiveTab("rewards")}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                                    activeTab === "rewards"
+                                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${activeTab === "rewards"
                                         ? "bg-white text-black shadow-sm border border-gray-200"
                                         : "text-gray-600 hover:text-black hover:bg-white/50"
-                                }`}
+                                    }`}
                             >
                                 <Gift className="w-4 h-4" />
                                 Rewards
