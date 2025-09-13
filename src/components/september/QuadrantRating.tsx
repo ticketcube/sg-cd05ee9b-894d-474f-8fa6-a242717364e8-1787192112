@@ -264,8 +264,8 @@ export function QuadrantRating({
                           ${buttonColor} 
                           ${hoverColor} 
                          ${extraEffect} 
-                         text-lg font-bold text-white transition-all duration-300 relative overflow-hidden
-                          ${isDisabled ? "cursor-not-allowed bg-opacity-60" : "shadow-lg"}
+                         text-xl font-bold text-white transition-all duration-300 relative overflow-hidden
+                          ${isDisabled ? "cursor-not-allowed" : "shadow-lg"}
                             `}
                             disabled={isDisabled}
                         >
