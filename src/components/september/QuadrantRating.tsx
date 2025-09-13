@@ -236,7 +236,7 @@ export function QuadrantRating({
             </div>
 
             {/* Footer with Submit Button - Now includes Timer */}
-            <div className="p-4 lg:p-6 bg-gray-800/50 border-t border-gray-700 flex-shrink-0">
+            <div className="p-4 lg:p-6 bg-purple-lit border-t border-gray-700 flex-shrink-0">
                 <Button
                     onClick={handleSubmit}
                     className={`w-full text-sm lg:text-base font-bold transition-all duration-300 relative overflow-hidden ${
@@ -257,7 +257,7 @@ export function QuadrantRating({
                     <div className="flex items-center justify-center gap-2 py-2">
                         {/* Timer icon when counting down */}
                         {!userHasVoted && watchTime < minWatchTime && (
-                            <Timer className="w-4 h-4 text-blue-400" />
+                            <Timer className="w-4 h-4 text-white" />
                         )}
                         
                         {/* Spinner when submitting */}
