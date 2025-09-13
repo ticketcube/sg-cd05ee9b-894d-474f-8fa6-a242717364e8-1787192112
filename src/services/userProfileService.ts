@@ -48,7 +48,7 @@ export interface UserEngagementHistory {
     weekly_summaries: UserEngagementSummary[];
     total_points: number;
     total_engagements: number; 
-    artists_discovered: number;
+    artistsDiscovered: number;
 }
 
 /** Get a user's profile by user_id */
@@ -256,7 +256,7 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
         ),
         total_points: calculatedTotalPoints,
         total_engagements: totalEngagements,
-        artists_discovered: artistsDiscovered, // 👈 new field
+        artistsDiscovered, 
     };
 };
 
