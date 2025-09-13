@@ -143,12 +143,9 @@ const DiscoveryDashboard = () => {
                         Rate This Week's Artists
                     </Button>
                 </Link>
-
-              
-               
+            </div>
         </>
     );
-};
 
 export default DiscoveryDashboard;
 
