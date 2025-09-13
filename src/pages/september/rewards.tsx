@@ -192,7 +192,7 @@ export default function SeptemberRewardsPage() {
                        September Discovery Challenge!
                     </h1>
                     <p className="mt-4 text-sm text-muted-foreground pb-2" >
-                       Watch for at least 15 second, use sliders to rate your interest and earn 10 points per artist discovered!
+                      Select an artist. Watch for >15 second. Rate with sliders.  Earn 10 points!
                     </p>
                   
                 </div>
