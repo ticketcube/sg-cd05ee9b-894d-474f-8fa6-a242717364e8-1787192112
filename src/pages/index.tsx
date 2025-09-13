@@ -85,14 +85,42 @@ export default function HomePage() {
             <div className="flex justify-center py-8 bg-white">
                 <Button
                     onClick={handleRegisterClick}
-                    className="bg-red-600 hover:bg-red-700 text-white text-lg px-8 py-4 rounded-lg shadow-sm transition-all hover:shadow-md"
+                    className="bg-black hover:bg-gray-800 text-white text-lg px-8 py-4 rounded-lg shadow-sm transition-all hover:shadow-md"
                 >
                     {isAuthenticated ? 'Go to Dashboard' : 'Register to Discover Rewards'}
                 </Button>
             </div>
 
             {/* Modern Clean Tabs Section */}
-            white
+            <div className="bg-white">
+                <div className="max-w-4xl mx-auto px-4 py-2">
+                    {/* Tab Navigation - Made narrower and tighter */}
+                    <div className="flex justify-center mb-8">
+                        <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
+                            <button
+                                onClick={() => setActiveTab("discover")}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                                    activeTab === "discover"
+                                        ? "bg-white text-black shadow-sm border border-gray-200"
+                                        : "text-gray-600 hover:text-black hover:bg-white/50"
+                                }`}
+                            >
+                                <Compass className="w-4 h-4" />
+                                Discover
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("rewards")}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                                    activeTab === "rewards"
+                                        ? "bg-white text-black shadow-sm border border-gray-200"
+                                        : "text-gray-600 hover:text-black hover:bg-white/50"
+                                }`}
+                            >
+                                <Gift className="w-4 h-4" />
+                                Rewards
+                            </button>
+                        </div>
+                    </div>
 
                     {/* Tab Content */}
                     <div className="transition-all duration-300">
