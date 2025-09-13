@@ -38,7 +38,7 @@ export default function WeeklyListCard() {
     if (loading) {
         return (
             <div className="mt-8">
-                <Card className="bg-white border border-gray-200 shadow-sm">
+                <Card className="bg-purple-deep border-gray-200 shadow-sm">
                     <CardContent className="p-8">
                         <div className="animate-pulse space-y-6">
                             <div className="space-y-3">
@@ -96,7 +96,7 @@ export default function WeeklyListCard() {
                                     <Star className="w-6 h-6 text-white fill-current" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-bold text-blue-900">
+                                    <CardTitle className="text-2xl font-bold text-white">
                                         This Week's Rising Stars
                                     </CardTitle>
                                     <p className="text-blue-700 font-medium">
