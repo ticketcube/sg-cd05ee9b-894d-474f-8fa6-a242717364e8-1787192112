@@ -81,7 +81,15 @@ export function ArtistInteractionModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 max-w-6xl w-[95vw] max-h-[90vh] h-[90vh] bg-purple-deep border-4 border-white text-white overflow-hidden rounded-2xl shadow-2xl p-0">
+                  <DialogContent className="
+                    fixed left-1/2 top-1/2 z-50 
+                     -translate-x-1/2 -translate-y-1/2 
+                     w-[95vw] max-w-3xl md:max-w-6xl 
+                     h-[90vh] max-h-[90vh]
+                    bg-purple-deep border-4 border-white text-white 
+                    rounded-2xl shadow-2xl p-0
+                    flex flex-col
+                    ">
                 {/* Custom Close Button - Bigger and Bolder */}
                 <DialogClose asChild>
                     <button 
@@ -153,3 +161,6 @@ export function ArtistInteractionModal({
         </Dialog>
     );
 }
+
+
+
