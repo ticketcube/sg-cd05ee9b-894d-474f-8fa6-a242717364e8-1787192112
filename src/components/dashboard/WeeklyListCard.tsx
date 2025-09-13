@@ -92,12 +92,12 @@ export default function WeeklyListCard() {
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
-                                <div className="w-12 h-12 rounded-xl purple-deep flex items-center justify-center shadow-sm">
+                                <div className="w-12 h-12 rounded-xl bg-purple-deep flex items-center justify-center shadow-sm">
                                     <Star className="w-6 h-6 text-white fill-current" />
                                 </div>
                                 <div>
                                     <CardTitle className="text-2xl font-bold text-purple-deep">
-                                        This Week's Rising Stars
+                                       September Discovery Reward
                                     </CardTitle>
                                     <p className="text-purple-deep font-medium">
                                         Week of {new Date(latestWeek.start_date).toLocaleDateString('en-US', {
