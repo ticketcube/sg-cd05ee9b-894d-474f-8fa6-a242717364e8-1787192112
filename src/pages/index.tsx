@@ -97,7 +97,7 @@ export default function HomePage() {
 
                     {/* Tab Navigation */}
                     <div className="flex justify-center mb-6">
-                        <div className="flex rounded-md border border-gray-300 bg-white p-1 shadow-sm">
+                        <div className="flex rounded-md border border-white bg-purple-deep p-1 shadow-sm">
                             <button
                                 onClick={() => setActiveTab("discover")}
                                 className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === "discover"
