@@ -219,7 +219,7 @@ function DiscoverMoreTab() {
 
 function MoreRewardsTab() {
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-black mb-2">
                     Your Rewards & Achievements
