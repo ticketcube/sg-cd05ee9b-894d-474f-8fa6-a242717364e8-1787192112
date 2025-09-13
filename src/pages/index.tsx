@@ -145,7 +145,7 @@ function DiscoverMoreTab() {
         <div className="grid gap-6">
             <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
                 <div className="flex items-start gap-6">
-                    <div className="w-10 h-10 rounded-xl bg-pruple-deep-500 flex items-center justify-center shadow-lg shadow-green-500/25">
+                    <div className="w-10 h-10 rounded-xl bg-purple-deep flex items-center justify-center shadow-lg shadow-green-500/25">
                         <Star className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
