@@ -85,25 +85,10 @@ const DiscoveryDashboard = () => {
     if (!isAuthenticated || !profile || !user) return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
 
     const renderContent = () => {
-        if (activeTab === 'discover') {
-            return (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Discover Music</CardTitle>
-                        <CardDescription>Rate songs and earn points</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <p>Coming soon...</p>
-                    </CardContent>
-                </Card>
-            );
-        }
+      
+             <SeptemberReward />
+        
 
-        if (activeTab === 'rewards') {
-            return <SeptemberReward />;
-        }
-
-        return null;
     };
 
     return (
