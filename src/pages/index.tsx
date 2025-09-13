@@ -97,7 +97,7 @@ export default function HomePage() {
 
                     {/* Tab Navigation */}
                     <div className="flex justify-center mb-6">
-                        <div className="flex rounded-md border border-white bg-purple-deep p-1 shadow-sm">
+                        <div className="flex rounded-md border border-purple-deep bg-purple-deep p-1 shadow-sm">
                             <button
                                 onClick={() => setActiveTab("discover")}
                                 className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === "discover"
@@ -112,7 +112,7 @@ export default function HomePage() {
                                 onClick={() => setActiveTab("rewards")}
                                 className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === "rewards"
                                     ? "bg-purple-med text-white"
-                                        : "text-black hover:bg-gray-100"
+                                        : "text-white hover:bg-gray-100"
                                     }`}
                             >
                                 <Gift className="w-4 h-4" />
