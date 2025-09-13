@@ -112,6 +112,16 @@
     background-color: hsl(279, 92%, 25%);
 }
 
+.bg-purple-med {
+    background-color: hsl(272, 72%, 52%);
+}
+   
+.bg-purple-lit {
+    background-color: hsl(276, 82%, 69%)
+}
+
+
+
 /* Simplified black and white slider styles */
 .slider-custom [data-orientation="horizontal"] {
   height: 8px;
