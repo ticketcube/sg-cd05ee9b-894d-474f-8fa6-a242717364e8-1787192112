@@ -104,10 +104,10 @@ export function ArtistInteractionModal({
                 {/* Modal wrapper with padding to show grid underneath */}
                 <div className="flex flex-col h-full min-h-0 max-h-screen">
                     {/* Container: stacks vertically on mobile, row on md+ */}
-                    <div className="flex flex-1 flex-col md:flex-row min-h-0">
+                    <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
 
                         {/* Video Section */}
-                        <div className="flex-1 min-h-0 flex-shrink-0 md:h-autoe">
+                        <div className="flex-1 min-h-0 bg-black relative">
                             {artist && (
                                 <ArtistVideoPlayer
                                     artist={artist}
@@ -119,16 +119,15 @@ export function ArtistInteractionModal({
                         {/* Rating Section */}
                         <div className="flex-1 min-h-0 bg-black border-t md:border-t-0 md:border-l border-gray-700 overflow-y-auto">
                             {artist && user ? (
-                                <div className="flex-1 min-h-0 flex flex-col justify-between p-4">
-                                    {artist && user && (
-                                        <QuadrantRating
-                                            onSubmit={handleRatingSubmit}
-                                            artistName={artist.artist_name}
-                                            artistId={artist.id}
-                                            userId={user.id}
-                                            alreadyRated={alreadyRated}
-                                            checkingRating={checkingRating}
-                                        />
+                                <div className="h-full min-h-0 p-4">
+                                    <QuadrantRating
+                                        onSubmit={handleRatingSubmit}
+                                        artistName={artist.artist_name}
+                                        artistId={artist.id}
+                                        userId={user.id}
+                                        alreadyRated={alreadyRated}
+                                        checkingRating={checkingRating}
+                                    />
                                 </div>
                             ) : artist && !user ? (
                                 <div className="flex flex-col justify-center items-center h-full p-6">
