@@ -48,6 +48,7 @@ export interface UserEngagementHistory {
     weekly_summaries: UserEngagementSummary[];
     total_points: number;
     total_engagements: number; 
+    artists_discovered: artistsDiscovered,
 }
 
 /** Get a user's profile by user_id */
