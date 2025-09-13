@@ -141,9 +141,7 @@ Tab Components
 function DiscoverMoreTab() {
     return (
         <div className="space-y-6">
-            
-
-            <div className="space-y-6">
+            <div className="max-w-4xl mx-auto px-2 py-1 sm:px-4 sm:py-2">
                 <div className="grid gap-6">
                     <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
                         <div className="flex items-center gap-6">
@@ -172,7 +170,7 @@ function DiscoverMoreTab() {
                         </div>
                     </div>
                 </div>
-            </div> 
+            </div>
           
         </div>
     );
