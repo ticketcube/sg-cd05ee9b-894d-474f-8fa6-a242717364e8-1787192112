@@ -241,7 +241,7 @@ export function QuadrantRating({
                     let buttonColor = "";
                     let hoverColor = "";
                     let extraEffect = "";
-                    let isDisabled =
+                    const isDisabled =
                         isSubmitting || userHasVoted || !slidersChanged || watchTime < minWatchTime;
 
                     if (userHasVoted) {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useUserProfile } from '@/contexts/UserProfileContext';
@@ -9,7 +10,6 @@ import { EnrichedWeeklyList, EnrichedWeeklyListArtist } from '@/types/weekly';
 import { septemberRewardsService } from '@/services/septemberRewardsService';
 import { userEngagementService } from '@/services/userEngagementService';
 import { toast } from 'sonner';
-import { SeptemberReward } from '@/components/dashboard/SeptemberReward';
 
 export default function SeptemberRewardsPage() {
     const { profile, loading: profileLoading, isAuthenticated } = useUserProfile();
@@ -191,8 +191,8 @@ export default function SeptemberRewardsPage() {
                     <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
                        September Discovery Challenge!
                     </h1>
-                    <p className="mt-4 text-sm text-muted-foreground pb-2" >
-                      Select an artist. Watch for >15 second. Rate with sliders.  Earn 10 points!
+                    <p className="mt-4 text-sm text-muted-foreground pb-2">
+                      Select an artist. Watch for 15+ seconds. Rate with sliders. Earn 10 points!
                     </p>
                   
                 </div>
