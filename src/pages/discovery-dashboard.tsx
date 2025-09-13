@@ -128,7 +128,6 @@ const DiscoveryDashboard = () => {
     }
 
    
-
     return (
         <div className="min-h-screen bg-white">
             {/* Error Banner */}
