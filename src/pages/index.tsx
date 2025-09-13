@@ -150,67 +150,37 @@ function DiscoverMoreTab() {
                 </p>
             </div>
 
-            <div className="grid gap-6">
-                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center">
-                            <Star className="w-8 h-8 text-white" />
+            <div className="space-y-6">
+                <div className="grid gap-6">
+                    <div className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 rounded-xl p-6 border border-green-500/30 hover:border-green-400/50 transition-all hover:scale-[1.02] backdrop-blur-sm">
+                        <div className="flex items-center gap-6">
+                            <div className="w-20 h-20 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
+                                <Star className="w-10 h-10 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-white text-xl mb-2">
+                                    Discover Amazing New Artists
+                                </h3>
+                                <p className="text-gray-400 text-base pb-4">
+                                    Explore different ways to find your next favorite artist
+                                </p>
+                                <div className="flex justify-evenly gap-2 mt-4">
+                                    <Badge variant="outline" className="border-dark-blue-500 text-dark-blue-400 px-3 py-1">
+                                        Weekly Artists Watch, Vote & Earn List
+                                    </Badge>
+                                    <Badge variant="outline" className="border-blue-500 text-blue-400 px-3 py-1">
+                                        Global Vibes Discovery Matrix
+                                    </Badge>
+                                    <Badge variant="outline" className="border-green-500 text-green-400 px-3 py-1">
+                                        OTW Trending Artists Chart
+                                    </Badge>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-black text-lg mb-2">
-                                Weekly Artist Ratings
-                            </h3>
-                            <Badge
-                                variant="outline"
-                                className="border-gray-300 text-gray-600 px-3 py-1"
-                            >
-                                Watch & Rate for Points
-                            </Badge>
-                        </div>
-                        <Star className="w-5 h-5 text-gray-400" />
                     </div>
                 </div>
-
-                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center">
-                            <Music className="w-8 h-8 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-black text-lg mb-2">
-                                Global Vibes Chart
-                            </h3>
-                            <Badge
-                                variant="outline"
-                                className="border-gray-300 text-gray-600 px-3 py-1"
-                            >
-                                Mood-Based Discovery
-                            </Badge>
-                        </div>
-                        <Users className="w-5 h-5 text-gray-400" />
-                    </div>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
-                    <div className="flex items-center gap-6">
-                        <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center">
-                            <Trophy className="w-8 h-8 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-black text-lg mb-2">
-                                Discovery Charts
-                            </h3>
-                            <Badge
-                                variant="outline"
-                                className="border-gray-300 text-gray-600 px-3 py-1"
-                            >
-                                Live Rankings
-                            </Badge>
-                        </div>
-                        <Calendar className="w-5 h-5 text-gray-400" />
-                    </div>
-                </div>
-            </div>
+            </div> 
+          
         </div>
     );
 }
