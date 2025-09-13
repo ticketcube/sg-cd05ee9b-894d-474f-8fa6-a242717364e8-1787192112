@@ -10,26 +10,26 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Play, Music, Award, TrendingUp, AlertCircle } from 'lucide-react';
 
-// Hook & Context Imports
+// Hook & Service Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import { getUserEngagementHistory } from '@/services/userProfileService';
+import { getUserEngagementHistory, UserEngagementHistory } from '@/services/userProfileService';
 
 const DiscoveryDashboard = () => {
     const { profile, loading: userLoading, user, isAuthenticated, sessionLoading } = useUserProfile();
     const [activeTab, setActiveTab] = useState('discover');
     const [showAuthDialog, setShowAuthDialog] = useState(false);
-    const history = await getUserEngagementHistory(user.id);
-    const [statsLoading, setStatsLoading] = useState(false);
-    const [statsError, setStatsError] = useState<string | null>(null);
-    
-    // Mobile optimization: Use refs to prevent excessive re-renders
-    const isInitialLoad = useRef(true);
-    const statsLoadedFor = useRef<string | null>(null);
-    const abortController = useRef<AbortController | null>(null);
 
-    // FIXED: Simplified and mobile-optimized useEffect
+    // Engagement history state
+    const [history, setHistory] = useState < UserEngagementHistory | null > (null);
+    const [statsLoading, setStatsLoading] = useState(false);
+    const [statsError, setStatsError] = useState < string | null > (null);
+
+    // Mobile optimization: use refs
+    const isInitialLoad = useRef(true);
+    const abortController = useRef < AbortController | null > (null);
+
+    // Cleanup on unmount
     useEffect(() => {
-        // Cleanup previous request on unmount or user change
         return () => {
             if (abortController.current) {
                 abortController.current.abort();
@@ -37,118 +37,70 @@ const DiscoveryDashboard = () => {
         };
     }, []);
 
+    // Fetch engagement history when user is ready
     useEffect(() => {
-        // Only fetch stats when we have a stable authenticated user
-        // and we haven't already loaded stats for this user
-        if (!user?.id || userLoading || sessionLoading) {
-            return;
-        }
+        if (!user?.id || userLoading || sessionLoading) return;
 
-        // Prevent duplicate requests for the same user
-        if (statsLoadedFor.current === user.id) {
-            return;
-        }
-
-        // Mobile optimization: Add slight delay on initial load to prevent conflicts
         const delay = isInitialLoad.current ? 100 : 0;
-        
         const timeoutId = setTimeout(() => {
-            fetchStatsWithCleanup(user.id);
+            fetchHistory(user.id);
         }, delay);
 
         isInitialLoad.current = false;
 
-        return () => {
-            clearTimeout(timeoutId);
-        };
+        return () => clearTimeout(timeoutId);
     }, [user?.id, userLoading, sessionLoading]);
 
-    const fetchStatsWithCleanup = async (userId: string) => {
+    const fetchHistory = async (userId: string) => {
         // Abort any previous request
-        if (abortController.current) {
-            abortController.current.abort();
-        }
+        if (abortController.current) abortController.current.abort();
 
-        // Create new abort controller
         abortController.current = new AbortController();
 
         try {
             setStatsLoading(true);
             setStatsError(null);
-            
-            console.log('[DiscoveryDashboard] Fetching stats for user:', userId);
-            
-            const stats = await dashboardStatsService.getUserStats(userId);
-            
-            // Only update if request wasn't aborted
+
+            console.log('[DiscoveryDashboard] Fetching engagement history for user:', userId);
+            const userHistory = await getUserEngagementHistory(userId);
             if (!abortController.current?.signal.aborted) {
-                setDashboardStats(stats);
-                statsLoadedFor.current = userId;
-                console.log('[DiscoveryDashboard] Stats loaded successfully:', stats);
+                setHistory(userHistory);
+                console.log('[DiscoveryDashboard] Engagement history loaded:', userHistory);
             }
-            
-        } catch (error) {
-            // Only handle error if request wasn't aborted
+        } catch (err) {
             if (!abortController.current?.signal.aborted) {
-                console.error('[DiscoveryDashboard] Error fetching dashboard stats:', error);
-                setStatsError('Failed to load dashboard statistics');
-                
-                // Fallback to profile data
-                setDashboardStats({
-                    totalPoints: profile?.total_points || 0,
-                    artistsRated: 0,
-                    weeksActive: 0
-                });
+                console.error('[DiscoveryDashboard] Error fetching engagement history:', err);
+                setStatsError('Failed to load engagement history');
+                setHistory(null);
             }
         } finally {
-            // Only update loading state if request wasn't aborted
             if (!abortController.current?.signal.aborted) {
                 setStatsLoading(false);
             }
         }
     };
 
-    // Show loading during session check
-    if (sessionLoading) {
-        return <DashboardLoading />;
-    }
-
-    // Show loading during user profile loading
-    if (userLoading) {
-        return <DashboardLoading />;
-    }
-
-    // Show auth block if not authenticated
-    if (!isAuthenticated || !profile || !user) {
-        return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
-    }
+    // Loading & auth handling
+    if (sessionLoading || userLoading) return <DashboardLoading />;
+    if (!isAuthenticated || !profile || !user) return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
 
     const renderContent = () => {
         if (activeTab === 'discover') {
             return (
-                <div>
-                    {/* Discover Tab Content */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Discover Music</CardTitle>
-                            <CardDescription>Rate songs and earn points</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {/* Add Discover-related UI here */}
-                            <p>Coming soon...</p>
-                        </CardContent>
-                    </Card>
-                </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Discover Music</CardTitle>
+                        <CardDescription>Rate songs and earn points</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p>Coming soon...</p>
+                    </CardContent>
+                </Card>
             );
         }
 
         if (activeTab === 'rewards') {
-            return (
-                <div>
-                    {/* Rewards Tab Content */}
-                    <SeptemberReward />
-                </div>
-            );
+            return <SeptemberReward />;
         }
 
         return null;
@@ -156,19 +108,15 @@ const DiscoveryDashboard = () => {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Error Banner */}
             {statsError && (
                 <div className="bg-red-50 border border-red-200 p-3">
                     <div className="max-w-6xl mx-auto flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 text-red-500" />
                         <p className="text-sm text-red-600">{statsError}</p>
-                        <button 
+                        <button
                             onClick={() => {
                                 setStatsError(null);
-                                if (user?.id) {
-                                    statsLoadedFor.current = null; // Reset to allow refetch
-                                    fetchStatsWithCleanup(user.id);
-                                }
+                                if (user?.id) fetchHistory(user.id);
                             }}
                             className="ml-auto text-xs text-red-700 underline hover:no-underline"
                         >
@@ -181,13 +129,14 @@ const DiscoveryDashboard = () => {
             <DashboardHeader
                 profile={profile}
                 historyLoading={statsLoading}
-                total_points={statsLoading ? (profile?.total_points || 0) : history.total_points}
-                artistsDiscovered={history.artistsDiscovered}   // 👈 all-time unique artist_uuids
-                weeksActive={history.total_engagements}     
+                total_points={history?.total_points || 0}
+                artistsDiscovered={history?.artistsDiscovered || 0}  // all-time unique artist_uuids
+                weeksActive={history?.weekly_summaries.length || 0}  // number of weeks
             />
 
-            {/* Main Content */}
-           
+            <div className="max-w-6xl mx-auto px-2 py-4">
+                {renderContent()}
+            </div>
         </div>
     );
 };
