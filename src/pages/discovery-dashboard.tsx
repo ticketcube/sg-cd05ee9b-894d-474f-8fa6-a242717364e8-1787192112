@@ -12,17 +12,13 @@ import { Play, Music, Award, TrendingUp, AlertCircle } from 'lucide-react';
 
 // Hook & Context Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
-import { dashboardStatsService, DashboardStats } from '@/services/dashboardStatsService';
+import { getUserEngagementHistory } from '@/services/userProfileService';
 
 const DiscoveryDashboard = () => {
     const { profile, loading: userLoading, user, isAuthenticated, sessionLoading } = useUserProfile();
     const [activeTab, setActiveTab] = useState('discover');
     const [showAuthDialog, setShowAuthDialog] = useState(false);
-    const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
-        totalPoints: 0,
-        artistsRated: 0,
-        weeksActive: 0
-    });
+    const history = await getUserEngagementHistory(user.id);
     const [statsLoading, setStatsLoading] = useState(false);
     const [statsError, setStatsError] = useState<string | null>(null);
     
