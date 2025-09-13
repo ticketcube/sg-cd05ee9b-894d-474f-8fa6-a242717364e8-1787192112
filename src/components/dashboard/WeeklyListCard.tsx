@@ -87,7 +87,7 @@ export default function WeeklyListCard() {
 
     return (
         <div className="mt-8">
-            <Card className="bg-blue-50 border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
+            <Card className="bg-deep-purple border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
                 <CardHeader className="pb-6">
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
