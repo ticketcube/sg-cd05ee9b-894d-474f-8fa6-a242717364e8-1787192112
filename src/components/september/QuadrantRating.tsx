@@ -248,7 +248,7 @@ export function QuadrantRating({
                         buttonColor = "bg-purple-deep";
                         hoverColor = "hover:bg-purple-deep";
                     } else if (watchTime < minWatchTime) {
-                        buttonColor = "bg-purple-med";
+                        buttonColor = "bg-purple-lit";
                         hoverColor = "hover:bg-purple-deep";
                     } else if (slidersChanged) {
                         buttonColor = "bg-purple-lit";
