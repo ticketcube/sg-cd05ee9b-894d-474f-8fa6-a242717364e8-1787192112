@@ -235,7 +235,7 @@ export function QuadrantRating({
                 </AnimatePresence>
             </div>
 
-            {/* Footer with Submit Button - Now includes Timer */}
+            {/* Footer Submit Button */}
             <div className="p-4 lg:p-6 bg-black border-t border-gray-700 flex-shrink-0">
                 {(() => {
                     let buttonColor = "";
@@ -246,14 +246,14 @@ export function QuadrantRating({
 
                     if (userHasVoted) {
                         buttonColor = "bg-purple-deep";
-                        hoverColor = "hover:bg-purple-deep"; // locked
+                        hoverColor = "hover:bg-purple-deep";
                     } else if (watchTime < minWatchTime) {
                         buttonColor = "bg-purple-med";
                         hoverColor = "hover:bg-purple-deep";
                     } else if (slidersChanged) {
                         buttonColor = "bg-purple-lit";
                         hoverColor = "hover:bg-purple-med";
-                        extraEffect = "animate-pulse"; // pulse only when ready to submit
+                        extraEffect = "animate-pulse";
                     }
 
                     return (
@@ -265,7 +265,6 @@ export function QuadrantRating({
                                 }`}
                             disabled={isDisabled}
                         >
-                            {/* Progress bar when counting down */}
                             {!userHasVoted && watchTime < minWatchTime && (
                                 <div
                                     className="absolute top-0 left-0 h-1 bg-blue-400 transition-all duration-1000 ease-out"
@@ -274,15 +273,12 @@ export function QuadrantRating({
                             )}
 
                             <div className="flex items-center justify-center gap-2 py-2">
-                                {/* Timer icon */}
                                 {!userHasVoted && watchTime < minWatchTime && (
                                     <Timer className="w-4 h-4 text-white" />
                                 )}
 
-                                {/* Spinner */}
                                 {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
 
-                                {/* Text */}
                                 <span>
                                     {isSubmitting
                                         ? "Submitting Rating..."
@@ -295,7 +291,6 @@ export function QuadrantRating({
                                                     : `Submit Rating & Earn ${videoPoints} Points`}
                                 </span>
 
-                                {/* Watch progress */}
                                 {!userHasVoted && watchTime < minWatchTime && (
                                     <span className="text-xs bg-blue-600 px-2 py-1 rounded-full ml-1">
                                         {watchTime}/{minWatchTime}s
@@ -306,6 +301,7 @@ export function QuadrantRating({
                     );
                 })()}
             </div>
-
+        </div> // ✅ now properly closed
     );
+}
 }
