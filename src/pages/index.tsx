@@ -92,7 +92,7 @@ export default function HomePage() {
             </div>
 
             {/* Tabs Section: Clean, Compact, Black-on-White */}
-            <div className="bg-purple-deep">
+            <div className="bg-purple-deep" rounded>
                 <div className="max-w-4xl mx-auto px-4 py-4">
 
                     {/* Tab Navigation */}
