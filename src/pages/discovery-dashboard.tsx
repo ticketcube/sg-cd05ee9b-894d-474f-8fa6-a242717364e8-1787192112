@@ -84,8 +84,9 @@ const DiscoveryDashboard = () => {
     if (sessionLoading || userLoading) return <DashboardLoading />;
     if (!isAuthenticated || !profile || !user) return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
 
+    const renderContent = () => {
       
-          
+             <SeptemberReward />
         
 
     };
@@ -118,7 +119,9 @@ const DiscoveryDashboard = () => {
                 weeksActive={history?.weekly_summaries.length || 0}  // number of weeks
             />
 
-            <SeptemberReward />
+            <div className="max-w-6xl mx-auto px-2 py-4">
+                {renderContent()}
+            </div>
         </div>
     );
 };
