@@ -50,7 +50,7 @@ export default function DashboardHeader({
                         </div>
                         <div className="bg-white rounded-lg p-4 text-center border border-purple-deep">
                             <Star className="w-5 h-5 text-purple-deep mx-auto mb-2" />
-                            <div className="text-xl font-bold text-purple-med">{historyLoading ? '...' : artistsRated}</div>
+                            <div className="text-xl font-bold text-purple-med">{historyLoading ? '...' : artists_discovered}</div>
                             <div className="text-sm text-purple-deep">Artists</div>
                         </div>
                         <div className="bg-white rounded-lg p-4 text-center border border-purple-deep">
