@@ -84,12 +84,7 @@ const DiscoveryDashboard = () => {
     if (sessionLoading || userLoading) return <DashboardLoading />;
     if (!isAuthenticated || !profile || !user) return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
 
-    const renderContent = () => {
-      
-             <SeptemberReward />
-        
-
-    };
+ 
 
     return (
         <div className="min-h-screen bg-white">
@@ -120,7 +115,7 @@ const DiscoveryDashboard = () => {
             />
 
             <div className="max-w-6xl mx-auto px-2 py-4">
-                {renderContent()}
+                <SeptemberReward />
             </div>
         </div>
     );
