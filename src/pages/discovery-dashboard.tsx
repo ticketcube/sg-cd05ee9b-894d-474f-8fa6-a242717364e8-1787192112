@@ -127,7 +127,37 @@ const DiscoveryDashboard = () => {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
 
- 
+    const renderContent = () => {
+        if (activeTab === 'discover') {
+            return (
+                <div>
+                    {/* Discover Tab Content */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Discover Music</CardTitle>
+                            <CardDescription>Rate songs and earn points</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {/* Add Discover-related UI here */}
+                            <p>Coming soon...</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            );
+        }
+
+        if (activeTab === 'rewards') {
+            return (
+                <div>
+                    {/* Rewards Tab Content */}
+                    <SeptemberReward />
+                </div>
+            );
+        }
+
+        return null;
+    };
+
     return (
         <div className="min-h-screen bg-white">
             {/* Error Banner */}
