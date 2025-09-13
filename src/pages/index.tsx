@@ -129,17 +129,7 @@ export default function HomePage() {
                 </div>
             </div>
 
-            <AuthDialog isOpen={isAuthDialogOpen} onClose={handleAuthClose} title="Join OnesToWatch" />
-
-
-                    {/* Tab Content */}
-                    <div className="transition-all duration-300">
-                        {activeTab === "discover" && <DiscoverMoreTab />}
-                        {activeTab === "rewards" && <MoreRewardsTab />}
-                    </div>
-                </div>
-            </div>
-
+          
             {/* Signup Dialog */}
             <AuthDialog isOpen={isAuthDialogOpen} onClose={handleAuthClose} title="Join OnesToWatch" />
         </div>
