@@ -150,7 +150,7 @@ export default function WeeklyListCard() {
                             <Link href="/september/rewards">
                                 <Button
                                     size="lg"
-                                    className="group bg-purple-lit hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                                    className="group bg-purple-med hover:bg-purple-lit text-white font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
                                 >
                                     <span className="flex items-center space-x-2">
                                         <Star className="w-5 h-5 fill-current" />
