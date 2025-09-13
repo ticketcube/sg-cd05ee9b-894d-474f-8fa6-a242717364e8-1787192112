@@ -25,14 +25,14 @@ export default function DashboardHeader({
           <div className="flex justify-center">
              <div className="inline-flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                  <Sparkles className="w-8 h-8 text-[hsl(279,92%,25%)]" />
-                <span className="text-3xl font-bold text-purple-deep">
+                <span className="text-2xl font-bold text-purple-deep">
         Discovery Dashboard
                  </span>
                     </div>
                     </div>
 
                 <div className="text-center mb-2">
-                    <h1 className="text-2xl md:text-2xl font-bold text-black mb-3">
+                    <h1 className="text-xl md:text-2xl font-bold text-black mb-3">
                         Welcome back, {profile?.username || 'Explorer'}
                     </h1>
                 
