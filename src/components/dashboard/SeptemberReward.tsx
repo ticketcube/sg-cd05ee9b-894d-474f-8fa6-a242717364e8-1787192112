@@ -51,7 +51,7 @@ export function SeptemberReward() {
                     <Trophy className="w-6 h-6" />
                 </div>
                 <div>
-                    <h3 className="text-lg font-semibold text-purple-700">September Discovery Reward!</h3>
+                    <h3 className="text-lg font-semibold text-purple-700">September Reward Tracker</h3>
                     <p className="text-sm text-neutral-600">Earn 240 points to unlock all nine OnesToWatch Zines</p>
                 </div>
                 {progressPercentage === 100 && (
