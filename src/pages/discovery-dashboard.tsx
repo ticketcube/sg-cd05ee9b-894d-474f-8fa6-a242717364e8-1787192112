@@ -127,30 +127,6 @@ const DiscoveryDashboard = () => {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
 
-   
-    return (
-        <div className="min-h-screen bg-white">
-            {/* Error Banner */}
-            {statsError && (
-                <div className="bg-red-50 border border-red-200 p-3">
-                    <div className="max-w-6xl mx-auto flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 text-red-500" />
-                        <p className="text-sm text-red-600">{statsError}</p>
-                        <button 
-                            onClick={() => {
-                                setStatsError(null);
-                                if (user?.id) {
-                                    statsLoadedFor.current = null; // Reset to allow refetch
-                                    fetchStatsWithCleanup(user.id);
-                                }
-                            }}
-                            className="ml-auto text-xs text-red-700 underline hover:no-underline"
-                        >
-                            Retry
-                        </button>
-                    </div>
-                </div>
-            )}
 
             <DashboardHeader
                 profile={profile}
