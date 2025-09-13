@@ -219,10 +219,10 @@ function MoreRewardsTab() {
     return (
         <div className="space-y-6">
             <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-black mb-2">
+                <h2 className="text-lg font-bold text-black mb-2">
                     Your Rewards & Achievements
                 </h2>
-                <p className="text-gray-600 text-base">
+                <p className="text-gray-600 text-sm">
                     Track your progress and unlock exclusive rewards
                 </p>
             </div>
