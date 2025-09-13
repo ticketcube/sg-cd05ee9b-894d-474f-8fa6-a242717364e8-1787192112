@@ -74,7 +74,7 @@ export default function WeeklyPointsDashboard({
     } finally {
       setLoading(false);
     }
-  }, [user, weekIdentifier]);
+  }, [user?.id, weekIdentifier]); // Simplified dependencies
 
   useEffect(() => {
     loadWeeklyProgress();

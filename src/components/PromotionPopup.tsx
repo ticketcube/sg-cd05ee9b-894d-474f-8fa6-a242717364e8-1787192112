@@ -17,14 +17,21 @@ interface PromotionPopupProps {
 
 export default function PromotionPopup({ onRegisterClick }: PromotionPopupProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const user = useUser();
 
+  // Prevent hydration mismatch by ensuring client-side only rendering
   useEffect(() => {
-    if (user) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || user) {
       setIsOpen(false);
       return;
     }
 
+    // Safe to access localStorage after mount
     const hasSeenPromo = localStorage.getItem('otwchart-promo-seen');
     if (!hasSeenPromo) {
       const timer = setTimeout(() => {
@@ -33,11 +40,13 @@ export default function PromotionPopup({ onRegisterClick }: PromotionPopupProps)
 
       return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [user, mounted]);
 
   const handleClose = () => {
     setIsOpen(false);
-    localStorage.setItem('otwchart-promo-seen', 'true');
+    if (mounted) {
+      localStorage.setItem('otwchart-promo-seen', 'true');
+    }
   };
 
   const handleRegisterClick = () => {
