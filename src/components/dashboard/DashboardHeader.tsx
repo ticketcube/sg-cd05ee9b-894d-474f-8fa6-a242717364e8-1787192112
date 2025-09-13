@@ -20,15 +20,16 @@ export default function DashboardHeader({
     return (
         <div className="bg-white">
             <div className="max-w-6xl mx-auto px-2 py-4">
+                <div className="inline-flex items-center gap-3 bg-purple-deep rounded-full px-4 py-2 mb-6">
+                    <Sparkles className="w-4 h-4 text-white" />
+                    <span className="text-wihte font-3xl">Discovery Dashboard</span>
+                </div>
+
                 <div className="text-center mb-2">
-                    <h1 className="text-3xl md:text-2xl font-bold text-black mb-3">
+                    <h1 className="text-2xl md:text-2xl font-bold text-black mb-3">
                         Welcome back, {profile?.username || 'Explorer'}
                     </h1>
-                    <div className="inline-flex items-center gap-3 bg-purple-deep rounded-full px-4 py-2 mb-6">
-                        <Sparkles className="w-4 h-4 text-black" />
-                        <span className="text-black font-medium">Discovery Dashboard</span>
-                    </div>
-
+                
                  
                     
                     <p className="text-lg text-gray-600 mb-8">
