@@ -33,7 +33,7 @@ export default function WeeklyListCard() {
         };
 
         fetchLatestWeek();
-    }, []);
+    }, []); // Empty dependency array is correct here since fetchLatestWeek has no dependencies
 
     if (loading) {
         return (

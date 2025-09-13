@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,13 +23,7 @@ export function UserEngagementQuadrants() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (profile?.user_id && !profileLoading) {
-      loadEngagementQuadrants();
-    }
-  }, [profile?.user_id, profileLoading]);
-
-  const loadEngagementQuadrants = async () => {
+  const loadEngagementQuadrants = useCallback(async () => {
     if (!profile?.user_id) return;
     
     setLoading(true);
@@ -106,7 +100,13 @@ export function UserEngagementQuadrants() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile?.user_id]);
+
+  useEffect(() => {
+    if (profile?.user_id && !profileLoading) {
+      loadEngagementQuadrants();
+    }
+  }, [profile?.user_id, profileLoading, loadEngagementQuadrants]);
 
   const getQuadrantLabel = (x: number, y: number): string => {
     if (x >= 0 && y >= 0) return 'High Interest, High Share';

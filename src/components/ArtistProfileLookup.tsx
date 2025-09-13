@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 export default function ArtistProfileLookup() {
@@ -10,7 +10,7 @@ export default function ArtistProfileLookup() {
     const [showVideo, setShowVideo] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const fetchArtist = async (search: string) => {
+    const fetchArtist = useCallback(async (search: string) => {
         if (!search.trim()) {
             setArtist(null);
             setError(null);
@@ -34,7 +34,7 @@ export default function ArtistProfileLookup() {
         }
 
         setLoading(false);
-    };
+    }, []); // No external dependencies
 
     // 🔎 Search-as-you-type with 400ms debounce
     useEffect(() => {
@@ -43,7 +43,7 @@ export default function ArtistProfileLookup() {
         }, 400);
 
         return () => clearTimeout(timer);
-    }, [query]);
+    }, [query, fetchArtist]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
