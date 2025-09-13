@@ -127,19 +127,28 @@ const DiscoveryDashboard = () => {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
 
-
+    return (
+        <>
             <DashboardHeader
                 profile={profile}
-                historyLoading={statsLoading}
-                total_points={statsLoading ? (profile?.total_points || 0) : dashboardStats.totalPoints}
-                artistsRated={dashboardStats.artistsRated}
-                weeksActive={dashboardStats.weeksActive}
+                historyLoading={false} // Placeholder
+                total_points={profile.total_points || 0}
+                totalVotes={0} // Placeholder
+                totalVideos={0} // Placeholder
+                weeksActive={1} // Placeholder
             />
+            <div className="container mx-auto px-4 py-8 text-center">
+                <Link href="/weekly-ratings" passHref>
+                    <Button size="lg" className="mb-8">
+                        Rate This Week's Artists
+                    </Button>
+                </Link>
 
-        
-          
-        </div>
+              
+               
+        </>
     );
 };
 
 export default DiscoveryDashboard;
+
