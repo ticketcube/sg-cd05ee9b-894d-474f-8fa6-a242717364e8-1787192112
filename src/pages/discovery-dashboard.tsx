@@ -127,7 +127,8 @@ const DiscoveryDashboard = () => {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
 
- 
+   
+
     return (
         <div className="min-h-screen bg-white">
             {/* Error Banner */}
