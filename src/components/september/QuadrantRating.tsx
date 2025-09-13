@@ -236,13 +236,13 @@ export function QuadrantRating({
             </div>
 
             {/* Footer with Submit Button - Now includes Timer */}
-            <div className="p-4 lg:p-6 bg-purple-lit border-t border-gray-700 flex-shrink-0">
+            <div className="p-4 lg:p-6 bg-purple-deep border-t border-gray-700 flex-shrink-0">
                 <Button
                     onClick={handleSubmit}
-                    className={`w-full text-sm lg:text-base font-bold transition-all duration-300 relative overflow-hidden ${
+                    className={`w-full text-lg font-bold transition-all duration-300 relative overflow-hidden ${
                         slidersChanged && !userHasVoted && watchTime >= minWatchTime
-                            ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg"
-                            : "bg-gray-700 hover:bg-gray-700 text-gray-400 cursor-not-allowed"
+                            ? "bg-purple-lit hover:from-blue-500 hover:to-purple-med text-white shadow-lg"
+                            : "bg-purple-lit hover:bg-purple-med text-gray-400 cursor-not-allowed"
                     }`}
                     disabled={isSubmitting || userHasVoted || !slidersChanged || watchTime < minWatchTime}
                 >
