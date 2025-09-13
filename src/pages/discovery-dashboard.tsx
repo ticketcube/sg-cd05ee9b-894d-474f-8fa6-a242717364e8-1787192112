@@ -191,9 +191,7 @@ const DiscoveryDashboard = () => {
             />
 
             {/* Main Content */}
-            <div className="max-w-6xl mx-auto px-4 pb-12">
-                {renderContent()}
-            </div>
+           
         </div>
     );
 };
