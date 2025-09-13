@@ -48,7 +48,7 @@ export interface UserEngagementHistory {
     weekly_summaries: UserEngagementSummary[];
     total_points: number;
     total_engagements: number; 
-    artists_discovered: artistsDiscovered,
+    artists_discovered: number;
 }
 
 /** Get a user's profile by user_id */
@@ -211,6 +211,11 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
     // ✅ Total engagements
     const totalEngagements = engagements?.length || 0;
 
+    const artistUuids = engagements
+        ?.map(e => e.artist_uuid)
+        .filter((uuid): uuid is string => !!uuid); // removes nulls
+    const artistsDiscovered = new Set(artistUuids).size;
+
     // ✅ Process weekly summaries
     const weeklyMap = new Map < string, UserEngagementSummary> ();
     let calculatedTotalPoints = 0;
@@ -250,7 +255,8 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
             b.week_identifier.localeCompare(a.week_identifier)
         ),
         total_points: calculatedTotalPoints,
-        total_engagements: totalEngagements, // 👈 new field
+        total_engagements: totalEngagements,
+        artists_discovered: artistsDiscovered, // 👈 new field
     };
 };
 
