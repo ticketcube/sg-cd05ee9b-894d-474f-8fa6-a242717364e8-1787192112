@@ -109,7 +109,7 @@ export function ArtistInteractionModal({
                         </div>
 
                         {/* Rating Section */}
-                        <div className="flex-1 min-h-0 bg-purple-deep border-t md:border-t-0 md:border-l border-gray-700 overflow-y-auto">
+                        <div className="flex-1 min-h-0 bg-black border-t md:border-t-0 md:border-l border-gray-700 overflow-y-auto">
                             {artist && user ? (
                                 <div className="h-full min-h-0 p-4">
                                     <QuadrantRating
