@@ -99,7 +99,7 @@ export default function HomePage() {
                         <div className="flex bg-gray-100 rounded-md p-0.5 sm:p-1 border border-gray-200">
                             <button
                                 onClick={() => setActiveTab("discover")}
-                                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${activeTab === "discover"
+                                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xl sm:text-sm font-medium transition-all ${activeTab === "discover"
                                         ? "bg-white text-black shadow-sm border border-gray-200"
                                         : "text-gray-600 hover:text-black hover:bg-white/50"
                                     }`}
@@ -109,7 +109,7 @@ export default function HomePage() {
                             </button>
                             <button
                                 onClick={() => setActiveTab("rewards")}
-                                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${activeTab === "rewards"
+                                className={`flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xl sm:text-sm font-medium transition-all ${activeTab === "rewards"
                                         ? "bg-white text-black shadow-sm border border-gray-200"
                                         : "text-gray-600 hover:text-black hover:bg-white/50"
                                     }`}
@@ -157,7 +157,7 @@ function DiscoverMoreTab() {
                             <Star className="w-8 h-8 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-black text-xl mb-2">
+                            <h3 className="font-bold text-black text-lg mb-2">
                                 Weekly Artist Ratings
                             </h3>
                             <Badge
@@ -177,7 +177,7 @@ function DiscoverMoreTab() {
                             <Music className="w-8 h-8 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-black text-xl mb-2">
+                            <h3 className="font-bold text-black text-lg mb-2">
                                 Global Vibes Chart
                             </h3>
                             <Badge
@@ -197,7 +197,7 @@ function DiscoverMoreTab() {
                             <Trophy className="w-8 h-8 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-black text-xl mb-2">
+                            <h3 className="font-bold text-black text-lg mb-2">
                                 Discovery Charts
                             </h3>
                             <Badge
