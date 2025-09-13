@@ -25,7 +25,7 @@ export default function DashboardHeader({
           <div className="flex justify-center">
              <div className="inline-flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
                  <Sparkles className="w-8 h-8 text-[hsl(279,92%,25%)]" />
-                <span className="text-3xl font-bold text-[hsl(279,92%,25%)]">
+                <span className="text-3xl font-bold text-purple-deep">
         Discovery Dashboard
                  </span>
                     </div>
