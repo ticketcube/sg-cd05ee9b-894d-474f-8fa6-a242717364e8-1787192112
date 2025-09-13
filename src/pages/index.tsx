@@ -145,7 +145,7 @@ function DiscoverMoreTab() {
                 <h2 className="text-lg font-bold text-black mb-2">
                     Discover Amazing New Artists
                 </h2>
-                <p className="text-base text-gray-600 text-base">
+                <p className="text-sm text-gray-600 ">
                     Explore different ways to find your next favorite artist
                 </p>
             </div>
