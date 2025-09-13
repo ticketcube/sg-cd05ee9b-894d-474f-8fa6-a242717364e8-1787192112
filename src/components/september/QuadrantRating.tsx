@@ -259,8 +259,14 @@ export function QuadrantRating({
                     return (
                         <Button
                             onClick={handleSubmit}
-                            className={`w-full ${buttonColor} ${hoverColor} ${extraEffect} text-lg font-bold text-white transition-all duration-300 relative overflow-hidden ${isDisabled ? "cursor-not-allowed opacity-70" : "shadow-lg"
-                                }`}
+                            className={`
+                        w-full 
+                          ${buttonColor} 
+                          ${hoverColor} 
+                         ${extraEffect} 
+                         text-lg font-bold text-white transition-all duration-300 relative overflow-hidden
+                          ${isDisabled ? "cursor-not-allowed bg-opacity-60" : "shadow-lg"}
+                            `}
                             disabled={isDisabled}
                         >
                             {!userHasVoted && watchTime < minWatchTime && (
