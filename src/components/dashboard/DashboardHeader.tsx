@@ -43,17 +43,17 @@ export default function DashboardHeader({
                     </p>
 
                     <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto mb-8">
-                        <div className="bg-white rounded-lg p-1 text-center border border-purple-deep">
+                        <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
                             <Trophy className="w-5 h-5 text-purple-deep mx-auto mb-2" />
                             <div className="text-xl font-bold text-purple-med">{historyLoading ? '...' : total_points}</div>
                             <div className="text-sm text-purple-deep">Points</div>
                         </div>
-                        <div className="bg-white rounded-lg p-1 text-center border border-purple-deep">
+                        <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
                             <Star className="w-5 h-5 text-purple-deep mx-auto mb-2" />
                             <div className="text-xl font-bold text-purple-med">{historyLoading ? '...' : artistsDiscovered}</div>
                             <div className="text-sm text-purple-deep">Artists</div>
                         </div>
-                        <div className="bg-white rounded-lg p-1 text-center border border-purple-deep">
+                        <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
                             <Calendar className="w-5 h-5 text-purple-deep mx-auto mb-2" />
                             <div className="text-xl font-bold text-purple-med">{historyLoading ? '...' : weeksActive}</div>
                             <div className="text-sm text-purple-deep">Weeks</div>
