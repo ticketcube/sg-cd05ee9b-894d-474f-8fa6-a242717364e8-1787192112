@@ -94,12 +94,12 @@ export default function HomePage() {
             {/* Modern Clean Tabs Section */}
             <div className="bg-white">
                 <div className="max-w-4xl mx-auto px-4 py-12">
-                    {/* Tab Navigation */}
-                    <div className="flex justify-center mb-12">
-                        <div className="flex bg-gray-50 rounded-lg p-1 border border-gray-200">
+                    {/* Tab Navigation - Made narrower and tighter */}
+                    <div className="flex justify-center mb-8">
+                        <div className="flex bg-gray-100 rounded-lg p-1 border border-gray-200">
                             <button
                                 onClick={() => setActiveTab("discover")}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium transition-all ${
+                                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                                     activeTab === "discover"
                                         ? "bg-white text-black shadow-sm border border-gray-200"
                                         : "text-gray-600 hover:text-black hover:bg-white/50"
@@ -110,7 +110,7 @@ export default function HomePage() {
                             </button>
                             <button
                                 onClick={() => setActiveTab("rewards")}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium transition-all ${
+                                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                                     activeTab === "rewards"
                                         ? "bg-white text-black shadow-sm border border-gray-200"
                                         : "text-gray-600 hover:text-black hover:bg-white/50"
@@ -142,53 +142,74 @@ Tab Components
 
 function DiscoverMoreTab() {
     return (
-        <div className="space-y-8">
-            {/* Main Discovery Card */}
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-all duration-300">
-                <div className="flex items-start gap-6">
-                    <div className="p-4 bg-black rounded-xl">
-                        <Star className="w-8 h-8 text-white" />
-                    </div>
-                    <div className="flex-1">
-                        <h3 className="text-2xl font-bold text-black mb-3">
-                            Discover Amazing New Artists
-                        </h3>
-                        <p className="text-gray-600 text-lg mb-6 leading-relaxed">
-                            Explore different ways to find your next favorite artist through our curated discovery tools
-                        </p>
-                        
-                        {/* Discovery Methods Grid */}
-                        <div className="grid md:grid-cols-3 gap-4">
-                            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Calendar className="w-5 h-5 text-gray-500" />
-                                    <span className="font-medium text-black">Weekly Lists</span>
-                                </div>
-                                <p className="text-sm text-gray-600">
-                                    Watch, vote & earn with our curated weekly artist selections
-                                </p>
-                            </div>
-                            
-                            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Users className="w-5 h-5 text-gray-500" />
-                                    <span className="font-medium text-black">Vibes Matrix</span>
-                                </div>
-                                <p className="text-sm text-gray-600">
-                                    Find artists through our global discovery matrix
-                                </p>
-                            </div>
-                            
-                            <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Music className="w-5 h-5 text-gray-500" />
-                                    <span className="font-medium text-black">Trending Chart</span>
-                                </div>
-                                <p className="text-sm text-gray-600">
-                                    Explore what's trending on the OTW charts
-                                </p>
-                            </div>
+        <div className="space-y-6">
+            <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-black mb-2">
+                    Discover Amazing New Artists
+                </h2>
+                <p className="text-gray-600 text-base">
+                    Explore different ways to find your next favorite artist
+                </p>
+            </div>
+
+            <div className="grid gap-6">
+                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center">
+                            <Star className="w-8 h-8 text-white" />
                         </div>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-black text-xl mb-2">
+                                Weekly Artist Ratings
+                            </h3>
+                            <Badge
+                                variant="outline"
+                                className="border-gray-300 text-gray-600 px-3 py-1"
+                            >
+                                Watch & Rate for Points
+                            </Badge>
+                        </div>
+                        <Star className="w-5 h-5 text-gray-400" />
+                    </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center">
+                            <Music className="w-8 h-8 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-black text-xl mb-2">
+                                Global Vibes Chart
+                            </h3>
+                            <Badge
+                                variant="outline"
+                                className="border-gray-300 text-gray-600 px-3 py-1"
+                            >
+                                Mood-Based Discovery
+                            </Badge>
+                        </div>
+                        <Users className="w-5 h-5 text-gray-400" />
+                    </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center">
+                            <Trophy className="w-8 h-8 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-black text-xl mb-2">
+                                Discovery Charts
+                            </h3>
+                            <Badge
+                                variant="outline"
+                                className="border-gray-300 text-gray-600 px-3 py-1"
+                            >
+                                Live Rankings
+                            </Badge>
+                        </div>
+                        <Calendar className="w-5 h-5 text-gray-400" />
                     </div>
                 </div>
             </div>
@@ -198,68 +219,34 @@ function DiscoverMoreTab() {
 
 function MoreRewardsTab() {
     return (
-        <div className="space-y-8">
-            {/* Main Rewards Card */}
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 hover:shadow-md transition-all duration-300">
-                <div className="flex items-start gap-6">
-                    <div className="p-4 bg-black rounded-xl">
-                        <Trophy className="w-8 h-8 text-white" />
-                    </div>
-                    <div className="flex-1">
-                        <h3 className="text-2xl font-bold text-black mb-3">
-                            We Reward Discovery
-                        </h3>
-                        <p className="text-gray-600 text-lg mb-6 leading-relaxed">
-                            Earn points for exclusive merchandise, insider access, and even free tickets to shows
-                        </p>
-                        
-                        {/* Rewards Timeline */}
-                        <div className="space-y-4">
-                            <div className="bg-white border border-gray-200 rounded-lg p-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 bg-black rounded-full"></div>
-                                        <span className="font-semibold text-black">September 2025</span>
-                                    </div>
-                                    <Badge className="bg-black text-white border-0">
-                                        Active
-                                    </Badge>
-                                </div>
-                                <p className="text-gray-600 pl-6">
-                                    <strong>240 Points</strong> = 9 Exclusive OTW Zines
-                                </p>
-                            </div>
-                            
-                            <div className="bg-white border border-gray-200 rounded-lg p-4 opacity-75">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                                        <span className="font-semibold text-gray-500">October 2025</span>
-                                    </div>
-                                    <Badge variant="outline" className="border-gray-300 text-gray-500">
-                                        Coming Soon
-                                    </Badge>
-                                </div>
-                                <p className="text-gray-500 pl-6">
-                                    New rewards dropping soon...
-                                </p>
-                            </div>
-                            
-                            <div className="bg-white border border-gray-200 rounded-lg p-4 opacity-75">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                                        <span className="font-semibold text-gray-500">November 2025</span>
-                                    </div>
-                                    <Badge variant="outline" className="border-gray-300 text-gray-500">
-                                        Coming Soon
-                                    </Badge>
-                                </div>
-                                <p className="text-gray-500 pl-6">
-                                    Holiday rewards & special events
-                                </p>
-                            </div>
+        <div className="space-y-6">
+            <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-black mb-2">
+                    Your Rewards & Achievements
+                </h2>
+                <p className="text-gray-600 text-base">
+                    Track your progress and unlock exclusive rewards
+                </p>
+            </div>
+
+            <div className="grid gap-6">
+                <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
+                    <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 rounded-xl bg-black flex items-center justify-center">
+                            <Trophy className="w-8 h-8 text-white" />
                         </div>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-black text-xl mb-2">
+                                September Discovery Reward
+                            </h3>
+                            <Badge
+                                variant="outline"
+                                className="border-gray-300 text-gray-600 px-3 py-1"
+                            >
+                                Earn 240 Points for all Nine OnesToWatch Zines!
+                            </Badge>
+                        </div>
+                        <Gift className="w-5 h-5 text-gray-400" />
                     </div>
                 </div>
             </div>
