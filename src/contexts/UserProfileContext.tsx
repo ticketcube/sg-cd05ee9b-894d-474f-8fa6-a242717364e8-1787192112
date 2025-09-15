@@ -1,142 +1,262 @@
 
-    import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-    import { User } from "@supabase/supabase-js";
-    import { supabase } from "@/integrations/supabase/client";
-    import { getUserProfile, getUserEngagementHistory, type UserProfile } from "@/services/userProfileService";
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import { User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { getUserProfile, getUserEngagementHistory, type UserProfile, type UserEngagementHistory } from "@/services/userProfileService";
 
-    interface UserProfileContextType {
-      user: User | null;
-      profile: UserProfile | null;
-      isAuthenticated: boolean;
-      loading: boolean; // For profile loading
-      sessionLoading: boolean; // For initial auth session check
-      role: string | null;
-      logout: () => Promise<void>;
-      refreshProfile: () => Promise<void>;
+interface UserProfileContextType {
+  user: User | null;
+  profile: UserProfile | null;
+  engagementHistory: UserEngagementHistory | null;
+  isAuthenticated: boolean;
+  loading: boolean; // For profile loading
+  sessionLoading: boolean; // For initial auth session check
+  historyLoading: boolean; // For engagement history loading
+  historyError: string | null;
+  role: string | null;
+  logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
+  retryHistory: () => Promise<void>;
+}
+
+const UserProfileContext = createContext<UserProfileContextType | null>(null);
+
+export const useUserProfile = () => {
+  const context = useContext(UserProfileContext);
+  if (!context) {
+    throw new Error("useUserProfile must be used within a UserProfileProvider");
+  }
+  return context;
+};
+
+interface UserProfileProviderProps {
+  children: React.ReactNode;
+}
+
+export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [engagementHistory, setEngagementHistory] = useState<UserEngagementHistory | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(false); // Tracks profile loading
+  const [sessionLoading, setSessionLoading] = useState(true); // Tracks initial auth check
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+
+  // Request management for mobile optimization
+  const profileAbortController = useRef<AbortController | null>(null);
+  const historyAbortController = useRef<AbortController | null>(null);
+  const loadingRequests = useRef<Set<string>>(new Set());
+
+  // Cleanup function
+  const cleanup = useCallback(() => {
+    if (profileAbortController.current) {
+      profileAbortController.current.abort();
+      profileAbortController.current = null;
+    }
+    if (historyAbortController.current) {
+      historyAbortController.current.abort();
+      historyAbortController.current = null;
+    }
+    loadingRequests.current.clear();
+  }, []);
+
+  const loadEngagementHistory = useCallback(async (userId: string) => {
+    const requestKey = `history-${userId}`;
+    
+    // Prevent duplicate requests
+    if (loadingRequests.current.has(requestKey)) {
+      console.log('[UserProfile] History request already in progress, skipping duplicate');
+      return;
     }
 
-    const UserProfileContext = createContext<UserProfileContextType | null>(null);
+    // Abort previous history request
+    if (historyAbortController.current) {
+      historyAbortController.current.abort();
+    }
 
-    export const useUserProfile = () => {
-      const context = useContext(UserProfileContext);
-      if (!context) {
-        throw new Error("useUserProfile must be used within a UserProfileProvider");
+    historyAbortController.current = new AbortController();
+    const { signal } = historyAbortController.current;
+
+    loadingRequests.current.add(requestKey);
+
+    try {
+      setHistoryLoading(true);
+      setHistoryError(null);
+
+      console.log('[UserProfile] Loading engagement history for user:', userId);
+      
+      // Add timeout for mobile connections
+      const timeoutId = setTimeout(() => {
+        if (!signal.aborted) {
+          historyAbortController.current?.abort();
+        }
+      }, 15000); // 15 second timeout for mobile
+
+      const history = await getUserEngagementHistory(userId);
+
+      clearTimeout(timeoutId);
+
+      if (!signal.aborted) {
+        setEngagementHistory(history);
+        console.log('[UserProfile] Engagement history loaded successfully');
       }
-      return context;
-    };
+    } catch (error) {
+      if (!signal.aborted) {
+        console.error('[UserProfile] Error loading engagement history:', error);
+        setHistoryError('Failed to load engagement data');
+        setEngagementHistory(null);
+      }
+    } finally {
+      loadingRequests.current.delete(requestKey);
+      if (!signal.aborted) {
+        setHistoryLoading(false);
+      }
+    }
+  }, []);
 
-    interface UserProfileProviderProps {
-      children: React.ReactNode;
+  const loadUserProfile = useCallback(async (currentUser: User) => {
+    const requestKey = `profile-${currentUser.id}`;
+    
+    // Prevent duplicate requests
+    if (loadingRequests.current.has(requestKey)) {
+      console.log('[UserProfile] Profile request already in progress, skipping duplicate');
+      return;
     }
 
-    export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ children }) => {
-      const [user, setUser] = useState<User | null>(null);
-      const [profile, setProfile] = useState<UserProfile | null>(null);
-      const [isAuthenticated, setIsAuthenticated] = useState(false);
-      const [loading, setLoading] = useState(false); // Tracks profile loading, defaults to false
-      const [sessionLoading, setSessionLoading] = useState(true); // Tracks initial auth check, starts true
-      const [role, setRole] = useState<string | null>(null);
+    // Abort previous profile request
+    if (profileAbortController.current) {
+      profileAbortController.current.abort();
+    }
 
-      const refreshProfile = useCallback(async () => {
-        if (!user?.id) return;
+    profileAbortController.current = new AbortController();
+    const { signal } = profileAbortController.current;
 
-        try {
-          const userProfile = await getUserProfile(user.id);
-          if (!userProfile) return;
+    loadingRequests.current.add(requestKey);
 
-          const engagementHistory = await getUserEngagementHistory(user.id);
-          
-          const updatedProfile = {
-            ...userProfile,
-            total_points: engagementHistory.total_points
-          };
-
-          setProfile(updatedProfile);
-          setRole(updatedProfile.role);
-        } catch (error) {
-          console.error("Error refreshing profile:", error);
-        }
-      }, [user?.id]);
-
-      const loadUserProfile = useCallback(async (currentUser: User) => {
-        try {
-          setLoading(true);
-          
-          const userProfile = await getUserProfile(currentUser.id);
-          
-          if (!userProfile) {
-            console.error("No profile found for user:", currentUser.id);
-            setProfile(null);
-            return;
-          }
-
-          const engagementHistory = await getUserEngagementHistory(currentUser.id);
-          
-          const updatedProfile = {
-            ...userProfile,
-            total_points: engagementHistory.total_points
-          };
-
-          setProfile(updatedProfile);
-          setRole(updatedProfile.role);
-        } catch (error) {
-          console.error("Error loading user profile:", error);
+    try {
+      setLoading(true);
+      
+      console.log('[UserProfile] Loading profile for user:', currentUser.id);
+      const userProfile = await getUserProfile(currentUser.id);
+      
+      if (!signal.aborted) {
+        if (!userProfile) {
+          console.error('[UserProfile] No profile found for user:', currentUser.id);
           setProfile(null);
-        } finally {
-          setLoading(false);
+          setRole(null);
+        } else {
+          setProfile(userProfile);
+          setRole(userProfile.role);
+          console.log('[UserProfile] Profile loaded successfully');
+          
+          // Load engagement history after profile is loaded
+          await loadEngagementHistory(currentUser.id);
         }
-      }, []);
-
-      useEffect(() => {
-        // onAuthStateChange fires on initial load with session data, making a separate getSession call redundant and safer.
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            console.log("Auth state changed:", event, session?.user?.email);
-            
-            if (session?.user) {
-              setUser(session.user);
-              setIsAuthenticated(true);
-              await loadUserProfile(session.user);
-            } else {
-              setUser(null);
-              setProfile(null);
-              setRole(null);
-              setIsAuthenticated(false);
-              setLoading(false); // No user, so not loading a profile
-            }
-            // The initial session check is complete, regardless of outcome.
-            setSessionLoading(false);
-          }
-        );
-
-        return () => {
-          subscription.unsubscribe();
-        };
-      }, [loadUserProfile]);
-
-      const logout = async () => {
-        await supabase.auth.signOut();
-        setUser(null);
+      }
+    } catch (error) {
+      if (!signal.aborted) {
+        console.error('[UserProfile] Error loading user profile:', error);
         setProfile(null);
         setRole(null);
-        setIsAuthenticated(false);
-      };
+      }
+    } finally {
+      loadingRequests.current.delete(requestKey);
+      if (!signal.aborted) {
+        setLoading(false);
+      }
+    }
+  }, [loadEngagementHistory]);
 
-      const value: UserProfileContextType = {
-        user,
-        profile,
-        isAuthenticated,
-        loading,
-        sessionLoading,
-        role,
-        logout,
-        refreshProfile,
-      };
+  const refreshProfile = useCallback(async () => {
+    if (!user?.id) return;
 
-      return (
-        <UserProfileContext.Provider value={value}>
-          {children}
-        </UserProfileContext.Provider>
-      );
+    try {
+      const userProfile = await getUserProfile(user.id);
+      if (!userProfile) return;
+
+      setProfile(userProfile);
+      setRole(userProfile.role);
+
+      // Refresh engagement history
+      await loadEngagementHistory(user.id);
+    } catch (error) {
+      console.error('[UserProfile] Error refreshing profile:', error);
+    }
+  }, [user?.id, loadEngagementHistory]);
+
+  const retryHistory = useCallback(async () => {
+    if (!user?.id) return;
+    await loadEngagementHistory(user.id);
+  }, [user?.id, loadEngagementHistory]);
+
+  useEffect(() => {
+    // Cleanup on mount
+    return cleanup;
+  }, [cleanup]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('[UserProfile] Auth state changed:', event, session?.user?.email);
+        
+        // Cleanup previous requests when auth state changes
+        cleanup();
+        
+        if (session?.user) {
+          setUser(session.user);
+          setIsAuthenticated(true);
+          await loadUserProfile(session.user);
+        } else {
+          setUser(null);
+          setProfile(null);
+          setEngagementHistory(null);
+          setRole(null);
+          setIsAuthenticated(false);
+          setLoading(false);
+          setHistoryLoading(false);
+          setHistoryError(null);
+        }
+        setSessionLoading(false);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+      cleanup();
     };
-  
+  }, [loadUserProfile, cleanup]);
+
+  const logout = async () => {
+    cleanup();
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    setEngagementHistory(null);
+    setRole(null);
+    setIsAuthenticated(false);
+    setHistoryError(null);
+  };
+
+  const value: UserProfileContextType = {
+    user,
+    profile,
+    engagementHistory,
+    isAuthenticated,
+    loading,
+    sessionLoading,
+    historyLoading,
+    historyError,
+    role,
+    logout,
+    refreshProfile,
+    retryHistory,
+  };
+
+  return (
+    <UserProfileContext.Provider value={value}>
+      {children}
+    </UserProfileContext.Provider>
+  );
+};
