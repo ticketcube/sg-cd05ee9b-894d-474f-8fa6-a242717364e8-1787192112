@@ -30,6 +30,7 @@ const DiscoveryDashboard = () => {
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     const [isPageReady, setIsPageReady] = useState(false);
     const mountedRef = useRef(false);
+    const historyLoadTriggered = useRef(false);
 
     // Handle mobile page mounting and loading states
     useEffect(() => {
@@ -52,8 +53,37 @@ const DiscoveryDashboard = () => {
     useEffect(() => {
         if (sessionLoading) {
             setIsPageReady(false);
+            historyLoadTriggered.current = false; // Reset trigger on session change
         }
     }, [sessionLoading]);
+
+    // ✅ NON-BLOCKING ENGAGEMENT HISTORY LOADING: Trigger after dashboard is ready
+    useEffect(() => {
+        // Only trigger once per session, after everything is ready
+        if (
+            isPageReady && 
+            isAuthenticated && 
+            profile && 
+            user && 
+            !userLoading && 
+            !sessionLoading && 
+            !historyLoadTriggered.current &&
+            !engagementHistory // Only if not already loaded
+        ) {
+            historyLoadTriggered.current = true;
+            
+            // Use setTimeout to ensure this runs after the UI has fully rendered
+            // This prevents any blocking during the initial page render
+            setTimeout(() => {
+                if (mountedRef.current && !engagementHistory) {
+                    console.log('[DiscoveryDashboard] Triggering non-blocking engagement history load');
+                    retryHistory().catch(error => {
+                        console.warn('[DiscoveryDashboard] Engagement history load failed:', error);
+                    });
+                }
+            }, 500); // 500ms delay to ensure UI is fully rendered and responsive
+        }
+    }, [isPageReady, isAuthenticated, profile, user, userLoading, sessionLoading, engagementHistory, retryHistory]);
 
     // Mobile-specific loading logic
     const showLoadingScreen = () => {
