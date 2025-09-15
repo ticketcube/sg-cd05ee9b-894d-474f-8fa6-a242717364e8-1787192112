@@ -13,23 +13,36 @@ export default function HomePage() {
     const [isMuted, setIsMuted] = useState(true);
     const videoRef = useRef<HTMLVideoElement>(null);
 
-    const { isAuthenticated, sessionLoading } = useUserProfile();
+    const { isAuthenticated, sessionLoading, loading: profileLoading } = useUserProfile();
+
+    // Navigation cleanup ref
+    const navigatingRef = useRef(false);
 
     // Redirect effect based on the fast session check
     useEffect(() => {
         // Wait until the initial session check is complete
-        if (sessionLoading) {
+        if (sessionLoading || profileLoading) {
             return;
         }
 
         // If the check is done and the user is logged in, redirect immediately.
-        if (isAuthenticated) {
+        if (isAuthenticated && !navigatingRef.current) {
+            navigatingRef.current = true;
+            console.log('[HomePage] Authenticated user detected, redirecting to dashboard');
             router.replace("/discovery-dashboard");
         }
-    }, [sessionLoading, isAuthenticated, router]);
+    }, [sessionLoading, isAuthenticated, profileLoading, router]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            navigatingRef.current = false;
+        };
+    }, []);
 
     const handleRegisterClick = () => {
         if (isAuthenticated) {
+            navigatingRef.current = true;
             router.push("/discovery-dashboard");
         } else {
             setAuthDialogOpen(true);
@@ -47,14 +60,16 @@ export default function HomePage() {
         setAuthDialogOpen(false);
     };
 
-    // Show a full-page loader while checking the auth session.
+    // Show a full-page loader while checking the auth session or navigating
     // This prevents the "flash" of the homepage for logged-in users before they redirect.
-    if (sessionLoading || isAuthenticated) {
+    if (sessionLoading || (isAuthenticated && profileLoading) || navigatingRef.current) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
                 <div className="text-center space-y-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-                    <p className="text-white text-lg">Loading...</p>
+                    <p className="text-white text-lg">
+                        {navigatingRef.current ? 'Redirecting...' : 'Loading...'}
+                    </p>
                 </div>
             </div>
         );
