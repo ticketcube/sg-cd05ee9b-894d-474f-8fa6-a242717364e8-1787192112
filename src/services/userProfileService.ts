@@ -181,7 +181,7 @@ export const recordEngagement = async (
     return engagement as UserEngagement;
 
 };
-/** Get user's engagement history with weekly summaries - ✅ FIXED: Direct Supabase queries only */
+/** Get user's engagement history with weekly summaries - ✅ FIXED: Chunked processing to prevent UI freeze */
 export const getUserEngagementHistory = async (
     userId: string,
     abortSignal?: AbortSignal
@@ -204,13 +204,13 @@ export const getUserEngagementHistory = async (
         throw new Error('Request aborted');
     }
 
-    // ✅ Fetch engagements with mobile optimization - limit results for performance
+    // ✅ Fetch engagements with reduced initial load for first refresh performance
     const { data: engagements, error } = await supabase
         .from("user_engagements")
         .select("engagement_type, points_earned, week_identifier, artist_uuid, created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        .limit(500); // Limit for mobile performance
+        .limit(200); // Reduced from 500 to 200 for better first-load performance
 
     if (error) {
         console.error("[UserProfileService] Error fetching engagements:", error);
@@ -230,43 +230,56 @@ export const getUserEngagementHistory = async (
         .filter((uuid): uuid is string => !!uuid); // removes nulls
     const artistsDiscovered = new Set(artistUuids).size;
 
-    // ✅ Process weekly summaries
+    // ✅ CHUNKED PROCESSING: Process data in small chunks to prevent UI blocking
     const weeklyMap = new Map<string, UserEngagementSummary>();
     let calculatedTotalPoints = 0;
+    const chunkSize = 50; // Process 50 records at a time
+    
+    if (engagements && engagements.length > 0) {
+        for (let i = 0; i < engagements.length; i += chunkSize) {
+            // Check abort signal before each chunk
+            if (abortSignal?.aborted) {
+                throw new Error('Request aborted');
+            }
 
-    engagements?.forEach(e => {
-        // Check abort signal periodically during processing
-        if (abortSignal?.aborted) {
-            throw new Error('Request aborted');
-        }
+            const chunk = engagements.slice(i, i + chunkSize);
+            
+            // Process chunk
+            chunk.forEach(e => {
+                const weekId = e.week_identifier || "unknown";
+                const pointsEarned = e.points_earned || 0;
 
-        const weekId = e.week_identifier || "unknown";
-        const pointsEarned = e.points_earned || 0;
+                calculatedTotalPoints += pointsEarned;
 
-        calculatedTotalPoints += pointsEarned;
+                if (!weeklyMap.has(weekId)) {
+                    weeklyMap.set(weekId, {
+                        week_identifier: weekId,
+                        total_points: 0,
+                        engagement_count: 0,
+                        video_views: 0,
+                        votes_submitted: 0,
+                    });
+                }
 
-        if (!weeklyMap.has(weekId)) {
-            weeklyMap.set(weekId, {
-                week_identifier: weekId,
-                total_points: 0,
-                engagement_count: 0,
-                video_views: 0,
-                votes_submitted: 0,
+                const summary = weeklyMap.get(weekId)!;
+                summary.total_points += pointsEarned;
+                summary.engagement_count += 1;
+
+                if (e.engagement_type === "video_view") {
+                    summary.video_views += 1;
+                }
+
+                if (["vote_submission", "artist_rating", "quadrant"].includes(e.engagement_type)) {
+                    summary.votes_submitted += 1;
+                }
             });
-        }
 
-        const summary = weeklyMap.get(weekId)!;
-        summary.total_points += pointsEarned;
-        summary.engagement_count += 1;
-
-        if (e.engagement_type === "video_view") {
-            summary.video_views += 1;
+            // ✅ YIELD TO UI: Allow UI to update between chunks
+            if (i + chunkSize < engagements.length) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
         }
-
-        if (["vote_submission", "artist_rating", "quadrant"].includes(e.engagement_type)) {
-            summary.votes_submitted += 1;
-        }
-    });
+    }
 
     // Final abort check before returning
     if (abortSignal?.aborted) {
