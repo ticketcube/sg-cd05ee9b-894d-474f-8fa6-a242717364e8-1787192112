@@ -182,8 +182,13 @@ export const recordEngagement = async (
 
 };
 /** Get user's engagement history with weekly summaries - ✅ FIXED: Direct Supabase queries only */
-export const getUserEngagementHistory = async (userId: string): Promise<UserEngagementHistory> => {
+export const getUserEngagementHistory = async (userId: string, abortSignal?: AbortSignal): Promise<UserEngagementHistory> => {
     console.log(`[UserProfileService] Getting engagement history for user: ${userId}`);
+
+    // Check if request was aborted
+    if (abortSignal?.aborted) {
+        throw new Error('Request aborted');
+    }
 
     // ✅ Get user profile
     const userProfile = await getUserProfile(userId);
@@ -191,18 +196,28 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
         throw new Error("User profile not found - engagement history cannot be loaded");
     }
 
-    // ✅ Fetch engagements
+    // Check abort signal again before proceeding to heavy query
+    if (abortSignal?.aborted) {
+        throw new Error('Request aborted');
+    }
+
+    // ✅ Fetch engagements with mobile optimization - limit results for performance
     const { data: engagements, error } = await supabase
         .from("user_engagements")
         .select("engagement_type, points_earned, week_identifier, artist_uuid, created_at")
         .eq("user_id", userId)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(500); // Limit for mobile performance
 
     if (error) {
         console.error("[UserProfileService] Error fetching engagements:", error);
         throw error;
     }
 
+    // Check abort signal before processing data
+    if (abortSignal?.aborted) {
+        throw new Error('Request aborted');
+    }
 
     // ✅ Total engagements
     const totalEngagements = engagements?.length || 0;
@@ -213,10 +228,15 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
     const artistsDiscovered = new Set(artistUuids).size;
 
     // ✅ Process weekly summaries
-    const weeklyMap = new Map < string, UserEngagementSummary> ();
+    const weeklyMap = new Map<string, UserEngagementSummary>();
     let calculatedTotalPoints = 0;
 
     engagements?.forEach(e => {
+        // Check abort signal periodically during processing
+        if (abortSignal?.aborted) {
+            throw new Error('Request aborted');
+        }
+
         const weekId = e.week_identifier || "unknown";
         const pointsEarned = e.points_earned || 0;
 
@@ -244,6 +264,11 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
             summary.votes_submitted += 1;
         }
     });
+
+    // Final abort check before returning
+    if (abortSignal?.aborted) {
+        throw new Error('Request aborted');
+    }
 
     return {
         user_profile: userProfile,
