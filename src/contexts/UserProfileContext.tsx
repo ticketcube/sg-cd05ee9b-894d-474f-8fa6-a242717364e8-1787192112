@@ -129,7 +129,18 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       setLoading(true);
       
       console.log('[UserProfile] Loading profile for user:', currentUser.id);
-      const userProfile = await getUserProfile(currentUser.id);
+      
+      // Add 10-second timeout for profile query
+      const timeoutId = setTimeout(() => {
+        if (!signal.aborted) {
+          console.warn('[UserProfile] Profile loading timeout reached (10s), aborting');
+          profileAbortController.current?.abort();
+        }
+      }, 10000); // 10 second timeout
+      
+      const userProfile = await getUserProfile(currentUser.id, signal);
+      
+      clearTimeout(timeoutId);
       
       if (!signal.aborted) {
         if (!userProfile) {

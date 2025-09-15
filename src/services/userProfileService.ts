@@ -52,11 +52,19 @@ export interface UserEngagementHistory {
 }
 
 /** Get a user's profile by user_id */
-export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
+export const getUserProfile = async (userId: string, abortSignal?: AbortSignal): Promise<UserProfile | null> => {
+    console.log(`[UserProfileService] Getting profile for user: ${userId}`);
+    
+    // Check if request was aborted before starting
+    if (abortSignal?.aborted) {
+        throw new Error('Request aborted');
+    }
+
     const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
+        .abortSignal(abortSignal)
         .single();
 
     if (error) {
@@ -64,6 +72,7 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
         return null;
     }
 
+    console.log(`[UserProfileService] Profile loaded successfully for user: ${userId}`);
     return data;
 };
 
