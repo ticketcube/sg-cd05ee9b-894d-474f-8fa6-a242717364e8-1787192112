@@ -94,7 +94,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
         }
       }, 15000); // 15 second timeout for mobile
 
-      const history = await getUserEngagementHistory(userId);
+      const history = await getUserEngagementHistory(userId, signal);
 
       clearTimeout(timeoutId);
 
