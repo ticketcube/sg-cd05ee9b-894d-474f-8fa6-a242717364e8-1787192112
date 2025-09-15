@@ -56,7 +56,7 @@ const DiscoveryDashboard = () => {
             setStatsError(null);
 
             console.log('[DiscoveryDashboard] Fetching engagement history for user:', userId);
-            const userHistory = await getUserEngagementHistory(userId, signal);
+            const userHistory = await getUserEngagementHistory(userId);
 
             if (!signal.aborted) {
                 setHistory(userHistory);
