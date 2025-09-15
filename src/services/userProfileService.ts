@@ -71,7 +71,6 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
 
 /** Update user's city/location - ✅ FIXED: Direct Supabase only */
 export const updateUserLocation = async (userId: string, cityId: number, rawCityInput: string): Promise<UserProfile> => {
-    console.log(`[UserProfileService] Updating location for user: ${userId}`);
 
     const { data, error } = await supabase
         .from("user_profiles")
@@ -98,7 +97,6 @@ export const addPoints = async (userId: string, pointsToAdd: number): Promise<Us
         return getUserProfile(userId);
     }
 
-    console.log(`[UserProfileService] Adding ${pointsToAdd} points to user: ${userId}`);
 
     const { error } = await supabase.rpc("increment_user_points", {
         points_to_add: pointsToAdd,
@@ -194,10 +192,9 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
     }
 
     // ✅ Fetch engagements
-    console.log(`[UserProfileService] Fetching engagements for user_id: ${userId}`);
     const { data: engagements, error } = await supabase
         .from("user_engagements")
-        .select("*")
+        .select("engagement_type, points_earned, week_identifier, artist_uuid, created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
@@ -206,7 +203,6 @@ export const getUserEngagementHistory = async (userId: string): Promise<UserEnga
         throw error;
     }
 
-    console.log(`✅ [UserProfileService] Found ${engagements?.length || 0} engagement records`);
 
     // ✅ Total engagements
     const totalEngagements = engagements?.length || 0;
