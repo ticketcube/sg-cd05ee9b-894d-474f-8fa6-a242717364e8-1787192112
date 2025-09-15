@@ -150,16 +150,10 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
           setRole(userProfile.role);
           console.log('[UserProfile] Profile loaded successfully');
           
-          // ✅ FIX: Defer engagement history loading to prevent first refresh freeze
-          // Use setTimeout to ensure it runs after the UI has rendered
-          setTimeout(() => {
-            if (!signal.aborted && document.hasFocus()) {
-              // Only load if the tab is still active
-              loadEngagementHistory(currentUser.id).catch(error => {
-                console.warn('[UserProfile] Engagement history failed to load, but continuing:', error);
-              });
-            }
-          }, 1000); // 1 second delay to let UI render first
+          // ✅ COMPLETE FIX: Remove automatic engagement history loading entirely
+          // Engagement history will only load when explicitly requested via retryHistory()
+          // This prevents ANY blocking on first refresh while keeping the functionality available
+          console.log('[UserProfile] Profile ready - engagement history will load on demand');
         }
       }
     } catch (error) {
@@ -173,7 +167,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       // Always reset loading state, even if aborted
       setLoading(false);
     }
-  }, [loadEngagementHistory]);
+  }, []);
 
   const refreshProfile = useCallback(async () => {
     if (!user?.id) return;
