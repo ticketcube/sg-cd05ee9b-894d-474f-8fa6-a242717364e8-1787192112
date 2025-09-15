@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import { useMobile } from "@/hooks/use-mobile";
-import { authService } from "@/services/authService";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,15 +26,41 @@ import {
 } from "@/components/ui/sheet";
 import AuthDialog from "@/components/AuthDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 export default function UserNav() {
-  const { user, profile, loading } = useUserProfile();
+  const { user, profile, loading, logout } = useUserProfile();
   const isMobile = useMobile();
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { toast } = useToast();
 
   const handleLogout = async () => {
-    await authService.signOut();
-    // Redirect or state update will be handled by the UserProfileContext
+    if (isLoggingOut) return; // Prevent double-clicks
+    
+    try {
+      setIsLoggingOut(true);
+      await logout();
+      
+      toast({
+        title: "Logged out successfully",
+        description: "You have been signed out of your account.",
+      });
+      
+      // Redirect to home page after successful logout
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout failed",
+        description: "There was an error signing you out. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const getInitials = (email?: string) => {
@@ -68,16 +93,21 @@ export default function UserNav() {
     <>
       <DropdownMenuItem asChild>
         <Link href="/discovery-dashboard">Discovery</Link>
-          </DropdownMenuItem>
-    <DropdownMenuItem asChild>
-              <Link href="/september/rewards">Rewards</Link>
-          </DropdownMenuItem>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link href="/september/rewards">Rewards</Link>
+      </DropdownMenuItem>
       <DropdownMenuItem asChild>
         <Link href="/profile">Profile</Link>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={handleLogout}>
-        Logout
+      <DropdownMenuItem 
+        onClick={handleLogout} 
+        disabled={isLoggingOut}
+        className="text-red-600 focus:text-red-600 cursor-pointer"
+      >
+        <LogOut className="mr-2 h-4 w-4" />
+        {isLoggingOut ? "Logging out..." : "Logout"}
       </DropdownMenuItem>
     </>
   );
@@ -96,11 +126,18 @@ export default function UserNav() {
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
           <div className="flex flex-col space-y-2 pt-4">
-              {/* This mimics DropdownMenuItem styling/behavior for consistency */}
-             <Link href="/discovery-dashboard" className="text-sm px-2 py-1.5 hover:bg-accent rounded-md">Discover</Link>
+             <Link href="/discovery-dashboard" className="text-sm px-2 py-1.5 hover:bg-accent rounded-md">Discovery</Link>
+             <Link href="/september/rewards" className="text-sm px-2 py-1.5 hover:bg-accent rounded-md">Rewards</Link>
              <Link href="/profile" className="text-sm px-2 py-1.5 hover:bg-accent rounded-md">Profile</Link>
              <div className="border-b my-2"></div>
-             <button onClick={handleLogout} className="text-sm px-2 py-1.5 hover:bg-accent rounded-md w-full text-left">Logout</button>
+             <button 
+               onClick={handleLogout} 
+               disabled={isLoggingOut}
+               className="text-sm px-2 py-1.5 hover:bg-accent rounded-md w-full text-left flex items-center text-red-600 disabled:opacity-50"
+             >
+               <LogOut className="mr-2 h-4 w-4" />
+               {isLoggingOut ? "Logging out..." : "Logout"}
+             </button>
           </div>
         </SheetContent>
       </Sheet>
