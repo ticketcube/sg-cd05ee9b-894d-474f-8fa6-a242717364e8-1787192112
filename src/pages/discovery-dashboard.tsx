@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 // Component Imports
@@ -29,11 +28,56 @@ const DiscoveryDashboard = () => {
     
     const [activeTab, setActiveTab] = useState('discover');
     const [showAuthDialog, setShowAuthDialog] = useState(false);
+    const [isPageReady, setIsPageReady] = useState(false);
+    const mountedRef = useRef(false);
 
-    // Loading & auth handling
-    if (sessionLoading || userLoading) return <DashboardLoading />;
-    if (!isAuthenticated || !profile || !user)
+    // Handle mobile page mounting and loading states
+    useEffect(() => {
+        mountedRef.current = true;
+        
+        // Small delay to ensure proper mounting on mobile
+        const timer = setTimeout(() => {
+            if (mountedRef.current) {
+                setIsPageReady(true);
+            }
+        }, 100);
+
+        return () => {
+            mountedRef.current = false;
+            clearTimeout(timer);
+        };
+    }, []);
+
+    // Reset page ready state when session/auth changes
+    useEffect(() => {
+        if (sessionLoading) {
+            setIsPageReady(false);
+        }
+    }, [sessionLoading]);
+
+    // Mobile-specific loading logic
+    const showLoadingScreen = () => {
+        // Show loading if session is still checking
+        if (sessionLoading) return true;
+        
+        // Show loading if page isn't ready yet (mobile mounting)
+        if (!isPageReady) return true;
+        
+        // Show loading if authenticated but profile is still loading
+        if (isAuthenticated && userLoading) return true;
+        
+        return false;
+    };
+
+    // Show loading screen with mobile optimizations
+    if (showLoadingScreen()) {
+        return <DashboardLoading />;
+    }
+
+    // Show auth block if not authenticated or no profile
+    if (!isAuthenticated || !profile || !user) {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
+    }
 
     return (
         <div className="min-h-screen bg-white">
