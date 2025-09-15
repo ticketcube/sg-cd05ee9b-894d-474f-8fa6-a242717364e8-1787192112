@@ -87,12 +87,12 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
 
       console.log('[UserProfile] Loading engagement history for user:', userId);
       
-      // Add timeout for mobile connections
+      // Shorter timeout for mobile to prevent hanging
       const timeoutId = setTimeout(() => {
         if (!signal.aborted) {
           historyAbortController.current?.abort();
         }
-      }, 15000); // 15 second timeout for mobile
+      }, 10000); // 10 second timeout for mobile
 
       const history = await getUserEngagementHistory(userId, signal);
 
@@ -110,9 +110,8 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       }
     } finally {
       loadingRequests.current.delete(requestKey);
-      if (!signal.aborted) {
-        setHistoryLoading(false);
-      }
+      // Always reset loading state, even if aborted
+      setHistoryLoading(false);
     }
   }, []);
 
@@ -151,8 +150,10 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
           setRole(userProfile.role);
           console.log('[UserProfile] Profile loaded successfully');
           
-          // Load engagement history after profile is loaded
-          await loadEngagementHistory(currentUser.id);
+          // Load engagement history after profile is loaded (non-blocking)
+          loadEngagementHistory(currentUser.id).catch(error => {
+            console.warn('[UserProfile] Engagement history failed to load, but continuing:', error);
+          });
         }
       }
     } catch (error) {
@@ -163,9 +164,8 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       }
     } finally {
       loadingRequests.current.delete(requestKey);
-      if (!signal.aborted) {
-        setLoading(false);
-      }
+      // Always reset loading state, even if aborted
+      setLoading(false);
     }
   }, [loadEngagementHistory]);
 
