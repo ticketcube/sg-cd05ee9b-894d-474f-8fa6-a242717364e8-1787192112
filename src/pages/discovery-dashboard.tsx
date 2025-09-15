@@ -25,7 +25,6 @@ const DiscoveryDashboard = () => {
     const [statsError, setStatsError] = useState < string | null > (null);
 
     // Mobile optimization: use refs
-    const isInitialLoad = useRef(true);
     const abortController = useRef < AbortController | null > (null);
 
     // Cleanup on unmount
@@ -37,44 +36,40 @@ const DiscoveryDashboard = () => {
         };
     }, []);
 
-    // Fetch engagement history when user is ready
+    // Fetch engagement history when user.id becomes available
     useEffect(() => {
-        if (!user?.id || userLoading || sessionLoading) return;
-
-        const delay = isInitialLoad.current ? 100 : 0;
-        const timeoutId = setTimeout(() => {
-            fetchHistory(user.id);
-        }, delay);
-
-        isInitialLoad.current = false;
-
-        return () => clearTimeout(timeoutId);
-    }, [user?.id, userLoading, sessionLoading]);
+        if (!user?.id) return;
+        fetchHistory(user.id);
+    }, [user?.id]);
 
     const fetchHistory = async (userId: string) => {
         // Abort any previous request
-        if (abortController.current) abortController.current.abort();
+        if (abortController.current) {
+            abortController.current.abort();
+        }
 
         abortController.current = new AbortController();
+        const { signal } = abortController.current;
 
         try {
             setStatsLoading(true);
             setStatsError(null);
 
             console.log('[DiscoveryDashboard] Fetching engagement history for user:', userId);
-            const userHistory = await getUserEngagementHistory(userId);
-            if (!abortController.current?.signal.aborted) {
+            const userHistory = await getUserEngagementHistory(userId, signal);
+
+            if (!signal.aborted) {
                 setHistory(userHistory);
-                console.log('[DiscoveryDashboard] Engagement history loaded:', userHistory);
+                console.log('[DiscoveryDashboard] Engagement history loaded. Weeks:', userHistory?.weekly_summaries?.length || 0);
             }
         } catch (err) {
-            if (!abortController.current?.signal.aborted) {
+            if (!signal.aborted) {
                 console.error('[DiscoveryDashboard] Error fetching engagement history:', err);
                 setStatsError('Failed to load engagement history');
                 setHistory(null);
             }
         } finally {
-            if (!abortController.current?.signal.aborted) {
+            if (!signal.aborted) {
                 setStatsLoading(false);
             }
         }
@@ -82,9 +77,8 @@ const DiscoveryDashboard = () => {
 
     // Loading & auth handling
     if (sessionLoading || userLoading) return <DashboardLoading />;
-    if (!isAuthenticated || !profile || !user) return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
-
- 
+    if (!isAuthenticated || !profile || !user)
+        return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
 
     return (
         <div className="min-h-screen bg-white">
@@ -110,8 +104,8 @@ const DiscoveryDashboard = () => {
                 profile={profile}
                 historyLoading={statsLoading}
                 total_points={history?.total_points || 0}
-                artistsDiscovered={history?.artistsDiscovered || 0}  // all-time unique artist_uuids
-                weeksActive={history?.weekly_summaries.length || 0}  // number of weeks
+                artistsDiscovered={history?.artistsDiscovered || 0}
+                weeksActive={history?.weekly_summaries?.length || 0} // safe optional chaining
             />
 
             <div className="max-w-6xl mx-auto px-2 py-4">
