@@ -191,10 +191,29 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     await loadEngagementHistory(user.id);
   }, [user?.id, loadEngagementHistory]);
 
-  useEffect(() => {
-    // Cleanup on mount
-    return cleanup;
+  // Force reset function for stuck loading states
+  const forceResetLoading = useCallback(() => {
+    console.log('[UserProfile] Force resetting all loading states');
+    cleanup();
+    setLoading(false);
+    setHistoryLoading(false);
+    setSessionLoading(false);
+    setHistoryError(null);
   }, [cleanup]);
+
+  // Mobile-specific timeout to prevent stuck loading states
+  useEffect(() => {
+    if (sessionLoading || loading || historyLoading) {
+      const timeoutId = setTimeout(() => {
+        if (sessionLoading || loading || historyLoading) {
+          console.warn('[UserProfile] Loading states timeout reached, force resetting');
+          forceResetLoading();
+        }
+      }, 15000); // 15 second maximum timeout for any loading state
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [sessionLoading, loading, historyLoading, forceResetLoading]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
