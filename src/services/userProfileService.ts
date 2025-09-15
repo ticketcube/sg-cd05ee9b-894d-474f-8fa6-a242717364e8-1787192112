@@ -182,7 +182,10 @@ export const recordEngagement = async (
 
 };
 /** Get user's engagement history with weekly summaries - ✅ FIXED: Direct Supabase queries only */
-export const getUserEngagementHistory = async (userId: string, abortSignal?: AbortSignal): Promise<UserEngagementHistory> => {
+export const getUserEngagementHistory = async (
+    userId: string,
+    abortSignal?: AbortSignal
+): Promise<UserEngagementHistory> => {
     console.log(`[UserProfileService] Getting engagement history for user: ${userId}`);
 
     // Check if request was aborted
