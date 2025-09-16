@@ -110,21 +110,24 @@ export const getUserProfile = async (userId: string, abortSignal?: AbortSignal):
 export const updateUserLocation = async (userId: string, cityId: number, rawCityInput: string): Promise<UserProfile> => {
     const { data, error } = await supabase
         .from("user_profiles")
-        .update({ city_id: cityId, raw_city_input: rawCityInput })
+        .update({ 
+            city_id: cityId, 
+            raw_city_input: rawCityInput 
+        })
         .eq("user_id", userId)
         .select()
         .single();
 
     if (error) {
         console.error('[UserProfileService] Error updating location:', error);
-        throw new Error(error.message);
+        throw new Error(`Failed to update location: ${error.message}`);
     }
 
     if (!data) {
         throw new Error('Failed to update location - no data returned');
     }
 
-    return data;
+    return data as UserProfile;
 };
 
 /** Add points to a user - ✅ FIXED: Direct Supabase RPC call */
