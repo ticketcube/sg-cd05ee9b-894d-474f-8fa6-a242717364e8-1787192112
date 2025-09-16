@@ -1,3 +1,4 @@
+
 import type { Database } from "@/integrations/supabase/types";
 import { checkPointsEligibility } from "@/services/pointsConfigService";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,7 +52,7 @@ export interface UserEngagementHistory {
     artistsDiscovered: number;
 }
 
-/** Get a user's profile by user_id */
+/** Get a user's profile by user_id - ✅ PRODUCTION OPTIMIZED */
 export const getUserProfile = async (userId: string, abortSignal?: AbortSignal): Promise<UserProfile | null> => {
     console.log(`[UserProfileService] Getting profile for user: ${userId}`);
     
@@ -60,20 +61,47 @@ export const getUserProfile = async (userId: string, abortSignal?: AbortSignal):
         throw new Error('Request aborted');
     }
 
-    const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .abortSignal(abortSignal)
-        .single();
+    try {
+        // ✅ PRODUCTION FIX: Optimize query with specific column selection for faster response
+        const { data, error } = await supabase
+            .from('user_profiles')
+            .select('id, user_id, username, email, points, role, created_at, updated_at, last_active, city_id, raw_city_input, weekly_points, last_points_reset')
+            .eq('user_id', userId)
+            .abortSignal(abortSignal)
+            .single();
 
-    if (error) {
-        console.error('Error fetching user profile:', error.message);
-        return null;
+        if (error) {
+            console.error('[UserProfileService] Error fetching user profile:', error.message);
+            
+            // ✅ ENHANCED ERROR HANDLING: Differentiate between different error types
+            if (error.code === 'PGRST116') {
+                // No rows found - this is not an error, just means profile doesn't exist
+                console.log(`[UserProfileService] No profile found for user: ${userId}`);
+                return null;
+            }
+            
+            // For other errors, throw them to trigger retry logic in context
+            throw new Error(`Profile fetch failed: ${error.message}`);
+        }
+
+        if (!data) {
+            console.log(`[UserProfileService] No data returned for user: ${userId}`);
+            return null;
+        }
+
+        console.log(`[UserProfileService] Profile loaded successfully for user: ${userId}`);
+        return data;
+        
+    } catch (error) {
+        // Check if error was due to abort signal
+        if (abortSignal?.aborted) {
+            console.log('[UserProfileService] Request was aborted');
+            throw new Error('Request aborted');
+        }
+        
+        console.error('[UserProfileService] Unexpected error:', error);
+        throw error;
     }
-
-    console.log(`[UserProfileService] Profile loaded successfully for user: ${userId}`);
-    return data;
 };
 
 
@@ -190,7 +218,8 @@ export const recordEngagement = async (
     return engagement as UserEngagement;
 
 };
-/** Get user's engagement history with weekly summaries - ✅ FIXED: Chunked processing to prevent UI freeze */
+
+/** Get user's engagement history with weekly summaries - ✅ PRODUCTION OPTIMIZED */
 export const getUserEngagementHistory = async (
     userId: string,
     abortSignal?: AbortSignal
@@ -202,64 +231,62 @@ export const getUserEngagementHistory = async (
         throw new Error('Request aborted');
     }
 
-    // ✅ Get user profile
-    const userProfile = await getUserProfile(userId);
-    if (!userProfile) {
-        throw new Error("User profile not found - engagement history cannot be loaded");
-    }
+    try {
+        // ✅ Get user profile with optimized call
+        const userProfile = await getUserProfile(userId, abortSignal);
+        if (!userProfile) {
+            throw new Error("User profile not found - engagement history cannot be loaded");
+        }
 
-    // Check abort signal again before proceeding to heavy query
-    if (abortSignal?.aborted) {
-        throw new Error('Request aborted');
-    }
+        // Check abort signal again before proceeding to heavy query
+        if (abortSignal?.aborted) {
+            throw new Error('Request aborted');
+        }
 
-    // ✅ Fetch engagements with reduced initial load for first refresh performance
-    const { data: engagements, error } = await supabase
-        .from("user_engagements")
-        .select("engagement_type, points_earned, week_identifier, artist_uuid, created_at")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(200); // Reduced from 500 to 200 for better first-load performance
+        // ✅ PRODUCTION OPTIMIZED: Fetch engagements with specific columns and reasonable limit
+        const { data: engagements, error } = await supabase
+            .from("user_engagements")
+            .select("engagement_type, points_earned, week_identifier, artist_uuid, created_at")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(150) // Further reduced limit for production performance
+            .abortSignal(abortSignal);
 
-    if (error) {
-        console.error("[UserProfileService] Error fetching engagements:", error);
-        throw error;
-    }
+        if (error) {
+            console.error("[UserProfileService] Error fetching engagements:", error);
+            throw new Error(`Engagement fetch failed: ${error.message}`);
+        }
 
-    // Check abort signal before processing data
-    if (abortSignal?.aborted) {
-        throw new Error('Request aborted');
-    }
+        // Check abort signal before processing data
+        if (abortSignal?.aborted) {
+            throw new Error('Request aborted');
+        }
 
-    // ✅ Total engagements
-    const totalEngagements = engagements?.length || 0;
+        // ✅ OPTIMIZED PROCESSING: Simplified calculation for better performance
+        const totalEngagements = engagements?.length || 0;
+        let calculatedTotalPoints = 0;
+        const weeklyMap = new Map<string, UserEngagementSummary>();
+        const uniqueArtists = new Set<string>();
 
-    const artistUuids = engagements
-        ?.map(e => e.artist_uuid)
-        .filter((uuid): uuid is string => !!uuid); // removes nulls
-    const artistsDiscovered = new Set(artistUuids).size;
+        if (engagements && engagements.length > 0) {
+            // ✅ PERFORMANCE: Single pass through all engagements
+            engagements.forEach(e => {
+                // Check abort signal periodically during processing
+                if (abortSignal?.aborted) {
+                    throw new Error('Request aborted');
+                }
 
-    // ✅ CHUNKED PROCESSING: Process data in small chunks to prevent UI blocking
-    const weeklyMap = new Map<string, UserEngagementSummary>();
-    let calculatedTotalPoints = 0;
-    const chunkSize = 50; // Process 50 records at a time
-    
-    if (engagements && engagements.length > 0) {
-        for (let i = 0; i < engagements.length; i += chunkSize) {
-            // Check abort signal before each chunk
-            if (abortSignal?.aborted) {
-                throw new Error('Request aborted');
-            }
-
-            const chunk = engagements.slice(i, i + chunkSize);
-            
-            // Process chunk
-            chunk.forEach(e => {
                 const weekId = e.week_identifier || "unknown";
                 const pointsEarned = e.points_earned || 0;
 
                 calculatedTotalPoints += pointsEarned;
 
+                // Track unique artists
+                if (e.artist_uuid) {
+                    uniqueArtists.add(e.artist_uuid);
+                }
+
+                // Update weekly summary
                 if (!weeklyMap.has(weekId)) {
                     weeklyMap.set(weekId, {
                         week_identifier: weekId,
@@ -282,28 +309,35 @@ export const getUserEngagementHistory = async (
                     summary.votes_submitted += 1;
                 }
             });
-
-            // ✅ YIELD TO UI: Allow UI to update between chunks
-            if (i + chunkSize < engagements.length) {
-                await new Promise(resolve => setTimeout(resolve, 0));
-            }
         }
-    }
 
-    // Final abort check before returning
-    if (abortSignal?.aborted) {
-        throw new Error('Request aborted');
-    }
+        // Final abort check before returning
+        if (abortSignal?.aborted) {
+            throw new Error('Request aborted');
+        }
 
-    return {
-        user_profile: userProfile,
-        weekly_summaries: Array.from(weeklyMap.values()).sort((a, b) =>
-            b.week_identifier.localeCompare(a.week_identifier)
-        ),
-        total_points: calculatedTotalPoints,
-        total_engagements: totalEngagements,
-        artistsDiscovered: artistsDiscovered,
-    };
+        const result = {
+            user_profile: userProfile,
+            weekly_summaries: Array.from(weeklyMap.values()).sort((a, b) =>
+                b.week_identifier.localeCompare(a.week_identifier)
+            ),
+            total_points: calculatedTotalPoints,
+            total_engagements: totalEngagements,
+            artistsDiscovered: uniqueArtists.size,
+        };
+
+        console.log(`[UserProfileService] Engagement history loaded successfully. Total points: ${calculatedTotalPoints}, Artists discovered: ${uniqueArtists.size}`);
+        return result;
+        
+    } catch (error) {
+        if (abortSignal?.aborted) {
+            console.log('[UserProfileService] Engagement history request was aborted');
+            throw new Error('Request aborted');
+        }
+        
+        console.error('[UserProfileService] Error in getUserEngagementHistory:', error);
+        throw error;
+    }
 };
 
 
