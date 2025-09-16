@@ -117,7 +117,7 @@ export const updateUserLocation = async (userId: string, cityId: number, rawCity
 
     if (error) {
         console.error('[UserProfileService] Error updating location:', error);
-        throw error;
+        throw new Error(error.message);
     }
 
     if (!data) {
