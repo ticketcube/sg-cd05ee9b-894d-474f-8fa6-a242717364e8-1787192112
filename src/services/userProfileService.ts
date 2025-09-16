@@ -62,10 +62,10 @@ export const getUserProfile = async (userId: string, abortSignal?: AbortSignal):
     }
 
     try {
-        // ✅ PRODUCTION FIX: Optimize query with specific column selection for faster response
+        // ✅ PRODUCTION FIX: Select only columns that actually exist in the database
         const { data, error } = await supabase
             .from('user_profiles')
-            .select('id, user_id, username, email, points, role, created_at, updated_at, last_active, city_id, raw_city_input, weekly_points, last_points_reset')
+            .select('id, user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url')
             .eq('user_id', userId)
             .abortSignal(abortSignal)
             .single();
