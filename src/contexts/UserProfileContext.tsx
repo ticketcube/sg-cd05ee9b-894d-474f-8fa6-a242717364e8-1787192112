@@ -101,7 +101,6 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       }
     } finally {
       loadingRequests.current.delete(requestKey);
-      // Always reset loading state, even if aborted
       setHistoryLoading(false);
     }
   }, []);
@@ -130,17 +129,9 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       
       console.log('[UserProfile] Loading profile for user:', currentUser.id);
       
-      // Add 10-second timeout for profile query
-      const timeoutId = setTimeout(() => {
-        if (!signal.aborted) {
-          console.warn('[UserProfile] Profile loading timeout reached (10s), aborting');
-          profileAbortController.current?.abort();
-        }
-      }, 10000); // 10 second timeout
-      
+      // ✅ CRITICAL FIX: Remove the 10-second timeout that was causing production issues
+      // Let Supabase handle its own connection timeout naturally
       const userProfile = await getUserProfile(currentUser.id, signal);
-      
-      clearTimeout(timeoutId);
       
       if (!signal.aborted) {
         if (!userProfile) {
@@ -152,21 +143,45 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
           setRole(userProfile.role);
           console.log('[UserProfile] Profile loaded successfully');
           
-          // ✅ COMPLETE FIX: Remove automatic engagement history loading entirely
-          // Engagement history will only load when explicitly requested via retryHistory()
-          // This prevents ANY blocking on first refresh while keeping the functionality available
+          // Profile ready - engagement history will load on demand
           console.log('[UserProfile] Profile ready - engagement history will load on demand');
         }
       }
     } catch (error) {
       if (!signal.aborted) {
         console.error('[UserProfile] Error loading user profile:', error);
-        setProfile(null);
-        setRole(null);
+        
+        // ✅ ENHANCED ERROR HANDLING: Try to reload profile once on network errors
+        if (error instanceof Error && 
+           (error.message.includes('network') || 
+            error.message.includes('timeout') || 
+            error.message.includes('fetch'))) {
+          console.log('[UserProfile] Network error detected, attempting retry...');
+          
+          // Wait 2 seconds and retry once
+          setTimeout(async () => {
+            if (!signal.aborted) {
+              try {
+                const retryProfile = await getUserProfile(currentUser.id, signal);
+                if (retryProfile && !signal.aborted) {
+                  setProfile(retryProfile);
+                  setRole(retryProfile.role);
+                  console.log('[UserProfile] Profile loaded successfully on retry');
+                }
+              } catch (retryError) {
+                console.error('[UserProfile] Retry failed:', retryError);
+                setProfile(null);
+                setRole(null);
+              }
+            }
+          }, 2000);
+        } else {
+          setProfile(null);
+          setRole(null);
+        }
       }
     } finally {
       loadingRequests.current.delete(requestKey);
-      // Always reset loading state, even if aborted
       setLoading(false);
     }
   }, []);
