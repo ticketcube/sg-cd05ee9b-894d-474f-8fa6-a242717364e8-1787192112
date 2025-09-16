@@ -108,7 +108,6 @@ export const getUserProfile = async (userId: string, abortSignal?: AbortSignal):
 
 /** Update user's city/location - ✅ FIXED: Direct Supabase only */
 export const updateUserLocation = async (userId: string, cityId: number, rawCityInput: string): Promise<UserProfile> => {
-
     const { data, error } = await supabase
         .from("user_profiles")
         .update({ city_id: cityId, raw_city_input: rawCityInput })
