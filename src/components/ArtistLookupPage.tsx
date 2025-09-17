@@ -320,6 +320,28 @@ export function ArtistLookupPage() {
                       />
                     </div>
                     
+                    {selectedArtist && (
+                      <div>
+                        <Label htmlFor="artist_uuid" className="text-white">UUID</Label>
+                        <div className="relative">
+                          <Input
+                            id="artist_uuid"
+                            value={selectedArtist.uuid}
+                            readOnly
+                            className="bg-gray-700 border-gray-600 text-gray-300 cursor-text"
+                            title="Click to select UUID for copying"
+                            onClick={(e) => e.currentTarget.select()}
+                          />
+                          <Badge 
+                            variant="secondary" 
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-xs bg-gray-600 text-gray-300"
+                          >
+                            Read-only
+                          </Badge>
+                        </div>
+                      </div>
+                    )}
+                    
                     <div>
                       <Label htmlFor="artist_home" className="text-white">Home City</Label>
                       <Input
