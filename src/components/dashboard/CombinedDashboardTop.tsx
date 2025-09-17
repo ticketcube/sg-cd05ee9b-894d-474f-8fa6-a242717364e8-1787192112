@@ -58,7 +58,7 @@ export default function CombinedDashboardTop({
 
     return (
         <div className="bg-white">
-            <div className="max-w-6xl mx-auto px-2 py-3">
+            <div className="max-w-6xl mx-auto px-0 py-3">
                 {/* Combined Header - 1/3 of mobile screen height */}
                 <div className="h-[33vh] flex flex-col">
                     

@@ -88,7 +88,7 @@ export default function WeeklyListCard() {
 
     return (
         <div className="h-[67vh] flex flex-col">
-            <Card className="bg-deep-purple border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+            <Card className="bg-white border border-purple-deep shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col">
                 <CardHeader className="pb-2 shrink-0">
                     <div className="flex items-center space-x-2">
                         {/* Star Icon */}
