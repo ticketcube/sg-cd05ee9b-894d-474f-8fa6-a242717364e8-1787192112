@@ -1,14 +1,14 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 // Component Imports
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import CombinedDashboardTop from '@/components/dashboard/CombinedDashboardTop';
+import WeeklyListCard from '@/components/dashboard/WeeklyListCard';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
-import { SeptemberReward } from '@/components/dashboard/SeptemberReward';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, Music, Award, TrendingUp, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 // Hook & Service Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
@@ -29,7 +29,6 @@ const DiscoveryDashboard = () => {
     const [activeTab, setActiveTab] = useState('discover');
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     const historyLoadTriggered = useRef(false);
-
 
     // ✅ LAZY ENGAGEMENT HISTORY LOADING: Only when history data is actually needed for display
     useEffect(() => {
@@ -73,9 +72,9 @@ const DiscoveryDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white flex flex-col">
             {historyError && (
-                <div className="bg-red-50 border border-red-200 p-3">
+                <div className="bg-red-50 border border-red-200 p-3 shrink-0">
                     <div className="max-w-6xl mx-auto flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 text-red-500" />
                         <p className="text-sm text-red-600">{historyError}</p>
@@ -89,16 +88,22 @@ const DiscoveryDashboard = () => {
                 </div>
             )}
 
-            <DashboardHeader
-                profile={profile}
-                historyLoading={historyLoading}
-                total_points={engagementHistory?.total_points || 0}
-                artistsDiscovered={engagementHistory?.artistsDiscovered || 0}
-                weeksActive={engagementHistory?.weekly_summaries?.length || 0}
-            />
+            {/* Combined Header + September Reward Tracker - Takes 1/3 of mobile screen */}
+            <div className="shrink-0">
+                <CombinedDashboardTop
+                    profile={profile}
+                    historyLoading={historyLoading}
+                    total_points={engagementHistory?.total_points || 0}
+                    artistsDiscovered={engagementHistory?.artistsDiscovered || 0}
+                    weeksActive={engagementHistory?.weekly_summaries?.length || 0}
+                />
+            </div>
 
-            <div className="max-w-6xl mx-auto px-2 py-4">
-                <SeptemberReward />
+            {/* Weekly List Card - Takes remaining 2/3 of mobile screen */}
+            <div className="flex-1 px-2 pb-4">
+                <div className="max-w-6xl mx-auto h-full">
+                    <WeeklyListCard />
+                </div>
             </div>
         </div>
     );
