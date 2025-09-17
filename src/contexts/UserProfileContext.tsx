@@ -4,6 +4,8 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserProfile, getUserEngagementHistory, type UserProfile, type UserEngagementHistory } from "@/services/userProfileService";
 
+
+
 interface UserProfileContextType {
   user: User | null;
   profile: UserProfile | null;
@@ -38,6 +40,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [engagementHistory, setEngagementHistory] = useState<UserEngagementHistory | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const lastUserIdRef = useRef < string | null > (null);
   const [loading, setLoading] = useState(false); // Tracks profile loading
   const [sessionLoading, setSessionLoading] = useState(true); // Tracks initial auth check
   const [historyLoading, setHistoryLoading] = useState(false);
