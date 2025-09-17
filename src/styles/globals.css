@@ -35,6 +35,12 @@
     --chart-4: 0 0% 50%;
     --chart-5: 0 0% 60%;
     --radius: 0.5rem;
+    
+    /* Custom purple brand colors for dashboard */
+    --purple-deep: 279 92% 25%;
+    --purple-med: 279 85% 45%;
+    --purple-lit: 279 75% 65%;
+    --deep-purple: 279 92% 20%;
   }
   
   .dark {
@@ -62,6 +68,12 @@
     --chart-3: 0 0% 40%;
     --chart-4: 0 0% 50%;
     --chart-5: 0 0% 60%;
+    
+    /* Dark mode purple variants */
+    --purple-deep: 279 92% 35%;
+    --purple-med: 279 85% 55%;
+    --purple-lit: 279 75% 75%;
+    --deep-purple: 279 92% 30%;
   }
 }
 
@@ -105,6 +117,51 @@
 @layer components {
   .container {
     @apply mx-auto px-4 md:px-6 lg:px-8 max-w-7xl w-full;
+  }
+  
+  /* Purple color utilities for dashboard */
+  .text-purple-deep {
+    color: hsl(var(--purple-deep));
+  }
+  
+  .text-purple-med {
+    color: hsl(var(--purple-med));
+  }
+  
+  .text-purple-lit {
+    color: hsl(var(--purple-lit));
+  }
+  
+  .bg-purple-deep {
+    background-color: hsl(var(--purple-deep));
+  }
+  
+  .bg-purple-med {
+    background-color: hsl(var(--purple-med));
+  }
+  
+  .bg-purple-lit {
+    background-color: hsl(var(--purple-lit));
+  }
+  
+  .bg-deep-purple {
+    background-color: hsl(var(--deep-purple));
+  }
+  
+  .border-purple-deep {
+    border-color: hsl(var(--purple-deep));
+  }
+  
+  .border-purple-med {
+    border-color: hsl(var(--purple-med));
+  }
+  
+  .border-purple-700 {
+    border-color: hsl(var(--purple-deep));
+  }
+  
+  .hover\:bg-purple-lit:hover {
+    background-color: hsl(var(--purple-lit));
   }
 }
 
