@@ -57,6 +57,8 @@ export function ArtistLookupPage() {
   const [createMode, setCreateMode] = useState(false);
   const [formData, setFormData] = useState<ArtistFormData>(initialFormData);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [weeklyListId, setWeeklyListId] = useState("");
+  const [addingToList, setAddingToList] = useState(false);
 
   // Debounced search function
   const debouncedSearch = useCallback(
