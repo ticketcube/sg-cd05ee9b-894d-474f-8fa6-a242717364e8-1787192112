@@ -33,6 +33,8 @@ export default function UserNav() {
   const isMobile = useMobile();
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
 
   const handleLogout = async () => {
@@ -40,6 +42,10 @@ export default function UserNav() {
     
     try {
       setIsLoggingOut(true);
+      // Close any open menus before logout
+      setIsDropdownOpen(false);
+      setIsSheetOpen(false);
+      
       await logout();
       
       toast({
@@ -61,6 +67,12 @@ export default function UserNav() {
     } finally {
       setIsLoggingOut(false);
     }
+  };
+
+  const handleNavigationClick = () => {
+    // Close both dropdown and sheet when navigation occurs
+    setIsDropdownOpen(false);
+    setIsSheetOpen(false);
   };
 
   const getInitials = (email?: string) => {
@@ -92,13 +104,13 @@ export default function UserNav() {
   const menuItems = (
     <>
       <DropdownMenuItem asChild>
-        <Link href="/discovery-dashboard">Discovery</Link>
+        <Link href="/discovery-dashboard" onClick={handleNavigationClick}>Discovery</Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href="/september/rewards">Rewards</Link>
+        <Link href="/september/rewards" onClick={handleNavigationClick}>Rewards</Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href="/profile">Profile</Link>
+        <Link href="/profile" onClick={handleNavigationClick}>Profile</Link>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem 
@@ -114,7 +126,7 @@ export default function UserNav() {
 
   if (isMobile) {
     return (
-      <Sheet>
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon">
             <Menu className="h-6 w-6" />
@@ -126,9 +138,27 @@ export default function UserNav() {
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
           <div className="flex flex-col space-y-2 pt-4">
-             <Link href="/discovery-dashboard" className="text-sm px-2 py-1.5 hover:bg-accent rounded-md">Discovery</Link>
-             <Link href="/september/rewards" className="text-sm px-2 py-1.5 hover:bg-accent rounded-md">Rewards</Link>
-             <Link href="/profile" className="text-sm px-2 py-1.5 hover:bg-accent rounded-md">Profile</Link>
+             <Link 
+               href="/discovery-dashboard" 
+               className="text-sm px-2 py-1.5 hover:bg-accent rounded-md"
+               onClick={handleNavigationClick}
+             >
+               Discovery
+             </Link>
+             <Link 
+               href="/september/rewards" 
+               className="text-sm px-2 py-1.5 hover:bg-accent rounded-md"
+               onClick={handleNavigationClick}
+             >
+               Rewards
+             </Link>
+             <Link 
+               href="/profile" 
+               className="text-sm px-2 py-1.5 hover:bg-accent rounded-md"
+               onClick={handleNavigationClick}
+             >
+               Profile
+             </Link>
              <div className="border-b my-2"></div>
              <button 
                onClick={handleLogout} 
@@ -145,7 +175,7 @@ export default function UserNav() {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
