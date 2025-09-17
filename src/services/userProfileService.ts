@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
 export type EngagementType =
-    | "video_view"
+    | "video_view"get
     | "quadrant"
     | "ranking_submission"
     | "video_completion_bonus"
@@ -222,10 +222,11 @@ export const recordEngagement = async (
 };
 
 /** Get user's engagement history with weekly summaries - ✅ PRODUCTION OPTIMIZED */
-export const getUserEngagementHistory = async (
+export async function getUserEngagementHistory(
     userId: string,
-    abortSignal?: AbortSignal
-): Promise<UserEngagementHistory> => {
+    profile?: UserProfile, 
+    signal?: AbortSignal
+): Promise<UserEngagementHistory> {
     console.log(`[UserProfileService] Getting engagement history for user: ${userId}`);
 
     // Check if request was aborted
@@ -235,7 +236,7 @@ export const getUserEngagementHistory = async (
 
     try {
         // ✅ Get user profile with optimized call
-        const userProfile = await getUserProfile(userId, abortSignal);
+        const userProfile = profile || await getUserProfile(userId, signal);
         if (!userProfile) {
             throw new Error("User profile not found - engagement history cannot be loaded");
         }
