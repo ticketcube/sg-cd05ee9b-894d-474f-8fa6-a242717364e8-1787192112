@@ -1,9 +1,8 @@
-
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { createPagesServerClient } from '@supabase/ssr';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const supabase = createServerSupabaseClient({ req, res });
+  const supabase = createPagesServerClient({ req, res });
   
   try {
     // ✅ ENHANCED: Better session handling for OAuth flows with multiple approaches

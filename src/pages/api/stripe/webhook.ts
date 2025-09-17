@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
 import Stripe from "stripe";
-import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
+import { createPagesServerClient } from "@supabase/ssr";
 import type { Database } from "@/integrations/supabase/types";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
