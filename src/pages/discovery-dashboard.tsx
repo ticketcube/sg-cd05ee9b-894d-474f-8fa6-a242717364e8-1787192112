@@ -30,31 +30,26 @@ const DiscoveryDashboard = () => {
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     const historyLoadTriggered = useRef(false);
 
-    // Reset history trigger when session changes
-    useEffect(() => {
-        if (sessionLoading) {
-            historyLoadTriggered.current = false;
-        }
-    }, [sessionLoading]);
 
-    // ✅ IMMEDIATE ENGAGEMENT HISTORY LOADING: Trigger when conditions are met
+    // ✅ LAZY ENGAGEMENT HISTORY LOADING: Only when history data is actually needed for display
     useEffect(() => {
         if (
-            isAuthenticated && 
-            profile && 
-            user && 
-            !userLoading && 
-            !sessionLoading && 
+            isAuthenticated &&
+            profile &&
+            user &&
+            !userLoading &&
+            !sessionLoading &&
             !historyLoadTriggered.current &&
-            !engagementHistory
+            !engagementHistory &&
+            !historyLoading
         ) {
             historyLoadTriggered.current = true;
-            console.log('[DiscoveryDashboard] Triggering immediate engagement history load');
+            console.log('[DiscoveryDashboard] Loading engagement history on demand');
             retryHistory().catch(error => {
                 console.warn('[DiscoveryDashboard] Engagement history load failed:', error);
             });
         }
-    }, [isAuthenticated, profile, user, userLoading, sessionLoading, engagementHistory, retryHistory]);
+    }, [isAuthenticated, profile, user, userLoading, sessionLoading, engagementHistory, historyLoading, retryHistory]);
 
     // Simplified loading logic - no artificial delays
     const showLoadingScreen = () => {
