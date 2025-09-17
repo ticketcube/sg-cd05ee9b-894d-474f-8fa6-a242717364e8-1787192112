@@ -418,3 +418,29 @@ export const getWeeklyStats = async (userId: string, weekIdentifier: string): Pr
     const total_points = data?.reduce((sum, e) => sum + (e.points_earned || 0), 0) || 0;
     return { total_points };
 };
+
+
+// Cache management functions
+export const clearProfileCache = (userId?: string) => {
+  try {
+    if (userId) {
+      const cacheKey = `userProfile:${userId}`;
+      sessionStorage.removeItem(cacheKey);
+      console.log('[UserProfileService] Cleared cache for user:', userId);
+    } else {
+      // Clear all profile caches
+      const keys = Object.keys(sessionStorage);
+      keys.forEach(key => {
+        if (key.startsWith('userProfile:')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+      console.log('[UserProfileService] Cleared all profile caches');
+    }
+  } catch (error) {
+    console.warn('[UserProfileService] Error clearing cache:', error);
+  }
+};
+
+
+
