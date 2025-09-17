@@ -53,113 +53,114 @@ export interface UserEngagementHistory {
 }
 
 /** Get a user's profile by user_id - ✅ PRODUCTION OPTIMIZED */
+
 // Cache configuration
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export const getUserProfile = async (userId: string, abortSignal?: AbortSignal): Promise<UserProfile | null> => {
-    console.log(`[UserProfileService] Getting profile for user: ${userId}`);
-    
-    // Check if request was aborted before starting
-    if (abortSignal?.aborted) {
-        throw new Error('Request aborted');
+  console.log(`[UserProfileService] Getting profile for user: ${userId}`);
+
+  // Check if request was aborted before starting
+  if (abortSignal?.aborted) {
+    throw new Error('Request aborted');
+  }
+
+  try {
+    // Check sessionStorage cache first
+    const cacheKey = `userProfile:${userId}`;
+    const cachedStr = sessionStorage.getItem(cacheKey);
+
+    if (cachedStr) {
+      try {
+        const cached = JSON.parse(cachedStr);
+        if (Date.now() - cached.timestamp < CACHE_DURATION) {
+          console.log('[UserProfileService] Using cached profile for user:', userId);
+          return cached.profile;
+        } else {
+          console.log('[UserProfileService] Cache expired, fetching fresh data for user:', userId);
+          sessionStorage.removeItem(cacheKey);
+        }
+      } catch (cacheError) {
+        console.warn('[UserProfileService] Cache parse error, removing:', cacheError);
+        sessionStorage.removeItem(cacheKey);
+      }
     }
 
-    try {
-        // Check sessionStorage cache first
-        const cacheKey = `userProfile:${userId}`;
-        const cachedStr = sessionStorage.getItem(cacheKey);
-        
-        if (cachedStr) {
-            try {
-                const cached = JSON.parse(cachedStr);
-                if (Date.now() - cached.timestamp < CACHE_DURATION) {
-                    console.log('[UserProfileService] Using cached profile for user:', userId);
-                    return cached.profile;
-                } else {
-                    console.log('[UserProfileService] Cache expired, fetching fresh data for user:', userId);
-                    sessionStorage.removeItem(cacheKey);
-                }
-            } catch (cacheError) {
-                console.warn('[UserProfileService] Cache parse error, removing:', cacheError);
-                sessionStorage.removeItem(cacheKey);
-            }
-        }
+    // ✅ PRODUCTION FIX: Select only columns that actually exist in the database
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('id, user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url')
+      .eq('user_id', userId)
+      .abortSignal(abortSignal)
+      .single();
 
-        // ✅ PRODUCTION FIX: Select only columns that actually exist in the database
-        const { data, error } = await supabase
-            .from('user_profiles')
-            .select('id, user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url')
-            .eq('user_id', userId)
-            .abortSignal(abortSignal)
-            .single();
+    if (error) {
+      console.error('[UserProfileService] Error fetching user profile:', error.message);
 
-        if (error) {
-            console.error('[UserProfileService] Error fetching user profile:', error.message);
-            
-            // If API fails but we have cached data (even expired), use it
-            if (cachedStr) {
-                try {
-                    const cached = JSON.parse(cachedStr);
-                    console.log('[UserProfileService] API failed, using stale cache for user:', userId);
-                    return cached.profile;
-                } catch {
-                    // Ignore cache parse errors
-                }
-            }
-            
-            // ✅ ENHANCED ERROR HANDLING: Differentiate between different error types
-            if (error.code === 'PGRST116') {
-                // No rows found - this is not an error, just means profile doesn't exist
-                console.log(`[UserProfileService] No profile found for user: ${userId}`);
-                return null;
-            }
-            
-            // For other errors, throw them to trigger retry logic in context
-            throw new Error(`Profile fetch failed: ${error.message}`);
-        }
-
-        if (!data) {
-            console.log(`[UserProfileService] No data returned for user: ${userId}`);
-            return null;
-        }
-
-        // Cache the successful response
+      // If API fails but we have cached data (even expired), use it
+      if (cachedStr) {
         try {
-            sessionStorage.setItem(cacheKey, JSON.stringify({
-                profile: data,
-                timestamp: Date.now()
-            }));
-            console.log('[UserProfileService] Profile cached for user:', userId);
-        } catch (cacheError) {
-            console.warn('[UserProfileService] Failed to cache profile:', cacheError);
+          const cached = JSON.parse(cachedStr);
+          console.log('[UserProfileService] API failed, using stale cache for user:', userId);
+          return cached.profile;
+        } catch {
+          // Ignore cache parse errors
         }
+      }
 
-        console.log(`[UserProfileService] Profile loaded successfully for user: ${userId}`);
-        return data;
-        
-    } catch (error) {
-        // Check if error was due to abort signal
-        if (abortSignal?.aborted) {
-            console.log('[UserProfileService] Request was aborted');
-            throw new Error('Request aborted');
-        }
-        
-        // Final fallback to cache if available
-        const cacheKey = `userProfile:${userId}`;
-        const cachedStr = sessionStorage.getItem(cacheKey);
-        if (cachedStr) {
-            try {
-                const cached = JSON.parse(cachedStr);
-                console.log('[UserProfileService] Using cache as final fallback for user:', userId);
-                return cached.profile;
-            } catch {
-                // Ignore cache parse errors
-            }
-        }
-        
-        console.error('[UserProfileService] Unexpected error:', error);
-        throw error;
+      // ✅ ENHANCED ERROR HANDLING: Differentiate between different error types
+      if (error.code === 'PGRST116') {
+        // No rows found - this is not an error, just means profile doesn't exist
+        console.log(`[UserProfileService] No profile found for user: ${userId}`);
+        return null;
+      }
+
+      // For other errors, throw them to trigger retry logic in context
+      throw new Error(`Profile fetch failed: ${error.message}`);
     }
+
+    if (!data) {
+      console.log(`[UserProfileService] No data returned for user: ${userId}`);
+      return null;
+    }
+
+    // Cache the successful response
+    try {
+      sessionStorage.setItem(cacheKey, JSON.stringify({
+        profile: data,
+        timestamp: Date.now()
+      }));
+      console.log('[UserProfileService] Profile cached for user:', userId);
+    } catch (cacheError) {
+      console.warn('[UserProfileService] Failed to cache profile:', cacheError);
+    }
+
+    console.log(`[UserProfileService] Profile loaded successfully for user: ${userId}`);
+    return data;
+
+  } catch (error) {
+    // Check if error was due to abort signal
+    if (abortSignal?.aborted) {
+      console.log('[UserProfileService] Request was aborted');
+      throw new Error('Request aborted');
+    }
+
+    // Final fallback to cache if available
+    const cacheKey = `userProfile:${userId}`;
+    const cachedStr = sessionStorage.getItem(cacheKey);
+    if (cachedStr) {
+      try {
+        const cached = JSON.parse(cachedStr);
+        console.log('[UserProfileService] Using cache as final fallback for user:', userId);
+        return cached.profile;
+      } catch {
+        // Ignore cache parse errors
+      }
+    }
+
+    console.error('[UserProfileService] Unexpected error:', error);
+    throw error;
+  }
 };
 
 
