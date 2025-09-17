@@ -113,7 +113,7 @@ export default function WeeklyListCard() {
                 </CardHeader>
 
                 <CardContent className="px-4 pb-3 flex flex-col flex-grow">
-                    <div className="flex flex-col space-y-2 flex-grow">
+                    <div className="flex flex-col space-y-2">
                         {/* Artist Grid */}
                         <div
                             className="
