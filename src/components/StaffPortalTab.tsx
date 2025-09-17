@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
-import { useUser } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import StaffModuleCard from "./StaffModuleCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,8 +16,7 @@ interface StaffModule {
 }
 
 export default function StaffPortalTab() {
-  const user = useUser();
-  const { profile, role, loading: profileLoading } = useUserProfile();
+  const { user, profile, role, loading: profileLoading } = useUserProfile();
   const [modules, setModules] = useState<StaffModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

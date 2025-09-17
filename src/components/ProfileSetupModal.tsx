@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { useUser, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import { Loader2, User, Mail, MapPin, CheckCircle } from "lucide-react";
 
@@ -14,9 +14,7 @@ interface ProfileSetupModalProps {
 }
 
 export default function ProfileSetupModal({ isOpen, onClose, onSuccess }: ProfileSetupModalProps) {
-  const user = useUser();
-  const supabase = useSupabaseClient();
-  const { profile, refreshProfile } = useUserProfile();
+  const { user, profile, refreshProfile } = useUserProfile();
   
   const [formData, setFormData] = useState({
     username: profile?.username || user?.email?.split('@')[0] || '',

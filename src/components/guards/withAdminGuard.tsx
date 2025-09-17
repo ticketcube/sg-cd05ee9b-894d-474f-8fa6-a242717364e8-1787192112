@@ -1,6 +1,5 @@
 import { ComponentType, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "@supabase/auth-helpers-react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 
 /**
@@ -12,8 +11,7 @@ import { useUserProfile } from "@/contexts/UserProfileContext";
 export function withAdminGuard<P extends object>(WrappedComponent: ComponentType<P>) {
     const ComponentWithAdminGuard = (props: P) => {
         const router = useRouter();
-        const user = useUser();
-        const { role, loading } = useUserProfile();
+        const { user, role, loading } = useUserProfile();
 
         useEffect(() => {
             // Wait for auth and profile to load

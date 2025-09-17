@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ArtistProfileLookup() {
-    const supabase = createClientComponentClient();
     const [query, setQuery] = useState("");
     const [artist, setArtist] = useState < any | null > (null);
     const [error, setError] = useState < string | null > (null);

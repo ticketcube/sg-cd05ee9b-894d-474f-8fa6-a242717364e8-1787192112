@@ -3,7 +3,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Star, Trophy, TrendingUp, Loader2 } from "lucide-react";
-import { useUser } from "@supabase/auth-helpers-react";
 import { weeklyListService } from "@/services/weeklyListService";
 import { getWeeklyStats } from "@/services/userProfileService";
 import { useUserProfile } from "@/contexts/UserProfileContext";
@@ -28,7 +27,7 @@ export default function WeeklyPointsDashboard({
   weekIdentifier,
   className = "",
 }: WeeklyPointsDashboardProps) {
-  const user = useUser();
+  const { user } = useUserProfile();
   const [progress, setProgress] = useState < WeeklySummary | null > (null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState < string | null > (null);

@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useUser } from "@supabase/auth-helpers-react";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 
 interface PromotionPopupProps {
   onRegisterClick: () => void;
@@ -18,7 +18,7 @@ interface PromotionPopupProps {
 export default function PromotionPopup({ onRegisterClick }: PromotionPopupProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const user = useUser();
+  const { user } = useUserProfile();
 
   // Prevent hydration mismatch by ensuring client-side only rendering
   useEffect(() => {
