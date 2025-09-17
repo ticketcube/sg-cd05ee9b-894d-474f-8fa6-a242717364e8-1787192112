@@ -37,20 +37,20 @@ export default function WeeklyListCard() {
 
     if (loading) {
         return (
-            <div className="mt-8">
-                <Card className="bg-purple-deep border-gray-200 shadow-sm">
-                    <CardContent className="p-8">
-                        <div className="animate-pulse space-y-6">
-                            <div className="space-y-3">
-                                <div className="h-8 bg-gray-200 rounded-lg w-3/4"></div>
-                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-[67vh] flex flex-col">
+                <Card className="bg-purple-deep border-gray-200 shadow-sm h-full">
+                    <CardContent className="p-4 h-full">
+                        <div className="animate-pulse space-y-3 h-full flex flex-col">
+                            <div className="space-y-2">
+                                <div className="h-6 bg-gray-200 rounded-lg w-3/4"></div>
+                                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                             </div>
-                            <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
-                                {Array.from({ length: 6 }).map((_, i) => (
+                            <div className="grid grid-cols-2 gap-3 flex-1">
+                                {Array.from({ length: 4 }).map((_, i) => (
                                     <div key={i} className="aspect-square bg-gray-200 rounded-xl"></div>
                                 ))}
                             </div>
-                            <div className="h-12 bg-gray-200 rounded-xl w-48"></div>
+                            <div className="h-10 bg-gray-200 rounded-xl"></div>
                         </div>
                     </CardContent>
                 </Card>
@@ -60,16 +60,16 @@ export default function WeeklyListCard() {
 
     if (error || !latestWeek) {
         return (
-            <div className="mt-8">
-                <Card className="bg-red-50 border border-red-200 shadow-sm">
-                    <CardContent className="p-8 text-center">
-                        <div className="space-y-4">
-                            <div className="w-16 h-16 mx-auto rounded-full bg-red-100 flex items-center justify-center">
-                                <Calendar className="w-8 h-8 text-red-500" />
+            <div className="h-[67vh] flex flex-col">
+                <Card className="bg-red-50 border border-red-200 shadow-sm h-full">
+                    <CardContent className="p-4 text-center h-full flex flex-col justify-center">
+                        <div className="space-y-3">
+                            <div className="w-12 h-12 mx-auto rounded-full bg-red-100 flex items-center justify-center">
+                                <Calendar className="w-6 h-6 text-red-500" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-semibold text-red-900 mb-2">No Weekly List Available</h3>
-                                <p className="text-red-600">{error || 'Unable to load this week\'s artists'}</p>
+                                <h3 className="text-lg font-semibold text-red-900 mb-1">No Weekly List Available</h3>
+                                <p className="text-sm text-red-600">{error || 'Unable to load this week\'s artists'}</p>
                             </div>
                             <Link href="/september/rewards">
                                 <Button variant="outline" className="bg-transparent hover:bg-red-50 border-red-200 text-red-700">
@@ -83,39 +83,39 @@ export default function WeeklyListCard() {
         );
     }
 
-    const displayArtists = latestWeek.artists.slice(0, 12); // Show up to 12 artists
+    // Show exactly 4 artists for mobile optimization
+    const displayArtists = latestWeek.artists.slice(0, 4);
 
     return (
-        <div className="mt-8">
-            <Card className="bg-deep-purple border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
-                <CardHeader className="pb-4">
-                    <div className="flex items-center space-x-3">
+        <div className="h-[67vh] flex flex-col">
+            <Card className="bg-deep-purple border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                <CardHeader className="pb-2 shrink-0">
+                    <div className="flex items-center space-x-2">
                         {/* Star Icon */}
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-purple-deep flex items-center justify-center shadow-sm shrink-0">
-                            <Star className="w-5 h-5 md:w-6 md:h-6 text-white fill-current" />
+                        <div className="w-8 h-8 rounded-lg bg-purple-deep flex items-center justify-center shadow-sm shrink-0">
+                            <Star className="w-4 h-4 text-white fill-current" />
                         </div>
 
                         {/* Text Block */}
-                        <div className="flex flex-col text-left">
-                            <CardTitle className="text-base md:text-2xl font-bold text-purple-deep leading-snug">
+                        <div className="flex flex-col text-left min-w-0">
+                            <CardTitle className="text-base font-bold text-purple-deep leading-tight">
                                 Rising Stars
                             </CardTitle>
-                            <p className="text-sm md:text-base text-purple-deep font-medium leading-tight">
+                            <p className="text-xs text-purple-deep font-medium leading-tight">
                                 Current Week:{" "}
                                 {new Date(latestWeek.start_date).toLocaleDateString("en-US", {
                                     month: "short",
                                     day: "numeric",
-                                    year: "numeric",
                                 })}
                             </p>
                         </div>
                     </div>
                 </CardHeader>
 
-                <CardContent className="px-6 pb-8">
-                    <div className="space-y-6">
-                        {/* Artist Grid */}
-                        <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+                <CardContent className="px-4 pb-4 flex-1 flex flex-col">
+                    <div className="space-y-3 h-full flex flex-col">
+                        {/* Artist Grid - 2x2 layout optimized for mobile */}
+                        <div className="grid grid-cols-2 gap-3 flex-1">
                             {displayArtists.map((artist) => (
                                 <Link
                                     key={artist.id}
@@ -126,10 +126,7 @@ export default function WeeklyListCard() {
                                         src={artist.artist_image || "/placeholder-artist.jpg"}
                                         alt={artist.artist_name || "Artist"}
                                         fill
-                                        sizes="(max-width: 640px) 50vw, 
-                       (max-width: 768px) 33vw, 
-                       (max-width: 1024px) 25vw, 
-                       16vw"
+                                        sizes="(max-width: 640px) 50vw, 33vw"
                                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
@@ -146,16 +143,16 @@ export default function WeeklyListCard() {
                         </div>
 
                         {/* Call to Action */}
-                        <div className="flex justify-center pt-4">
+                        <div className="flex justify-center shrink-0">
                             <Link href="/september/rewards">
                                 <Button
-                                    size="lg"
-                                    className="group bg-purple-med hover:bg-purple-lit text-white font-semibold px-8 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                                    size="sm"
+                                    className="group bg-purple-med hover:bg-purple-lit text-white font-semibold px-6 py-2 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
                                 >
                                     <span className="flex items-center space-x-2">
-                                        <Star className="w-5 h-5 fill-current" />
-                                        <span>Watch & Earn Points</span>
-                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                                        <Star className="w-4 h-4 fill-current" />
+                                        <span className="text-sm">Watch & Earn Points</span>
+                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                                     </span>
                                 </Button>
                             </Link>
@@ -164,6 +161,5 @@ export default function WeeklyListCard() {
                 </CardContent>
             </Card>
         </div>
-
     );
 }
