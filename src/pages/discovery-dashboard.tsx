@@ -1,107 +1,170 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
+import type { UserProfile } from "@/services/userProfileService";
+import { Sparkles, Trophy, Star, Calendar, Gift } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { useUserProfile } from "@/contexts/UserProfileContext";
+import { supabase } from "@/integrations/supabase/client";
+import WeeklyListCard from "./WeeklyListCard";
 
-// Component Imports
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import DashboardLoading from '@/components/dashboard/DashboardLoading';
-import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
-import { SeptemberReward } from '@/components/dashboard/SeptemberReward';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, Music, Award, TrendingUp, AlertCircle } from 'lucide-react';
+interface DiscoveryDashboardProps {
+    profile: UserProfile | null;
+    historyLoading: boolean;
+    total_points: number;
+    artistsDiscovered: number;
+    weeksActive: number;
+}
 
-// Hook & Service Imports
-import { useUserProfile } from '@/contexts/UserProfileContext';
+export default function DiscoveryDashboard({
+    profile,
+    historyLoading,
+    total_points,
+    artistsDiscovered,
+    weeksActive,
+}: DiscoveryDashboardProps) {
+    const { user } = useUserProfile();
+    const [totalPoints, setTotalPoints] = useState(0);
+    const [loading, setLoading] = useState(true);
 
-const DiscoveryDashboard = () => {
-    const { 
-        profile, 
-        loading: userLoading, 
-        user, 
-        isAuthenticated, 
-        sessionLoading,
-        engagementHistory,
-        historyLoading,
-        historyError,
-        retryHistory
-    } = useUserProfile();
-    
-    const [activeTab, setActiveTab] = useState('discover');
-    const [showAuthDialog, setShowAuthDialog] = useState(false);
-    const historyLoadTriggered = useRef(false);
+    const TARGET_POINTS = 240;
+    const progressPercentage = Math.min((totalPoints / TARGET_POINTS) * 100, 100);
 
-
-    // ✅ LAZY ENGAGEMENT HISTORY LOADING: Only when history data is actually needed for display
     useEffect(() => {
-        if (
-            isAuthenticated &&
-            profile &&
-            user &&
-            !userLoading &&
-            !sessionLoading &&
-            !historyLoadTriggered.current &&
-            !engagementHistory &&
-            !historyLoading
-        ) {
-            historyLoadTriggered.current = true;
-            console.log('[DiscoveryDashboard] Loading engagement history on demand');
-            retryHistory().catch(error => {
-                console.warn('[DiscoveryDashboard] Engagement history load failed:', error);
-            });
-        }
-    }, [isAuthenticated, profile, user, userLoading, sessionLoading, engagementHistory, historyLoading, retryHistory]);
+        const fetchPoints = async () => {
+            if (!user) return setLoading(false);
 
-    // Simplified loading logic - no artificial delays
-    const showLoadingScreen = () => {
-        // Show loading if session is still checking
-        if (sessionLoading) return true;
-        
-        // Show loading if authenticated but profile is still loading
-        if (isAuthenticated && userLoading) return true;
-        
-        return false;
-    };
+            try {
+                const { data, error } = await supabase
+                    .from("user_engagements")
+                    .select("points_earned")
+                    .eq("user_id", user.id);
 
-    // Show loading screen
-    if (showLoadingScreen()) {
-        return <DashboardLoading />;
-    }
+                if (error) {
+                    console.error(error);
+                    setTotalPoints(0);
+                } else {
+                    const total =
+                        data?.reduce((sum, e) => sum + (e.points_earned || 0), 0) || 0;
+                    setTotalPoints(total);
+                }
+            } catch (err) {
+                console.error(err);
+                setTotalPoints(0);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    // Show auth block if not authenticated or no profile
-    if (!isAuthenticated || !profile || !user) {
-        return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
-    }
+        fetchPoints();
+    }, [user]);
 
     return (
-        <div className="min-h-screen bg-white">
-            {historyError && (
-                <div className="bg-red-50 border border-red-200 p-3">
-                    <div className="max-w-6xl mx-auto flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 text-red-500" />
-                        <p className="text-sm text-red-600">{historyError}</p>
-                        <button
-                            onClick={retryHistory}
-                            className="ml-auto text-xs text-red-700 underline hover:no-underline"
-                        >
-                            Retry
-                        </button>
+        <div className="bg-white">
+            <div className="max-w-6xl mx-auto px-2 py-6 space-y-10">
+                {/* Dashboard Header */}
+                <div className="text-center">
+                    <div className="inline-flex items-center gap-2 md:gap-3 mb-6">
+                        <Sparkles className="w-8 h-8 text-[hsl(279,92%,25%)]" />
+                        <span className="text-2xl font-bold text-purple-deep">
+                            Discovery Dashboard
+                        </span>
+                    </div>
+
+                    <h1 className="text-xl md:text-2xl font-bold text-black mb-3">
+                        Welcome back, {profile?.username || "Explorer"}
+                    </h1>
+                    <p className="text-sm text-gray-600 mb-8">
+                        This dashboard is your gateway to discovering amazing new artists
+                        and earning rewards!
+                    </p>
+
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto mb-12">
+                        <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
+                            <Trophy className="w-5 h-5 text-purple-deep mx-auto mb-2" />
+                            <div className="text-xl font-bold text-purple-med">
+                                {historyLoading ? "..." : total_points}
+                            </div>
+                            <div className="text-sm text-purple-deep">Points</div>
+                        </div>
+                        <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
+                            <Star className="w-5 h-5 text-purple-deep mx-auto mb-2" />
+                            <div className="text-xl font-bold text-purple-med">
+                                {historyLoading ? "..." : artistsDiscovered}
+                            </div>
+                            <div className="text-sm text-purple-deep">Artists</div>
+                        </div>
+                        <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
+                            <Calendar className="w-5 h-5 text-purple-deep mx-auto mb-2" />
+                            <div className="text-xl font-bold text-purple-med">
+                                {historyLoading ? "..." : weeksActive}
+                            </div>
+                            <div className="text-sm text-purple-deep">Weeks</div>
+                        </div>
                     </div>
                 </div>
-            )}
 
-            <DashboardHeader
-                profile={profile}
-                historyLoading={historyLoading}
-                total_points={engagementHistory?.total_points || 0}
-                artistsDiscovered={engagementHistory?.artistsDiscovered || 0}
-                weeksActive={engagementHistory?.weekly_summaries?.length || 0}
-            />
+                {/* Reward Tracker */}
+                <Card className="relative p-4 overflow-hidden shadow-xl bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60 border-2 border-purple-700">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-med text-white">
+                            <Trophy className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-semibold text-purple-med">
+                                September Reward Tracker
+                            </h3>
+                            <p className="text-sm text-neutral-600">
+                                Earn 240 points to unlock all nine OnesToWatch Zines
+                            </p>
+                        </div>
+                        {progressPercentage === 100 && (
+                            <Gift className="w-6 h-6 text-emerald-500 ml-auto animate-pulse" />
+                        )}
+                    </div>
 
-            <div className="max-w-6xl mx-auto px-2 py-4">
-                <SeptemberReward />
+                    <div className="mb-4">
+                        <div className="flex justify-between text-sm mb-1">
+                            <span>
+                                {loading ? "..." : totalPoints} / {TARGET_POINTS} points
+                            </span>
+                            <span className="font-semibold text-purple-med">
+                                {progressPercentage.toFixed(0)}%
+                            </span>
+                        </div>
+                        <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
+                            <div
+                                className="h-full rounded-full bg-gradient-to-r from-purple-med via-purple-deep to-purple-700 transition-all duration-1000"
+                                style={{ width: `${progressPercentage}%` }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="text-center text-sm font-medium">
+                        {progressPercentage === 100 ? (
+                            <span className="text-emerald-700">
+                                🎉 Congratulations! You earned all zines!
+                            </span>
+                        ) : progressPercentage >= 75 ? (
+                            <span className="text-purple-700">
+                                Almost there! Only {TARGET_POINTS - totalPoints} more points!
+                            </span>
+                        ) : progressPercentage >= 50 ? (
+                            <span className="text-purple-700">Halfway there! Keep going!</span>
+                        ) : progressPercentage >= 25 ? (
+                            <span className="text-purple-700">
+                                Good progress! Keep exploring!
+                            </span>
+                        ) : (
+                            <span className="text-neutral-600">
+                                Start exploring to earn your first points!
+                            </span>
+                        )}
+                    </div>
+                </Card>
+
+                {/* Weekly List */}
+                <WeeklyListCard />
             </div>
         </div>
     );
-};
-
-export default DiscoveryDashboard;
+}
