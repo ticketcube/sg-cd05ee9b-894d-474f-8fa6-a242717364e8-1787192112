@@ -155,6 +155,44 @@ export function ArtistLookupPage() {
     setCreateMode(false);
   };
 
+  const handleAddToWeeklyList = async () => {
+    if (!selectedArtist || !weeklyListId.trim()) return;
+
+    try {
+      setAddingToList(true);
+      
+      // Import supabase client
+      const { supabase } = await import("@/integrations/supabase/client");
+      
+      // Insert new row into weekly_list_artists table
+      const { data, error } = await supabase
+        .from("weekly_list_artists")
+        .insert([
+          {
+            artist_uuid: selectedArtist.uuid,
+            weekly_list_id: parseInt(weeklyListId),
+            position: 0, // Default position
+            week_identifier: null // Can be set later if needed
+          }
+        ])
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      // Success - clear form and show success message
+      setWeeklyListId("");
+      alert(`Successfully added ${selectedArtist.artist_name} to weekly list ${weeklyListId}!`);
+      
+    } catch (error) {
+      console.error("Error adding artist to weekly list:", error);
+      alert("Error adding artist to weekly list. Please try again.");
+    } finally {
+      setAddingToList(false);
+    }
+  };
+
   const isEditing = editMode || createMode;
 
   return (
