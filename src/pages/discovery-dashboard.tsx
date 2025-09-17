@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
@@ -72,7 +73,7 @@ const DiscoveryDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white flex flex-col">
+        <div className="bg-white flex flex-col">
             {historyError && (
                 <div className="bg-red-50 border border-red-200 p-3 shrink-0">
                     <div className="max-w-6xl mx-auto flex items-center gap-2">
@@ -88,7 +89,7 @@ const DiscoveryDashboard = () => {
                 </div>
             )}
 
-            {/* Combined Header + September Reward Tracker - Takes 1/3 of mobile screen */}
+            {/* Combined Header + September Reward Tracker */}
             <div className="shrink-0">
                 <CombinedDashboardTop
                     profile={profile}
@@ -99,9 +100,9 @@ const DiscoveryDashboard = () => {
                 />
             </div>
 
-            {/* Weekly List Card - Takes remaining 2/3 of mobile screen */}
-            <div className="flex-1 px-2 pb-4">
-                <div className="max-w-6xl mx-auto h-full">
+            {/* Weekly List Card - Takes remaining space without forcing full screen height */}
+            <div className="px-2 pb-4">
+                <div className="max-w-6xl mx-auto">
                     <WeeklyListCard />
                 </div>
             </div>
@@ -110,3 +111,4 @@ const DiscoveryDashboard = () => {
 };
 
 export default DiscoveryDashboard;
+

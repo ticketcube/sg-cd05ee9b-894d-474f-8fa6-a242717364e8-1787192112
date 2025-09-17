@@ -1,4 +1,5 @@
 
+
 import type { UserProfile } from "@/services/userProfileService";
 import { useState, useEffect } from "react";
 import { Sparkles, Trophy, Star, Calendar, Gift } from "lucide-react";
@@ -58,24 +59,23 @@ export default function CombinedDashboardTop({
 
     return (
         <div className="bg-white">
-            <div className="max-w-6xl mx-auto px-0 py-3">
-                {/* Combined Header - 1/3 of mobile screen height */}
-                <div className="h-[33vh] flex flex-col">
+            <div className="max-w-6xl mx-auto px-2 py-3">
+                {/* Combined Header - Flexible height based on content */}
+                <div className="flex flex-col space-y-3">
                     
                     {/* Top Section: Title + Welcome */}
-                    <div className="flex flex-col items-center text-center mb-2">
+                    <div className="flex flex-col items-center text-center">
                         <div className="flex items-center gap-1 mb-1">
                             <Sparkles className="w-6 h-6 text-purple-deep" />
                             <span className="text-lg font-bold text-purple-deep">Discovery Dashboard</span>
                         </div>
-                        <h1 className="text-lg font-bold text-black mb-1">
+                        <h1 className="text-lg font-bold text-black">
                             Welcome back, {profile?.username || 'Explorer'}
                         </h1>
-                
                     </div>
 
                     {/* Stats Row - Compact */}
-                    <div className="grid grid-cols-3 gap-2 mb-3">
+                    <div className="grid grid-cols-3 gap-2">
                         <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
                             <Trophy className="w-4 h-4 text-purple-deep mx-auto mb-1" />
                             <div className="text-sm font-bold text-purple-med">{historyLoading ? '...' : total_points}</div>
@@ -93,12 +93,12 @@ export default function CombinedDashboardTop({
                         </div>
                     </div>
 
-                    {/* September Reward Tracker - Compact */}
-                    <Card className="flex-1 relative overflow-hidden bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60 border-2 border-purple-700">
-                        <div className="p-3 h-full flex flex-col justify-between">
+                    {/* September Reward Tracker - Auto-sized based on content */}
+                    <Card className="relative overflow-hidden bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60 border-2 border-purple-700">
+                        <div className="p-3">
                             
                             {/* Header Row */}
-                            <div className="flex items-center gap-2 mb-2">
+                            <div className="flex items-center gap-2 mb-3">
                                 <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-med text-white shrink-0">
                                     <Trophy className="w-4 h-4" />
                                 </div>
@@ -117,13 +117,13 @@ export default function CombinedDashboardTop({
                                     <span>{loading ? '...' : totalPoints} / {TARGET_POINTS} points</span>
                                     <span className="font-semibold text-purple-med">{loading ? '...' : progressPercentage.toFixed(0)}%</span>
                                 </div>
-                                <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden">
+                                <div className="w-full h-2.5 bg-neutral-200 rounded-full overflow-hidden">
                                     <div
                                         className="h-full rounded-full bg-gradient-to-r from-purple-med via-purple-deep to-purple-700 transition-all duration-1000"
                                         style={{ width: loading ? '0%' : `${progressPercentage}%` }}
                                     />
                                 </div>
-                                <div className="text-center text-xs font-medium">
+                                <div className="text-center text-xs font-medium pt-1">
                                     {loading ? 'Loading...' :
                                         progressPercentage === 100
                                             ? <span className="text-emerald-700">🎉 All zines earned!</span>
@@ -144,3 +144,4 @@ export default function CombinedDashboardTop({
         </div>
     );
 }
+
