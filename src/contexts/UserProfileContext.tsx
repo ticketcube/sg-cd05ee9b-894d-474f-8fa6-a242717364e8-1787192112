@@ -216,37 +216,50 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
         await loadEngagementHistory(user.id, profileToUse);
     }, [user?.id, profile, loadEngagementHistory]);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('[UserProfile] Auth state changed:', event, session?.user?.email);
-        
-        // Cleanup previous requests when auth state changes
-        cleanup();
-        
-        if (session?.user) {
-          setUser(session.user);
-          setIsAuthenticated(true);
-          await loadUserProfile(session.user);
-        } else {
-          setUser(null);
-          setProfile(null);
-          setEngagementHistory(null);
-          setRole(null);
-          setIsAuthenticated(false);
-          setLoading(false);
-          setHistoryLoading(false);
-          setHistoryError(null);
-        }
-        setSessionLoading(false);
-      }
-    );
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                console.log('[UserProfile] Auth state changed:', event, session?.user?.email);
 
-    return () => {
-      subscription.unsubscribe();
-      cleanup();
-    };
-  }, [loadUserProfile, cleanup]);
+                const newUser = session?.user || null;
+
+                // 🚫 Skip redundant INITIAL_SESSION for the same user
+                if (event === 'INITIAL_SESSION' && newUser?.id === lastUserIdRef.current) {
+                    console.log('[UserProfile] Skipping redundant INITIAL_SESSION');
+                    setSessionLoading(false);
+                    return;
+                }
+
+                // Cleanup previous requests when auth state changes
+                cleanup();
+
+                if (newUser) {
+                    setUser(newUser);
+                    setIsAuthenticated(true);
+                    await loadUserProfile(newUser);
+                    lastUserIdRef.current = newUser.id; // ✅ remember last user
+                } else {
+                    setUser(null);
+                    setProfile(null);
+                    setEngagementHistory(null);
+                    setRole(null);
+                    setIsAuthenticated(false);
+                    setLoading(false);
+                    setHistoryLoading(false);
+                    setHistoryError(null);
+                    lastUserIdRef.current = null; // ✅ clear ref
+                }
+
+                setSessionLoading(false);
+            }
+        );
+
+        return () => {
+            subscription.unsubscribe();
+            cleanup();
+        };
+    }, [loadUserProfile, cleanup]);
+
 
   const logout = async () => {
     cleanup();
