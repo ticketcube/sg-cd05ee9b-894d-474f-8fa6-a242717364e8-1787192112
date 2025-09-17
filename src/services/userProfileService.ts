@@ -289,7 +289,7 @@ export async function getUserEngagementHistory(
     console.log(`[UserProfileService] Getting engagement history for user: ${userId}`);
 
     // Check if request was aborted
-    if (abortSignal?.aborted) {
+    if (signal?.aborted) {
         throw new Error('Request aborted');
     }
 
@@ -301,7 +301,7 @@ export async function getUserEngagementHistory(
         }
 
         // Check abort signal again before proceeding to heavy query
-        if (abortSignal?.aborted) {
+        if (signal?.aborted) {
             throw new Error('Request aborted');
         }
 
@@ -312,7 +312,7 @@ export async function getUserEngagementHistory(
             .eq("user_id", userId)
             .order("created_at", { ascending: false })
             .limit(150) // Further reduced limit for production performance
-            .abortSignal(abortSignal);
+            .abortSignal(signal);
 
         if (error) {
             console.error("[UserProfileService] Error fetching engagements:", error);
@@ -320,7 +320,7 @@ export async function getUserEngagementHistory(
         }
 
         // Check abort signal before processing data
-        if (abortSignal?.aborted) {
+        if (signal?.aborted) {
             throw new Error('Request aborted');
         }
 
@@ -334,7 +334,7 @@ export async function getUserEngagementHistory(
             // ✅ PERFORMANCE: Single pass through all engagements
             engagements.forEach(e => {
                 // Check abort signal periodically during processing
-                if (abortSignal?.aborted) {
+                if (signal?.aborted) {
                     throw new Error('Request aborted');
                 }
 
@@ -374,7 +374,7 @@ export async function getUserEngagementHistory(
         }
 
         // Final abort check before returning
-        if (abortSignal?.aborted) {
+        if (signal?.aborted) {
             throw new Error('Request aborted');
         }
 
@@ -392,7 +392,7 @@ export async function getUserEngagementHistory(
         return result;
         
     } catch (error) {
-        if (abortSignal?.aborted) {
+        if (signal?.aborted) {
             console.log('[UserProfileService] Engagement history request was aborted');
             throw new Error('Request aborted');
         }
