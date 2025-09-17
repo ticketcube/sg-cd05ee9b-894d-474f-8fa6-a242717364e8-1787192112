@@ -37,7 +37,7 @@ export default function WeeklyListCard() {
 
     if (loading) {
         return (
-            <div className="h-[67vh] flex flex-col">
+            <div className="flex flex-col">
                 <Card className="bg-purple-deep border-gray-200 shadow-sm h-full">
                     <CardContent className="p-4 h-full">
                         <div className="animate-pulse space-y-3 h-full flex flex-col">
@@ -87,8 +87,8 @@ export default function WeeklyListCard() {
     const displayArtists = latestWeek.artists.slice(0, 4);
 
     return (
-        <div className="h-[67vh] flex flex-col">
-            <Card className="bg-white border border-purple-deep shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+        <div className="flex flex-col">
+            <Card className="bg-white border border-purple-deep shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col">
                 <CardHeader className="pb-2 shrink-0">
                     <div className="flex items-center space-x-2">
                         {/* Star Icon */}
