@@ -103,7 +103,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       loadingRequests.current.delete(requestKey);
       setHistoryLoading(false);
     }
-  }, []);
+  }, [profile]); // ✅ FIXED: Added 'profile' dependency to prevent stale closure
 
   const loadUserProfile = useCallback(async (currentUser: User) => {
     const requestKey = `profile-${currentUser.id}`;
