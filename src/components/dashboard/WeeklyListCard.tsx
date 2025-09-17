@@ -97,8 +97,7 @@ export default function WeeklyListCard() {
 
                         {/* Text Block */}
                         <div className="flex flex-col">
-                            <CardTitle className="text-lg font-bold text-purple-deep leading-tight">
-                                Rising Stars
+                            <CardTitle className="text-lg font-bold text-purple-deep leading-tight">Rising Stars
                             </CardTitle>
                             <p className="text-sm text-purple-deep font-medium">
                                 Current Week:{" "}
