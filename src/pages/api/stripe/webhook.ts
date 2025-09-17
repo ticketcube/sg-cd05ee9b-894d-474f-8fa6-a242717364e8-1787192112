@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
 import Stripe from "stripe";
-import { createPagesServerClient } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/integrations/supabase/types";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -22,7 +22,21 @@ const PRO_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID;
 const COLLECTOR_PRICE_ID = process.env.NEXT_PUBLIC_STRIPE_COLLECTOR_PRICE_ID;
 
 async function updateCubeTier(req: NextApiRequest, res: NextApiResponse, cubeId: string, userId: string, priceId: string, paymentIntentId: string) {
-    const supabase = createPagesServerClient<Database>({ req, res });
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get: (name) => req.cookies[name],
+          set: (name, value, options) => {
+            res.setHeader('Set-Cookie', `${name}=${value}; ${Object.entries(options).map(([k, v]) => `${k}=${v}`).join('; ')}`);
+          },
+          remove: (name, options) => {
+            res.setHeader('Set-Cookie', `${name}=; ${Object.entries(options).map(([k, v]) => `${k}=${v}`).join('; ')}`);
+          },
+        },
+      }
+    );
     
     const updates: {
         is_secured: boolean;

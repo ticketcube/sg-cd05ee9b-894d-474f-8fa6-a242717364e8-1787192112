@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createPagesServerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 /**
@@ -13,7 +13,21 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     // Step 1: AUTHENTICATE - Get user from session cookie
-    const supabase = createPagesServerClient({ req, res });
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get: (name) => req.cookies[name],
+          set: (name, value, options) => {
+            res.setHeader('Set-Cookie', `${name}=${value}; ${Object.entries(options).map(([k, v]) => `${k}=${v}`).join('; ')}`);
+          },
+          remove: (name, options) => {
+            res.setHeader('Set-Cookie', `${name}=; ${Object.entries(options).map(([k, v]) => `${k}=${v}`).join('; ')}`);
+          },
+        },
+      }
+    );
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError || !session?.user) {
