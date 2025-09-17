@@ -87,7 +87,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
 
       console.log('[UserProfile] Loading engagement history for user:', userId);
       
-      const history = await getUserEngagementHistory(userId, signal);
+      const history = await getUserEngagementHistory(userId, profile, signal);
 
       if (!signal.aborted) {
         setEngagementHistory(history);
