@@ -63,17 +63,15 @@ export default function CombinedDashboardTop({
                 <div className="h-[33vh] flex flex-col">
                     
                     {/* Top Section: Title + Welcome */}
-                    <div className="flex flex-col items-center text-center mb-3">
-                        <div className="flex items-center gap-2 mb-2">
+                    <div className="flex flex-col items-center text-center mb-2">
+                        <div className="flex items-center gap-1 mb-1">
                             <Sparkles className="w-6 h-6 text-purple-deep" />
                             <span className="text-lg font-bold text-purple-deep">Discovery Dashboard</span>
                         </div>
                         <h1 className="text-lg font-bold text-black mb-1">
                             Welcome back, {profile?.username || 'Explorer'}
                         </h1>
-                        <p className="text-xs text-gray-600">
-                            Discover artists and earn rewards!
-                        </p>
+                
                     </div>
 
                     {/* Stats Row - Compact */}
