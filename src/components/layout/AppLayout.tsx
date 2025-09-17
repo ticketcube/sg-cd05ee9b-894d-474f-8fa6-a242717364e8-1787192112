@@ -1,7 +1,11 @@
+
 import { ReactNode } from "react";
 import Head from "next/head";
 import { Toaster } from "@/components/ui/toaster";
 import Header from "@/components/layout/Header";
+import { useUserProfile } from "@/contexts/UserProfileContext";
+import DashboardLoading from "@/components/dashboard/DashboardLoading";
+import { Button } from "@/components/ui/button";
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -14,8 +18,26 @@ export default function AppLayout({
     title = "We Reward Discovery",
     description = "Discover the future of music.",
 }: AppLayoutProps) {
-// Notice all the state and event handlers that were here are now gone!
-// This component is now much simpler.
+    const { loading, sessionLoading, isStuck, logout } = useUserProfile();
+
+    const renderContent = () => {
+        if (sessionLoading || (loading && !isStuck)) {
+            return <DashboardLoading />;
+        }
+
+        if (loading && isStuck) {
+            return (
+                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] p-4 text-center">
+                    <h2 className="text-2xl font-bold mb-2">Session stuck</h2>
+                    <p className="text-muted-foreground mb-6">We couldn’t finish loading your profile.</p>
+                    <Button onClick={logout}>Restart Session</Button>
+                </div>
+            );
+        }
+
+        return children;
+    };
+
 
     return (
         <div className="min-h-screen flex flex-col bg-background font-sans antialiased">
@@ -28,7 +50,7 @@ export default function AppLayout({
             <Header />
 
             <main className="flex-grow container mx-auto px-4 py-8">
-                {children}
+                {renderContent()}
             </main>
 
             <Toaster />

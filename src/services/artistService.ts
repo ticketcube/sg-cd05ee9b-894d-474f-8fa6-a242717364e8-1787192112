@@ -1,9 +1,130 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { Artist, ArtistWithVotes } from "@/types/artists";
 import type { ArtistWithLocation } from "@/types/map";
+import type { Database } from "@/integrations/supabase/types";
+
+type ArtistInsert = Database['public']['Tables']['artists']['Insert'];
+type ArtistUpdate = Database['public']['Tables']['artists']['Update'];
 
 export class ArtistService {
+  // === SEARCH METHODS FOR STAFF LOOKUP ===
+  
+  async searchArtistByName(name: string): Promise<Artist | null> {
+    if (!name.trim()) {
+      return null;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("*")
+        .ilike("artist_name", `%${name}%`)
+        .limit(1)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows found
+          return null;
+        }
+        console.error("Error searching for artist:", error);
+        throw error;
+      }
+
+      return data as Artist;
+    } catch (error) {
+      console.error("Unexpected error in searchArtistByName:", error);
+      return null;
+    }
+  }
+
+  async searchArtists(query: string, limit: number = 10): Promise<Artist[]> {
+    if (!query.trim()) {
+      return [];
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .select("*")
+        .ilike("artist_name", `%${query}%`)
+        .order("artist_name")
+        .limit(limit);
+
+      if (error) {
+        console.error("Error searching artists:", error);
+        throw error;
+      }
+
+      return data as Artist[];
+    } catch (error) {
+      console.error("Unexpected error in searchArtists:", error);
+      return [];
+    }
+  }
+
+  // === CRUD OPERATIONS FOR STAFF ===
+
+  async createArtist(artistData: ArtistInsert): Promise<Artist> {
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .insert(artistData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating artist:", error);
+        throw error;
+      }
+
+      return data as Artist;
+    } catch (error) {
+      console.error("Unexpected error in createArtist:", error);
+      throw error;
+    }
+  }
+
+  async updateArtist(uuid: string, updates: ArtistUpdate): Promise<Artist> {
+    try {
+      const { data, error } = await supabase
+        .from("artists")
+        .update(updates)
+        .eq("uuid", uuid)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating artist:", error);
+        throw error;
+      }
+
+      return data as Artist;
+    } catch (error) {
+      console.error("Unexpected error in updateArtist:", error);
+      throw error;
+    }
+  }
+
+  async deleteArtist(uuid: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from("artists")
+        .delete()
+        .eq("uuid", uuid);
+
+      if (error) {
+        console.error("Error deleting artist:", error);
+        throw error;
+      }
+    } catch (error) {
+      console.error("Unexpected error in deleteArtist:", error);
+      throw error;
+    }
+  }
+
+  // === EXISTING METHODS ===
+
   async getArtists(
     page: number = 1,
     limit: number = 10,

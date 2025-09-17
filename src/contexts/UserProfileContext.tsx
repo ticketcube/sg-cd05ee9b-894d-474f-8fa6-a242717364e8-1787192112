@@ -1,10 +1,7 @@
-
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserProfile, getUserEngagementHistory, type UserProfile, type UserEngagementHistory } from "@/services/userProfileService";
-
-
 
 interface UserProfileContextType {
   user: User | null;
@@ -19,6 +16,7 @@ interface UserProfileContextType {
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   retryHistory: () => Promise<void>;
+  isStuck: boolean;
 }
 
 const UserProfileContext = createContext<UserProfileContextType | null>(null);
@@ -40,17 +38,19 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [engagementHistory, setEngagementHistory] = useState<UserEngagementHistory | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const lastUserIdRef = useRef < string | null > (null);
+  const lastUserIdRef = useRef<string | null>(null);
   const [loading, setLoading] = useState(false); // Tracks profile loading
   const [sessionLoading, setSessionLoading] = useState(true); // Tracks initial auth check
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [isStuck, setIsStuck] = useState(false);
 
-  // Request management for mobile optimization
+  // Request management
   const profileAbortController = useRef<AbortController | null>(null);
   const historyAbortController = useRef<AbortController | null>(null);
   const loadingRequests = useRef<Set<string>>(new Set());
+  const failsafeTriggered = useRef(false); // Flag for the stuck state
 
   // Cleanup function
   const cleanup = useCallback(() => {
@@ -65,16 +65,14 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     loadingRequests.current.clear();
   }, []);
 
-    const loadEngagementHistory = useCallback(async (userId: string, profileData?: UserProfile) => {
+  const loadEngagementHistory = useCallback(async (userId: string, profileData?: UserProfile) => {
     const requestKey = `history-${userId}`;
     
-    // Prevent duplicate requests
     if (loadingRequests.current.has(requestKey)) {
       console.log('[UserProfile] History request already in progress, skipping duplicate');
       return;
     }
 
-    // Abort previous history request
     if (historyAbortController.current) {
       historyAbortController.current.abort();
     }
@@ -87,7 +85,6 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     try {
       setHistoryLoading(true);
       setHistoryError(null);
-
       console.log('[UserProfile] Loading engagement history for user:', userId);
       
      const history = await getUserEngagementHistory(userId, profileData || profile, signal);
@@ -106,18 +103,16 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       loadingRequests.current.delete(requestKey);
       setHistoryLoading(false);
     }
-  }, [profile]); // ✅ FIXED: Added 'profile' dependency to prevent stale closure
+  }, [profile]);
 
   const loadUserProfile = useCallback(async (currentUser: User) => {
     const requestKey = `profile-${currentUser.id}`;
     
-    // Prevent duplicate requests
     if (loadingRequests.current.has(requestKey)) {
       console.log('[UserProfile] Profile request already in progress, skipping duplicate');
       return;
     }
 
-    // Abort previous profile request
     if (profileAbortController.current) {
       profileAbortController.current.abort();
     }
@@ -127,13 +122,25 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
 
     loadingRequests.current.add(requestKey);
 
+    // --- Failsafe Implementation Start ---
+    setIsStuck(false);
+    failsafeTriggered.current = false; // Reset on new load attempt
+
+    const timeoutId = setTimeout(() => {
+      console.warn('[UserProfile] Profile load appears stuck – triggering failsafe');
+      failsafeTriggered.current = true; // Mark that failsafe was the cause
+      setIsStuck(true);
+    
+      if (profileAbortController.current) {
+        profileAbortController.current.abort();
+      }
+    }, 15000);
+    // --- Failsafe Implementation End ---
+
     try {
       setLoading(true);
-      
       console.log('[UserProfile] Loading profile for user:', currentUser.id);
       
-      // ✅ CRITICAL FIX: Remove the 10-second timeout that was causing production issues
-      // Let Supabase handle its own connection timeout naturally
       const userProfile = await getUserProfile(currentUser.id, signal);
       
       if (!signal.aborted) {
@@ -145,47 +152,23 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
           setProfile(userProfile);
           setRole(userProfile.role);
           console.log('[UserProfile] Profile loaded successfully');
-          
-          // Profile ready - engagement history will load on demand
           console.log('[UserProfile] Profile ready - engagement history will load on demand');
         }
       }
     } catch (error) {
       if (!signal.aborted) {
         console.error('[UserProfile] Error loading user profile:', error);
-        
-        // ✅ ENHANCED ERROR HANDLING: Try to reload profile once on network errors
-        if (error instanceof Error && 
-           (error.message.includes('network') || 
-            error.message.includes('timeout') || 
-            error.message.includes('fetch'))) {
-          console.log('[UserProfile] Network error detected, attempting retry...');
-          
-          // Wait 2 seconds and retry once
-          setTimeout(async () => {
-            if (!signal.aborted) {
-              try {
-                const retryProfile = await getUserProfile(currentUser.id, signal);
-                if (retryProfile && !signal.aborted) {
-                  setProfile(retryProfile);
-                  setRole(retryProfile.role);
-                  console.log('[UserProfile] Profile loaded successfully on retry');
-                }
-              } catch (retryError) {
-                console.error('[UserProfile] Retry failed:', retryError);
-                setProfile(null);
-                setRole(null);
-              }
-            }
-          }, 2000);
-        } else {
-          setProfile(null);
-          setRole(null);
-        }
+        setProfile(null);
+        setRole(null);
       }
     } finally {
+      clearTimeout(timeoutId);
       loadingRequests.current.delete(requestKey);
-      setLoading(false);
+      
+      // Only set loading to false if the failsafe didn't trigger
+      if (!failsafeTriggered.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -199,7 +182,6 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       setProfile(userProfile);
       setRole(userProfile.role);
 
-      // Refresh engagement history
       await loadEngagementHistory(user.id);
     } catch (error) {
       console.error('[UserProfile] Error refreshing profile:', error);
@@ -208,36 +190,30 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
 
     const retryHistory = useCallback(async (overrideProfile?: UserProfile) => {
         if (!user?.id) return;
-
-        // Use override profile if provided, otherwise use current profile
         const profileToUse = overrideProfile || profile;
-
-        // Update loadEngagementHistory call to pass the profile
         await loadEngagementHistory(user.id, profileToUse);
     }, [user?.id, profile, loadEngagementHistory]);
 
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
+            (event, session) => {
                 console.log('[UserProfile] Auth state changed:', event, session?.user?.email);
 
                 const newUser = session?.user || null;
 
-                // 🚫 Skip redundant INITIAL_SESSION for the same user
                 if (event === 'INITIAL_SESSION' && newUser?.id === lastUserIdRef.current) {
                     console.log('[UserProfile] Skipping redundant INITIAL_SESSION');
                     setSessionLoading(false);
                     return;
                 }
 
-                // Cleanup previous requests when auth state changes
                 cleanup();
 
                 if (newUser) {
                     setUser(newUser);
                     setIsAuthenticated(true);
-                    await loadUserProfile(newUser);
-                    lastUserIdRef.current = newUser.id; // ✅ remember last user
+                    loadUserProfile(newUser); // No await
+                    lastUserIdRef.current = newUser.id;
                 } else {
                     setUser(null);
                     setProfile(null);
@@ -247,7 +223,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
                     setLoading(false);
                     setHistoryLoading(false);
                     setHistoryError(null);
-                    lastUserIdRef.current = null; // ✅ clear ref
+                    lastUserIdRef.current = null;
                 }
 
                 setSessionLoading(false);
@@ -270,6 +246,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     setRole(null);
     setIsAuthenticated(false);
     setHistoryError(null);
+    setIsStuck(false); // Also reset on logout
   };
 
   const value: UserProfileContextType = {
@@ -285,6 +262,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     logout,
     refreshProfile,
     retryHistory,
+    isStuck,
   };
 
   return (
