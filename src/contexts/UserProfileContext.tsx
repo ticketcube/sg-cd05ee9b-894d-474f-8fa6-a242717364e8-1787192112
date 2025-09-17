@@ -203,10 +203,15 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     }
   }, [user?.id, loadEngagementHistory]);
 
-  const retryHistory = useCallback(async () => {
-    if (!user?.id) return;
-    await loadEngagementHistory(user.id);
-  }, [user?.id, loadEngagementHistory]);
+    const retryHistory = useCallback(async (overrideProfile?: UserProfile) => {
+        if (!user?.id) return;
+
+        // Use override profile if provided, otherwise use current profile
+        const profileToUse = overrideProfile || profile;
+
+        // Update loadEngagementHistory call to pass the profile
+        await loadEngagementHistory(user.id, profileToUse);
+    }, [user?.id, profile, loadEngagementHistory]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
