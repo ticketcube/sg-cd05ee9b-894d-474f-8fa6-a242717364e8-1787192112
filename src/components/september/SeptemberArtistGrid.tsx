@@ -15,11 +15,9 @@ export default function SeptemberArtistGrid({ artists, onArtistSelect }: Septemb
     }
 
     return (
-        <div className="grid grid-cols-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6 p-3 md:p-4 lg:p-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6 p-3 md:p-4 lg:p-6">
             {artists.map((artist) => {
-                if (!artist || !artist.artist_name) {
-                    return null;
-                }
+                if (!artist || !artist.artist_name) return null;
 
                 return (
                     <Card
@@ -30,10 +28,10 @@ export default function SeptemberArtistGrid({ artists, onArtistSelect }: Septemb
                         <CardContent className="p-0">
                             <div className="aspect-square w-full relative">
                                 <Image
-                                    src={artist.artist_image}
+                                    src={artist.artist_image || "/placeholder-artist.jpg"}
                                     alt={artist.artist_name}
                                     fill
-                                    sizes="(max-width: 768px) 25vw, (max-width: 1024px) 33vw, 20vw"
+                                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                                     className="object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
