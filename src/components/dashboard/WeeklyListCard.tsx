@@ -88,26 +88,26 @@ export default function WeeklyListCard() {
     return (
         <div className="mt-8">
             <Card className="bg-deep-purple border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
-                <CardHeader className="pb-6">
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                                <div className="w-12 h-12 rounded-xl bg-purple-deep flex items-center justify-center shadow-sm">
-                                    <Star className="w-6 h-6 text-white fill-current" />
-                                </div>
-                                <div>
-                                    <CardTitle className="text-2xl font-bold text-purple-deep">
-                                       Rising Stars
-                                    </CardTitle>
-                                    <p className="text-purple-deep font-medium">
-                                        Current Week: {new Date(latestWeek.start_date).toLocaleDateString('en-US', {
-                                            month: 'short',
-                                            day: 'numeric',
-                                            year: 'numeric'
-                                        })}
-                                    </p>
-                                </div>
-                            </div>
+                <CardHeader className="pb-4">
+                    <div className="flex items-center space-x-3">
+                        {/* Star Icon */}
+                        <div className="w-10 h-10 rounded-lg bg-purple-deep flex items-center justify-center shadow-sm shrink-0">
+                            <Star className="w-5 h-5 text-white fill-current" />
+                        </div>
+
+                        {/* Text Block */}
+                        <div className="flex flex-col">
+                            <CardTitle className="text-lg font-bold text-purple-deep leading-tight">
+                                Rising Stars
+                            </CardTitle>
+                            <p className="text-sm text-purple-deep font-medium">
+                                Current Week:{" "}
+                                {new Date(latestWeek.start_date).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                })}
+                            </p>
                         </div>
                     </div>
                 </CardHeader>
