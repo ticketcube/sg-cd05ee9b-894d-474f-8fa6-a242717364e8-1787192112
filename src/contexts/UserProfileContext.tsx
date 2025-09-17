@@ -62,7 +62,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     loadingRequests.current.clear();
   }, []);
 
-  const loadEngagementHistory = useCallback(async (userId: string) => {
+    const loadEngagementHistory = useCallback(async (userId: string, profileData?: UserProfile) => {
     const requestKey = `history-${userId}`;
     
     // Prevent duplicate requests
@@ -87,7 +87,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
 
       console.log('[UserProfile] Loading engagement history for user:', userId);
       
-      const history = await getUserEngagementHistory(userId, profile, signal);
+     const history = await getUserEngagementHistory(userId, profileData || profile, signal);
 
       if (!signal.aborted) {
         setEngagementHistory(history);
