@@ -28,10 +28,24 @@ class AuthService {
     return { error };
   }
 
-  async signOut(): Promise<{ error: AuthError | null }> {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+async signOut(): Promise<{ error: AuthError | null }> {
+  const { error } = await supabase.auth.signOut();
+  
+  // Clear profile cache on sign out
+  try {
+    const keys = Object.keys(sessionStorage);
+    keys.forEach(key => {
+      if (key.startsWith('userProfile:')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+    console.log('[AuthService] Cleared all profile caches on sign out');
+  } catch (cacheError) {
+    console.warn('[AuthService] Error clearing cache on sign out:', cacheError);
   }
+  
+  return { error };
+}
 
   async getCurrentUser(): Promise<User | null> {
     const { data: { user } } = await supabase.auth.getUser();
