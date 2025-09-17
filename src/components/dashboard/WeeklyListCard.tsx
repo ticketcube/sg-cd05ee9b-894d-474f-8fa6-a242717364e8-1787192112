@@ -96,11 +96,11 @@ export default function WeeklyListCard() {
                         </div>
 
                         {/* Text Block */}
-                        <div className="flex flex-col">
-                            <CardTitle className="text-base md:text-2xl font-bold text-purple-deep leading-tight">
+                        <div className="flex flex-col text-left">
+                            <CardTitle className="text-base md:text-2xl font-bold text-purple-deep leading-snug">
                                 Rising Stars
                             </CardTitle>
-                            <p className="text-sm md:text-base text-purple-deep font-medium">
+                            <p className="text-sm md:text-base text-purple-deep font-medium leading-tight">
                                 Current Week:{" "}
                                 {new Date(latestWeek.start_date).toLocaleDateString("en-US", {
                                     month: "short",
@@ -111,7 +111,6 @@ export default function WeeklyListCard() {
                         </div>
                     </div>
                 </CardHeader>
-
 
                 <CardContent className="px-6 pb-8">
                     <div className="space-y-6">
@@ -124,13 +123,13 @@ export default function WeeklyListCard() {
                                     className="group relative aspect-square w-full overflow-hidden rounded-xl border border-gray-200 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white"
                                 >
                                     <Image
-                                        src={artist.artist_image || '/placeholder-artist.jpg'}
-                                        alt={artist.artist_name || 'Artist'}
+                                        src={artist.artist_image || "/placeholder-artist.jpg"}
+                                        alt={artist.artist_name || "Artist"}
                                         fill
                                         sizes="(max-width: 640px) 50vw, 
-                                               (max-width: 768px) 33vw, 
-                                               (max-width: 1024px) 25vw, 
-                                               16vw"
+                       (max-width: 768px) 33vw, 
+                       (max-width: 1024px) 25vw, 
+                       16vw"
                                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
@@ -139,7 +138,7 @@ export default function WeeklyListCard() {
                                     </div>
                                     <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm p-2 border-t border-gray-200">
                                         <p className="text-black text-xs font-medium truncate text-center">
-                                            {artist.artist_name || 'Unknown Artist'}
+                                            {artist.artist_name || "Unknown Artist"}
                                         </p>
                                     </div>
                                 </Link>
@@ -165,5 +164,6 @@ export default function WeeklyListCard() {
                 </CardContent>
             </Card>
         </div>
+
     );
 }
