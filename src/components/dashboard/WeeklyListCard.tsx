@@ -114,8 +114,16 @@ export default function WeeklyListCard() {
 
                 <CardContent className="px-4 pb-4 flex-1 flex flex-col">
                     <div className="space-y-3 h-full flex flex-col">
-                        {/* Artist Grid - 2x2 layout optimized for mobile */}
-                        <div className="grid grid-cols-2 gap-3 flex-1">
+                        {/* Artist Grid - responsive layout */}
+                        <div
+                            className="
+    grid 
+    grid-cols-2 sm:grid-cols-3 lg:grid-cols-4
+    gap-x-3 
+    gap-y-2 sm:gap-y-3 lg:gap-y-4
+    flex-1
+  "
+                        >
                             {displayArtists.map((artist) => (
                                 <Link
                                     key={artist.id}
