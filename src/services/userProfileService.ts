@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
 export type EngagementType =
-    | "video_view"get
+    | "video_view"
     | "quadrant"
     | "ranking_submission"
     | "video_completion_bonus"
@@ -442,6 +442,3 @@ export const clearProfileCache = (userId?: string) => {
     console.warn('[UserProfileService] Error clearing cache:', error);
   }
 };
-
-
-
