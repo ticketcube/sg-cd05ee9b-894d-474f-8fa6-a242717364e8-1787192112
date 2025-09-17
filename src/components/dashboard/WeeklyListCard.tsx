@@ -97,7 +97,7 @@ export default function WeeklyListCard() {
                                 </div>
                                 <div>
                                     <CardTitle className="text-2xl font-bold text-purple-deep">
-                                       September Artist Discoveries
+                                       Rising Stars
                                     </CardTitle>
                                     <p className="text-purple-deep font-medium">
                                         Current Week: {new Date(latestWeek.start_date).toLocaleDateString('en-US', {
