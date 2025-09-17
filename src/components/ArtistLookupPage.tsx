@@ -227,6 +227,59 @@ export function ArtistLookupPage() {
             </CardContent>
           </Card>
 
+          {/* Add to Weekly List Panel - Only show when an artist is selected */}
+          {selectedArtist && (
+            <Card className="bg-gray-900 border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-400">
+                  <Plus className="w-5 h-5 mr-2" />
+                  Add to Weekly List
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-white">Selected Artist</Label>
+                  <div className="p-3 bg-gray-800 rounded-lg border border-gray-600">
+                    <div className="font-medium text-white">{selectedArtist.artist_name}</div>
+                    <div className="text-sm text-gray-400 mt-1">
+                      UUID: {selectedArtist.uuid}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="weekly_list_id" className="text-white">Weekly List ID</Label>
+                  <Input
+                    id="weekly_list_id"
+                    type="number"
+                    value={weeklyListId}
+                    onChange={(e) => setWeeklyListId(e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white"
+                    placeholder="Enter weekly list ID number..."
+                  />
+                </div>
+
+                <Button 
+                  onClick={handleAddToWeeklyList}
+                  disabled={!weeklyListId.trim() || addingToList}
+                  className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                >
+                  {addingToList ? (
+                    <>
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add to Weekly List
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Artist Details Panel */}
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader>
