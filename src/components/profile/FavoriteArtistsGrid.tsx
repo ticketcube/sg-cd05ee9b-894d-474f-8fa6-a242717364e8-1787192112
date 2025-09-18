@@ -121,16 +121,7 @@ export function FavoriteArtistsGrid() {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs">
-                    <Star className="w-3 h-3 mr-1 fill-current" />
-                    {artist.x_quadrant}/5
-                  </Badge>
-                  <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
-                    Y: {artist.y_quadrant}/5
-                  </Badge>
-                </div>
+             
                 
                 <div className="flex space-x-2">
                   <Button size="sm" variant="outline" disabled className="text-xs px-2 py-1 h-7 border-gray-200 text-purple-deep">
