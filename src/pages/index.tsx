@@ -106,6 +106,12 @@ export default function HomePage() {
                     {isAuthenticated ? 'Go to Dashboard' : 'Register to Discover Rewards'}
                 </Button>
             </div>
+            <div className="px-2 pb-4">
+                <div className="max-w-6xl mx-auto">
+                    <WeeklyListCard />
+                </div>
+            </div>
+
 
             {/* Tabs Section: Clean, Compact, Black-on-White */}
             <div className="bg-purple-deep rounded-xl" >
