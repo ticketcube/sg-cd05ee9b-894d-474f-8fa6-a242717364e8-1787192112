@@ -36,7 +36,7 @@ const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export default AppleLogo;
+export default AppleIcon;
 
 export default function AuthDialog({ isOpen, onClose, title = "Welcome to OnesToWatch", description }: AuthDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
