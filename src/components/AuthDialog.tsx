@@ -20,9 +20,8 @@ type AuthMode = "signin" | "signup";
 const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg
         viewBox="0 0 24 24"
-        fill="white"
+        fill="currentColor"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ backgroundColor: "black", borderRadius: "4px" }}
         {...props}
     >
         <path d="M19.33,12.25c0,1.45-0.5,2.78-1.5,3.75c-1,1-2.33,1.5-3.83,1.5c-0.88,0-1.75-0.25-2.5-0.75 
@@ -243,8 +242,7 @@ export default function AuthDialog({ isOpen, onClose, title = "Welcome to OnesTo
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <AppleIcon className="w-10 h-10" />
-                  Continue with Apple
+                                      <AppleIcon className="w-5 h-5 flex-shrink-0" />                  Continue with Apple
                 </>
               )}
             </Button>
