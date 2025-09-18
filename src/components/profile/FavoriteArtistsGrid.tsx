@@ -127,15 +127,11 @@ export function FavoriteArtistsGrid() {
                 </Badge>
                 
                 <div className="flex space-x-2">
-                  {artist.artist_videolink && (
-                    <Button size="sm" variant="outline" className="text-xs px-2 py-1 h-7 border-gray-200 text-gray-600 hover:bg-gray-100">
-                      <Play className="w-3 h-3 mr-1" />
-                      Watch
-                    </Button>
-                  )}
-                  <Button size="sm" variant="outline" disabled className="text-xs px-2 py-1 h-7 border-gray-200 text-gray-400">
+                  
+    
+                          <Button size="med" variant="outline" disabled className="text-med px-2 py-1 h-7 border-gray-200 text-purple-deep">
                     <ExternalLink className="w-3 h-3 mr-1" />
-                    Tickets
+                    Ticket Rewards
                   </Button>
                 </div>
               </div>
