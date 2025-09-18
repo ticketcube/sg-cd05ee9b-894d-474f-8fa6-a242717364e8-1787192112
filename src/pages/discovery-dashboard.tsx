@@ -105,8 +105,8 @@ const DiscoveryDashboard = () => {
                 <div className="max-w-6xl mx-auto">
                     <ModuleCard
                         image="https://cdn.brandfolder.io/364H2QNG/at/rq4k9zrphcjp43xcbhng5m58/Zines_Photo.png"
-                        title="Rising Stars"
-                        subtitle="Powered by OnesToWatch"
+                        title="OnesToWatch Zine Collection"
+                        subtitle="Earn 240 points by September 28th and we'll send you all 8 issues!"
                         href="/september/rewards"
                     />
                 </div>
