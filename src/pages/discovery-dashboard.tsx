@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 // Component Imports
 import CombinedDashboardTop from '@/components/dashboard/CombinedDashboardTop';
-import WeeklyListCard from '@/components/dashboard/WeeklyListCard';
+import RewardsCardCard from '@/components/dashboard/WeeklyListCard';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import { Button } from '@/components/ui/button';
