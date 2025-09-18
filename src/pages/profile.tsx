@@ -34,18 +34,7 @@ export default function ProfilePage() {
             <div className="min-h-screen bg-white">
                 <div className="max-w-4xl mx-auto px-1 py-1">
                     {/* Header */}
-                    <div className="text-center mb-6">
-                        <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1 mb-4">
-                            <User className="w-4 h-4 text-black" />
-                            <span className="text-black font-medium text-sm">Your Profile</span>
-                        </div>
-
-                       
-
-                        <p className="text-sm sm:text-base text-gray-600">
-                            Manage your account, complete surveys, and explore your favorite artists
-                        </p>
-                    </div>
+                   
 
                     {/* Profile Card - Compact */}
                     <div className="mb-8">
