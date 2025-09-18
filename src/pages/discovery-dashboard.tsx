@@ -112,22 +112,7 @@ const DiscoveryDashboard = () => {
                 </div>
                 
             </div>
-            {/* CTA Button */}
-            <div className="flex justify-center pt-1">
-                <Link href="/september/rewards">
-                    <Button
-                        size="sm"
-                        className="bg-purple-med hover:bg-purple-lit text-white font-semibold px-4 py-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                    >
-                        <span className="flex items-center space-x-1">
-                            <Star className="w-3.5 h-3.5 fill-current" />
-                            <span className="text-xs">Watch & Earn</span>
-                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-200" />
-                        </span>
-                    </Button>
-                </Link>
-            </div>
-        </div>
+            
         </div>
     );
 };
