@@ -67,7 +67,7 @@ export default function CombinedDashboardTop({
                     <div className="flex flex-col items-center text-center">
                         <div className="flex items-center gap-1 mb-1">
                             <Sparkles className="w-6 h-6 text-purple-deep" />
-                            <span className="text-lg font-bold text-purple-deep">Disovery Rewards Dashboard</span>
+                            <span className="text-2xl font-bold text-purple-deep">Discovery Rewards Dashboard</span>
                         </div>
                         <h1 className="text-lg font-bold text-black">
                             Welcome back, {profile?.username || 'Explorer'}
