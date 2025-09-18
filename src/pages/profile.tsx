@@ -40,9 +40,7 @@ export default function ProfilePage() {
                             <span className="text-black font-medium text-sm">Your Profile</span>
                         </div>
 
-                        <h1 className="text-2xl sm:text-3xl font-bold text-black mb-2">
-                            Welcome, {profile?.username || 'User'}
-                        </h1>
+                       
 
                         <p className="text-sm sm:text-base text-gray-600">
                             Manage your account, complete surveys, and explore your favorite artists
