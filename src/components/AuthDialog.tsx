@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { LogIn, Mail, Eye, EyeOff } from "lucide-react";
+import { authService } from '@/services/authService';
 
 interface AuthDialogProps {
   isOpen: boolean;
