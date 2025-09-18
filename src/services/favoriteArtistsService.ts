@@ -7,7 +7,8 @@ export interface FavoriteArtist {
   artist_home: string;
   artist_image: string | null;
   artist_videolink: string | null;
-  engagementCount: number;
+  x_quadrant: number;
+  y_quadrant: number;
 }
 
 export const favoriteArtistsService = {
