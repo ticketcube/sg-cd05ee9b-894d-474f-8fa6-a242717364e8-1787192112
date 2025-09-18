@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { User, Mail, Key, Edit, Save, X } from "lucide-react";
+import { User, Mail, Key, Edit, Save, X, Shield, Settings } from "lucide-react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -22,9 +22,12 @@ export function UserProfileCard() {
 
     if (!profile || !user) {
         return (
-            <Card className="bg-white border border-gray-100 shadow-sm">
-                <CardContent className="flex items-center justify-center p-4 text-gray-400 text-sm animate-pulse">
-                    Loading...
+            <Card className="bg-white border border-gray-200 shadow-sm">
+                <CardContent className="flex items-center justify-center p-8 text-gray-400 animate-pulse">
+                    <div className="text-center">
+                        <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                        <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+                    </div>
                 </CardContent>
             </Card>
         );
@@ -76,125 +79,153 @@ export function UserProfileCard() {
     };
 
     return (
-
-
-
-        <Card className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
-            <CardHeader className="pb-1">
-                <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-medium text-black">
-                    <Avatar className="h-8 w-8 bg-gray-100 border border-gray-200">
-                        <AvatarFallback className="text-black font-semibold text-xs">
-                            {initials}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 flex items-center justify-between">
-                        <span>Your Profile</span>
-                        <Badge className="bg-black text-white border-0 px-2 py-0.5 text-[10px] sm:text-xs">
-                            {profile.total_points || 0} pts
-                        </Badge>
-                    </div>
+        <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
+            <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-xl font-semibold text-gray-900">
+                    <Settings className="h-6 w-6 text-gray-500" />
+                    Account Settings
                 </CardTitle>
             </CardHeader>
 
-            <CardContent className="pt-0">
-                <div className="grid grid-cols-2 gap-2">
-                    {/* Username */}
-                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-100">
-                        <User className="h-3 w-3 text-gray-400 flex-shrink-0" />
-                        <div className="flex-1">
-                            <span className="text-[10px] text-gray-500 block">Username</span>
-                            {isEditingUsername ? (
-                                <div className="flex gap-1 items-center">
-                                    <Input
-                                        value={newUsername}
-                                        onChange={(e) => setNewUsername(e.target.value)}
-                                        className="h-7 text-xs flex-1"
-                                    />
-                                    <Button
-                                        size="sm"
-                                        onClick={handleUsernameSave}
-                                        disabled={isSaving}
-                                        className="h-7 px-2 bg-black hover:bg-gray-800"
-                                    >
-                                        <Save className="h-3 w-3" />
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={handleUsernameCancel}
-                                        className="h-7 px-2"
-                                    >
-                                        <X className="h-3 w-3" />
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-between">
-                                    <p className="text-black text-xs truncate">
-                                        {profile.username || "Not set"}
-                                    </p>
-                                    <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={() => setIsEditingUsername(true)}
-                                        className="h-7 px-1 text-gray-500 hover:text-black"
-                                    >
-                                        <Edit className="h-3 w-3" />
-                                    </Button>
-                                </div>
-                            )}
+            <CardContent className="space-y-6">
+                {/* Profile Header */}
+                <div className="flex items-center gap-4 p-6 bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-gray-100">
+                    <Avatar className="h-16 w-16 bg-gradient-to-br from-purple-500 to-pink-500 border-4 border-white shadow-lg">
+                        <AvatarFallback className="text-white font-bold text-xl bg-transparent">
+                            {initials}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                        <h3 className="text-2xl font-bold text-gray-900">
+                            {profile.username || "Music Lover"}
+                        </h3>
+                        <p className="text-gray-600 mt-1">{user.email}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                            <Badge className="bg-purple-100 text-purple-700 border-purple-200 font-medium">
+                                <Shield className="w-3 h-3 mr-1" />
+                                Verified User
+                            </Badge>
+                            <Badge variant="outline" className="border-gray-300 text-gray-600">
+                                {profile.total_points || 0} Points
+                            </Badge>
                         </div>
                     </div>
+                </div>
 
-                    {/* Email */}
-                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-100">
-                        <Mail className="h-3 w-3 text-gray-400 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                            <span className="text-[10px] text-gray-500 block">Email</span>
-                            <p className="text-black text-xs truncate">{user.email}</p>
-                        </div>
-                    </div>
-
-                    {/* Password */}
-                    <div className="col-span-2 flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-100">
-                        <Key className="h-3 w-3 text-gray-400 flex-shrink-0" />
-                        <div className="flex-1 flex justify-between items-center">
-                            <div>
-                                <span className="text-[10px] text-gray-500 block">Password</span>
-                                <p className="text-black text-xs">••••••••</p>
+                {/* Settings Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Username Section */}
+                    <div className="space-y-3">
+                        <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            Username
+                        </Label>
+                        {isEditingUsername ? (
+                            <div className="flex gap-2">
+                                <Input
+                                    value={newUsername}
+                                    onChange={(e) => setNewUsername(e.target.value)}
+                                    className="flex-1 h-10 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                                    placeholder="Enter username"
+                                />
+                                <Button
+                                    size="sm"
+                                    onClick={handleUsernameSave}
+                                    disabled={isSaving}
+                                    className="h-10 px-4 bg-purple-600 hover:bg-purple-700 text-white"
+                                >
+                                    <Save className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={handleUsernameCancel}
+                                    className="h-10 px-4 border-gray-300 hover:bg-gray-50"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
                             </div>
+                        ) : (
+                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <span className="flex-1 text-gray-900 font-medium">
+                                    {profile.username || "Not set"}
+                                </span>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setIsEditingUsername(true)}
+                                    className="h-8 px-3 text-gray-500 hover:text-gray-900 hover:bg-white"
+                                >
+                                    <Edit className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Email Section */}
+                    <div className="space-y-3">
+                        <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <Mail className="h-4 w-4" />
+                            Email Address
+                        </Label>
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="flex-1 text-gray-900 font-medium truncate">
+                                {user.email}
+                            </span>
+                            <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
+                                Verified
+                            </Badge>
+                        </div>
+                    </div>
+
+                    {/* Password Section */}
+                    <div className="space-y-3 md:col-span-2">
+                        <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <Key className="h-4 w-4" />
+                            Password
+                        </Label>
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="flex-1 text-gray-900 font-medium">
+                                ••••••••••••
+                            </span>
                             <Dialog>
                                 <DialogTrigger asChild>
                                     <Button
+                                        variant="outline"
                                         size="sm"
-                                        variant="link"
-                                        className="h-7 px-1 text-xs text-gray-600 hover:text-black"
+                                        className="h-8 px-4 border-gray-300 hover:bg-white text-gray-700"
                                     >
-                                        Reset
+                                        Reset Password
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="sm:max-w-sm mx-2 bg-white border border-gray-200">
+                                <DialogContent className="sm:max-w-md bg-white border border-gray-200 shadow-xl">
                                     <DialogHeader>
-                                        <DialogTitle className="text-black text-sm">
-                                            Reset Password
+                                        <DialogTitle className="text-xl font-semibold text-gray-900">
+                                            Reset Your Password
                                         </DialogTitle>
                                     </DialogHeader>
-                                    <div className="space-y-2 pt-2">
-                                        <Label className="text-xs text-black">Email</Label>
-                                        <Input
-                                            type="email"
-                                            value={resetEmail}
-                                            onChange={(e) => setResetEmail(e.target.value)}
-                                            className="bg-white border-gray-200 text-black h-8 text-xs"
-                                        />
-                                        <p className="text-[10px] text-gray-500">
-                                            We'll send a secure link.
+                                    <div className="space-y-4 pt-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-medium text-gray-700">
+                                                Email Address
+                                            </Label>
+                                            <Input
+                                                type="email"
+                                                value={resetEmail}
+                                                onChange={(e) => setResetEmail(e.target.value)}
+                                                className="h-10 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                                                placeholder="Enter your email"
+                                            />
+                                        </div>
+                                        <p className="text-sm text-gray-600">
+                                            We'll send a secure reset link to your email address.
                                         </p>
                                         <Button
                                             onClick={handlePasswordReset}
                                             disabled={isResettingPassword || !resetEmail}
-                                            className="w-full bg-black hover:bg-gray-800 text-white h-8 text-xs"
+                                            className="w-full h-10 bg-purple-600 hover:bg-purple-700 text-white font-medium"
                                         >
-                                            {isResettingPassword ? "Sending..." : "Send Link"}
+                                            {isResettingPassword ? "Sending..." : "Send Reset Link"}
                                         </Button>
                                     </div>
                                 </DialogContent>
@@ -204,6 +235,5 @@ export function UserProfileCard() {
                 </div>
             </CardContent>
         </Card>
-
     );
 }
