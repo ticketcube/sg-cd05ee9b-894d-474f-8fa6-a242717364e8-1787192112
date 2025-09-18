@@ -30,18 +30,19 @@ export default async function handler(
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
-    // First, get user's favorite artists based on quadrant ratings
-    // Only include artists with ratings > 0 for both x and y quadrants
-    // Sort by x_quadrant ascending (1 is best/top), then y_quadrant ascending for ties
+    // Get user's favorite artists based on quadrant ratings
+    // Include all artists with valid quadrant ratings (non-null values)
+    // Sort by x_quadrant descending (1 is best/top), then y_quadrant descending for ties
     const { data: userEngagements, error: engagementsError } = await supabaseAdmin
       .from('user_engagements')
       .select('artist_uuid, x_quadrant, y_quadrant')
       .eq('user_id', user.id)
-      .gt('x_quadrant', 0)
-      .gt('y_quadrant', 0)
+      .eq('engagement_type', 'quadrant')
+      .not('x_quadrant', 'is', null)
+      .not('y_quadrant', 'is', null)
       .not('artist_uuid', 'is', null)
-      .order('x_quadrant', { ascending: true })  // 1 is best, ascending order
-      .order('y_quadrant', { ascending: true })  // Tiebreaker: y_quadrant ascending
+      .order('x_quadrant', { ascending: false })  // 1 is best, descending order
+      .order('y_quadrant', { ascending: false })  // Tiebreaker: y_quadrant descending
       .limit(12);
 
     if (engagementsError) {
