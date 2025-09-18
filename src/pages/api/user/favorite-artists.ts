@@ -38,6 +38,7 @@ export default async function handler(
         artist_uuid,
         x_quadrant,
         y_quadrant,
+        artist_name,
         artist_image
         )
       `)
