@@ -113,7 +113,7 @@ const DiscoveryDashboard = () => {
                         <Link href="/september/rewards">
                             <Button
                                 size="sm"
-                                className="bg-purple-med hover:bg-purple-lit text-white font-semibold px-4 py-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
+                                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
                             >
                                 <span className="flex items-center space-x-1">
                                     <Star className="w-3.5 h-3.5 fill-current" />
