@@ -15,7 +15,7 @@ export default function ModuleCard({ image, title, subtitle, href = "#" }: Modul
         <Card className="overflow-hidden shadow-lg rounded-2xl">
             <CardContent className="p-0">
                 <div className="p-4 text-center bg-white">
-                    <h2 className="text-2xl sm:text-xl font-bold text-purple-dee0">
+                    <h2 className="text-2xl sm:text-xl font-bold text-purple-deep">
                         {title}
                     </h2>
                     <p className="text-lg text-purple-med mt-1">{subtitle}</p>
