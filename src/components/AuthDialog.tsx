@@ -18,14 +18,14 @@ interface AuthDialogProps {
 type AuthMode = "signin" | "signup";
 
 const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="white"
-    xmlns="http://www.w3.org/2000/svg"
-    style={{ backgroundColor: "black", borderRadius: "4px" }}
-    {...props}
-  >
-    <path d="M19.33,12.25c0,1.45-0.5,2.78-1.5,3.75c-1,1-2.33,1.5-3.83,1.5c-0.88,0-1.75-0.25-2.5-0.75 
+    <svg
+        viewBox="0 0 24 24"
+        fill="white"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ backgroundColor: "black", borderRadius: "4px" }}
+        {...props}
+    >
+        <path d="M19.33,12.25c0,1.45-0.5,2.78-1.5,3.75c-1,1-2.33,1.5-3.83,1.5c-0.88,0-1.75-0.25-2.5-0.75 
       c-0.75-0.5-1.63-1.25-2.63-2.25c-1.09-1.09-1.94-2.25-2.56-3.5C6,10.67,5.67,9.33,5.67,8c0-2.33,0.88-4.25,2.63-5.75 
       C9.33,1.17,10.83,0.5,12.5,0.5c0.88,0,1.83,0.33,2.83,1c0.91,0.61,1.58,1.3,2,2.09c-1.17,0.5-2.17,1.25-3,2.25 
       c-0.83,1-1.25,2.17-1.25,3.5c0,1.25,0.33,2.33,1,3.25C14.75,13.5,15.42,13.83,16.25,14c0.17-0.92,0.25-1.88,0.25-2.88 
@@ -33,10 +33,9 @@ const AppleIcon = (props: React.SVGProps<SVGSVGElement>) => (
       M12.08,3.25c-0.25,0.5-0.42,1-0.5,1.5 
       C11.5,5.25,11.5,5.75,11.5,6.25c0,0.83,0.25,1.58,0.75,2.25s1.17,1.25,2,1.75
       c0.33-0.42,0.58-0.88,0.75-1.38C15.17,8.42,15.25,8,15.25,7.5c0-1.5-0.5-2.75-1.5-3.75C12.83,2.83,12.17,3.08,12.08,3.25z"/>
-  </svg>
+    </svg>
 );
 
-export default AppleIcon;
 
 export default function AuthDialog({ isOpen, onClose, title = "Welcome to OnesToWatch", description }: AuthDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
