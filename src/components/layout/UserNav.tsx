@@ -138,15 +138,15 @@ export default function UserNav() {
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
           <div className="flex flex-col space-y-2 pt-4">
-             <Link 
-               href="/discovery-dashboard" 
+             <Link
+               href="/september/rewards" 
                className="text-sm px-2 py-1.5 hover:bg-accent rounded-md"
                onClick={handleNavigationClick}
              >
                Discovery
              </Link>
              <Link 
-               href="/september/rewards" 
+                        href="/discovery-dashboard" 
                className="text-sm px-2 py-1.5 hover:bg-accent rounded-md"
                onClick={handleNavigationClick}
              >
