@@ -30,49 +30,56 @@ export default async function handler(
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
-    // Get user's favorite artists based on quadrant ratings
+    // First, get user's favorite artists based on quadrant ratings
     // Only include artists with ratings > 0 for both x and y quadrants
-    // Sort by x_quadrant descending (1 is best/top), then y_quadrant descending for ties
-    const { data: favoriteArtists, error: ratingsError } = await supabaseAdmin
+    // Sort by x_quadrant ascending (1 is best/top), then y_quadrant ascending for ties
+    const { data: userEngagements, error: engagementsError } = await supabaseAdmin
       .from('user_engagements')
-      .select(`
-        artist_uuid,
-        x_quadrant,
-        y_quadrant,
-        artists!user_engagements_artist_uuid_fkey (
-          uuid,
-          artist_name,
-          artist_genre,
-          artist_home,
-          artist_image,
-          artist_videolink
-        )
-      `)
+      .select('artist_uuid, x_quadrant, y_quadrant')
       .eq('user_id', user.id)
       .gt('x_quadrant', 0)
       .gt('y_quadrant', 0)
       .not('artist_uuid', 'is', null)
-      .order('x_quadrant', { ascending: false })  // 1 is best, descending order
-      .order('y_quadrant', { ascending: false })  // Tiebreaker: y_quadrant descending
+      .order('x_quadrant', { ascending: true })  // 1 is best, ascending order
+      .order('y_quadrant', { ascending: true })  // Tiebreaker: y_quadrant ascending
       .limit(12);
 
-    if (ratingsError) {
-      console.error('Error fetching user engagements:', ratingsError);
-      return res.status(500).json({ error: 'Failed to fetch favorite artists' });
+    if (engagementsError) {
+      console.error('Error fetching user engagements:', engagementsError);
+      return res.status(500).json({ error: 'Failed to fetch user ratings' });
     }
 
-    if (!favoriteArtists || favoriteArtists.length === 0) {
+    if (!userEngagements || userEngagements.length === 0) {
       return res.status(200).json({ artists: [] });
     }
 
-    // Transform the data to match the expected format
-    const enrichedArtists = favoriteArtists
-      .filter(rating => rating.artists) // Ensure artist data exists
-      .map(rating => ({
-        ...rating.artists,
-        x_quadrant: rating.x_quadrant,
-        y_quadrant: rating.y_quadrant
-      }));
+    // Get the artist UUIDs to fetch artist details
+    const artistUuids = userEngagements.map(e => e.artist_uuid);
+
+    // Now fetch artist details for those UUIDs
+    const { data: artistsData, error: artistsError } = await supabaseAdmin
+      .from('artists')
+      .select('uuid, artist_name, artist_genre, artist_home, artist_image, artist_videolink')
+      .in('uuid', artistUuids);
+
+    if (artistsError) {
+      console.error('Error fetching artists data:', artistsError);
+      return res.status(500).json({ error: 'Failed to fetch artist details' });
+    }
+
+    // Combine engagement data with artist data, maintaining sort order
+    const enrichedArtists = userEngagements
+      .map(engagement => {
+        const artistData = artistsData?.find(artist => artist.uuid === engagement.artist_uuid);
+        if (!artistData) return null;
+        
+        return {
+          ...artistData,
+          x_quadrant: engagement.x_quadrant,
+          y_quadrant: engagement.y_quadrant
+        };
+      })
+      .filter(artist => artist !== null); // Remove any artists not found
 
     return res.status(200).json({ artists: enrichedArtists });
 
