@@ -121,7 +121,8 @@ export function FavoriteArtistsGrid() {
                 </div>
               </div>
               
-             
+              <div className="flex items-center justify-between">
+               
                 
                 <div className="flex space-x-2">
                   <Button size="sm" variant="outline" disabled className="text-xs px-2 py-1 h-7 border-gray-200 text-purple-deep">
