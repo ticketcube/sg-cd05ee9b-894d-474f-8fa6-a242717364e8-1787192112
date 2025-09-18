@@ -11,8 +11,8 @@ import { useUserProfile } from "@/contexts/UserProfileContext";
 
 const SURVEY_QUESTION = {
     id: "overall_feedback",
-    question: "How would you rate your overall experience with OTW Chart and what improvements would you suggest?",
-    placeholder: "Share your thoughts on the platform's usability, features, value, and any suggestions for improvement..."
+    question: "On a scale of 1-10, how likely would you be to share this app with your friends?",
+    placeholder: "Enter a number between 1-10 and please share any thoughts on the platform's usability, features, value, and any suggestions for improvement..."
 };
 
 export function MvpSurvey() {
