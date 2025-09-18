@@ -103,7 +103,7 @@ const DiscoveryDashboard = () => {
             {/* Weekly List Card - Takes remaining space without forcing full screen height */}
             <div className="px-2 pb-4">
                 <div className="max-w-6xl mx-auto">
-                    <WeeklyListCard />
+                    <RewardsCard />
                 </div>
             </div>
         </div>
