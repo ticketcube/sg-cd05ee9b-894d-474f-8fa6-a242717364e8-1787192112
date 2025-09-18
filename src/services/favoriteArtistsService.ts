@@ -3,10 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface FavoriteArtist {
   uuid: string;
   artist_name: string;
-  artist_genre: string;
-  artist_home: string;
   artist_image: string | null;
-  artist_videolink: string | null;
   x_quadrant: number;
   y_quadrant: number;
 }
