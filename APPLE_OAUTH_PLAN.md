@@ -45,6 +45,8 @@ This key is used to sign communication between Supabase and Apple.
 
 Your Team ID is located in the top-right corner of the Apple Developer portal, under your account name.
 
+DGA47CWYQ6
+
 ### Step 4: Configure the Apple Provider in Supabase
 
 1.  Go to your Supabase Project Dashboard.
