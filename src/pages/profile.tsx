@@ -23,18 +23,12 @@ export default function ProfilePage() {
 
     return (
   <>
-    <Head>
-      <title>Profile - OTW Chart</title>
-      <meta
-        name="description"
-        content="Your personal OTW Chart profile, survey, and favorite artists."
-      />
-    </Head>
+    
 
         return (
         <>
           <Head>
-            <title>Profile - OTW Chart</title>
+            <title>Profile</title>
             <meta
               name="description"
               content="Your personal OTW Chart profile, survey, and favorite artists."
