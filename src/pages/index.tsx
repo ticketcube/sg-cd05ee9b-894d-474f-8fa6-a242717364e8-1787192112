@@ -143,11 +143,7 @@ export default function HomePage() {
                         </div>
                     </div>
 
-                    {/* Tab Content */}
-                    <div className="transition-all duration-300">
-                        {activeTab === "discover" && <DiscoverMoreTab />}
-                        {activeTab === "rewards" && <MoreRewardsTab />}
-                    </div>
+                   
                 </div>
             </div>
 
@@ -158,77 +154,8 @@ export default function HomePage() {
     );
 }
 
-/* -------------------------------
-Tab Components
--------------------------------- */
-
-function DiscoverMoreTab() {
-    return (
-        <div className="grid gap-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
-                <div className="flex items-start gap-6">
-                    <div className="w-10 h-10 rounded-xl bg-purple-lit flex items-center justify-center shadow-lg shadow-green-500/25">
-                        <Star className="w-6 h-6 text-white" />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-black text-lg mb-1">
-                            Discover Amazing New Artists
-                        </h3>
-
-                        <p className="text-gray-700 text-sm pb-4">
-                            Explore different ways to find your next favorite artist.
-                        </p>
-
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            <Badge variant="outline" className="border-gray-500 text-black px-3 py-1">
-                                Weekly Artists Watch, Vote & Earn List
-                            </Badge>
-                            <Badge variant="outline" className="border-gray-500 text-black px-3 py-1">
-                                Global Vibes Discovery Matrix
-                            </Badge>
-                            <Badge variant="outline" className="border-gray-500 text-black px-3 py-1">
-                                OTW Trending Artists Chart
-                            </Badge>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 
 
-function MoreRewardsTab() {
-    return (
-        <div className="grid gap-6">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-gray-300 hover:shadow-sm transition-all">
-                <div className="flex items-start gap-6">
-                    <div className="w-10 h-10 rounded-xl bg-purple-lit flex items-center justify-center shadow-lg shadow-green-500/25">
-                        <Trophy className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-black text-lg mb-1">
-                            We Reward Discovery
-                        </h3>
-                        <p className="text-gray-700 text-sm pb-4">
-                            Earn points for exclusive merch, insider access and even free tix!
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                            <Badge variant="outline" className="border-gray-500 text-black px-3 py-1">
-                                September: 240 Points = 9 OTW Zines
-                            </Badge>
-                            <Badge variant="outline" className="border-gray-500 text-black px-3 py-1">
-                                October: Coming Soon!
-                            </Badge>
-                            <Badge variant="outline" className="border-gray-500 text-black px-3 py-1">
-                                November: Coming Soon!
-                            </Badge>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
+
+
