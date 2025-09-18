@@ -97,6 +97,20 @@ const DiscoveryDashboard = () => {
                     weeksActive={engagementHistory?.weekly_summaries?.length || 0}
                 />
             </div>
+            <div className="flex justify-center pt-1">
+                <Link href="/september/rewards">
+                    <Button
+                        size="lg"
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
+                    >
+                        <span className="flex items-center space-x-1">
+                            <Star className="w-3.5 h-3.5 fill-current" />
+                            <span className="text-xs">Watch & Earn</span>
+                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-200" />
+                        </span>
+                    </Button>
+                </Link>
+            </div>
 
             {/* Weekly List Card - Takes remaining space without forcing full screen height */}
             <div className="px-2 pb-2">
@@ -109,20 +123,7 @@ const DiscoveryDashboard = () => {
                     />
                     
                     {/* CTA Button */}
-                    <div className="flex justify-center pt-1">
-                        <Link href="/september/rewards">
-                            <Button
-                                size="sm"
-                                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
-                            >
-                                <span className="flex items-center space-x-1">
-                                    <Star className="w-3.5 h-3.5 fill-current" />
-                                    <span className="text-xs">Watch & Earn</span>
-                                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-200" />
-                                </span>
-                            </Button>
-                        </Link>
-                    </div>
+                   
                 </div>
             </div>
             
