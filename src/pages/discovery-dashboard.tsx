@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
@@ -9,7 +7,7 @@ import ModuleCard from '@/components/dashboard/RewardsCard';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import { Button } from '@/components/ui/button';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Star, ArrowRight } from 'lucide-react';
 
 // Hook & Service Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
@@ -101,7 +99,7 @@ const DiscoveryDashboard = () => {
             </div>
 
             {/* Weekly List Card - Takes remaining space without forcing full screen height */}
-            <div className="px-2 pb-4">
+            <div className="px-2 pb-2">
                 <div className="max-w-6xl mx-auto">
                     <ModuleCard
                         image="https://cdn.brandfolder.io/364H2QNG/at/rq4k9zrphcjp43xcbhng5m58/Zines_Photo.png"
@@ -109,8 +107,23 @@ const DiscoveryDashboard = () => {
                         subtitle="Earn 240 points by September 28th and we'll send you all 8 issues!"
                         href="/september/rewards"
                     />
+                    
+                    {/* CTA Button */}
+                    <div className="flex justify-center pt-1">
+                        <Link href="/september/rewards">
+                            <Button
+                                size="sm"
+                                className="bg-purple-med hover:bg-purple-lit text-white font-semibold px-4 py-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
+                            >
+                                <span className="flex items-center space-x-1">
+                                    <Star className="w-3.5 h-3.5 fill-current" />
+                                    <span className="text-xs">Watch & Earn</span>
+                                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-200" />
+                                </span>
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
-                
             </div>
             
         </div>
@@ -118,4 +131,3 @@ const DiscoveryDashboard = () => {
 };
 
 export default DiscoveryDashboard;
-
