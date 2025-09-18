@@ -33,12 +33,12 @@ export default async function handler(
     // Only include artists with ratings > 0 for both x and y quadrants
     // Sort by x_quadrant descending (1 is best/top), then y_quadrant descending for ties
     const { data: favoriteArtists, error: ratingsError } = await supabaseAdmin
-      .from('user_ratings')
+      .from('user_engagements')
       .select(`
         artist_uuid,
         x_quadrant,
         y_quadrant,
-        artists!user_ratings_artist_uuid_fkey (
+        artists!user_engagements_artist_uuid_fkey (
           uuid,
           artist_name,
           artist_genre,
@@ -56,7 +56,7 @@ export default async function handler(
       .limit(12);
 
     if (ratingsError) {
-      console.error('Error fetching user ratings:', ratingsError);
+      console.error('Error fetching user engagements:', ratingsError);
       return res.status(500).json({ error: 'Failed to fetch favorite artists' });
     }
 
