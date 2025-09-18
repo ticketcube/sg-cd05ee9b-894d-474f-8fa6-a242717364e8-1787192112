@@ -76,42 +76,68 @@ export function UserProfileCard() {
     };
 
     return (
+
+
+
         <Card className="bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-3 text-md sm:text-lg font-medium text-black">
-                    <Avatar className="h-10 w-10 bg-gray-100 border border-gray-200">
-                        <AvatarFallback className="text-black font-semibold text-sm">{initials}</AvatarFallback>
+            <CardHeader className="pb-1">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-medium text-black">
+                    <Avatar className="h-8 w-8 bg-gray-100 border border-gray-200">
+                        <AvatarFallback className="text-black font-semibold text-xs">
+                            {initials}
+                        </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm sm:text-base">Account Settings</span>
-                            <Badge className="bg-black text-white border-0 px-2 py-0.5 text-xs sm:text-sm">{profile.total_points || 0} pts</Badge>
-                        </div>
+                    <div className="flex-1 flex items-center justify-between">
+                        <span>Account</span>
+                        <Badge className="bg-black text-white border-0 px-2 py-0.5 text-[10px] sm:text-xs">
+                            {profile.total_points || 0} pts
+                        </Badge>
                     </div>
                 </CardTitle>
             </CardHeader>
 
             <CardContent className="pt-0">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                     {/* Username */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-all">
-                        <User className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                        <div className="flex-1 w-full">
-                            <span className="text-xs sm:text-sm font-medium text-gray-600 block mb-1">Username</span>
+                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-100">
+                        <User className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                        <div className="flex-1">
+                            <span className="text-[10px] text-gray-500 block">Username</span>
                             {isEditingUsername ? (
-                                <div className="flex gap-1 sm:gap-2 items-center w-full">
-                                    <Input value={newUsername} onChange={(e) => setNewUsername(e.target.value)} className="h-8 text-sm flex-1" placeholder="Enter username" />
-                                    <Button size="sm" onClick={handleUsernameSave} disabled={isSaving} className="h-8 px-2 bg-black hover:bg-gray-800">
-                                        <Save className="h-3 w-3 mr-1" /> <span className="hidden sm:inline">Save</span>
+                                <div className="flex gap-1 items-center">
+                                    <Input
+                                        value={newUsername}
+                                        onChange={(e) => setNewUsername(e.target.value)}
+                                        className="h-7 text-xs flex-1"
+                                    />
+                                    <Button
+                                        size="sm"
+                                        onClick={handleUsernameSave}
+                                        disabled={isSaving}
+                                        className="h-7 px-2 bg-black hover:bg-gray-800"
+                                    >
+                                        <Save className="h-3 w-3" />
                                     </Button>
-                                    <Button size="sm" variant="outline" onClick={handleUsernameCancel} className="h-8 px-2">
-                                        <X className="h-3 w-3 mr-1" /> <span className="hidden sm:inline">Cancel</span>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={handleUsernameCancel}
+                                        className="h-7 px-2"
+                                    >
+                                        <X className="h-3 w-3" />
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="flex items-center justify-between w-full">
-                                    <p className="text-black font-medium text-sm truncate">{profile.username || "Not set"}</p>
-                                    <Button size="sm" variant="ghost" onClick={() => setIsEditingUsername(true)} className="h-8 px-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-md">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-black text-xs truncate">
+                                        {profile.username || "Not set"}
+                                    </p>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => setIsEditingUsername(true)}
+                                        className="h-7 px-1 text-gray-500 hover:text-black"
+                                    >
                                         <Edit className="h-3 w-3" />
                                     </Button>
                                 </div>
@@ -120,38 +146,55 @@ export function UserProfileCard() {
                     </div>
 
                     {/* Email */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                        <div className="flex-1 w-full">
-                            <span className="text-xs sm:text-sm font-medium text-gray-600 block mb-1">Email</span>
-                            <p className="text-black text-sm truncate">{user.email}</p>
+                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-100">
+                        <Mail className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                            <span className="text-[10px] text-gray-500 block">Email</span>
+                            <p className="text-black text-xs truncate">{user.email}</p>
                         </div>
                     </div>
 
                     {/* Password */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <Key className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                        <div className="flex-1 flex justify-between items-center min-w-0 w-full">
+                    <div className="col-span-2 flex items-center gap-2 p-2 bg-gray-50 rounded border border-gray-100">
+                        <Key className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                        <div className="flex-1 flex justify-between items-center">
                             <div>
-                                <span className="text-xs sm:text-sm font-medium text-gray-600 block mb-1">Password</span>
-                                <p className="text-black text-sm">••••••••</p>
+                                <span className="text-[10px] text-gray-500 block">Password</span>
+                                <p className="text-black text-xs">••••••••</p>
                             </div>
                             <Dialog>
                                 <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline" className="h-8 px-2 text-gray-600 hover:bg-gray-100 hover:text-black">
-                                        <Key className="h-3 w-3 mr-1" /> Reset
+                                    <Button
+                                        size="sm"
+                                        variant="link"
+                                        className="h-7 px-1 text-xs text-gray-600 hover:text-black"
+                                    >
+                                        Reset
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent className="sm:max-w-sm mx-2 bg-white border border-gray-200">
                                     <DialogHeader>
-                                        <DialogTitle className="text-black">Reset Password</DialogTitle>
+                                        <DialogTitle className="text-black text-sm">
+                                            Reset Password
+                                        </DialogTitle>
                                     </DialogHeader>
                                     <div className="space-y-2 pt-2">
-                                        <Label className="text-xs sm:text-sm text-black">Email</Label>
-                                        <Input type="email" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} className="bg-white border-gray-200 text-black h-9 text-sm" />
-                                        <p className="text-xs text-gray-500">We'll send you a secure link to reset your password.</p>
-                                        <Button onClick={handlePasswordReset} disabled={isResettingPassword || !resetEmail} className="w-full bg-black hover:bg-gray-800 text-white h-9 text-sm">
-                                            {isResettingPassword ? "Sending..." : "Send Reset Link"}
+                                        <Label className="text-xs text-black">Email</Label>
+                                        <Input
+                                            type="email"
+                                            value={resetEmail}
+                                            onChange={(e) => setResetEmail(e.target.value)}
+                                            className="bg-white border-gray-200 text-black h-8 text-xs"
+                                        />
+                                        <p className="text-[10px] text-gray-500">
+                                            We'll send a secure link.
+                                        </p>
+                                        <Button
+                                            onClick={handlePasswordReset}
+                                            disabled={isResettingPassword || !resetEmail}
+                                            className="w-full bg-black hover:bg-gray-800 text-white h-8 text-xs"
+                                        >
+                                            {isResettingPassword ? "Sending..." : "Send Link"}
                                         </Button>
                                     </div>
                                 </DialogContent>
@@ -161,5 +204,6 @@ export function UserProfileCard() {
                 </div>
             </CardContent>
         </Card>
+
     );
 }
