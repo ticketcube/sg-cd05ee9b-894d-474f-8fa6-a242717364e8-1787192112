@@ -18,7 +18,7 @@ export default function ModuleCard({ image, title, subtitle, href = "#" }: Modul
                     <h2 className="text-2xl sm:text-xl font-bold text-purple-deep">
                         {title}
                     </h2>
-                    <p className="text-lg text-purple-med mt-1">{subtitle}</p>
+                    <p className="text-sm text-purple-med mt-1">{subtitle}</p>
                 </div>
                 <Link href={href} className="block">
                     {/* Big square cover image */}
