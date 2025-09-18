@@ -103,7 +103,12 @@ const DiscoveryDashboard = () => {
             {/* Weekly List Card - Takes remaining space without forcing full screen height */}
             <div className="px-2 pb-4">
                 <div className="max-w-6xl mx-auto">
-                    <RewardsCard />
+                    <ModuleCard
+                        image="/covers/week1.jpg"
+                        title="Rising Stars"
+                        subtitle="Powered by OnesToWatch"
+                        href="/september/rewards"
+                    />
                 </div>
             </div>
         </div>
