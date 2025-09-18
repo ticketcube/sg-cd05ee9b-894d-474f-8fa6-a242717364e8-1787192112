@@ -10,10 +10,13 @@ export interface OAuthRedirectOptions {
   redirectTo?: string;
 }
 
-class AuthService {
-  async signInWithGoogle(options: OAuthRedirectOptions = {}): Promise<{ error: AuthError | null }> {
+export class AuthService {
+  // Google Sign-In
+  async signInWithGoogle(
+    options: OAuthRedirectOptions = {}
+  ): Promise<{ error: AuthError | null }> {
     const redirectTo = options.redirectTo || `${window.location.origin}/auth/callback`;
-    
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -26,20 +29,24 @@ class AuthService {
     });
 
     return { error };
+  }
 
-    async function signInWithApple() {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'apple',
-    options: {
-      redirectTo: `${window.location.origin}/discovery-dashboard`,
-    },
-  });
-  if (error) {
-    console.error('Error signing in with Apple:', error.message);
-    // Optionally, show a toast notification to the user
+  // Apple Sign-In
+  async signInWithApple(
+    options: OAuthRedirectOptions = {}
+  ): Promise<{ error: AuthError | null }> {
+    const redirectTo = options.redirectTo || `${window.location.origin}/discovery-dashboard`;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "apple",
+      options: { redirectTo },
+    });
+
+    if (error) console.error("Error signing in with Apple:", error.message);
+
+    return { error };
   }
 }
-  }
 
 
 
