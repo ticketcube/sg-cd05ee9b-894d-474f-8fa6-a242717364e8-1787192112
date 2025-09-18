@@ -22,7 +22,7 @@ export default function ModuleCard({ image, title, subtitle, href = "#" }: Modul
                 </div>
                 <Link href={href} className="block">
                     {/* Big square cover image */}
-                    <div className="relative w-full aspect-square">
+                    <div className="relative aspect-video w-full overflow-hidden rounded-lg">
                         <Image
                             src={image}
                             alt={title}
