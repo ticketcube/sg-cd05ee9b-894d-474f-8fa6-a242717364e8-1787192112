@@ -24,17 +24,8 @@ export default function ProfilePage() {
     }
 
     return (
-        <
-           
-            <>
-                <Head>
-                    <title>Profile - OTW Chart</title>
-                    <meta
-                        name="description"
-                        content="Your personal OTW Chart profile, survey, and favorite artists."
-                    />
-                </Head>
-
+      
+        
                 <div className="min-h-screen bg-white">
                     <div className="max-w-4xl mx-auto px-2 py-2 space-y-6">
                         {/* Header */}
@@ -59,7 +50,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 </div>
-            </>
+           
             );
 
         </>
