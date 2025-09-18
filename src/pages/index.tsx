@@ -110,42 +110,7 @@ export default function HomePage() {
                 <div className="max-w-6xl mx-auto">
                     <WeeklyListCard />
                 </div>
-            </div>
-
-
-            {/* Tabs Section: Clean, Compact, Black-on-White */}
-            <div className="bg-purple-deep rounded-xl" >
-                <div className="max-w-4xl mx-auto px-4 py-4">
-
-                    {/* Tab Navigation */}
-                    <div className="flex justify-center mb-6">
-                        <div className="flex rounded-md border border-purple-deep bg-purple-deep p-1 shadow-sm">
-                            <button
-                                onClick={() => setActiveTab("discover")}
-                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === "discover"
-                                        ? "bg-purple-med text-white"
-                                        : "text-white hover:bg-gray-100"
-                                    }`}
-                            >
-                                <Compass className="w-4 h-4" />
-                                Discover
-                            </button>
-                            <button
-                                onClick={() => setActiveTab("rewards")}
-                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === "rewards"
-                                    ? "bg-purple-med text-white"
-                                        : "text-white hover:bg-gray-100"
-                                    }`}
-                            >
-                                <Gift className="w-4 h-4" />
-                                Rewards
-                            </button>
-                        </div>
-                    </div>
-
-                   
-                </div>
-            </div>
+            </div>            
 
           
             {/* Signup Dialog */}
