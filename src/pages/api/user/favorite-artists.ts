@@ -31,19 +31,20 @@ export default async function handler(
     }
 
     // Get user's favorite artists based on quadrant ratings
-    // Include all artists with valid quadrant ratings (non-null values)
-    // Sort by x_quadrant descending (1 is best/top), then y_quadrant descending for ties
-    const { data: userEngagements, error: engagementsError } = await supabaseAdmin
-      .from('user_engagements')
-      .select('artist_uuid, x_quadrant, y_quadrant')
-      .eq('user_id', user.id)
-      .eq('engagement_type', 'quadrant')
-      .not('x_quadrant', 'is', null)
-      .not('y_quadrant', 'is', null)
-      .not('artist_uuid', 'is', null)
-      .order('x_quadrant', { ascending: false })  // 1 is best, descending order
-      .order('y_quadrant', { ascending: false })  // Tiebreaker: y_quadrant descending
-      .limit(12);
+  // Include only artists with positive quadrant ratings (x > 0 and y > 0)
+// Sort by x_quadrant descending (1 is best/top), then y_quadrant descending for ties
+const { data: userEngagements, error: engagementsError } = await supabaseAdmin
+  .from('user_engagements')
+  .select('artist_uuid, x_quadrant, y_quadrant')
+  .eq('user_id', user.id)
+  .eq('engagement_type', 'quadrant')
+  .gt('x_quadrant', 0)
+  .gt('y_quadrant', 0)
+  .not('artist_uuid', 'is', null)
+  .order('x_quadrant', { ascending: false })  // 1 is best, descending order
+  .order('y_quadrant', { ascending: false })  // Tiebreaker: y_quadrant descending
+  .limit(12);
+
 
     if (engagementsError) {
       console.error('Error fetching user engagements:', engagementsError);
