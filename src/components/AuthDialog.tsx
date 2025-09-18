@@ -177,11 +177,7 @@ export default function AuthDialog({ isOpen, onClose, title = "Welcome to OnesTo
             </div>
           )}
 
-                  <Button
-                      variant="outline"
-                      className="w-full flex items-center justify-center gap-2"
-                      onClick={authService.signInWithApple} // Use the new function here
-                  >
+                  <Button variant="outline" className="w-full flex items-center justify-center gap-2" onClick={authService.signInWithApple} // Use the new function here > {/* Replace this with an actual Apple SVG icon if you have one */} <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20.94c1.5 0 2.75 1.06 4 0 1.25-1.06 2.5-2.25 2.5-4.25 0-2-1.25-3.06-2.5-3.06-1.25 0-2.5 1.06-4 0-1.25-1.06-2.5-2.25-2.5-4.25 0-2-1.25-3.06-2.5-3.06-1.25 0-2.5 1.06-4 0-1.25-1.06-2.5-2.25-2.5-4.25 0-2-1.25-3.06-2.5-3.06-1.25 0-2.5 1.06-4 0-1.25-1.06-2.5-2.25-2.5-4.25 0-2 1.25-3.06 2.5-3.06 1.25 0 2.5 1.06 4 0 1.25-1.06 2.5 2.25 2.5 4.25a4.5 4.5 0 0 1-4.5 4.5c-2.22 0-4-1.78-4-4s1.78-4 4-4 4 1.78 4 4-1.78 4-4 4z"/><path d="M12 20.94c1.5 0 2.75 1.06 4 0 1.25-1.06 2.5-2.25 2.5-4.25 0-2-1.25-3.06-2.5-3.06-1.25 0-2.5 1.06-4 0-1.25-1.06-2.5-2.25-2.5-4.25 0-2-1.25-3.06-2.5-3.06-1.25 0-2.5 1.06-4 0-1.25-1.06-2.5-2.25-2.5-4.25 0-2 1.25-3.06 2.5-3.06 1.25 0 2.5 1.06 4 0 1.25-1.06 2.5 2.25 2.5 4.25a4.5 4.5 0 0 1-4.5 4.5c-2.22 0-4-1.78-4-4s1.78-4 4-4 4 1.78 4 4-1.78 4-4 4z"/></svg> Sign in with Apple </Button>
 
           {/* Google Sign In */}
           <Button
