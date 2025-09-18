@@ -243,7 +243,7 @@ export default function AuthDialog({ isOpen, onClose, title = "Welcome to OnesTo
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <AppleIcon className="w-5 h-5" />
+                  <AppleIcon className="w-10 h-10" />
                   Continue with Apple
                 </>
               )}
