@@ -26,8 +26,8 @@ class AuthService {
     });
 
     return { error };
-  }
-async function signInWithApple() {
+
+    async function signInWithApple() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'apple',
     options: {
@@ -39,6 +39,8 @@ async function signInWithApple() {
     // Optionally, show a toast notification to the user
   }
 }
+  }
+
 
 
 async signOut(): Promise<{ error: AuthError | null }> {
