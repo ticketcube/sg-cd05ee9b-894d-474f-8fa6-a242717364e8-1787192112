@@ -98,15 +98,15 @@ const DiscoveryDashboard = () => {
                 />
             </div>
             <div className="flex justify-center pt-5">
-                <Link href="/september/rewards">
+                <Link href="/september/rewards" className="w-full max-w-xs">
                     <Button
                         size="lg"
-                        className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
                     >
-                        <span className="flex items-center space-x-5">
-                            <Star className="w-3.5 h-3.5 fill-current" />
-                            <span className="text-xs">Watch & Earn</span>
-                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-200" />
+                        <span className="flex items-center justify-center space-x-5">
+                            <Star className="w-4 h-4 fill-current" />
+                            <span className="text-sm">Watch & Earn</span>
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                         </span>
                     </Button>
                 </Link>
