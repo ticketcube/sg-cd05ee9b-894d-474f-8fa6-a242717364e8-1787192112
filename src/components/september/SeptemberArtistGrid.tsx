@@ -49,11 +49,7 @@ export default function SeptemberArtistGrid({ artists, onArtistSelect }: Septemb
                                             {artist.artist_genre}
                                         </span>
                                     )}
-                                    {artist.artist_home && (
-                                        <span className="bg-white/10 border border-white/30 text-white text-xs px-2 py-1 rounded-full truncate max-w-[80px]">
-                                            {artist.artist_home}
-                                        </span>
-                                    )}
+                                    
                                 </div>
                             </div>
                         </CardContent>
