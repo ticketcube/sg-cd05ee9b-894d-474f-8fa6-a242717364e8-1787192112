@@ -104,7 +104,7 @@ const DiscoveryDashboard = () => {
             <div className="px-2 pb-4">
                 <div className="max-w-6xl mx-auto">
                     <ModuleCard
-                        image="/covers/week1.jpg"
+                        image="https://cdn.brandfolder.io/364H2QNG/at/rq4k9zrphcjp43xcbhng5m58/Zines_Photo.png"
                         title="Rising Stars"
                         subtitle="Powered by OnesToWatch"
                         href="/september/rewards"
