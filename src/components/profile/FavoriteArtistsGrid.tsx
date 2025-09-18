@@ -116,7 +116,7 @@ export function FavoriteArtistsGrid() {
                 <div className="flex-grow min-w-0">
                   <h4 className="font-medium truncate text-black text-sm">{artist.artist_name}</h4>
                   <p className="text-xs text-gray-500 truncate">
-                    {artist.artist_genre} • {artist.artist_home}
+                    {artist.artist_genre || 'Unknown Genre'} • {artist.artist_home || 'Unknown Location'}
                   </p>
                 </div>
               </div>
