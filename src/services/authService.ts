@@ -27,6 +27,19 @@ class AuthService {
 
     return { error };
   }
+async function signInWithApple() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'apple',
+    options: {
+      redirectTo: `${window.location.origin}/discovery-dashboard`,
+    },
+  });
+  if (error) {
+    console.error('Error signing in with Apple:', error.message);
+    // Optionally, show a toast notification to the user
+  }
+}
+
 
 async signOut(): Promise<{ error: AuthError | null }> {
   const { error } = await supabase.auth.signOut();
