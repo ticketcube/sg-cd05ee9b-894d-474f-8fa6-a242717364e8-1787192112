@@ -3,18 +3,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface RewardsCardProps {
+interface ModuleCardProps {
     image: string;
     title: string;
     subtitle: string;
     href?: string;
 }
 
-export default function RewardsCard({ image, title, subtitle, href = "#" }: RewardsCardProps) {
+export default function ModuleCard({ image, title, subtitle, href = "#" }: ModuleCardProps) {
     return (
         <Card className="overflow-hidden shadow-lg rounded-2xl">
             <CardContent className="p-0">
-                <Link href={https://cdn.brandfolder.io/364H2QNG/at/rq4k9zrphcjp43xcbhng5m58/Zines_Photo.png} className="block">
+                <Link href={href} className="block">
                     {/* Big square cover image */}
                     <div className="relative w-full aspect-square">
                         <Image
@@ -37,6 +37,4 @@ export default function RewardsCard({ image, title, subtitle, href = "#" }: Rewa
             </CardContent>
         </Card>
     );
-
-
 }
