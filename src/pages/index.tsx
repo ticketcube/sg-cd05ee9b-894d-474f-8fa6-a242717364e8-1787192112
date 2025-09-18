@@ -79,7 +79,7 @@ export default function HomePage() {
     return (
         <div className="min-h-screen bg-white">
             <div className="text-center mb-4">
-                <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
+                <h1 className="text-xl font-extrabold tracking-tight lg:text-5xl">
                     We Reward Discovery
                 </h1>
                
