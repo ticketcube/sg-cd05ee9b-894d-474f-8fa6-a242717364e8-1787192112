@@ -97,11 +97,11 @@ const DiscoveryDashboard = () => {
                     weeksActive={engagementHistory?.weekly_summaries?.length || 0}
                 />
             </div>
-            <div className="flex justify-center pt-1">
+            <div className="flex justify-center pt-5">
                 <Link href="/september/rewards">
                     <Button
                         size="lg"
-                        className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-1.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
+                        className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
                     >
                         <span className="flex items-center space-x-1">
                             <Star className="w-3.5 h-3.5 fill-current" />
