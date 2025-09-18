@@ -219,7 +219,7 @@ export function ArtistLookupPage() {
           {/* Search Panel */}
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader>
-              <CardTitle className="flex items-center">
+              <CardTitle className="flex items-center text-white">
                 <Search className="w-5 h-5 mr-2" />
                 Search Artists
               </CardTitle>
@@ -245,7 +245,7 @@ export function ArtistLookupPage() {
                   <div
                     key={artist.uuid}
                     onClick={() => handleArtistSelect(artist)}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                        className={`text-white p-3 rounded-lg cursor-pointer transition-colors ${
                       selectedArtist?.uuid === artist.uuid
                         ? "bg-purple-900/50 border border-purple-500"
                         : "bg-gray-800 hover:bg-gray-700"
