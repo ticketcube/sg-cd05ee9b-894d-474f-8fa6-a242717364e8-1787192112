@@ -129,13 +129,13 @@ export function MvpSurvey() {
                     <div className="p-2 bg-purple-deep/20 rounded-lg">
                         <Star className="h-5 w-5 text-purple-deep" />
                     </div>
-                    MVP Feedback Survey
+                    Monthly Rewards Survey
                     <Badge className="bg-purple-deep text-white border-0 px-2 py-0.5 text-xs sm:text-sm">
                         25 Points
                     </Badge>
                 </CardTitle>
                 <p className="text-gray-600 text-sm mt-1">
-                    Help us improve OTW Chart by sharing your experience and suggestions.
+                    New Rewards Surveys Every Month!
                 </p>
             </CardHeader>
             <CardContent className="pt-2">
