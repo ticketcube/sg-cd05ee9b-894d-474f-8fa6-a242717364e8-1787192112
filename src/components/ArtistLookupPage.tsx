@@ -252,7 +252,7 @@ export function ArtistLookupPage() {
                     }`}
                   >
                     <div className="font-medium">{artist.artist_name}</div>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-white">
                       {artist.artist_home && `${artist.artist_home} • `}
                       {artist.artist_genre}
                     </div>
