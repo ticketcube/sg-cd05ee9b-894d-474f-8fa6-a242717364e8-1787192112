@@ -38,13 +38,7 @@ export default async function handler(
         artist_uuid,
         x_quadrant,
         y_quadrant,
-        artists!user_engagements_artist_uuid_fkey (
-          uuid,
-          artist_name,
-          artist_genre,
-          artist_home,
-          artist_image,
-          artist_videolink
+        artist_image
         )
       `)
       .eq('user_id', user.id)
