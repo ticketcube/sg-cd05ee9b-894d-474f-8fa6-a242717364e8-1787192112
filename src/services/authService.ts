@@ -79,8 +79,12 @@ class AuthService {
   }
 
   async getCurrentUser(): Promise<User | null> {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
+    const userResponse = await supabase.auth.getUser();
+    if (userResponse.error) {
+      console.error("Error fetching user:", userResponse.error.message);
+      return null;
+    }
+    return userResponse.data.user;
   }
 
   async getSession() {
@@ -98,10 +102,11 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
-    // This sync method is not reliable on the client-side after first load.
-    // Prefer using getSession() or getUser() for async checks.
-    const { data: { user } } = supabase.auth.getUser();
-    return user !== null;
+    // This sync method is not reliable and should be avoided.
+    // It is functionally incorrect as it attempts to synchronously call an async function.
+    // It is preserved to avoid breaking callsites, but it will always return false.
+    // Prefer using the async `getSession()` or `getUser()` methods.
+    return false;
   }
 
   async checkUsernameExists(username: string): Promise<boolean> {
