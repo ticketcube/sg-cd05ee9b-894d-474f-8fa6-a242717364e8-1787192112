@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, Gift, Compass, Star, Trophy, Users, Calendar, Music } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useUserProfile } from "@/contexts/UserProfileContext";
+import WeeklyListCard from '@/components/dashboard/WeeklyListCard';
 
 export default function HomePage() {
     const router = useRouter();
