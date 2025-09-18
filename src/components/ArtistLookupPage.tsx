@@ -324,7 +324,7 @@ export function ArtistLookupPage() {
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center">
+                <CardTitle className="flex items-center text-white">
                   <Eye className="w-5 h-5 mr-2" />
                   {createMode ? "Create New Artist" : selectedArtist ? "Artist Details" : "Select an Artist"}
                 </CardTitle>
