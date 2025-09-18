@@ -23,8 +23,9 @@ export default function ProfilePage() {
         );
     }
 
-    
-            return (
+    return (
+        <
+           
             <>
                 <Head>
                     <title>Profile - OTW Chart</title>
