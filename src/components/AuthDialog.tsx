@@ -177,6 +177,12 @@ export default function AuthDialog({ isOpen, onClose, title = "Welcome to OnesTo
             </div>
           )}
 
+                  <Button
+                      variant="outline"
+                      className="w-full flex items-center justify-center gap-2"
+                      onClick={authService.signInWithApple} // Use the new function here
+                  >
+
           {/* Google Sign In */}
           <Button
             onClick={handleGoogleSignIn}
