@@ -3,14 +3,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface ModuleCardProps {
+interface RewardsCardProps {
     image: string;
     title: string;
     subtitle: string;
     href?: string;
 }
 
-export default function ModuleCard({ image, title, subtitle, href = "#" }: ModuleCardProps) {
+export default function RewardsCard({ image, title, subtitle, href = "#" }: RewardsCardProps) {
     return (
         <Card className="overflow-hidden shadow-lg rounded-2xl">
             <CardContent className="p-0">
@@ -37,4 +37,6 @@ export default function ModuleCard({ image, title, subtitle, href = "#" }: Modul
             </CardContent>
         </Card>
     );
+
+
 }
