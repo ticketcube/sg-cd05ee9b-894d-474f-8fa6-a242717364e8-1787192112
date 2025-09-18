@@ -36,7 +36,10 @@ This key is used to sign communication between Supabase and Apple.
 5.  Click the **Configure** button and select the **Primary App ID** associated with your app.
 6.  Click **Continue** and then **Register**.
 7.  **IMPORTANT**: You will now see an option to **Download** your key. Download the `.p8` file immediately. **You cannot re-download this key later.**
+
+
 8.  Make a note of the **Key ID**, which is displayed on the same page.
+4NSZ4S68UM
 
 ### Step 3: Find Your Team ID
 
