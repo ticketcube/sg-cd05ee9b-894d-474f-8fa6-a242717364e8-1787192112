@@ -3,7 +3,7 @@ import { favoriteArtistsService, FavoriteArtist } from '@/services/favoriteArtis
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Play, Heart } from 'lucide-react';
+import { ExternalLink, Play, Heart, Star } from 'lucide-react';
 
 export function FavoriteArtistsGrid() {
   const [artists, setArtists] = useState<FavoriteArtist[]>([]);
@@ -122,16 +122,20 @@ export function FavoriteArtistsGrid() {
               </div>
               
               <div className="flex items-center justify-between">
-                <Badge className="bg-gray-200 text-gray-700 border-gray-300 text-xs">
-                  {artist.engagementCount} interaction{artist.engagementCount !== 1 ? 's' : ''}
-                </Badge>
+                <div className="flex items-center space-x-2">
+                  <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-xs">
+                    <Star className="w-3 h-3 mr-1 fill-current" />
+                    {artist.x_quadrant}/5
+                  </Badge>
+                  <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
+                    Y: {artist.y_quadrant}/5
+                  </Badge>
+                </div>
                 
                 <div className="flex space-x-2">
-                  
-    
-                          <Button size="med" variant="outline" disabled className="text-med px-2 py-1 h-7 border-gray-200 text-purple-deep">
+                  <Button size="sm" variant="outline" disabled className="text-xs px-2 py-1 h-7 border-gray-200 text-purple-deep">
                     <ExternalLink className="w-3 h-3 mr-1" />
-                    Ticket Rewards
+                    Tickets
                   </Button>
                 </div>
               </div>
