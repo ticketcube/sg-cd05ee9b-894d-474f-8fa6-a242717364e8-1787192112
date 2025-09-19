@@ -65,20 +65,17 @@ export default function CombinedDashboardTop({
 
                     <div className="text-center mb-4">
                         <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
-                            Discovery Rewards
+                            Discovery Rewards Dashboard
                         </h1>
-                     
                         <p className="mt-4 text-sm text-muted-foreground pb-2">
-                Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
+                Welcome back, <strong> {profile?.username || 'Explorer'} </strong>!  Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
                         </p>
 
                     </div>
-                    <h1 className="text-xl purple-deep">
-                        {profile?.username || 'Explorer'}'s Dashboard'
-                    </h1>
+          
 
                     {/* Stats Row - Compact */}
-                    <div className="grid grid-cols-3 gap-2 px-4">
+                    <div className="grid grid-cols-3 gap-2">
                         <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
                             <Trophy className="w-4 h-4 text-purple-deep mx-auto mb-1" />
                             <div className="text-sm font-bold text-purple-med">{historyLoading ? '...' : total_points}</div>
