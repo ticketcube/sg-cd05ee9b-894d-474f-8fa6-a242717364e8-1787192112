@@ -88,7 +88,7 @@ export function UserProfileCard() {
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 flex items-center justify-between">
-              <span>{profile?.username || 'Explorer'}!</span>
+              <span>{profile?.username || 'Explorer'}</span>
                        
                     </div>
                 </CardTitle>
