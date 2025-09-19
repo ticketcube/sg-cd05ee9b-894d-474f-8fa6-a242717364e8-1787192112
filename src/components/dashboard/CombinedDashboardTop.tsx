@@ -68,12 +68,11 @@ export default function CombinedDashboardTop({
                             Discovery Rewards Dashboard
                         </h1>
                         <p className="mt-4 text-sm text-muted-foreground pb-2">
-                            We Reward Discovery!  Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
+                Welcome back, {profile?.username || 'Explorer'}!!  Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
                         </p>
 
                     </div>
-
-
+          
 
                     {/* Stats Row - Compact */}
                     <div className="grid grid-cols-3 gap-2">
