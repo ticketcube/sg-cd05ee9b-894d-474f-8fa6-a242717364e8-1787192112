@@ -39,7 +39,7 @@ export default function ProfilePage() {
 
                     <div className="text-center mb-4">
                         <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
-                            Your Profile
+                     {profile?.username || 'Explorer'}!
                         </h1>
                         <p className="mt-4 text-sm text-muted-foreground pb-2">
                            Want to change your username or reset your password?  Want to know if any of the artists you'd want to buy tickets to are on tour?  Here's the place!
