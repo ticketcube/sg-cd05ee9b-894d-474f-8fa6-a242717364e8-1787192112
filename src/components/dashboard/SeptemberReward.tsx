@@ -92,8 +92,7 @@ export default function SeptemberReward() {
                     </div>
                 </div>
                 <p className="text-sm text-purple-deep  text-center py-5">
-                     OnesToWatch Zines arelimited edition collector printed magazines, featuring some our favorite rising stars
-                    on their way to greatness!
+                     OnesToWatch Zines are limited-printing magazines, showcasing rising stars with exclusive content!
                 </p>
 
 
