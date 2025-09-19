@@ -19,7 +19,7 @@ export default function WeeklyListCard({ onArtistClick }: WeeklyListCardProps) {
         setLoading(true);
         const lists = await weeklyListService.getEnrichedActiveWeeklyLists();
         if (lists && lists.length > 0) {
-          setWeeklyLists(lists.slice(0, 2));
+          setWeeklyLists(lists.slice(0, 2)); // latest two weeks
         } else {
           setError('No active weekly lists found');
         }
@@ -98,20 +98,22 @@ export default function WeeklyListCard({ onArtistClick }: WeeklyListCardProps) {
             </CardHeader>
 
             <CardContent className="px-4 pb-3">
-              <div className="grid grid-cols-4 gap-2 sm:grid-cols-4">
+              <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
                 {displayArtists.map((artist) => (
-                  <div
+                  <button
                     key={artist.id}
                     onClick={onArtistClick}
-                    className="cursor-pointer rounded-lg overflow-hidden shadow hover:shadow-md transition"
+                    className="cursor-pointer rounded-lg overflow-hidden shadow hover:shadow-md transition group"
                   >
                     <img
-                      src={artist.image}
-                      alt={artist.name}
-                      className="w-full h-24 object-cover"
+                      src={artist.artist_image || '/placeholder-artist.jpg'}
+                      alt={artist.artist_name || 'Artist'}
+                      className="w-full h-24 sm:h-28 md:h-32 object-cover transition-transform duration-200 group-hover:scale-105"
                     />
-                    <p className="text-xs text-center mt-1 font-medium">{artist.name}</p>
-                  </div>
+                    <p className="text-[10px] sm:text-xs text-center mt-1 font-medium leading-tight truncate">
+                      {artist.artist_name || 'Unknown Artist'}
+                    </p>
+                  </button>
                 ))}
               </div>
             </CardContent>
