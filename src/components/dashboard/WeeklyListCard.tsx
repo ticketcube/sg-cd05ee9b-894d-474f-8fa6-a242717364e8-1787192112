@@ -115,9 +115,9 @@ export default function WeeklyListCard() {
             <CardContent className="px-4 pb-3 flex flex-col flex-grow">
               <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-x-2 gap-y-2">
                 {displayArtists.map((artist) => (
-                  <Link
+                  <button
                     key={artist.id}
-                    href="/september/rewards"
+                    onClick={() => openSignupDialog()} // 👈 replace with your signup trigger
                     className="group relative aspect-square w-full overflow-hidden rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
                   >
                     <Image
@@ -132,7 +132,7 @@ export default function WeeklyListCard() {
                         {artist.artist_name || "Unknown Artist"}
                       </p>
                     </div>
-                  </Link>
+                  </button>
                 ))}
               </div>
             </CardContent>
