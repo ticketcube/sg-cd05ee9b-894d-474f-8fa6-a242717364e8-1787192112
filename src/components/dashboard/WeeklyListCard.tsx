@@ -115,28 +115,28 @@ export default function WeeklyListCard() {
                 <CardContent className="px-4 pb-3 flex flex-col flex-grow">
                     <div className="flex flex-col space-y-2">
                         {/* Artist Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-2 gap-y-1">
-                            {displayArtists.map((artist) => (
-                                <Link
-                                    key={artist.id}
-                                    href="/september/rewards"
-                                    className="group relative aspect-square w-full overflow-hidden rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
-                                >
-                                    <Image
-                                        src={artist.artist_image || "/placeholder-artist.jpg"}
-                                        alt={artist.artist_name || "Artist"}
-                                        fill
-                                        sizes="(max-width: 640px) 50vw, 33vw"
-                                        className="object-cover transition-transform duration-200 group-hover:scale-105"
-                                    />
-                                    <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm px-1 py-1 border-t border-gray-200">
-                                        <p className="text-black text-[11px] font-medium truncate text-center leading-tight">
-                                            {artist.artist_name || "Unknown Artist"}
-                                        </p>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+              <div className="grid grid-cols-4 gap-x-2 gap-y-2">
+                {displayArtists.map((artist) => (
+                  <Link
+                    key={artist.id}
+                    href="/september/rewards"
+                    className="group relative aspect-square w-full overflow-hidden rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
+                  >
+                    <Image
+                      src={artist.artist_image || "/placeholder-artist.jpg"}
+                      alt={artist.artist_name || "Artist"}
+                      fill
+                      sizes="(max-width: 640px) 25vw, 15vw"
+                      className="object-cover transition-transform duration-200 group-hover:scale-105"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm px-1 py-1 border-t border-gray-200">
+                      <p className="text-black text-[10px] sm:text-xs font-medium text-center leading-tight break-words">
+                        {artist.artist_name || "Unknown Artist"}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
 
                         {/* CTA Button */}
                         <div className="flex justify-center pt-1">
