@@ -105,8 +105,7 @@ export default function HomePage() {
                 </button>
         </div>
 
-        <h1 className="text-lg font-extrabold tracking-tight lg:text-xl">
-          Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
+        <h1 className="text-xl font-extrabold tracking-tight lg:text-5xl">          Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
         </h1>
 
         
