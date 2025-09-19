@@ -120,8 +120,7 @@ export default function HomePage() {
             </div>
             <div className="px-2 pb-4">
                 <div className="max-w-6xl mx-auto">
-                    <WeeklyListCard />
-                </div>
+            <WeeklyListCard onArtistClick={handleRegisterClick} />                </div>
             </div>            
 
           
