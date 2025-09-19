@@ -62,8 +62,7 @@ export default function SeptemberReward() {
                         </p>
                     </div>
                 </div>
-                  
-                </div>
+
                 {/* Progress Tracker */}
                 <div className="space-y-2">
                     <div className="flex justify-between text-s">
