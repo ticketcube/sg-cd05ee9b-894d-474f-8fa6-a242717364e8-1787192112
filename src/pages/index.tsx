@@ -105,7 +105,7 @@ export default function HomePage() {
                 </button>
         </div>
 
-        <h1 className="text-l text-center">
+        <h1 className="text-l text-center px-4 pt-2">
           Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
         </h1>
 
