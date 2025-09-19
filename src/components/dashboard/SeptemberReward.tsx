@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
 import { Trophy, Gift } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import { supabase } from "@/integrations/supabase/client";
+import Image from "next/image";
+import Link from "next/link";
 
-export function SeptemberReward() {
+export default function SeptemberReward() {
     const { user } = useUserProfile();
     const [totalPoints, setTotalPoints] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -40,53 +42,67 @@ export function SeptemberReward() {
         fetchPoints();
     }, [user]);
 
-    if (loading) return <Card className="p-6 animate-pulse">Loading...</Card>;
-
     return (
-        <Card className="relative p-4 overflow-hidden shadow-xl bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60 border-2 border-purple-700">
+        <Card className="overflow-hidden border-2 border-purple-700 rounded-2xl bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60">
+            <div className="p-4">
+                {/* Header Row */}
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-med text-white shrink-0">
+                        <Trophy className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="text-lg font-bold text-purple-med">September Reward</h3>
+                        <p className="text-sm text-neutral-600">
+                            Earn 240 points by September 28th to receive all 8 zines!
+                        </p>
+                    </div>
+                    {progressPercentage === 100 && (
+                        <Gift className="w-6 h-6 text-emerald-500 animate-pulse" />
+                    )}
+                </div>
 
-            {/* Row 1: Icon + Title */}
-            <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-med text-white">
-                    <Trophy className="w-6 h-6" />
+                {/* Image */}
+                <Link href="/september/rewards">
+                    <div className="relative aspect-video w-full mb-4 overflow-hidden rounded-lg">
+                        <Image
+                            src="https://cdn.brandfolder.io/364H2QNG/at/rq4k9zrphcjp43xcbhng5m58/Zines_Photo.png"
+                            alt="OnesToWatch Zine Collection"
+                            fill
+                            className="object-cover"
+                            sizes="100vw"
+                        />
+                    </div>
+                </Link>
+
+                {/* Progress Tracker */}
+                <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                        <span>{loading ? "..." : totalPoints} / {TARGET_POINTS} points</span>
+                        <span className="font-semibold text-purple-med">
+                            {loading ? "..." : progressPercentage.toFixed(0)}%
+                        </span>
+                    </div>
+                    <div className="w-full h-2.5 bg-neutral-200 rounded-full overflow-hidden">
+                        <div
+                            className="h-full rounded-full bg-gradient-to-r from-purple-med via-purple-deep to-purple-700 transition-all duration-1000"
+                            style={{ width: loading ? "0%" : `${progressPercentage}%` }}
+                        />
+                    </div>
+                    <div className="text-center text-xs font-medium pt-1">
+                        {loading ? "Loading..." :
+                            progressPercentage === 100
+                                ? <span className="text-emerald-700">🎉 All zines earned!</span>
+                                : progressPercentage >= 75
+                                    ? <span className="text-purple-700">Almost there! {TARGET_POINTS - totalPoints} more!</span>
+                                    : progressPercentage >= 50
+                                        ? <span className="text-purple-700">Halfway there!</span>
+                                        : progressPercentage >= 25
+                                            ? <span className="text-purple-700">Good progress!</span>
+                                            : <span className="text-neutral-600">Start exploring!</span>
+                        }
+                    </div>
                 </div>
-                <div>
-                    <h3 className="text-lg font-semibold text-purple-med">September Reward Tracker</h3>
-                    <p className="text-sm text-neutral-600">Earn 240 points to unlock all nine OnesToWatch Zines</p>
-                </div>
-                {progressPercentage === 100 && (
-                    <Gift className="w-6 h-6 text-emerald-500 ml-auto animate-pulse" />
-                )}
             </div>
-
-            {/* Row 2: Progress Bar + Numbers */}
-            <div className="mb-4">
-                <div className="flex justify-between text-sm mb-1">
-                    <span>{totalPoints} / {TARGET_POINTS} points</span>
-                    <span className="font-semibold text-purple-med">{progressPercentage.toFixed(0)}%</span>
-                </div>
-                <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
-                    <div
-                        className="h-full rounded-full bg-gradient-to-r from-purple-med via-purple-deep to-purple-700 transition-all duration-1000"
-                        style={{ width: `${progressPercentage}%` }}
-                    />
-                </div>
-            </div>
-
-            {/* Row 3: Status message */}
-            <div className="text-center text-sm font-medium">
-                {progressPercentage === 100
-                    ? <span className="text-emerald-700">🎉 Congratulations! You earned all zines!</span>
-                    : progressPercentage >= 75
-                        ? <span className="text-purple-700">Almost there! Only {TARGET_POINTS - totalPoints} more points!</span>
-                        : progressPercentage >= 50
-                            ? <span className="text-purple-700">Halfway there! Keep going!</span>
-                            : progressPercentage >= 25
-                                ? <span className="text-purple-700">Good progress! Keep exploring!</span>
-                                : <span className="text-neutral-600">Start exploring to earn your first points!</span>
-                }
-            </div>
-
         </Card>
     );
 }
