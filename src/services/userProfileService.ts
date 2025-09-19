@@ -224,7 +224,7 @@ export const addPoints = async (userId: string, pointsToAdd: number): Promise<Us
 
     const { error } = await supabase.rpc("increment_user_points", {
         points_to_add: pointsToAdd,
-        p_user_id: userId // Ensure parameter name matches your RPC function definition
+        user_id: userId // Ensure parameter name matches your RPC function definition
     });
 
     if (error) {
@@ -449,24 +449,5 @@ export const getWeeklyStats = async (userId: string, weekIdentifier: string): Pr
 };
 
 
-// Cache management functions
-export const clearProfileCache = (userId?: string) => {
-  try {
-    if (userId) {
-      const cacheKey = `userProfile:${userId}`;
-      sessionStorage.removeItem(cacheKey);
-      console.log('[UserProfileService] Cleared cache for user:', userId);
-    } else {
-      // Clear all profile caches
-      const keys = Object.keys(sessionStorage);
-      keys.forEach(key => {
-        if (key.startsWith('userProfile:')) {
-          sessionStorage.removeItem(key);
-        }
-      });
-      console.log('[UserProfileService] Cleared all profile caches');
-    }
-  } catch (error) {
-    console.warn('[UserProfileService] Error clearing cache:', error);
-  }
-};
+
+
