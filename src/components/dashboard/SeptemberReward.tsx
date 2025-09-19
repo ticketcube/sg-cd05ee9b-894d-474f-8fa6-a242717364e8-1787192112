@@ -48,13 +48,13 @@ export default function SeptemberReward() {
                 {/* Header Row */}
                 <div className="flex items-start gap-3 mb-4">
                     {/* Icon */}
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-med text-white shrink-0">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-deep text-white shrink-0">
                         <Trophy className="w-6 h-6" />
                     </div>
 
                     {/* Title + Description */}
                     <div className="flex flex-col">
-                        <h3 className="text-lg font-bold text-purple-med leading-tight">
+                        <h3 className="text-lg font-bold text-purple-deep leading-tight">
                             September Reward
                         </h3>
                         <p className="text-xs text-neutral-600 mt-1">
@@ -73,7 +73,7 @@ export default function SeptemberReward() {
                     </div>
                     <div className="w-full h-2.5 bg-neutral-200 rounded-full overflow-hidden">
                         <div
-                            className="h-full rounded-full bg-gradient-to-r from-purple-med via-purple-deep to-purple-700 transition-all duration-1000"
+                            className="h-full rounded-full bg-gradient-to-r from-purple-lit via-purple-deep to-purple-700 transition-all duration-1000"
                             style={{ width: loading ? "0%" : `${progressPercentage}%` }}
                         />
                     </div>
