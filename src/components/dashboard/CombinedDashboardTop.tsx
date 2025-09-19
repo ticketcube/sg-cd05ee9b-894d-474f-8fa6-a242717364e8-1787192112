@@ -65,9 +65,9 @@ export default function CombinedDashboardTop({
                     <div className="flex flex-col items-center text-center">
                         <div className="flex items-center gap-1 mb-1">
                             
-                            <span className="text-2xl font-bold text-purple-deep"> Rewards Dashboard</span>
+                            <span className="text-3xl font-bold text-black"> Rewards Dashboard</span>
                         </div>
-                        <h1 className="text-lg font-bold text-black">
+                        <h1 className="text-sm font-bold text-black">
                             Welcome back, {profile?.username || 'Explorer'}
                         </h1>
                     </div>
