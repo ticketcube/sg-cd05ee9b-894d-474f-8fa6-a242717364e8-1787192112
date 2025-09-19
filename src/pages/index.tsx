@@ -77,12 +77,13 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen bg-white flex flex-col items-center justify-start">
+
+            {/* Hero Section */}
             <div className="w-full flex flex-col items-center text-center px-4 lg:px-0 pt-12 lg:pt-20">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 lg:mb-6">
                     We Reward Discovery
                 </h1>
-               
-            </div>
+
 
             {/* Hero Video */}
             <div className="relative w-full max-w-4xl lg:max-w-5xl aspect-video overflow-hidden rounded-xl shadow-lg mb-6">
@@ -116,7 +117,7 @@ export default function HomePage() {
                  {isAuthenticated ? 'Go to Dashboard' : 'Register to Discover Rewards'}
                 </Button>
              </div>
-            </div>
+          
 
                 <div className="w-full px-4 lg:px-0 py-8 max-w-6xl mx-auto">
                      <WeeklyListCard onArtistClick={handleRegisterClick} />
