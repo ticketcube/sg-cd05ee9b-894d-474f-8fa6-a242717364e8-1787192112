@@ -65,10 +65,10 @@ export default function CombinedDashboardTop({
 
                     <div className="text-center mb-4">
                         <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
-                            September Discovery Challenge!
+                            Your Rewards Dashboard
                         </h1>
                         <p className="mt-4 text-sm text-muted-foreground pb-2">
-                            Select an artist. Watch for 15+ seconds. Rate with sliders. Earn 10 points!
+                            Welcome to OnesToWatch's Discovery Rewards Dashboard!  Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
                         </p>
 
                     </div>
