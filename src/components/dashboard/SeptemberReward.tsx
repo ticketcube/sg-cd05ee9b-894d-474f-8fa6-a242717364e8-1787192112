@@ -91,7 +91,7 @@ export default function SeptemberReward() {
                         }
                     </div>
                 </div>
-                <p className="text-sm text-purple-deep  text-center py-5">
+                <p className="text-xs text-purple-deep  text-center py-5">
                      OnesToWatch Zines are limited-printing magazines, showcasing rising stars with exclusive content!
                 </p>
 
