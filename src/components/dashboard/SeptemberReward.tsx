@@ -88,7 +88,7 @@ export default function SeptemberReward() {
                         }
                     </div>
                 </div>
-                <p className="text-purple-deep text-lg leading-relaxed px-10">
+                <p className="text-purple-deep text-lg pb-10">
                     The September Discovery Reward is <strong>all eight OnesToWatch Zines</strong>.
                     These limited edition collector issues feature our favorite rising stars
                     on their way to greatness!
