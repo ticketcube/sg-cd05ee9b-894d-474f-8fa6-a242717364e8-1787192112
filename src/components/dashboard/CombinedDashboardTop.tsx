@@ -61,10 +61,12 @@ export default function CombinedDashboardTop({
                 {/* Combined Header - Flexible height based on content */}
                 <div className="flex flex-col space-y-3">
                     
+
+                    
                     {/* Top Section: Title + Welcome */}
 
                     <div className="container mx-auto px-2 py-2">
-                        <div className="text-center mb-4">
+                        <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
                             <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
                                 Rewards Dashboard
                             </h1>
