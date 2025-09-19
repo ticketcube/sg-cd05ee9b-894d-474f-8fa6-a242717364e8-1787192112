@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Star } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { weeklyListService } from '@/services/weeklyListService';
 import { EnrichedWeeklyList } from '@/types/weekly';
 
@@ -20,9 +18,7 @@ export default function WeeklyListCard({ onArtistClick }: WeeklyListCardProps) {
       try {
         setLoading(true);
         const lists = await weeklyListService.getEnrichedActiveWeeklyLists();
-
         if (lists && lists.length > 0) {
-          // Keep just the latest two
           setWeeklyLists(lists.slice(0, 2));
         } else {
           setError('No active weekly lists found');
@@ -76,7 +72,7 @@ export default function WeeklyListCard({ onArtistClick }: WeeklyListCardProps) {
                   No Weekly List Available
                 </h3>
                 <p className="text-sm text-red-600">
-                  {error || "Unable to load weekly artists"}
+                  {error || 'Unable to load weekly artists'}
                 </p>
               </div>
             </div>
@@ -89,37 +85,21 @@ export default function WeeklyListCard({ onArtistClick }: WeeklyListCardProps) {
   return (
     <div className="flex flex-col space-y-4">
       {weeklyLists.map((week, index) => {
-        const displayArtists = week.artists; // show all artists
-        const label = index === 0 ? "This Week" : "Last Week";
+        const displayArtists = week.artists;
+        const label = index === 0 ? 'This Week' : 'Last Week';
 
         return (
           <Card
             key={week.id}
             className="bg-white border border-purple-deep shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
           >
-            <CardHeader className="pb-2 shrink-0">
-             <div className="grid grid-cols-4 gap-2 sm:grid-cols-4">
-      {artists.map((artist) => (
-        <div
-          key={artist.id}
-          onClick={onArtistClick}
-          className="cursor-pointer rounded-lg overflow-hidden shadow hover:shadow-md transition"
-        >
-          <img
-            src={artist.image}
-            alt={artist.name}
-            className="w-full h-24 object-cover"
-          />
-          <p className="text-xs text-center mt-1 font-medium">{artist.name}</p>
-        </div>
-      ))}
-    </div>
-              </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-bold text-purple-deep">{label}</CardTitle>
             </CardHeader>
 
-            <CardContent className="px-4 pb-3 flex flex-col flex-grow">
+            <CardContent className="px-4 pb-3">
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-4">
-                {artists.map((artist) => (
+                {displayArtists.map((artist) => (
                   <div
                     key={artist.id}
                     onClick={onArtistClick}
