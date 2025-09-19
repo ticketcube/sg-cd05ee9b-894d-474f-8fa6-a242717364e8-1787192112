@@ -46,16 +46,22 @@ export default function SeptemberReward() {
         <Card className="overflow-hidden border-2 border-purple-700 rounded-2xl bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60">
             <div className="p-4">
                 {/* Header Row */}
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-start gap-3 mb-4">
+                    {/* Icon */}
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-med text-white shrink-0">
-                        <Trophy className="w-6 h-6 " />
+                        <Trophy className="w-6 h-6" />
                     </div>
-                    <div className="flex-1 pl-4">
-                        <h3 className="text-xl font-bold text-purple-med">September Reward</h3>
-                        <p className="text-sm text-neutral-600">
+
+                    {/* Title + Description */}
+                    <div className="flex flex-col">
+                        <h3 className="text-lg font-bold text-purple-med leading-tight">
+                            September Reward
+                        </h3>
+                        <p className="text-sm text-neutral-600 mt-1">
                             Earn 160 points by September 28th to receive all 8 zines!
                         </p>
                     </div>
+                </div>
                   
                 </div>
                 {/* Progress Tracker */}
