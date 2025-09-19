@@ -89,7 +89,7 @@ export default function CombinedDashboardTop({
                     </div>
 
                     {/* Description Text - Now below the data boxes */}
-                    <div className="text-center pt-4">
+                    <div className="text-center pt-0">
                         <p className="text-sm text-muted-foreground pb-2">
                             Earn points for discovering new artists. We'll reward you with prizes, exclusive merch and insider access!
                         </p>
