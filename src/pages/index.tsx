@@ -13,7 +13,6 @@ export default function HomePage() {
     const [activeTab, setActiveTab] = useState("discover");
     const [isMuted, setIsMuted] = useState(true);
     const videoRef = useRef<HTMLVideoElement>(null);
-  const [showAuth, setShowAuth] = useState(false);
     const { isAuthenticated, sessionLoading, loading: profileLoading } = useUserProfile();
 
     // Navigation cleanup ref
