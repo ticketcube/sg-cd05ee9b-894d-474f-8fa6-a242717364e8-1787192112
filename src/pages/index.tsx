@@ -80,14 +80,14 @@ export default function HomePage() {
 
             {/* Hero Section */}
             <div className="w-full flex flex-col items-center text-center px-4 lg:px-0 pt-12 lg:pt-20">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 lg:mb-6">
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 lg:mb-6">
                     We Reward Discovery
-                </h1>
+                 </h1>
 
 
-            {/* Hero Video */}
-            <div className="relative w-full max-w-4xl lg:max-w-5xl aspect-video overflow-hidden rounded-xl shadow-lg mb-6">
-                <video
+                   {/* Hero Video */}
+                    <div className="relative w-full max-w-4xl lg:max-w-5xl aspect-video overflow-hidden rounded-xl shadow-lg mb-6">
+                 <video
                     ref={videoRef}
                     className="w-full h-full object-cover"
                     src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
@@ -95,18 +95,18 @@ export default function HomePage() {
                     loop
                     muted
                     playsInline
-                />
-                <button
-                    onClick={toggleMute}
-                    className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
-                   >
-                    {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-                </button>
-            </div>
+                      />
+                      <button
+                           onClick={toggleMute}
+                         className="absolute top-4 right-4 bg-black/60 hover:bg-black/80  text-white p-3 rounded-full shadow-lg transition-all"
+                          >
+                              {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6        h-6" />}
+                         </button>
+                      </div>
 
-            <p className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mb-8 lg:mb-12">
-                Earn points for discovering new artists. We'll reward you with prizes, exclusive merch, and insider access!
-            </p>
+                 <p className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mb-8 lg:mb-12">
+                   Earn points for discovering new artists. We'll reward you with prizes, exclusive merch, and insider access!
+                 </p>
 
          {/* CTA Button */}
                  <div className="w-full flex justify-center">
@@ -119,14 +119,14 @@ export default function HomePage() {
              </div>
           
 
-                <div className="w-full px-4 lg:px-0 py-8 max-w-6xl mx-auto">
-                     <WeeklyListCard onArtistClick={handleRegisterClick} />
-               </div>        
+            <div className="w-full px-4 lg:px-0 py-8 max-w-6xl mx-auto">
+             <WeeklyListCard onArtistClick={handleRegisterClick} />
+            </div>        
 
           
             {/* Signup Dialog */}
             <AuthDialog isOpen={isAuthDialogOpen} onClose={handleAuthClose} title="Join OnesToWatch" />
-        </div>
+         </div>
     );
 }
 
