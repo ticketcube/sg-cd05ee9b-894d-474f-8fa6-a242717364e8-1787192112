@@ -56,9 +56,7 @@ export default function SeptemberReward() {
                             Earn 160 points by September 28th to receive all 8 zines!
                         </p>
                     </div>
-                    {progressPercentage === 100 && (
-                        <Gift className="w-6 h-6 text-emerald-500 animate-pulse" />
-                    )}
+                  
                 </div>
                 {/* Progress Tracker */}
                 <div className="space-y-2">
