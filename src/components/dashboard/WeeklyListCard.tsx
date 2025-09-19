@@ -6,7 +6,7 @@ import { Calendar, Star } from 'lucide-react';
 import { weeklyListService } from '@/services/weeklyListService';
 import { EnrichedWeeklyList } from '@/types/weekly';
 
-export default function WeeklyListCard() {
+export default function WeeklyListCard({ onArtistClick }: { onArtistClick: () => void }) {
   const [weeklyLists, setWeeklyLists] = useState < EnrichedWeeklyList[] > ([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState < string | null > (null);
@@ -117,7 +117,7 @@ export default function WeeklyListCard() {
                 {displayArtists.map((artist) => (
                   <button
                     key={artist.id}
-                    onClick={() => openSignupDialog()} // 👈 replace with your signup trigger
+                    onClick={onArtistClick}
                     className="group relative aspect-square w-full overflow-hidden rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
                   >
                     <Image
