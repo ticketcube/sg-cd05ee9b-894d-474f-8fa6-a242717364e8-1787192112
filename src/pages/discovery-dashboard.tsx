@@ -8,6 +8,8 @@ import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Star, ArrowRight } from 'lucide-react';
+import SeptemberReward from "@/components/dashboard/SeptemberReward";
+
 
 // Hook & Service Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
@@ -87,7 +89,6 @@ const DiscoveryDashboard = () => {
                 </div>
             )}
 
-            {/* Combined Header + September Reward Tracker */}
             <div className="shrink-0">
                 <CombinedDashboardTop
                     profile={profile}
@@ -97,37 +98,13 @@ const DiscoveryDashboard = () => {
                     weeksActive={engagementHistory?.weekly_summaries?.length || 0}
                 />
             </div>
-            <div className="flex justify-center pt-5">
-                <Link href="/september/rewards" className="w-full max-w-xs">
-                    <Button
-                        size="lg"
-                        className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 group"
-                    >
-                        <span className="flex items-center justify-center space-x-5">
-                            <Star className="w-4 h-4 fill-current" />
-                            <span className="text-sm">Watch & Earn</span>
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-                        </span>
-                    </Button>
-                </Link>
-            </div>
 
-            {/* Weekly List Card - Takes remaining space without forcing full screen height */}
+            {/* September Reward Tracker + Module */}
             <div className="px-2 pb-2">
                 <div className="max-w-6xl mx-auto">
-                    <ModuleCard
-                        image="https://cdn.brandfolder.io/364H2QNG/at/rq4k9zrphcjp43xcbhng5m58/Zines_Photo.png"
-                        title="OnesToWatch Zine Collection"
-                        subtitle="Earn 240 points by September 28th and we'll send you all 8 issues!"
-                        href="/september/rewards"
-                    />
-                    
-                    {/* CTA Button */}
-                   
+                    <SeptemberReward />
                 </div>
-            </div>
-            
-        </div>
+            </div>v>
     );
 };
 
