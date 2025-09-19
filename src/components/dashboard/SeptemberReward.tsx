@@ -52,7 +52,7 @@ export default function SeptemberReward() {
                     </div>
                     <div className="flex-1 pl-4">
                         <h3 className="text-xl font-bold text-purple-med">September Reward</h3>
-                        <p className="text-base text-neutral-600">
+                        <p className="text-sm text-neutral-600">
                             Earn 160 points by September 28th to receive all 8 zines!
                         </p>
                     </div>
