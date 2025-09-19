@@ -71,6 +71,7 @@ export default function CombinedDashboardTop({
                             <p className="mt-4 text-sm text-muted-foreground pb-2">
                                 Welcome back, {profile?.username || 'Explorer'}
                             </p>
+                         </div>
 
                   
                     {/* Stats Row - Compact */}
