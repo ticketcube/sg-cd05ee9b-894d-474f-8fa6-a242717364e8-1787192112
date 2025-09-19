@@ -62,16 +62,17 @@ export default function CombinedDashboardTop({
                 <div className="flex flex-col space-y-3">
                     
                     {/* Top Section: Title + Welcome */}
-                    <div className="flex flex-col items-center text-center">
-                        <div className="flex items-center gap-1 mb-1">
-                            
-                            <span className="text-3xl font-bold text-black"> Rewards Dashboard</span>
-                        </div>
-                        <h1 className="text-sm font-bold text-black">
-                            Welcome back, {profile?.username || 'Explorer'}
-                        </h1>
-                    </div>
 
+                    <div className="container mx-auto px-2 py-2">
+                        <div className="text-center mb-4">
+                            <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
+                                Rewards Dashboard
+                            </h1>
+                            <p className="mt-4 text-sm text-muted-foreground pb-2">
+                                Welcome back, {profile?.username || 'Explorer'}
+                            </p>
+
+                  
                     {/* Stats Row - Compact */}
                     <div className="grid grid-cols-3 gap-2">
                         <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
