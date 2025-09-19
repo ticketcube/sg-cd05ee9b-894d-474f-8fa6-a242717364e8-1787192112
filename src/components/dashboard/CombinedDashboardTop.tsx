@@ -93,27 +93,7 @@ export default function CombinedDashboardTop({
                         </div>
                     </div>
 
-                    {/* September Reward Tracker - Auto-sized based on content */}
-                    <Card className="relative overflow-hidden bg-gradient-to-br from-purple-50/80 via-white to-purple-50/60 border-2 border-purple-700">
-                        <div className="p-3">
-                            
-                            {/* Header Row */}
-                            <div className="flex items-center gap-2 mb-3">
-                                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-med text-white shrink-0">
-                                    <Trophy className="w-4 h-4" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <h3 className="text-sm font-semibold text-purple-med leading-tight">September Rewards</h3>
-                                    <p className="text-xs text-neutral-600 leading-tight">Earn 240 points for all zines</p>
-                                </div>
-                                {progressPercentage === 100 && (
-                                    <Gift className="w-5 h-5 text-emerald-500 shrink-0 animate-pulse" />
-                                )}
-                            </div>
-
-                           
-                        </div>
-                    </Card>
+                   
                 </div>
             </div>
         </div>
