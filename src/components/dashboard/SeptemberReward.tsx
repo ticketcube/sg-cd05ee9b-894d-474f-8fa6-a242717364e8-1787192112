@@ -11,7 +11,7 @@ export default function SeptemberReward() {
     const [totalPoints, setTotalPoints] = useState(0);
     const [loading, setLoading] = useState(true);
 
-    const TARGET_POINTS = 240;
+    const TARGET_POINTS = 160;
     const progressPercentage = Math.min((totalPoints / TARGET_POINTS) * 100, 100);
 
     useEffect(() => {
