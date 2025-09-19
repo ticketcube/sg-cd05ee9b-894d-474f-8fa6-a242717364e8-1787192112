@@ -17,6 +17,12 @@ export default function DashboardHeader({
     artistsDiscovered,
     weeksActive
 }: DashboardHeaderProps) {
+    const handleArtistClick = () => {
+        // Handle artist click - could navigate to artist page, open modal, etc.
+        // For now, we'll just log it to prevent the TypeScript error
+        console.log('Artist clicked from weekly list');
+    };
+
     return (
    <div className="bg-white">
   <div className="max-w-6xl mx-auto px-2 py-4">
@@ -60,7 +66,7 @@ export default function DashboardHeader({
                         </div>
                     </div>
 
-                    <WeeklyListCard />
+                    <WeeklyListCard onArtistClick={handleArtistClick} />
                 </div>
             </div>
         </div>
