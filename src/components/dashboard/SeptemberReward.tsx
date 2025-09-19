@@ -57,7 +57,7 @@ export default function SeptemberReward() {
                         <h3 className="text-lg font-bold text-purple-med leading-tight">
                             September Reward
                         </h3>
-                        <p className="text-sm text-neutral-600 mt-1">
+                        <p className="text-xs text-neutral-600 mt-1">
                             Earn 160 points by September 28th to receive <strong>all eight OnesToWatch Zines</strong>!
                         </p>
                     </div>
