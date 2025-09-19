@@ -3,35 +3,31 @@ import Link from 'next/link';
 
 // Component Imports
 import CombinedDashboardTop from '@/components/dashboard/CombinedDashboardTop';
-import ModuleCard from '@/components/dashboard/RewardsCard';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
-import { Button } from '@/components/ui/button';
-import { AlertCircle, Star, ArrowRight } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import SeptemberReward from "@/components/dashboard/SeptemberReward";
-
 
 // Hook & Service Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
 
 const DiscoveryDashboard = () => {
-    const { 
-        profile, 
-        loading: userLoading, 
-        user, 
-        isAuthenticated, 
+    const {
+        profile,
+        loading: userLoading,
+        user,
+        isAuthenticated,
         sessionLoading,
         engagementHistory,
         historyLoading,
         historyError,
         retryHistory
     } = useUserProfile();
-    
-    const [activeTab, setActiveTab] = useState('discover');
+
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     const historyLoadTriggered = useRef(false);
 
-    // ✅ LAZY ENGAGEMENT HISTORY LOADING: Only when history data is actually needed for display
+    // ✅ LAZY ENGAGEMENT HISTORY LOADING
     useEffect(() => {
         if (
             isAuthenticated &&
@@ -51,23 +47,17 @@ const DiscoveryDashboard = () => {
         }
     }, [isAuthenticated, profile, user, userLoading, sessionLoading, engagementHistory, historyLoading, retryHistory]);
 
-    // Simplified loading logic - no artificial delays
+    // Simplified loading logic
     const showLoadingScreen = () => {
-        // Show loading if session is still checking
         if (sessionLoading) return true;
-        
-        // Show loading if authenticated but profile is still loading
         if (isAuthenticated && userLoading) return true;
-        
         return false;
     };
 
-    // Show loading screen
     if (showLoadingScreen()) {
         return <DashboardLoading />;
     }
 
-    // Show auth block if not authenticated or no profile
     if (!isAuthenticated || !profile || !user) {
         return <DashboardAuthBlock showAuthDialog={showAuthDialog} setShowAuthDialog={setShowAuthDialog} />;
     }
@@ -89,6 +79,7 @@ const DiscoveryDashboard = () => {
                 </div>
             )}
 
+            {/* Header */}
             <div className="shrink-0">
                 <CombinedDashboardTop
                     profile={profile}
@@ -99,13 +90,4 @@ const DiscoveryDashboard = () => {
                 />
             </div>
 
-            {/* September Reward Tracker + Module */}
-            <div className="px-2 pb-2">
-                <div className="max-w-6xl mx-auto">
-                    <SeptemberReward />
-                </div>
-            </div>v>
-    );
-};
-
-export default DiscoveryDashboard;
+            {/* September Reward*
