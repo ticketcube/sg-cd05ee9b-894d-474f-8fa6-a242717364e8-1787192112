@@ -6,7 +6,11 @@ import { Calendar, Star } from 'lucide-react';
 import { weeklyListService } from '@/services/weeklyListService';
 import { EnrichedWeeklyList } from '@/types/weekly';
 
-export default function WeeklyListCard({ onArtistClick }: { onArtistClick: () => void }) {
+interface WeeklyListCardProps {
+  onArtistClick?: () => void;
+}
+
+export default function WeeklyListCard({ onArtistClick }: WeeklyListCardProps) {
   const [weeklyLists, setWeeklyLists] = useState < EnrichedWeeklyList[] > ([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState < string | null > (null);
@@ -94,45 +98,40 @@ export default function WeeklyListCard({ onArtistClick }: { onArtistClick: () =>
             className="bg-white border border-purple-deep shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
           >
             <CardHeader className="pb-2 shrink-0">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-lg bg-purple-deep flex items-center justify-center shadow-sm shrink-0">
-                  <Star className="w-4 h-4 text-white fill-current" />
-                </div>
-                <div className="flex flex-col text-left min-w-0">
-                  <CardTitle className="text-base font-bold text-purple-deep leading-tight">
-                    {label}
-                  </CardTitle>
-                  <p className="text-xs text-purple-deep font-medium leading-tight">
-                    {new Date(week.start_date).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </p>
-                </div>
+             <div className="grid grid-cols-4 gap-2 sm:grid-cols-4">
+      {artists.map((artist) => (
+        <div
+          key={artist.id}
+          onClick={onArtistClick}
+          className="cursor-pointer rounded-lg overflow-hidden shadow hover:shadow-md transition"
+        >
+          <img
+            src={artist.image}
+            alt={artist.name}
+            className="w-full h-24 object-cover"
+          />
+          <p className="text-xs text-center mt-1 font-medium">{artist.name}</p>
+        </div>
+      ))}
+    </div>
               </div>
             </CardHeader>
 
             <CardContent className="px-4 pb-3 flex flex-col flex-grow">
-              <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-x-2 gap-y-2">
-                {displayArtists.map((artist) => (
-                  <button
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-4">
+                {artists.map((artist) => (
+                  <div
                     key={artist.id}
                     onClick={onArtistClick}
-                    className="group relative aspect-square w-full overflow-hidden rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
+                    className="cursor-pointer rounded-lg overflow-hidden shadow hover:shadow-md transition"
                   >
-                    <Image
-                      src={artist.artist_image || "/placeholder-artist.jpg"}
-                      alt={artist.artist_name || "Artist"}
-                      fill
-                      sizes="(max-width: 640px) 25vw, (max-width: 1024px) 16vw, 12vw"
-                      className="object-cover transition-transform duration-200 group-hover:scale-105"
+                    <img
+                      src={artist.image}
+                      alt={artist.name}
+                      className="w-full h-24 object-cover"
                     />
-                    <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm px-1 py-1 border-t border-gray-200">
-                      <p className="text-black text-[10px] sm:text-xs font-medium text-center leading-tight break-words">
-                        {artist.artist_name || "Unknown Artist"}
-                      </p>
-                    </div>
-                  </button>
+                    <p className="text-xs text-center mt-1 font-medium">{artist.name}</p>
+                  </div>
                 ))}
               </div>
             </CardContent>
