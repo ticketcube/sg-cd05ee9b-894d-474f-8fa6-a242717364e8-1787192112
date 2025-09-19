@@ -113,7 +113,7 @@ export default function WeeklyListCard({ onArtistClick }: { onArtistClick: () =>
             </CardHeader>
 
             <CardContent className="px-4 pb-3 flex flex-col flex-grow">
-                    <div className="grid grid-cols-[repeat(auto-fit,minmax(80px,1fr))] gap-2">
+                    <div className="grid grid-cols-4 lg:grid-cols-[repeat(auto-fit,minmax(80px,1fr))] gap-2">
                         {displayArtists.map((artist) => (
                             <button
                                 key={artist.id}
@@ -135,6 +135,7 @@ export default function WeeklyListCard({ onArtistClick }: { onArtistClick: () =>
                             </button>
                         ))}
                     </div>
+
             </CardContent>
           </Card>
         );
