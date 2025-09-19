@@ -65,7 +65,7 @@ export default function CombinedDashboardTop({
 
                     <div className="text-center mb-4">
                         <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
-                            {profile?.username || 'Explorer'} 's' Rewards Dashboard
+                            {profile?.username || 'Explorer'}'s Rewards Dashboard
                         </h1>
                         <p className="mt-4 text-sm text-muted-foreground pb-2">
                Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
