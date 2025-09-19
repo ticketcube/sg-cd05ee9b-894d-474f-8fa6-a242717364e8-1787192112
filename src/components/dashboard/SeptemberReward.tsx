@@ -51,8 +51,8 @@ export default function SeptemberReward() {
                         <Trophy className="w-4 h-4" />
                     </div>
                     <div className="flex-1">
-                        <h3 className="text-lg font-bold text-purple-med">September Reward</h3>
-                        <p className="text-sm text-neutral-600">
+                        <h3 className="text-xk font-bold text-purple-med">September Reward</h3>
+                        <p className="text-lg text-neutral-600">
                             Earn 160 points by September 28th to receive all 8 zines!
                         </p>
                     </div>
@@ -62,7 +62,7 @@ export default function SeptemberReward() {
                 </div>
                 {/* Progress Tracker */}
                 <div className="space-y-2">
-                    <div className="flex justify-between text-xs">
+                    <div className="flex justify-between text-s">
                         <span>{loading ? "..." : totalPoints} / {TARGET_POINTS} points</span>
                         <span className="font-semibold text-purple-med">
                             {loading ? "..." : progressPercentage.toFixed(0)}%
@@ -88,7 +88,7 @@ export default function SeptemberReward() {
                         }
                     </div>
                 </div>
-                <p className="text-purple-deep text-lg text-center py-10">
+                <p className="text-purple-deep text- text-center py-10">
                     The September Discovery Reward is <strong>all eight OnesToWatch Zines</strong>.
                     These limited edition collector issues feature our favorite rising stars
                     on their way to greatness!
