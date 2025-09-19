@@ -89,9 +89,7 @@ export function UserProfileCard() {
                     </Avatar>
                     <div className="flex-1 flex items-center justify-between">
               <span>{profile?.username || 'Explorer'}!</span>
-                        <Badge className="bg-black text-white border-0 px-2 py-0.5 text-[10px] sm:text-xs">
-                            {profile.total_points || 0} pts
-                        </Badge>
+                       
                     </div>
                 </CardTitle>
             </CardHeader>
