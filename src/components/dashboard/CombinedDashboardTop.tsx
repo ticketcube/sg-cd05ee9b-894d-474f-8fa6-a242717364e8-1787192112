@@ -65,10 +65,13 @@ export default function CombinedDashboardTop({
 
                     <div className="text-center mb-4">
                         <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
-                            Discovery Rewards Dashboard
+                            Discovery Rewards
+                        </h1>
+                        <h1 className="text-xl purple-deep">
+                            {profile?.username || 'Explorer'}'s Dashboard'
                         </h1>
                         <p className="mt-4 text-sm text-muted-foreground pb-2">
-                Welcome back, <strong> {profile?.username || 'Explorer'} </strong>!  Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
+                Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
                         </p>
 
                     </div>
