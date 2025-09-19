@@ -26,7 +26,7 @@ export default function CombinedDashboardTop({
     const [totalPoints, setTotalPoints] = useState(0);
     const [loading, setLoading] = useState(true);
 
-    const TARGET_POINTS = 240;
+    const TARGET_POINTS = 160;
     const progressPercentage = Math.min((totalPoints / TARGET_POINTS) * 100, 100);
 
     useEffect(() => {
@@ -66,8 +66,7 @@ export default function CombinedDashboardTop({
                     {/* Top Section: Title + Welcome */}
                     <div className="flex flex-col items-center text-center">
                         <div className="flex items-center gap-1 mb-1">
-                            <Sparkles className="w-6 h-6 text-purple-deep" />
-                            <span className="text-2xl font-bold text-purple-deep">Discovery Rewards Dashboard</span>
+                           
                         </div>
                         <h1 className="text-lg font-bold text-black">
                             Welcome back, {profile?.username || 'Explorer'}
