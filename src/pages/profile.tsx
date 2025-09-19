@@ -26,7 +26,7 @@ export default function ProfilePage() {
     return(
         <>
             <Head>
-                <title>Profile - OTW Chart</title>
+                <title>Profile</title>
                 <meta
                     name="description"
                     content="Your personal OTW Chart profile, survey, and favorite artists."
@@ -36,6 +36,16 @@ export default function ProfilePage() {
             <div className="min-h-screen bg-white">
                 <div className="max-w-4xl mx-auto px-2 py-2 space-y-6">
                     {/* Header */}
+
+                    <div className="text-center mb-4">
+                        <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
+                            Your Profile
+                        </h1>
+                        <p className="mt-4 text-sm text-muted-foreground pb-2">
+                           Want to change your username or reset your password?  Want to know if any of the artists you'd want to buy tickets to are on tour?  Here's the place!
+                        </p>
+
+                    </div>
 
                     {/* Profile Card - Compact */}
                     <div>
