@@ -111,32 +111,7 @@ export default function CombinedDashboardTop({
                                 )}
                             </div>
 
-                            {/* Progress Section */}
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-xs">
-                                    <span>{loading ? '...' : totalPoints} / {TARGET_POINTS} points</span>
-                                    <span className="font-semibold text-purple-med">{loading ? '...' : progressPercentage.toFixed(0)}%</span>
-                                </div>
-                                <div className="w-full h-2.5 bg-neutral-200 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full bg-gradient-to-r from-purple-med via-purple-deep to-purple-700 transition-all duration-1000"
-                                        style={{ width: loading ? '0%' : `${progressPercentage}%` }}
-                                    />
-                                </div>
-                                <div className="text-center text-xs font-medium pt-1">
-                                    {loading ? 'Loading...' :
-                                        progressPercentage === 100
-                                            ? <span className="text-emerald-700">🎉 All zines earned!</span>
-                                            : progressPercentage >= 75
-                                                ? <span className="text-purple-700">Almost there! {TARGET_POINTS - totalPoints} more!</span>
-                                                : progressPercentage >= 50
-                                                    ? <span className="text-purple-700">Halfway there!</span>
-                                                    : progressPercentage >= 25
-                                                        ? <span className="text-purple-700">Good progress!</span>
-                                                        : <span className="text-neutral-600">Start exploring!</span>
-                                    }
-                                </div>
-                            </div>
+                           
                         </div>
                     </Card>
                 </div>
