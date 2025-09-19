@@ -89,7 +89,12 @@ const DiscoveryDashboard = () => {
                     weeksActive={engagementHistory?.weekly_summaries?.length || 0}
                 />
             </div>
-
+            <div className="w-full flex justify-center">
+                <Link
+                    onClick={handleRegisterClick}
+                    className="bg-purple-deep hover:bg-red-700 text-white text-lg sm:text-xl lg:text-2xl px-6 sm:px-8 lg:px-10 py-3 sm:py-4 lg:py-5 rounded-lg shadow-md hover:shadow-lg transition-all"
+        
+                </Button>
             {/* September Reward Tracker + Module */}
             <div className="px-2 pb-2">
                 <div className="max-w-6xl mx-auto">
