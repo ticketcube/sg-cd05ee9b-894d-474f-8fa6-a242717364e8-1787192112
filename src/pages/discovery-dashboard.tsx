@@ -90,4 +90,14 @@ const DiscoveryDashboard = () => {
                 />
             </div>
 
-            {/* September Reward*
+            {/* September Reward Tracker + Module */}
+            <div className="px-2 pb-2">
+                <div className="max-w-6xl mx-auto">
+                    <SeptemberReward />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default DiscoveryDashboard;
