@@ -113,28 +113,28 @@ export default function WeeklyListCard({ onArtistClick }: { onArtistClick: () =>
             </CardHeader>
 
             <CardContent className="px-4 pb-3 flex flex-col flex-grow">
-              <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-x-2 gap-y-2">
-                {displayArtists.map((artist) => (
-                  <button
-                    key={artist.id}
-                    onClick={onArtistClick}
-                    className="group relative aspect-square w-full overflow-hidden rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
-                  >
-                    <Image
-                      src={artist.artist_image || "/placeholder-artist.jpg"}
-                      alt={artist.artist_name || "Artist"}
-                      fill
-                      sizes="(max-width: 640px) 25vw, (max-width: 1024px) 16vw, 12vw"
-                      className="object-cover transition-transform duration-200 group-hover:scale-105"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm px-1 py-1 border-t border-gray-200">
-                      <p className="text-black text-[10px] sm:text-xs font-medium text-center leading-tight break-words">
-                        {artist.artist_name || "Unknown Artist"}
-                      </p>
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(80px,1fr))] gap-2">
+                        {displayArtists.map((artist) => (
+                            <button
+                                key={artist.id}
+                                onClick={onArtistClick}
+                                className="group relative aspect-square w-full overflow-hidden rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
+                            >
+                                <Image
+                                    src={artist.artist_image || "/placeholder-artist.jpg"}
+                                    alt={artist.artist_name || "Artist"}
+                                    fill
+                                    sizes="(max-width: 640px) 25vw, (max-width: 1024px) 16vw, 12vw"
+                                    className="object-cover transition-transform duration-200 group-hover:scale-105"
+                                />
+                                <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm px-1 py-1 border-t border-gray-200">
+                                    <p className="text-black text-[10px] sm:text-xs font-medium text-center leading-tight break-words">
+                                        {artist.artist_name || "Unknown Artist"}
+                                    </p>
+                                </div>
+                            </button>
+                        ))}
                     </div>
-                  </button>
-                ))}
-              </div>
             </CardContent>
           </Card>
         );
