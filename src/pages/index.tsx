@@ -100,7 +100,7 @@ export default function HomePage() {
                            onClick={toggleMute}
                          className="absolute top-4 right-4 bg-black/60 hover:bg-black/80  text-white p-3 rounded-full shadow-lg transition-all"
                           >
-                              {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6        h-6" />}
+                              {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                          </button>
                       </div>
 
@@ -108,7 +108,7 @@ export default function HomePage() {
                    Earn points for discovering new artists. We'll reward you with prizes, exclusive merch, and insider access!
                  </p>
 
-         {/* CTA Button */}
+                 {/* CTA Button */}
                  <div className="w-full flex justify-center">
                     <Button
                   onClick={handleRegisterClick}
@@ -117,7 +117,7 @@ export default function HomePage() {
                  {isAuthenticated ? 'Go to Dashboard' : 'Register to Discover Rewards'}
                 </Button>
              </div>
-          
+            </div>
 
             <div className="w-full px-4 lg:px-0 py-8 max-w-6xl mx-auto">
              <WeeklyListCard onArtistClick={handleRegisterClick} />
