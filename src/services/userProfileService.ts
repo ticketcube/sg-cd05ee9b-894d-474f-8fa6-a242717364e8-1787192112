@@ -17,6 +17,8 @@ export type EngagementType =
     | "rating_completion_bonus"
     | "vote_submission";
 
+
+
 export interface UserEngagement {
     id: number;
     user_id: string;
@@ -50,30 +52,13 @@ export interface UserEngagementHistory {
     artistsDiscovered: number;
 }
 
+/** Get a user's profile by user_id - ✅ PRODUCTION OPTIMIZED */
+
 // Cache configuration
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-// Profile change listeners for real-time updates
-type ProfileChangeListener = (profile: UserProfile) => void;
-const profileChangeListeners = new Set<ProfileChangeListener>();
-
-export const subscribeToProfileChanges = (listener: ProfileChangeListener): (() => void) => {
-  profileChangeListeners.add(listener);
-  return () => profileChangeListeners.delete(listener);
-};
-
-const notifyProfileChange = (profile: UserProfile) => {
-  profileChangeListeners.forEach(listener => {
-    try {
-      listener(profile);
-    } catch (error) {
-      console.error('[UserProfileService] Error in profile change listener:', error);
-    }
-  });
-};
-
-export const getUserProfile = async (userId: string, abortSignal?: AbortSignal, skipCache = false): Promise<UserProfile | null> => {
-  console.log(`[UserProfileService] Getting profile for user: ${userId}${skipCache ? ' (skip cache)' : ''}`);
+export const getUserProfile = async (userId: string, abortSignal?: AbortSignal): Promise<UserProfile | null> => {
+  console.log(`[UserProfileService] Getting profile for user: ${userId}`);
 
   // Check if request was aborted before starting
   if (abortSignal?.aborted) {
@@ -81,11 +66,11 @@ export const getUserProfile = async (userId: string, abortSignal?: AbortSignal, 
   }
 
   try {
-    // Check sessionStorage cache first (unless skipping)
+    // Check sessionStorage cache first
     const cacheKey = `userProfile:${userId}`;
-    const cachedStr = !skipCache ? sessionStorage.getItem(cacheKey) : null;
+    const cachedStr = sessionStorage.getItem(cacheKey);
 
-    if (cachedStr && !skipCache) {
+    if (cachedStr) {
       try {
         const cached = JSON.parse(cachedStr);
         if (Date.now() - cached.timestamp < CACHE_DURATION) {
@@ -101,7 +86,7 @@ export const getUserProfile = async (userId: string, abortSignal?: AbortSignal, 
       }
     }
 
-    // Fetch fresh data from database
+    // ✅ PRODUCTION FIX: Select only columns that actually exist in the database
     const { data, error } = await supabase
       .from('user_profiles')
       .select('id, user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url')
@@ -113,7 +98,7 @@ export const getUserProfile = async (userId: string, abortSignal?: AbortSignal, 
       console.error('[UserProfileService] Error fetching user profile:', error.message);
 
       // If API fails but we have cached data (even expired), use it
-      if (cachedStr && !skipCache) {
+      if (cachedStr) {
         try {
           const cached = JSON.parse(cachedStr);
           console.log('[UserProfileService] API failed, using stale cache for user:', userId);
@@ -123,6 +108,7 @@ export const getUserProfile = async (userId: string, abortSignal?: AbortSignal, 
         }
       }
 
+      // ✅ ENHANCED ERROR HANDLING: Differentiate between different error types
       if (error.code === 'PGRST116') {
         // No rows found - this is not an error, just means profile doesn't exist
         console.log(`[UserProfileService] No profile found for user: ${userId}`);
@@ -162,7 +148,7 @@ export const getUserProfile = async (userId: string, abortSignal?: AbortSignal, 
     // Final fallback to cache if available
     const cacheKey = `userProfile:${userId}`;
     const cachedStr = sessionStorage.getItem(cacheKey);
-    if (cachedStr && !skipCache) {
+    if (cachedStr) {
       try {
         const cached = JSON.parse(cachedStr);
         console.log('[UserProfileService] Using cache as final fallback for user:', userId);
@@ -177,7 +163,9 @@ export const getUserProfile = async (userId: string, abortSignal?: AbortSignal, 
   }
 };
 
-/** Update user's city/location */
+
+
+/** Update user's city/location - ✅ FIXED: Direct Supabase only */
 export const updateUserLocation = async (userId: string, cityId: number, rawCityInput: string): Promise<UserProfile> => {
     const { data, error } = await supabase
         .from("user_profiles")
@@ -198,20 +186,15 @@ export const updateUserLocation = async (userId: string, cityId: number, rawCity
         throw new Error('Failed to update location - no data returned');
     }
 
-    // Clear cache and notify listeners
-    clearProfileCache(userId);
-    notifyProfileChange(data as UserProfile);
-
     return data as UserProfile;
 };
 
-/** Add points to a user with immediate cache invalidation */
+/** Add points to a user - ✅ FIXED: Direct Supabase RPC call */
 export const addPoints = async (userId: string, pointsToAdd: number): Promise<UserProfile | null> => {
     if (pointsToAdd === 0) {
         return getUserProfile(userId);
     }
 
-    console.log(`[UserProfileService] Adding ${pointsToAdd} points for user: ${userId}`);
 
     const { error } = await supabase.rpc("increment_user_points", {
         points_to_add: pointsToAdd,
@@ -223,19 +206,10 @@ export const addPoints = async (userId: string, pointsToAdd: number): Promise<Us
         throw error;
     }
 
-    // Force cache refresh to get updated points immediately
-    clearProfileCache(userId);
-    const updatedProfile = await getUserProfile(userId, undefined, true);
-    
-    if (updatedProfile) {
-        console.log(`[UserProfileService] Points updated successfully. New total: ${updatedProfile.total_points}`);
-        notifyProfileChange(updatedProfile);
-    }
-
-    return updatedProfile;
+    return getUserProfile(userId);
 };
 
-/** Update last active timestamp */
+/** Update last active timestamp - ✅ FIXED: Direct Supabase only */
 export const updateLastActive = async (userId: string): Promise<void> => {
     console.log(`[UserProfileService] Updating last active for user: ${userId}`);
 
@@ -259,7 +233,8 @@ export const checkEligibility = async (
     return { eligible: result.eligible, reason: result.reason };
 };
 
-/** Record a user engagement and add points with immediate profile update */
+
+/** Record a user engagement and add points - ✅ FIXED: Direct Supabase insertion */
 export const recordEngagement = async (
     userId: string,
     engagementType: EngagementType,
@@ -276,7 +251,7 @@ export const recordEngagement = async (
         throw new Error(`User not eligible: ${eligibility.reason}`);
     }
 
-    // Store engagement record
+    // Store slider/quadrant info in metadata
     const { data: engagement, error } = await supabase
         .from("user_engagements")
         .insert({
@@ -292,19 +267,20 @@ export const recordEngagement = async (
 
     if (error || !engagement) throw error || new Error("Failed to insert engagement");
 
-    // Add points and immediately update the profile
     if (pointsEarned > 0) {
-        try {
-            await addPoints(userId, pointsEarned);
-        } catch (pointsError) {
-            console.warn("Points increment failed (engagement saved):", pointsError);
-        }
+        // Add points via RPC
+        const { error: rpcError } = await supabase.rpc("increment_user_points", {
+            user_id: userId,
+            points_to_add: pointsEarned
+        });
+        if (rpcError) console.warn("Points increment failed (engagement saved):", rpcError);
     }
 
     return engagement as UserEngagement;
+
 };
 
-/** Get user's engagement history with weekly summaries */
+/** Get user's engagement history with weekly summaries - ✅ PRODUCTION OPTIMIZED */
 export async function getUserEngagementHistory(
     userId: string,
     profile?: UserProfile, 
@@ -318,7 +294,7 @@ export async function getUserEngagementHistory(
     }
 
     try {
-        // Get user profile with optimized call
+        // ✅ Get user profile with optimized call
         const userProfile = profile || await getUserProfile(userId, signal);
         if (!userProfile) {
             throw new Error("User profile not found - engagement history cannot be loaded");
@@ -329,13 +305,13 @@ export async function getUserEngagementHistory(
             throw new Error('Request aborted');
         }
 
-        // Fetch engagements with specific columns and reasonable limit
+        // ✅ PRODUCTION OPTIMIZED: Fetch engagements with specific columns and reasonable limit
         const { data: engagements, error } = await supabase
             .from("user_engagements")
             .select("engagement_type, points_earned, week_identifier, artist_uuid, created_at")
             .eq("user_id", userId)
             .order("created_at", { ascending: false })
-            .limit(150)
+            .limit(150) // Further reduced limit for production performance
             .abortSignal(signal);
 
         if (error) {
@@ -348,13 +324,14 @@ export async function getUserEngagementHistory(
             throw new Error('Request aborted');
         }
 
-        // Process engagement data
+        // ✅ OPTIMIZED PROCESSING: Simplified calculation for better performance
         const totalEngagements = engagements?.length || 0;
         let calculatedTotalPoints = 0;
         const weeklyMap = new Map<string, UserEngagementSummary>();
         const uniqueArtists = new Set<string>();
 
         if (engagements && engagements.length > 0) {
+            // ✅ PERFORMANCE: Single pass through all engagements
             engagements.forEach(e => {
                 // Check abort signal periodically during processing
                 if (signal?.aborted) {
@@ -425,7 +402,8 @@ export async function getUserEngagementHistory(
     }
 };
 
-/** Get total points for a given week */
+
+/** Get total points for a given week - ✅ FIXED: Direct Supabase only */
 export const getWeeklyStats = async (userId: string, weekIdentifier: string): Promise<{ total_points: number }> => {
     const { data, error } = await supabase
         .from("user_engagements")
@@ -441,6 +419,7 @@ export const getWeeklyStats = async (userId: string, weekIdentifier: string): Pr
     const total_points = data?.reduce((sum, e) => sum + (e.points_earned || 0), 0) || 0;
     return { total_points };
 };
+
 
 // Cache management functions
 export const clearProfileCache = (userId?: string) => {
