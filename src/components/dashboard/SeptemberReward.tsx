@@ -58,7 +58,7 @@ export default function SeptemberReward() {
                             September Reward
                         </h3>
                         <p className="text-sm text-neutral-600 mt-1">
-                            Earn 160 points by September 28th to receive all 8 zines!
+                            Earn 160 points by September 28th to receive <strong>all eight OnesToWatch Zines</strong>!
                         </p>
                     </div>
                 </div>
@@ -92,8 +92,7 @@ export default function SeptemberReward() {
                     </div>
                 </div>
                 <p className="text-sm text-purple-deep  text-center py-5">
-                    The September Discovery Reward is <strong>all eight OnesToWatch Zines</strong>.
-                    These limited edition collector issues feature our favorite rising stars
+                     OnesToWatch Zines arelimited edition collector printed magazines, featuring some our favorite rising stars
                     on their way to greatness!
                 </p>
 
