@@ -13,7 +13,7 @@ export default function HomePage() {
     const [activeTab, setActiveTab] = useState("discover");
     const [isMuted, setIsMuted] = useState(true);
     const videoRef = useRef<HTMLVideoElement>(null);
-
+  const [showAuth, setShowAuth] = useState(false);
     const { isAuthenticated, sessionLoading, loading: profileLoading } = useUserProfile();
 
     // Navigation cleanup ref
@@ -121,8 +121,13 @@ export default function HomePage() {
             </div>
             <div className="px-2 pb-4">
                 <div className="max-w-6xl mx-auto">
-                    <WeeklyListCard />
-                </div>
+            <>
+              <WeeklyListCard onArtistClick={() => setShowAuth(true)} />
+
+              {showAuth && (
+                <AuthDialog onClose={() => setShowAuth(false)} />
+              )}
+            </>                </div>
             </div>            
 
           
