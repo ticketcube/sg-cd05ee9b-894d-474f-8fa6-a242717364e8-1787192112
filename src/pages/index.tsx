@@ -121,13 +121,8 @@ export default function HomePage() {
             </div>
             <div className="px-2 pb-4">
                 <div className="max-w-6xl mx-auto">
-            <>
-              <WeeklyListCard onArtistClick={() => setShowAuth(true)} />
-
-              {showAuth && (
-                <AuthDialog onClose={() => setShowAuth(false)} />
-              )}
-            </>                </div>
+                    <WeeklyListCard />
+                </div>
             </div>            
 
           
