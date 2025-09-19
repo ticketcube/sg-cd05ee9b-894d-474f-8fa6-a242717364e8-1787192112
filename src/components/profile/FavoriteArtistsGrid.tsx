@@ -127,7 +127,7 @@ export function FavoriteArtistsGrid() {
                 <div className="flex space-x-2">
                   <Button size="sm" variant="outline" disabled className="text-xs px-2 py-1 h-7 border-gray-200 text-purple-deep">
                     <ExternalLink className="w-3 h-3 mr-1" />
-                    Tickets
+                     Tickets - Coming soon!
                   </Button>
                 </div>
               </div>
