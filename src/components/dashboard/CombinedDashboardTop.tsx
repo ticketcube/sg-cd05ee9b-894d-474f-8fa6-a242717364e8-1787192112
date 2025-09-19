@@ -1,11 +1,11 @@
-
-
 import type { UserProfile } from "@/services/userProfileService";
 import { useState, useEffect } from "react";
 import { Sparkles, Trophy, Star, Calendar, Gift } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import { supabase } from "@/integrations/supabase/client";
+import Link from "next/link";
 
 interface CombinedDashboardTopProps {
     profile: UserProfile | null;
@@ -25,7 +25,6 @@ export default function CombinedDashboardTop({
     const { user } = useUserProfile();
     const [totalPoints, setTotalPoints] = useState(0);
     const [loading, setLoading] = useState(true);
-
 
     useEffect(() => {
         const fetchPoints = async () => {
@@ -62,38 +61,46 @@ export default function CombinedDashboardTop({
                 <div className="flex flex-col space-y-3 pt-4">
                     
                     {/* Top Section: Title + Welcome */}
-
                     <div className="text-center mb-4">
                         <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
                             {profile?.username || 'Explorer'}'s Rewards Dashboard
                         </h1>
-                        <p className="mt-4 text-sm text-muted-foreground pb-2">
-               Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
+                    </div>
+
+                    {/* Stats Row - Compact with responsive padding for large screens */}
+                    <div className="lg:px-16 xl:px-24">
+                        <div className="grid grid-cols-3 gap-2 max-w-lg mx-auto">
+                            <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
+                                <Trophy className="w-4 h-4 text-purple-deep mx-auto mb-1" />
+                                <div className="text-sm font-bold text-purple-med">{historyLoading ? '...' : total_points}</div>
+                                <div className="text-xs text-purple-deep">Points</div>
+                            </div>
+                            <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
+                                <Star className="w-4 h-4 text-purple-deep mx-auto mb-1" />
+                                <div className="text-sm font-bold text-purple-med">{historyLoading ? '...' : artistsDiscovered}</div>
+                                <div className="text-xs text-purple-deep">Artists</div>
+                            </div>
+                            <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
+                                <Calendar className="w-4 h-4 text-purple-deep mx-auto mb-1" />
+                                <div className="text-sm font-bold text-purple-med">{historyLoading ? '...' : weeksActive}</div>
+                                <div className="text-xs text-purple-deep">Weeks</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Description Text - Now below the data boxes */}
+                    <div className="text-center pt-4">
+                        <p className="text-sm text-muted-foreground pb-2">
+                            Earn points for discovering new artists. We'll reward you with prizes, exclusive merch and insider access!
                         </p>
-
+                        
+                        {/* Purple Button linking to september-rewards */}
+                        <Link href="/september/rewards">
+                            <Button className="bg-[hsl(279,92%,25%)] hover:bg-[hsl(279,92%,20%)] text-white">
+                                Discover More Artists!
+                            </Button>
+                        </Link>
                     </div>
-          
-
-                    {/* Stats Row - Compact */}
-                    <div className="grid grid-cols-3 gap-2">
-                        <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
-                            <Trophy className="w-4 h-4 text-purple-deep mx-auto mb-1" />
-                            <div className="text-sm font-bold text-purple-med">{historyLoading ? '...' : total_points}</div>
-                            <div className="text-xs text-purple-deep">Points</div>
-                        </div>
-                        <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
-                            <Star className="w-4 h-4 text-purple-deep mx-auto mb-1" />
-                            <div className="text-sm font-bold text-purple-med">{historyLoading ? '...' : artistsDiscovered}</div>
-                            <div className="text-xs text-purple-deep">Artists</div>
-                        </div>
-                        <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
-                            <Calendar className="w-4 h-4 text-purple-deep mx-auto mb-1" />
-                            <div className="text-sm font-bold text-purple-med">{historyLoading ? '...' : weeksActive}</div>
-                            <div className="text-xs text-purple-deep">Weeks</div>
-                        </div>
-                    </div>
-
-                   
                 </div>
             </div>
         </div>
