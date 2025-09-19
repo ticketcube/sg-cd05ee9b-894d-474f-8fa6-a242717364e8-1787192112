@@ -59,7 +59,7 @@ export default function CombinedDashboardTop({
         <div className="bg-white">
             <div className="max-w-6xl mx-auto px-2 py-3">
                 {/* Combined Header - Flexible height based on content */}
-                <div className="flex flex-col space-y-3">
+                <div className="flex flex-col space-y-3 pt-4">
                     
                     {/* Top Section: Title + Welcome */}
 
