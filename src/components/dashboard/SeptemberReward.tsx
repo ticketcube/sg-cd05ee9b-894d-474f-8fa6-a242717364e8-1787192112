@@ -48,10 +48,10 @@ export default function SeptemberReward() {
                 {/* Header Row */}
                 <div className="flex items-center gap-2 mb-4">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-purple-med text-white shrink-0">
-                        <Trophy className="w-6 h-6 " />
+                        <Trophy className="w-10 h-10 " />
                     </div>
                     <div className="flex-1">
-                        <h3 className="text-xl font-bold text-purple-med">September Reward</h3>
+                        <h3 className="text-xl font-bold text-purple-med [;-2]">September Reward</h3>
                         <p className="text-base text-neutral-600">
                             Earn 160 points by September 28th to receive all 8 zines!
                         </p>
