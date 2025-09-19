@@ -100,7 +100,7 @@ export default function WeeklyListCard() {
                 </div>
                 <div className="flex flex-col text-left min-w-0">
                   <CardTitle className="text-base font-bold text-purple-deep leading-tight">
-                    Rising Stars — {label}
+                    {label}
                   </CardTitle>
                   <p className="text-xs text-purple-deep font-medium leading-tight">
                     {new Date(week.start_date).toLocaleDateString("en-US", {
