@@ -278,6 +278,15 @@ export const recordEngagement = async (
     if (!eligibility.eligible) {
         throw new Error(`User not eligible: ${eligibility.reason}`);
     }
+    if (pointsEarned > 0) {
+        // By calling addPoints, we ensure the profile is refreshed and listeners are notified.
+        try {
+            await addPoints(userId, pointsEarned);
+        } catch (addPointsError) {
+            // Log the error but don't throw, as the engagement was successfully saved.
+            console.warn("Points increment failed (engagement saved):", addPointsError);
+        }
+    }
 
     // Store slider/quadrant info in metadata
     const { data: engagement, error } = await supabase
@@ -296,12 +305,13 @@ export const recordEngagement = async (
     if (error || !engagement) throw error || new Error("Failed to insert engagement");
 
     if (pointsEarned > 0) {
-        // Add points via RPC
-        const { error: rpcError } = await supabase.rpc("increment_user_points", {
-            user_id: userId,
-            points_to_add: pointsEarned
-        });
-        if (rpcError) console.warn("Points increment failed (engagement saved):", rpcError);
+        // By calling addPoints, we ensure the profile is refreshed and listeners are notified.
+        try {
+            await addPoints(userId, pointsEarned);
+        } catch (addPointsError) {
+            // Log the error but don't throw, as the engagement was successfully saved.
+            console.warn("Points increment failed (engagement saved):", addPointsError);
+        }
     }
 
     return engagement as UserEngagement;
@@ -447,7 +457,6 @@ export const getWeeklyStats = async (userId: string, weekIdentifier: string): Pr
     const total_points = data?.reduce((sum, e) => sum + (e.points_earned || 0), 0) || 0;
     return { total_points };
 };
-
 
 
 

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserProfile, getUserEngagementHistory, type UserProfile, type UserEngagementHistory } from "@/services/userProfileService";
+import { getUserProfile, getUserEngagementHistory, subscribeToProfileChanges, type UserProfile, type UserEngagementHistory } from "@/services/userProfileService";
 
 interface UserProfileContextType {
   user: User | null;
@@ -45,6 +45,27 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [isStuck, setIsStuck] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+        return;
+    }
+
+    console.log('[UserProfileContext] Subscribing to profile changes for user:', user.id);
+    const unsubscribe = subscribeToProfileChanges((updatedProfile) => {
+        if (updatedProfile && updatedProfile.user_id === user.id) {
+            console.log('[UserProfileContext] Received profile update via subscription:', updatedProfile);
+            setProfile(updatedProfile);
+            setRole(updatedProfile.role);
+        }
+    });
+
+    // Cleanup subscription on unmount or user change
+    return () => {
+        console.log('[UserProfileContext] Unsubscribing from profile changes.');
+        unsubscribe();
+    };
+}, [user]);
 
   // Request management
   const profileAbortController = useRef<AbortController | null>(null);
@@ -174,19 +195,15 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
 
   const refreshProfile = useCallback(async () => {
     if (!user?.id) return;
-
+    console.log('[UserProfileContext] Forcing profile refresh...');
     try {
-      const userProfile = await getUserProfile(user.id);
-      if (!userProfile) return;
-
-      setProfile(userProfile);
-      setRole(userProfile.role);
-
-      await loadEngagementHistory(user.id);
+        // This will force a fetch, update the cache, and notify all subscribers,
+        // including this context, to update their state automatically.
+        await getUserProfile(user.id, undefined, true);
     } catch (error) {
-      console.error('[UserProfile] Error refreshing profile:', error);
+        console.error('[UserProfileContext] Error refreshing profile:', error);
     }
-  }, [user?.id, loadEngagementHistory]);
+  }, [user?.id]);
 
     const retryHistory = useCallback(async (overrideProfile?: UserProfile) => {
         if (!user?.id) return;
