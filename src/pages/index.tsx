@@ -79,7 +79,7 @@ export default function HomePage() {
         <div className="min-h-screen bg-white flex flex-col items-center justify-start">
 
             {/* Hero Section */}
-            <div className="w-full flex flex-col items-center text-center px-4 lg:px-0 pt-6 lg:pt-10">
+            <div className="w-full flex flex-col items-center text-center px-4 lg:px-0 pt-0 lg:pt-4">
                   <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 lg:mb-6">
                     We Reward Discovery
                  </h1>
