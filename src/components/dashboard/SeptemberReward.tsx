@@ -60,20 +60,6 @@ export default function SeptemberReward() {
                         <Gift className="w-6 h-6 text-emerald-500 animate-pulse" />
                     )}
                 </div>
-
-                {/* Image */}
-                <Link href="/september/rewards">
-                    <div className="relative aspect-video w-full mb-4 overflow-hidden rounded-lg">
-                        <Image
-                            src="https://cdn.brandfolder.io/364H2QNG/at/rq4k9zrphcjp43xcbhng5m58/Zines_Photo.png"
-                            alt="OnesToWatch Zine Collection"
-                            fill
-                            className="object-cover"
-                            sizes="100vw"
-                        />
-                    </div>
-                </Link>
-
                 {/* Progress Tracker */}
                 <div className="space-y-2">
                     <div className="flex justify-between text-xs">
@@ -102,6 +88,21 @@ export default function SeptemberReward() {
                         }
                     </div>
                 </div>
+
+                {/* Image */}
+                <Link href="/september/rewards">
+                    <div className="relative aspect-video w-full mb-4 overflow-hidden rounded-lg">
+                        <Image
+                            src="https://cdn.brandfolder.io/364H2QNG/at/rq4k9zrphcjp43xcbhng5m58/Zines_Photo.png"
+                            alt="OnesToWatch Zine Collection"
+                            fill
+                            className="object-cover"
+                            sizes="100vw"
+                        />
+                    </div>
+                </Link>
+
+               
             </div>
         </Card>
     );
