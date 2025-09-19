@@ -89,13 +89,7 @@ const DiscoveryDashboard = () => {
                     weeksActive={engagementHistory?.weekly_summaries?.length || 0}
                 />
             </div>
-              <Link 
-                        href="/discovery-dashboard" 
-               className="text-sm px-2 py-1.5 hover:bg-accent rounded-md"
-               onClick={handleNavigationClick}
-             >
-               Rewards
-             </Link>
+           
 
             {/* September Reward Tracker + Module */}
             <div className="px-2 pb-2">
