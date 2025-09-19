@@ -278,15 +278,6 @@ export const recordEngagement = async (
     if (!eligibility.eligible) {
         throw new Error(`User not eligible: ${eligibility.reason}`);
     }
-    if (pointsEarned > 0) {
-        // By calling addPoints, we ensure the profile is refreshed and listeners are notified.
-        try {
-            await addPoints(userId, pointsEarned);
-        } catch (addPointsError) {
-            // Log the error but don't throw, as the engagement was successfully saved.
-            console.warn("Points increment failed (engagement saved):", addPointsError);
-        }
-    }
 
     // Store slider/quadrant info in metadata
     const { data: engagement, error } = await supabase
