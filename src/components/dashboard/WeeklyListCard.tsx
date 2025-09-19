@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar } from 'lucide-react';
+import { Calendar, Star } from 'lucide-react';
 import { weeklyListService } from '@/services/weeklyListService';
 import { EnrichedWeeklyList } from '@/types/weekly';
 
-interface WeeklyListCardProps {
-  onArtistClick?: () => void;
-}
-
-export default function WeeklyListCard({ onArtistClick }: WeeklyListCardProps) {
+export default function WeeklyListCard({ onArtistClick }: { onArtistClick: () => void }) {
   const [weeklyLists, setWeeklyLists] = useState < EnrichedWeeklyList[] > ([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState < string | null > (null);
@@ -18,8 +16,10 @@ export default function WeeklyListCard({ onArtistClick }: WeeklyListCardProps) {
       try {
         setLoading(true);
         const lists = await weeklyListService.getEnrichedActiveWeeklyLists();
+
         if (lists && lists.length > 0) {
-          setWeeklyLists(lists.slice(0, 2)); // latest two weeks
+          // Keep just the latest two
+          setWeeklyLists(lists.slice(0, 2));
         } else {
           setError('No active weekly lists found');
         }
@@ -72,7 +72,7 @@ export default function WeeklyListCard({ onArtistClick }: WeeklyListCardProps) {
                   No Weekly List Available
                 </h3>
                 <p className="text-sm text-red-600">
-                  {error || 'Unable to load weekly artists'}
+                  {error || "Unable to load weekly artists"}
                 </p>
               </div>
             </div>
@@ -85,34 +85,53 @@ export default function WeeklyListCard({ onArtistClick }: WeeklyListCardProps) {
   return (
     <div className="flex flex-col space-y-4">
       {weeklyLists.map((week, index) => {
-        const displayArtists = week.artists;
-        const label = index === 0 ? 'This Week' : 'Last Week';
+        const displayArtists = week.artists; // show all artists
+        const label = index === 0 ? "This Week" : "Last Week";
 
         return (
           <Card
             key={week.id}
             className="bg-white border border-purple-deep shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
           >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-bold text-purple-deep">{label}</CardTitle>
+            <CardHeader className="pb-2 shrink-0">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-lg bg-purple-deep flex items-center justify-center shadow-sm shrink-0">
+                  <Star className="w-4 h-4 text-white fill-current" />
+                </div>
+                <div className="flex flex-col text-left min-w-0">
+                  <CardTitle className="text-base font-bold text-purple-deep leading-tight">
+                    {label}
+                  </CardTitle>
+                  <p className="text-xs text-purple-deep font-medium leading-tight">
+                    {new Date(week.start_date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              </div>
             </CardHeader>
 
-            <CardContent className="px-4 pb-3">
-              <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
+            <CardContent className="px-4 pb-3 flex flex-col flex-grow">
+              <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-x-2 gap-y-2">
                 {displayArtists.map((artist) => (
                   <button
                     key={artist.id}
                     onClick={onArtistClick}
-                    className="cursor-pointer rounded-lg overflow-hidden shadow hover:shadow-md transition group"
+                    className="group relative aspect-square w-full overflow-hidden rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
                   >
-                    <img
-                      src={artist.artist_image || '/placeholder-artist.jpg'}
-                      alt={artist.artist_name || 'Artist'}
-                      className="w-full h-24 sm:h-28 md:h-32 object-cover transition-transform duration-200 group-hover:scale-105"
+                    <Image
+                      src={artist.artist_image || "/placeholder-artist.jpg"}
+                      alt={artist.artist_name || "Artist"}
+                      fill
+                      sizes="(max-width: 640px) 25vw, (max-width: 1024px) 16vw, 12vw"
+                      className="object-cover transition-transform duration-200 group-hover:scale-105"
                     />
-                    <p className="text-[10px] sm:text-xs text-center mt-1 font-medium leading-tight truncate">
-                      {artist.artist_name || 'Unknown Artist'}
-                    </p>
+                    <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm px-1 py-1 border-t border-gray-200">
+                      <p className="text-black text-[10px] sm:text-xs font-medium text-center leading-tight break-words">
+                        {artist.artist_name || "Unknown Artist"}
+                      </p>
+                    </div>
                   </button>
                 ))}
               </div>
