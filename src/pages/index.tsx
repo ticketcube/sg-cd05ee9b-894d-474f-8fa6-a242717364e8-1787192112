@@ -96,14 +96,20 @@ export default function HomePage() {
                     muted
                     playsInline
                 />
+                
                 <button
                     onClick={toggleMute}
                     className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
                 >
                     {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                 </button>
-            </div>
+        </div>
 
+        <h1 className="text-lg font-extrabold tracking-tight lg:text-xl">
+          Earn points for discovering new artists.  We'll reward you with prizes, exclusive merch and insider access!
+        </h1>
+
+        
             {/* Register CTA */}
             <div className="flex justify-center py-8 bg-white">
                 <Button
