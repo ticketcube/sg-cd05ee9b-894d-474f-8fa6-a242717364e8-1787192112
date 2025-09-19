@@ -1,7 +1,13 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserProfile, getUserEngagementHistory, type UserProfile, type UserEngagementHistory } from "@/services/userProfileService";
+import { 
+  getUserProfile, 
+  getUserEngagementHistory, 
+  subscribeToProfileChanges,
+  type UserProfile, 
+  type UserEngagementHistory 
+} from "@/services/userProfileService";
 
 interface UserProfileContextType {
   user: User | null;
@@ -51,6 +57,7 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
   const historyAbortController = useRef<AbortController | null>(null);
   const loadingRequests = useRef<Set<string>>(new Set());
   const failsafeTriggered = useRef(false); // Flag for the stuck state
+  const profileChangeUnsubscribe = useRef<(() => void) | null>(null);
 
   // Cleanup function
   const cleanup = useCallback(() => {
@@ -62,8 +69,38 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
       historyAbortController.current.abort();
       historyAbortController.current = null;
     }
+    if (profileChangeUnsubscribe.current) {
+      profileChangeUnsubscribe.current();
+      profileChangeUnsubscribe.current = null;
+    }
     loadingRequests.current.clear();
   }, []);
+
+  // Subscribe to profile changes when user is loaded
+  useEffect(() => {
+    if (user?.id) {
+      // Clean up any existing subscription
+      if (profileChangeUnsubscribe.current) {
+        profileChangeUnsubscribe.current();
+      }
+
+      // Subscribe to profile changes
+      profileChangeUnsubscribe.current = subscribeToProfileChanges((updatedProfile) => {
+        if (updatedProfile.user_id === user.id) {
+          console.log('[UserProfile] Received profile update via subscription:', updatedProfile.total_points);
+          setProfile(updatedProfile);
+          setRole(updatedProfile.role);
+        }
+      });
+
+      return () => {
+        if (profileChangeUnsubscribe.current) {
+          profileChangeUnsubscribe.current();
+          profileChangeUnsubscribe.current = null;
+        }
+      };
+    }
+  }, [user?.id]);
 
   const loadEngagementHistory = useCallback(async (userId: string, profileData?: UserProfile) => {
     const requestKey = `history-${userId}`;
@@ -176,13 +213,15 @@ export const UserProfileProvider: React.FC<UserProfileProviderProps> = ({ childr
     if (!user?.id) return;
 
     try {
-      const userProfile = await getUserProfile(user.id);
+      // Force cache refresh to get latest points
+      const userProfile = await getUserProfile(user.id, undefined, true);
       if (!userProfile) return;
 
       setProfile(userProfile);
       setRole(userProfile.role);
+      console.log('[UserProfile] Profile refreshed manually:', userProfile.total_points);
 
-      await loadEngagementHistory(user.id);
+      await loadEngagementHistory(user.id, userProfile);
     } catch (error) {
       console.error('[UserProfile] Error refreshing profile:', error);
     }
