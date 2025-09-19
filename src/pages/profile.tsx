@@ -34,7 +34,7 @@ export default function ProfilePage() {
             </Head>
 
             <div className="min-h-screen bg-white">
-                <div className="max-w-4xl mx-auto px-2 py-2 space-y-6">
+                <div className="max-w-4xl mx-auto px-2 py-2 space-y-4">
                     {/* Header */}
 
                     <div className="text-center mb-4">
