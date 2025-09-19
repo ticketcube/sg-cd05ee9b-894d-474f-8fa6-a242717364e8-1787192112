@@ -61,8 +61,6 @@ export default function CombinedDashboardTop({
                 {/* Combined Header - Flexible height based on content */}
                 <div className="flex flex-col space-y-3">
                     
-
-                    
                     {/* Top Section: Title + Welcome */}
 
                     <div className="container mx-auto px-2 py-2">
@@ -73,7 +71,7 @@ export default function CombinedDashboardTop({
                             <p className="mt-4 text-sm text-muted-foreground pb-2">
                                 Welcome back, {profile?.username || 'Explorer'}
                             </p>
-                         </div>
+                       
 
                   
                     {/* Stats Row - Compact */}
