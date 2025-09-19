@@ -75,7 +75,7 @@ export default function CombinedDashboardTop({
           
 
                     {/* Stats Row - Compact */}
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 px-2">
                         <div className="bg-white rounded-lg p-2 text-center border border-purple-deep">
                             <Trophy className="w-4 h-4 text-purple-deep mx-auto mb-1" />
                             <div className="text-sm font-bold text-purple-med">{historyLoading ? '...' : total_points}</div>
