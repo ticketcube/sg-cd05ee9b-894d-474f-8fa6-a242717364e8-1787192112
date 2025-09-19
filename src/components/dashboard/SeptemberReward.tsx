@@ -74,7 +74,7 @@ export default function SeptemberReward() {
                             style={{ width: loading ? "0%" : `${progressPercentage}%` }}
                         />
                     </div>
-                    <div className="text-center text-xs font-medium pt-1">
+                    <div className="text-center text-s font-medium pt-1">
                         {loading ? "Loading..." :
                             progressPercentage === 100
                                 ? <span className="text-emerald-700">🎉 All zines earned!</span>
