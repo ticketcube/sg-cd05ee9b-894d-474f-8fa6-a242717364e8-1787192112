@@ -48,7 +48,7 @@ export interface UserEngagementHistory {
     user_profile: UserProfile;
     weekly_summaries: UserEngagementSummary[];
     total_points: number;
-    total_engagements: number; 
+    total_engagements: number;
     artistsDiscovered: number;
 }
 
@@ -195,9 +195,9 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
 export const updateUserLocation = async (userId: string, cityId: number, rawCityInput: string): Promise<UserProfile> => {
     const { data, error } = await supabase
         .from("user_profiles")
-        .update({ 
-            city_id: cityId, 
-            raw_city_input: rawCityInput 
+        .update({
+            city_id: cityId,
+            raw_city_input: rawCityInput
         })
         .eq("user_id", userId)
         .select()
@@ -312,7 +312,7 @@ export const recordEngagement = async (
 /** Get user's engagement history with weekly summaries - ✅ PRODUCTION OPTIMIZED */
 export async function getUserEngagementHistory(
     userId: string,
-    profile?: UserProfile, 
+    profile?: UserProfile,
     signal?: AbortSignal
 ): Promise<UserEngagementHistory> {
     console.log(`[UserProfileService] Getting engagement history for user: ${userId}`);
@@ -356,8 +356,8 @@ export async function getUserEngagementHistory(
         // ✅ OPTIMIZED PROCESSING: Simplified calculation for better performance
         const totalEngagements = engagements?.length || 0;
         let calculatedTotalPoints = 0;
-        const weeklyMap = new Map<string, UserEngagementSummary>();
-        const uniqueArtists = new Set<string>();
+        const weeklyMap = new Map < string, UserEngagementSummary> ();
+        const uniqueArtists = new Set < string > ();
 
         if (engagements && engagements.length > 0) {
             // ✅ PERFORMANCE: Single pass through all engagements
@@ -419,13 +419,13 @@ export async function getUserEngagementHistory(
 
         console.log(`[UserProfileService] Engagement history loaded successfully. Total points: ${calculatedTotalPoints}, Artists discovered: ${uniqueArtists.size}`);
         return result;
-        
+
     } catch (error) {
         if (signal?.aborted) {
             console.log('[UserProfileService] Engagement history request was aborted');
             throw new Error('Request aborted');
         }
-        
+
         console.error('[UserProfileService] Error in getUserEngagementHistory:', error);
         throw error;
     }
