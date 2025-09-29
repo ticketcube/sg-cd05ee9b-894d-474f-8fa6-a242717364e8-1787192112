@@ -142,7 +142,7 @@ export default function MonthlyReward() {
                 </p>
 
                 {reward?.rewards_url && (
-                    <Link href={september/rewards}>
+                    <Link href={"/september/rewards"}>
                         <div className="relative aspect-video w-full mb-4 overflow-hidden rounded-lg">
                             <Image
                                 src={reward.rewards_url}
