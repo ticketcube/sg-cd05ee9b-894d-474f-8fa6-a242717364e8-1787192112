@@ -189,7 +189,7 @@ export default function SeptemberRewardsPage() {
             <div className="container mx-auto px-2 py-2">
                 <div className="text-center mb-4">
                     <h1 className="text-3xl font-extrabold tracking-tight lg:text-5xl">
-                        September Discovery Challenge!
+                        Discovery Challenge!
                     </h1>
                     <p className="mt-4 text-sm text-muted-foreground pb-2">
                         Select an artist. Watch for 15+ seconds. Rate with sliders. Earn 10 points!
