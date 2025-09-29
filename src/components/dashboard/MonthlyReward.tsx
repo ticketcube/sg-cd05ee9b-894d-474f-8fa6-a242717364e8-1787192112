@@ -15,6 +15,8 @@ export default function MonthlyReward() {
         action_name: string;
         points_value: number;
         description: string;
+        reward_description: string;
+        rewards_url: string;
     } | null > (null);
 
     // Fetch active reward
@@ -22,7 +24,7 @@ export default function MonthlyReward() {
         const fetchReward = async () => {
             const { data, error } = await supabase
                 .from("points_config")
-                .select("id, action_name, points_value, description")
+                .select("id, action_name, points_value, description, reward_description, rewards_url")
                 .eq("is_active", true)
                 .order("created_at", { ascending: false })
                 .limit(1)
@@ -138,14 +140,15 @@ export default function MonthlyReward() {
 
                 {/* Reward Details / Image */}
                 <p className="text-xs text-purple-deep text-center py-5">
-                    OnesToWatch Zines are limited-printing magazines, showcasing rising
-                    stars with exclusive content!
+                    {reward?.reward_description ||
+                        "This Month's Reward!"}
                 </p>
 
                 <Link href="/monthly/rewards">
                     <div className="relative aspect-video w-full mb-4 overflow-hidden rounded-lg">
                         <Image
-                            src="https://cdn.brandfolder.io/364H2QNG/at/rq4k9zrphcjp43xcbhng5m58/Zines_Photo.png"
+                            src={reward?.rewards_url ||
+                                }
                             alt="OnesToWatch Zine Collection"
                             fill
                             className="object-cover"
