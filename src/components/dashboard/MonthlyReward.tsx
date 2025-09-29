@@ -120,9 +120,7 @@ export default function MonthlyReward() {
                             {loading ? (
                                 "Loading..."
                             ) : progressPercentage === 100 ? (
-                                <span className="text-emerald-700">
-                                    🎉 Reward achieved!
-                                </span>
+                                <span className="text-emerald-700">🎉 Reward achieved!</span>
                             ) : progressPercentage >= 75 ? (
                                 <span className="text-purple-700">
                                     Almost there! {targetPoints - totalPoints} more!
@@ -140,22 +138,22 @@ export default function MonthlyReward() {
 
                 {/* Reward Details / Image */}
                 <p className="text-xs text-purple-deep text-center py-5">
-                    {reward?.reward_description ||
-                        "This Month's Reward!"}
+                    {reward?.reward_description || "This Month's Reward!"}
                 </p>
 
-                <Link href="/monthly/rewards">
-                    <div className="relative aspect-video w-full mb-4 overflow-hidden rounded-lg">
-                        <Image
-                            src={reward?.rewards_url ||
-                                }
-                            alt="OnesToWatch Zine Collection"
-                            fill
-                            className="object-cover"
-                            sizes="100vw"
-                        />
-                    </div>
-                </Link>
+                {reward?.rewards_url && (
+                    <Link href={reward.rewards_url}>
+                        <div className="relative aspect-video w-full mb-4 overflow-hidden rounded-lg">
+                            <Image
+                                src={reward.rewards_url}
+                                alt={reward.action_name || "Reward Image"}
+                                fill
+                                className="object-cover"
+                                sizes="100vw"
+                            />
+                        </div>
+                    </Link>
+                )}
             </div>
         </Card>
     );
