@@ -6,7 +6,7 @@ import CombinedDashboardTop from '@/components/dashboard/CombinedDashboardTop';
 import DashboardLoading from '@/components/dashboard/DashboardLoading';
 import DashboardAuthBlock from '@/components/dashboard/DashboardAuthBlock';
 import { AlertCircle } from 'lucide-react';
-import SeptemberReward from "@/components/dashboard/SeptemberReward";
+import MonthlyReward from "@/components/dashboard/MonthlyReward";
 
 // Hook & Service Imports
 import { useUserProfile } from '@/contexts/UserProfileContext';
@@ -91,10 +91,10 @@ const DiscoveryDashboard = () => {
             </div>
            
 
-            {/* September Reward Tracker + Module */}
+            {/* Monthly Reward Tracker + Module */}
             <div className="px-2 pb-2">
                 <div className="max-w-6xl mx-auto">
-                    <SeptemberReward />
+                    <MonthlyReward />
                 </div>
             </div>
         </div>
