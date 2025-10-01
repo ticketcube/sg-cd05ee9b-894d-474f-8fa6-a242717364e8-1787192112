@@ -81,8 +81,8 @@ export default function HomePage() {
                 <meta
                     name="description"
                     content="Your personal OTW Chart profile, survey, and favorite artists."
+                    name='impact-site-verification' value='fe37854f-ba34-4601-b522-0ed2f2e0336b'
                 />
-                <meta name='impact-site-verification' value='fe37854f-ba34-4601-b522-0ed2f2e0336b'>
             </Head>
         <div className="min-h-screen bg-white flex flex-col items-center justify-start">
 
