@@ -76,14 +76,18 @@ export default function HomePage() {
     }
 
     return (
-          <Head>
-                <title>OnesToWatch</title>
-                <meta
-                    name="description"
-                    content="Your personal OTW Chart profile, survey, and favorite artists."
-                    name='impact-site-verification' value='fe37854f-ba34-4601-b522-0ed2f2e0336b'
-                />
+                <Head>
+            <title>OnesToWatch</title>
+            <meta
+                name="description"
+                content="Your personal OTW Chart profile, survey, and favorite artists."
+            />
+            <meta
+                name="impact-site-verification"
+                content="fe37854f-ba34-4601-b522-0ed2f2e0336b"
+            />
             </Head>
+
         <div className="min-h-screen bg-white flex flex-col items-center justify-start">
 
             {/* Hero Section */}
