@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import AuthDialog from "@/components/AuthDialog";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, Gift, Compass, Star, Trophy, Users, Calendar, Music } from "lucide-react";
