@@ -13,52 +13,79 @@ export default function AuthCallback() {
       try {
         console.log('🔄 [AuthCallback] Starting OAuth callback processing');
         
-        // ✅ ENHANCED: More comprehensive session handling
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        // Check for OAuth tokens in URL
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const urlParams = new URLSearchParams(window.location.search);
         
-        if (sessionError) {
-          console.error('❌ [AuthCallback] Session error:', sessionError);
-          setError('Authentication failed. Please try again.');
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const code = urlParams.get('code');
+        const errorParam = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
+
+        // Handle OAuth errors
+        if (errorParam) {
+          console.error('❌ [AuthCallback] OAuth error from provider:', errorParam, errorDescription);
+          setError(errorDescription || errorParam);
+          setLoading(false);
           return;
         }
 
-        if (!sessionData.session || !sessionData.session.user) {
-          console.error('❌ [AuthCallback] No session found, checking URL params');
+        // If we have tokens in the URL hash, Supabase should auto-handle them
+        if (accessToken || code) {
+          console.log('✅ [AuthCallback] OAuth tokens detected, waiting for session...');
           
-          // ✅ NEW: Handle URL hash fragments for OAuth
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const urlParams = new URLSearchParams(window.location.search);
+          // Wait a moment for Supabase to process the tokens
+          await new Promise(resolve => setTimeout(resolve, 1500));
           
-          if (hashParams.get('access_token') || urlParams.get('code')) {
-            console.log('🔄 [AuthCallback] OAuth params found, waiting for session...');
-            // Wait a bit longer for session to be established
-            setTimeout(handleAuthCallback, 1000);
+          // Now check for session
+          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError) {
+            console.error('❌ [AuthCallback] Session error:', sessionError);
+            setError('Failed to establish session. Please try signing in again.');
+            setLoading(false);
             return;
           }
+
+          if (!sessionData.session) {
+            console.error('❌ [AuthCallback] No session found after OAuth');
+            setError('Authentication incomplete. Please try again.');
+            setLoading(false);
+            return;
+          }
+
+          console.log('✅ [AuthCallback] Session established for user:', sessionData.session.user.id);
           
-          setError('No authentication session found.');
-          return;
+          // Wait a bit more for the UserProfileContext to process the auth change
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Redirect to dashboard
+          console.log('✅ [AuthCallback] Redirecting to dashboard');
+          router.replace('/discovery-dashboard');
+          
+        } else {
+          // No tokens found - might be coming from email link
+          const { data: sessionData } = await supabase.auth.getSession();
+          
+          if (sessionData.session) {
+            console.log('✅ [AuthCallback] Existing session found, redirecting');
+            router.replace('/discovery-dashboard');
+          } else {
+            console.error('❌ [AuthCallback] No OAuth tokens or session found');
+            setError('No authentication data found. Please try signing in again.');
+            setLoading(false);
+          }
         }
 
-        const user = sessionData.session.user;
-        console.log('✅ [AuthCallback] OAuth user authenticated:', user.id);
-
-
-       // ✅ SIMPLE: Just redirect without sessionStorage interference
-console.log('✅ [AuthCallback] Redirecting to dashboard');
-
-// Use router.push for normal navigation
-router.replace('/discovery-dashboard');
-
       } catch (error) {
-        console.error('❌ [AuthCallback] Error in auth callback:', error);
-        setError('Something went wrong. Please try signing in again.');
-      } finally {
+        console.error('❌ [AuthCallback] Unexpected error:', error);
+        setError('Something went wrong during authentication. Please try again.');
         setLoading(false);
       }
     };
 
-    // ✅ ENHANCED: Immediate processing with fallback
+    // Start processing immediately
     handleAuthCallback();
   }, [router]);
 
@@ -73,7 +100,7 @@ router.replace('/discovery-dashboard');
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
           <div className="space-y-2">
             <p className="text-white text-lg font-medium">Completing sign in...</p>
-            <p className="text-gray-400 text-sm">Setting up your account</p>
+            <p className="text-gray-400 text-sm">This should only take a moment</p>
           </div>
         </div>
       </div>
@@ -98,7 +125,7 @@ router.replace('/discovery-dashboard');
               onClick={handleRetryAuth}
               className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
             >
-              Return to Home
+              Return to Home & Try Again
             </button>
           </div>
         </div>
