@@ -126,7 +126,7 @@ export const getUserProfile = async (
     try {
         const { data, error } = await supabase
             .from('user_profiles')
-            .select('id, user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url')
+            .select('user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url, display_name')
             .eq('user_id', userId)
             .abortSignal(abortSignal)
             .single();
