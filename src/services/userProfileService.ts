@@ -223,7 +223,7 @@ export const addPoints = async (userId: string, pointsToAdd: number): Promise<Us
 
     const { error } = await supabase.rpc("increment_user_points", {
         points_to_add: pointsToAdd,
-        user_id: userId // Ensure parameter name matches your RPC function definition
+        user_id_input: userId 
     });
 
     if (error) {
@@ -447,6 +447,3 @@ export const getWeeklyStats = async (userId: string, weekIdentifier: string): Pr
     const total_points = data?.reduce((sum, e) => sum + (e.points_earned || 0), 0) || 0;
     return { total_points };
 };
-
-
-
