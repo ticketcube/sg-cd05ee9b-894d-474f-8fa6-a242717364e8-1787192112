@@ -97,7 +97,7 @@ export const clearProfileCache = (userId?: string) => {
 export const getUserProfile = async (
     userId: string,
     abortSignal?: AbortSignal,
-    skipCache = false
+    skipCache = false // NEW parameter to force a refresh
 ): Promise<UserProfile | null> => {
     console.log(`[UserProfileService] Getting profile for user: ${userId}. Skip cache: ${skipCache}`);
 
@@ -126,7 +126,7 @@ export const getUserProfile = async (
     try {
         const { data, error } = await supabase
             .from('user_profiles')
-            .select('user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url, display_name')
+            .select('id, user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url')
             .eq('user_id', userId)
             .abortSignal(abortSignal)
             .single();
@@ -146,6 +146,7 @@ export const getUserProfile = async (
                     timestamp: Date.now()
                 }));
                 console.log('[UserProfileService] Profile cached for user:', userId);
+                // --- NEW: Notify listeners with the fresh data ---
                 notifyProfileChange(data);
             } catch (cacheError) {
                 console.warn('[UserProfileService] Failed to cache profile:', cacheError);
@@ -223,7 +224,7 @@ export const addPoints = async (userId: string, pointsToAdd: number): Promise<Us
 
     const { error } = await supabase.rpc("increment_user_points", {
         points_to_add: pointsToAdd,
-        user_id_input: userId 
+        user_id: userId // Ensure parameter name matches your RPC function definition
     });
 
     if (error) {
@@ -447,3 +448,6 @@ export const getWeeklyStats = async (userId: string, weekIdentifier: string): Pr
     const total_points = data?.reduce((sum, e) => sum + (e.points_earned || 0), 0) || 0;
     return { total_points };
 };
+
+
+
