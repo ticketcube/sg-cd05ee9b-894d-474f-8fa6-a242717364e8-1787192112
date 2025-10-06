@@ -97,7 +97,7 @@ export const clearProfileCache = (userId?: string) => {
 export const getUserProfile = async (
     userId: string,
     abortSignal?: AbortSignal,
-    skipCache = false // NEW parameter to force a refresh
+    skipCache = false
 ): Promise<UserProfile | null> => {
     console.log(`[UserProfileService] Getting profile for user: ${userId}. Skip cache: ${skipCache}`);
 
@@ -126,7 +126,7 @@ export const getUserProfile = async (
     try {
         const { data, error } = await supabase
             .from('user_profiles')
-            .select('id, user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url')
+            .select('user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url, display_name')
             .eq('user_id', userId)
             .abortSignal(abortSignal)
             .single();
@@ -146,7 +146,6 @@ export const getUserProfile = async (
                     timestamp: Date.now()
                 }));
                 console.log('[UserProfileService] Profile cached for user:', userId);
-                // --- NEW: Notify listeners with the fresh data ---
                 notifyProfileChange(data);
             } catch (cacheError) {
                 console.warn('[UserProfileService] Failed to cache profile:', cacheError);
