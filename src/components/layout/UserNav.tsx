@@ -42,15 +42,11 @@ export default function UserNav() {
     setMounted(true);
   }, []);
 
-  // Use mounted state to prevent hydration mismatch
-  const isMobile = mounted ? isMobileHook : false;
-
   const handleLogout = async () => {
-    if (isLoggingOut) return; // Prevent double-clicks
+    if (isLoggingOut) return;
     
     try {
       setIsLoggingOut(true);
-      // Close any open menus before logout
       setIsDropdownOpen(false);
       setIsSheetOpen(false);
       
@@ -61,7 +57,6 @@ export default function UserNav() {
         description: "You have been signed out of your account.",
       });
       
-      // Redirect to home page after successful logout
       if (typeof window !== "undefined") {
         window.location.href = "/";
       }
@@ -78,7 +73,6 @@ export default function UserNav() {
   };
 
   const handleNavigationClick = () => {
-    // Close both dropdown and sheet when navigation occurs
     setIsDropdownOpen(false);
     setIsSheetOpen(false);
   };
@@ -98,7 +92,6 @@ export default function UserNav() {
                 <Button onClick={() => setAuthDialogOpen(true)}>Login</Button>
             </div>
 
-            {/* Auth Dialog for header login button */}
             <AuthDialog 
                 isOpen={isAuthDialogOpen} 
                 onClose={() => setAuthDialogOpen(false)}
@@ -132,7 +125,36 @@ export default function UserNav() {
     </>
   );
 
-  if (isMobile) {
+  // Don't render responsive UI until mounted to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={profile?.avatar_url || ""} alt={user.email || ""} />
+              <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{profile?.username || "User"}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {menuItems}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  // After mount, render responsive version
+  if (isMobileHook) {
     return (
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetTrigger asChild>
