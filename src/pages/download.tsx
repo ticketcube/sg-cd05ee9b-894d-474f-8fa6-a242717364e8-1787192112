@@ -203,7 +203,7 @@ export default function DownloadPage() {
                 size="lg"
                 variant="outline"
                 onClick={() => window.location.href = "/"}
-                className="border-gray-600 hover:bg-gray-800 text-white hover:text-white px-8 py-6 text-lg"
+                className="border-gray-600 hover:bg-gray-800 text-white hover:text-black px-8 py-6 text-lg"
               >
                 Try in Browser
               </Button>
