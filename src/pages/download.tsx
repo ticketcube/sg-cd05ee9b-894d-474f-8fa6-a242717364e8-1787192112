@@ -24,12 +24,14 @@ import {
 
 export default function DownloadPage() {
   const { isInstallable: canInstall, promptInstall, isInstalled } = usePWAInstall();
+  const [mounted, setMounted] = useState(false);
   const [deviceType, setDeviceType] = useState<"ios" | "android" | "desktop">("desktop");
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    setMounted(true);
     const userAgent = navigator.userAgent.toLowerCase();
     if (/iphone|ipad|ipod/.test(userAgent)) {
       setDeviceType("ios");
@@ -185,7 +187,7 @@ export default function DownloadPage() {
                 onClick={handleInstallClick}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-6 text-lg font-semibold shadow-2xl shadow-purple-500/50 transition-all hover:scale-105"
               >
-                {deviceType === "ios" ? (
+                {mounted && deviceType === "ios" ? (
                   <>
                     <Share2 className="w-5 h-5 mr-2" />
                     Install on iPhone
@@ -336,7 +338,7 @@ export default function DownloadPage() {
               onClick={handleInstallClick}
               className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-12 py-6 text-xl font-semibold shadow-2xl shadow-purple-500/50 transition-all hover:scale-105"
             >
-              {deviceType === "ios" ? (
+              {mounted && deviceType === "ios" ? (
                 <>
                   <Share2 className="w-6 h-6 mr-2" />
                   Install Now
