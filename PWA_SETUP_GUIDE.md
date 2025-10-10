@@ -17,8 +17,79 @@ Your Progressive Web App (PWA) is now fully configured and ready to use! Here's 
 - ✅ Integrated into homepage with automatic detection
 
 ### 3. **Configuration**
-- ✅ `next.config.mjs` - Headers for manifest and service worker
+- ✅ `next.config.mjs` - **MANUAL STEP REQUIRED** (see below)
 - ✅ `scripts/generate-icons.js` - Icon generation helper script
+
+---
+
+## ⚠️ MANUAL CONFIGURATION REQUIRED
+
+### **Step 1: Update `next.config.mjs`**
+
+You need to manually add PWA headers to `next.config.mjs`. **This file cannot be auto-edited** by the system.
+
+**Open `next.config.mjs` in your code editor and replace its contents with:**
+
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
+  allowedDevOrigins: ['*.daytona.work'],
+  
+  // PWA Configuration
+  async headers() {
+    return [
+      {
+        source: '/manifest.json',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/manifest+json',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
+          },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;
+```
+
+**What this does:**
+- Ensures `manifest.json` is served with correct headers
+- Allows service worker to control all routes
+- Prevents aggressive caching of the service worker file
+
+---
 
 ## 📱 How Users Install Your PWA
 
@@ -39,6 +110,8 @@ Your Progressive Web App (PWA) is now fully configured and ready to use! Here's 
 2. Look for install icon in address bar
 3. Click to install as desktop app
 4. App opens in standalone window!
+
+---
 
 ## 🎨 Next Steps: Generate Icons
 
@@ -64,6 +137,8 @@ Create these sizes in your image editor:
 - 152x152, 192x192, 384x384, 512x512
 - 192x192-maskable (with 20% padding)
 - 512x512-maskable (with 20% padding)
+
+---
 
 ## 🚀 Features Enabled
 
@@ -92,6 +167,8 @@ Create these sizes in your image editor:
 - ✅ Automatic service worker updates
 - ✅ Push notification support (ready for future)
 
+---
+
 ## 📊 Testing Your PWA
 
 ### **Chrome DevTools**
@@ -106,9 +183,11 @@ Create these sizes in your image editor:
 2. Go to "Lighthouse" tab
 3. Select "Progressive Web App"
 4. Click "Generate report"
-5. Aim for 100/100 score!
+5. Aim for 90+ score (100 after icons generated)
 
 ### **Test Checklist**
+- [ ] Update `next.config.mjs` with PWA headers (REQUIRED)
+- [ ] Generate all PWA icons (REQUIRED)
 - [ ] Install prompt appears after delay
 - [ ] App installs successfully
 - [ ] Offline page loads when disconnected
@@ -117,6 +196,8 @@ Create these sizes in your image editor:
 - [ ] Icons display correctly on home screen
 - [ ] App opens in standalone mode
 - [ ] Theme colors match design
+
+---
 
 ## 🔧 Customization Options
 
@@ -137,6 +218,8 @@ Edit `public/sw.js` to change caching behavior
 ### **Add App Shortcuts**
 Edit `shortcuts` array in `public/manifest.json`
 
+---
+
 ## 💰 Cost Comparison
 
 ### **PWA (Current Setup)**
@@ -151,6 +234,10 @@ Edit `shortcuts` array in `public/manifest.json`
 - ❌ **Weeks of development** - Separate codebase
 - ❌ **App Store approval** - Can take days/weeks
 - ❌ **iOS only** - Need separate Android app
+
+**See `PWA_COST_ANALYSIS.md` for detailed token cost breakdown.**
+
+---
 
 ## 📈 Analytics & Monitoring
 
@@ -169,9 +256,13 @@ window.addEventListener('appinstalled', () => {
 });
 ```
 
+---
+
 ## 🎯 Success Criteria
 
 Your PWA is ready when:
+- ✅ `next.config.mjs` updated with PWA headers
+- ✅ All PWA icons generated and in `public/icons/`
 - ✅ Lighthouse PWA score is 90+
 - ✅ Install prompt shows on mobile
 - ✅ App works offline
@@ -179,12 +270,15 @@ Your PWA is ready when:
 - ✅ Updates work seamlessly
 - ✅ Theme colors match design
 
+---
+
 ## 🆘 Common Issues
 
 **Install prompt not showing?**
 - Check HTTPS is enabled
 - Verify manifest.json loads
 - Confirm service worker registers
+- Ensure `next.config.mjs` headers are added
 - Test on real device (not always on localhost)
 
 **Offline page not loading?**
@@ -198,12 +292,33 @@ Your PWA is ready when:
 - Check icons are in public/icons/
 - Test different icon purposes (any/maskable)
 
+**Service Worker not registering?**
+- Verify `next.config.mjs` headers are correct
+- Check browser console for errors
+- Clear service worker in DevTools
+- Hard refresh the page (Cmd/Ctrl + Shift + R)
+
+---
+
 ## 📚 Resources
 
 - [PWA Documentation](https://web.dev/progressive-web-apps/)
 - [Manifest Reference](https://developer.mozilla.org/en-US/docs/Web/Manifest)
 - [Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
 - [Lighthouse PWA Checklist](https://web.dev/pwa-checklist/)
+
+---
+
+## 🎉 Quick Start Summary
+
+**To complete your PWA setup:**
+
+1. **Update `next.config.mjs`** (copy code above) - 2 minutes
+2. **Generate icons**: `npx pwa-asset-generator public/OTWLogocolor.png public/icons --padding "20%"` - 3 minutes
+3. **Test installation** on mobile device - 2 minutes
+4. **Deploy to production** - Instant
+
+**Total time: ~7 minutes** ⚡
 
 ---
 
