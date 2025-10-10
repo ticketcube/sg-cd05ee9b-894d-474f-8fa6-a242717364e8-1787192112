@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 export default function DownloadPage() {
-  const { canInstall, promptInstall, isStandalone } = usePWAInstall();
+  const { isInstallable: canInstall, promptInstall, isInstalled } = usePWAInstall();
   const [deviceType, setDeviceType] = useState<"ios" | "android" | "desktop">("desktop");
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
