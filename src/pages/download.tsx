@@ -244,7 +244,7 @@ export default function DownloadPage() {
                   </div>
                   <div>
                     <p className="font-semibold mb-1 text-white">Tap the Share button</p>
-                    <p className="text-sm text-gray-300">Look for the <Share2 className="w-4 h-4 inline" /> icon at the bottom of Safari</p>
+                                      <p className="text-sm text-gray-300">Look for the <Download className="w-4 h-4 inline" /> icon at the bottom of Safari</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
