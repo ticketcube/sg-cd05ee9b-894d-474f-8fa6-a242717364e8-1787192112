@@ -234,7 +234,7 @@ export default function DownloadPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <Card className="max-w-md w-full bg-gray-800 border-gray-600 p-6 text-white">
               <h3 className="text-2xl font-bold mb-4 flex items-center gap-2 text-white">
-                <Share2 className="w-6 h-6 text-blue-400" />
+                <Download className="w-6 h-6 text-blue-400" />
                 Install on iPhone
               </h3>
               <ol className="space-y-4 mb-6">
