@@ -42,7 +42,7 @@ export default function DownloadPage() {
     } else if (canInstall) {
       promptInstall();
     } else {
-      window.location.href = "/discovery-dashboard";
+      window.location.href = "/";
     }
   };
 
@@ -176,7 +176,7 @@ export default function DownloadPage() {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => window.location.href = "/discovery-dashboard"}
+                onClick={() => window.location.href = "/"}
                 className="border-gray-600 hover:bg-gray-800 px-8 py-6 text-lg"
               >
                 Try in Browser
