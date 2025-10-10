@@ -203,7 +203,7 @@ export default function DownloadPage() {
                 size="lg"
                 variant="outline"
                 onClick={() => window.location.href = "/"}
-                className="border-gray-600 hover:bg-gray-800 px-8 py-6 text-lg"
+                className="border-gray-600 hover:bg-gray-800 text-white hover:text-white px-8 py-6 text-lg"
               >
                 Try in Browser
               </Button>
@@ -232,43 +232,43 @@ export default function DownloadPage() {
         {/* iOS Installation Instructions Modal */}
         {showIOSInstructions && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <Card className="max-w-md w-full bg-gray-900 border-gray-700 p-6">
-              <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Card className="max-w-md w-full bg-gray-800 border-gray-600 p-6 text-white">
+              <h3 className="text-2xl font-bold mb-4 flex items-center gap-2 text-white">
                 <Share2 className="w-6 h-6 text-blue-400" />
                 Install on iPhone
               </h3>
               <ol className="space-y-4 mb-6">
                 <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5 text-white font-semibold">
                     1
                   </div>
                   <div>
-                    <p className="font-semibold mb-1">Tap the Share button</p>
-                    <p className="text-sm text-gray-400">Look for the <Share2 className="w-4 h-4 inline" /> icon at the bottom of Safari</p>
+                    <p className="font-semibold mb-1 text-white">Tap the Share button</p>
+                    <p className="text-sm text-gray-300">Look for the <Share2 className="w-4 h-4 inline" /> icon at the bottom of Safari</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5 text-white font-semibold">
                     2
                   </div>
                   <div>
-                    <p className="font-semibold mb-1">Scroll and tap "Add to Home Screen"</p>
-                    <p className="text-sm text-gray-400">It has a <span className="inline-block w-4 h-4 border border-gray-400 rounded">+</span> icon</p>
+                    <p className="font-semibold mb-1 text-white">Scroll and tap "Add to Home Screen"</p>
+                    <p className="text-sm text-gray-300">It has a <span className="inline-block w-4 h-4 border border-gray-300 rounded">+</span> icon</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5 text-white font-semibold">
                     3
                   </div>
                   <div>
-                    <p className="font-semibold mb-1">Tap "Add" in the top right</p>
-                    <p className="text-sm text-gray-400">The app will appear on your home screen</p>
+                    <p className="font-semibold mb-1 text-white">Tap "Add" in the top right</p>
+                    <p className="text-sm text-gray-300">The app will appear on your home screen</p>
                   </div>
                 </li>
               </ol>
               <Button
                 onClick={() => setShowIOSInstructions(false)}
-                className="w-full"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
               >
                 Got it!
               </Button>
