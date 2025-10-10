@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX } from "lucide-react";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import WeeklyListCard from "@/components/dashboard/WeeklyListCard";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 export default function HomePage() {
     const router = useRouter();
@@ -116,14 +117,17 @@ export default function HomePage() {
                 <div className="w-full px-4 lg:px-0 py-8 max-w-6xl mx-auto">
                     <WeeklyListCard onArtistClick={handleRegisterClick} />
                 </div>
-
-                {/* Signup Dialog */}
-                <AuthDialog
-                    isOpen={isAuthDialogOpen}
-                    onClose={() => setAuthDialogOpen(false)}
-                    title="Join OnesToWatch"
-                />
             </div>
+
+            {/* PWA Install Prompt */}
+            <PWAInstallPrompt />
+
+            {/* Signup Dialog */}
+            <AuthDialog
+                isOpen={isAuthDialogOpen}
+                onClose={() => setAuthDialogOpen(false)}
+                title="Join OnesToWatch"
+            />
         </>
     );
 }
