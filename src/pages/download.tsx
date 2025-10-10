@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -17,13 +17,17 @@ import {
   Check,
   Sparkles,
   Users,
-  Award
+  Award,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 
 export default function DownloadPage() {
   const { isInstallable: canInstall, promptInstall, isInstalled } = usePWAInstall();
   const [deviceType, setDeviceType] = useState<"ios" | "android" | "desktop">("desktop");
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -43,6 +47,13 @@ export default function DownloadPage() {
       promptInstall();
     } else {
       window.location.href = "/";
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
     }
   };
 
@@ -124,11 +135,24 @@ export default function DownloadPage() {
           </div>
 
           <div className="relative z-10 max-w-6xl mx-auto text-center">
-            {/* Badge */}
-            <Badge className="mb-6 px-4 py-2 bg-purple-500/20 text-purple-300 border-purple-500/50">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Progressive Web App
-            </Badge>
+            {/* Hero Video - Added above headline */}
+            <div className="relative w-full max-w-3xl mx-auto aspect-video overflow-hidden rounded-xl shadow-2xl mb-8">
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+              <button
+                onClick={toggleMute}
+                className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
+              >
+                {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+              </button>
+            </div>
 
             {/* Main Heading */}
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
