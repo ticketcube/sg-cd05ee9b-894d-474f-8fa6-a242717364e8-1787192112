@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import AppLayout from "@/components/layout/AppLayout";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import Script from "next/script";
+import * as gtag from "@/lib/gtag";
 
 function MyApp({ Component, pageProps }: AppProps) {
     const router = useRouter();
@@ -34,7 +36,6 @@ function MyApp({ Component, pageProps }: AppProps) {
                                     newWorker.state === "installed" &&
                                     navigator.serviceWorker.controller
                                 ) {
-                                    // New service worker available
                                     toast("Update Available", {
                                         description: "A new version is ready. Refresh to update.",
                                         action: {
@@ -86,14 +87,44 @@ function MyApp({ Component, pageProps }: AppProps) {
         </>
     );
 
+    // Track route changes for analytics
+    useEffect(() => {
+        const handleRouteChange = (url: string) => {
+            gtag.pageview(url);
+        };
+        router.events.on("routeChangeComplete", handleRouteChange);
+        return () => {
+            router.events.off("routeChangeComplete", handleRouteChange);
+        };
+    }, [router.events]);
+
     return (
-        <UserProfileProvider>
-            {needsLayout ? (
-                <AppLayout>{PageComponent}</AppLayout>
-            ) : (
-                PageComponent
-            )}
-        </UserProfileProvider>
+        <>
+            {/* ✅ Google Analytics Scripts (gtag.js) */}
+            <Script
+                strategy="afterInteractive"
+                src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+            />
+            <Script id="gtag-init" strategy="afterInteractive">
+                {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
+            page_path: window.location.pathname,
+          });
+        `}
+            </Script>
+
+            {/* ✅ App content */}
+            <UserProfileProvider>
+                {needsLayout ? (
+                    <AppLayout>{PageComponent}</AppLayout>
+                ) : (
+                    PageComponent
+                )}
+            </UserProfileProvider>
+        </>
     );
 }
 
