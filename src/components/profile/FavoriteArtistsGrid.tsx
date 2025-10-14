@@ -129,7 +129,7 @@ export function FavoriteArtistsGrid() {
                                         size="sm"
                                         variant="outline"
                                         className="text-xs px-2 py-1 h-7 border-gray-200 text-purple-deep hover:bg-purple-50"
-                                        onClick={() => window.open(`https://ticketcube.io/cube/template/artist/?artistId=${artist.uuid}`, '_blank')}
+                                        onClick={() => window.open(`https://ticketcube.io/artist/?artistId=${artist.uuid}`, '_blank')}
                                     >
                                         <ExternalLink className="w-3 h-3 mr-1" />
                                         Get Your Free TicketCube!
