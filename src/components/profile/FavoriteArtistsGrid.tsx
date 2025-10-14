@@ -125,15 +125,15 @@ export function FavoriteArtistsGrid() {
                
                 
                 <div className="flex space-x-2">
-                  <Button size="sm" variant="outline" disabled className="text-xs px-2 py-1 h-7 border-gray-200 text-purple-deep">
-                    <ExternalLink className="w-3 h-3 mr-1" />
-                              https://your-ticketcube-domain.com/cube/template/artist-cube?artistId=uuid-here
-                              Example link format:
-
-                              <a href="https://ticketcube.com/cube/template/artist-cube?artistId=550e8400-e29b-41d4-a716-446655440000">
-                                  Claim Your Cube for [Artist Name]
-                              </a>
-                  </Button>
+                 <Button 
+  size="sm" 
+  variant="outline" 
+  className="text-xs px-2 py-1 h-7 border-gray-200 text-purple-deep hover:bg-purple-50"
+  onClick={() => window.open(`https://ticketcube.com/cube/template/artist-cube?artistId=${artist.uuid}`, '_blank')}
+>
+  <ExternalLink className="w-3 h-3 mr-1" />
+  Claim Cube
+</Button>
                 </div>
               </div>
             </div>
