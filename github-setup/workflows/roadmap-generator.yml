@@ -1,6 +1,7 @@
-name: Generate Project Roadmap
+name: Generate Project Roadmap & Sync Project Board
 
 # This workflow automatically generates a roadmap visualization from GitHub Issues
+# AND syncs issues to project board columns based on status labels
 # Runs on: Issue creation, issue updates, manual trigger, and weekly schedule
 
 on:
@@ -12,10 +13,180 @@ on:
 
 permissions:
   contents: write
-  issues: read
+  issues: write
   pull-requests: read
 
 jobs:
+  # NEW JOB: Sync issue to project board when status label changes
+  sync-to-project:
+    runs-on: ubuntu-latest
+    name: Sync Issue to Project Board
+    if: github.event_name == 'issues' && (github.event.action == 'labeled' || github.event.action == 'unlabeled')
+    
+    steps:
+      - name: Detect Status Label Change
+        id: detect-status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const label = context.payload.label?.name;
+            const action = context.payload.action;
+            
+            // Map status labels to project columns
+            const statusMap = {
+              'status-backlog': 'Backlog',
+              'status-todo': 'To Do',
+              'status-in-progress': 'In Progress',
+              'status-done': 'Done'
+            };
+            
+            // Check if this is a status label
+            if (label && label.startsWith('status-')) {
+              console.log(`Status label ${action}: ${label}`);
+              return {
+                shouldSync: true,
+                statusLabel: label,
+                columnName: statusMap[label],
+                action: action
+              };
+            }
+            
+            return { shouldSync: false };
+            
+      - name: Sync to Project Board
+        if: steps.detect-status.outputs.result && fromJSON(steps.detect-status.outputs.result).shouldSync
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const statusData = ${{ steps.detect-status.outputs.result }};
+            const issueNumber = context.payload.issue.number;
+            const issueNodeId = context.payload.issue.node_id;
+            
+            console.log(`Syncing issue #${issueNumber} to column: ${statusData.columnName}`);
+            
+            // GraphQL query to find the project and move the item
+            const query = `
+              query($owner: String!, $repo: String!, $issueNumber: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  issue(number: $issueNumber) {
+                    projectItems(first: 10) {
+                      nodes {
+                        id
+                        project {
+                          id
+                          title
+                          fields(first: 20) {
+                            nodes {
+                              ... on ProjectV2SingleSelectField {
+                                id
+                                name
+                                options {
+                                  id
+                                  name
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            
+            try {
+              // First, get the project items for this issue
+              const result = await github.graphql(query, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issueNumber: issueNumber
+              });
+              
+              const projectItems = result.repository.issue.projectItems.nodes;
+              
+              if (projectItems.length === 0) {
+                console.log('Issue is not added to any project board yet');
+                return;
+              }
+              
+              // For each project this issue is in
+              for (const item of projectItems) {
+                const project = item.project;
+                console.log(`Found in project: ${project.title}`);
+                
+                // Find the Status field
+                const statusField = project.fields.nodes.find(
+                  field => field.name === 'Status'
+                );
+                
+                if (!statusField) {
+                  console.log('No Status field found in project');
+                  continue;
+                }
+                
+                // Find the option that matches our target column
+                const targetOption = statusField.options.find(
+                  option => option.name === statusData.columnName
+                );
+                
+                if (!targetOption) {
+                  console.log(`Column "${statusData.columnName}" not found in project`);
+                  continue;
+                }
+                
+                // Update the project item's status
+                const mutation = `
+                  mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                    updateProjectV2ItemFieldValue(
+                      input: {
+                        projectId: $projectId
+                        itemId: $itemId
+                        fieldId: $fieldId
+                        value: {
+                          singleSelectOptionId: $optionId
+                        }
+                      }
+                    ) {
+                      projectV2Item {
+                        id
+                      }
+                    }
+                  }
+                `;
+                
+                await github.graphql(mutation, {
+                  projectId: project.id,
+                  itemId: item.id,
+                  fieldId: statusField.id,
+                  optionId: targetOption.id
+                });
+                
+                console.log(`✅ Moved issue #${issueNumber} to "${statusData.columnName}" in project "${project.title}"`);
+              }
+              
+            } catch (error) {
+              console.error('Error syncing to project board:', error);
+              // Don't fail the workflow if project sync fails
+            }
+            
+      - name: Comment on Issue
+        if: steps.detect-status.outputs.result && fromJSON(steps.detect-status.outputs.result).shouldSync
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const statusData = ${{ steps.detect-status.outputs.result }};
+            
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🔄 Automatically moved to **${statusData.columnName}** column in project board based on \`${statusData.statusLabel}\` label.`
+            });
+
   generate-roadmap:
     runs-on: ubuntu-latest
     name: Generate Roadmap
@@ -56,9 +227,16 @@ jobs:
             issues.data.forEach(issue => {
               const labels = issue.labels.map(l => l.name);
               const phase = labels.find(l => l.startsWith('phase-')) || 'phase-1';
-              const status = issue.state === 'closed' ? 'complete' 
-                : labels.includes('in-progress') ? 'inProgress' 
-                : 'planned';
+              
+              // Determine status from status labels or issue state
+              let status = 'planned';
+              if (labels.includes('status-done') || issue.state === 'closed') {
+                status = 'complete';
+              } else if (labels.includes('status-in-progress')) {
+                status = 'inProgress';
+              } else if (labels.includes('status-todo') || labels.includes('status-backlog')) {
+                status = 'planned';
+              }
               
               const phaseKey = phase === 'phase-1' ? 'mvp' 
                 : phase === 'phase-2' ? 'phase2'
@@ -163,9 +341,16 @@ jobs:
             - 🟡 **P2**: Medium - Valuable but not essential
             - 🟢 **P3**: Low - Nice to have
             
+            **Status Labels:**
+            - \`status-backlog\`: In backlog (maps to "Backlog" column)
+            - \`status-todo\`: Ready to start (maps to "To Do" column)
+            - \`status-in-progress\`: Currently being worked on (maps to "In Progress" column)
+            - \`status-done\`: Completed (maps to "Done" column)
+            
             ---
             
-            _This roadmap is automatically generated from GitHub Issues. To update, create or modify issues with the \`requirement\` label and appropriate phase labels (\`phase-1\`, \`phase-2\`, etc.)._
+            _This roadmap is automatically generated from GitHub Issues. To update, create or modify issues with the \`requirement\` label and appropriate phase/status labels._
+            _Issues are automatically moved to the correct project board column when status labels are added/changed._
             `;
             
             return markdown;
@@ -183,7 +368,7 @@ jobs:
           git push
           
       - name: Comment on Issue (if triggered by issue)
-        if: github.event_name == 'issues'
+        if: github.event_name == 'issues' && github.event.action != 'labeled' && github.event.action != 'unlabeled'
         uses: actions/github-script@v7
         with:
           script: |
