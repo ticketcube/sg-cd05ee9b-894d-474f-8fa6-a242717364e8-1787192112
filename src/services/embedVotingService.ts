@@ -50,18 +50,21 @@ export async function fetchCurrentWeekArtists(): Promise<{
     const weekIdentifier = getCurrentWeekIdentifier();
 
     try {
-        // First, get the weekly list for current week
-        const { data: weeklyList, error: listError } = await supabase
+        // First, get the weekly list for current week (fetch most recent if multiple exist)
+        const { data: weeklyLists, error: listError } = await supabase
             .from("weekly_lists")
             .select("id, week_identifier, title, status")
             .eq("week_identifier", weekIdentifier)
             .eq("status", "active")
-            .single();
+            .order("created_at", { ascending: false })
+            .limit(1);
 
-        if (listError || !weeklyList) {
-            console.error("No active weekly list found for", weekIdentifier);
+        if (listError || !weeklyLists || weeklyLists.length === 0) {
+            console.error("No active weekly list found for", weekIdentifier, listError);
             return { artists: [], weekIdentifier, weeklyListId: null };
         }
+
+        const weeklyList = weeklyLists[0];
 
         // Fetch the artists for this week
         const { data: weeklyListArtists, error: artistsError } = await supabase
