@@ -1,0 +1,195 @@
+name: Generate Project Roadmap
+
+# This workflow automatically generates a roadmap visualization from GitHub Issues
+# Runs on: Issue creation, issue updates, manual trigger, and weekly schedule
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled]
+  workflow_dispatch: # Manual trigger
+  schedule:
+    - cron: '0 0 * * 0' # Weekly on Sunday at midnight UTC
+
+permissions:
+  contents: write
+  issues: read
+  pull-requests: read
+
+jobs:
+  generate-roadmap:
+    runs-on: ubuntu-latest
+    name: Generate Roadmap
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Fetch Issues
+        id: fetch-issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Fetch all issues with requirement labels
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              labels: 'requirement',
+              per_page: 100
+            });
+            
+            // Process issues into roadmap data
+            const roadmapData = {
+              mvp: { complete: [], inProgress: [], planned: [] },
+              phase2: { complete: [], inProgress: [], planned: [] },
+              phase3: { complete: [], inProgress: [], planned: [] },
+              phase4: { complete: [], inProgress: [], planned: [] }
+            };
+            
+            issues.data.forEach(issue => {
+              const labels = issue.labels.map(l => l.name);
+              const phase = labels.find(l => l.startsWith('phase-')) || 'phase-1';
+              const status = issue.state === 'closed' ? 'complete' 
+                : labels.includes('in-progress') ? 'inProgress' 
+                : 'planned';
+              
+              const phaseKey = phase === 'phase-1' ? 'mvp' 
+                : phase === 'phase-2' ? 'phase2'
+                : phase === 'phase-3' ? 'phase3'
+                : 'phase4';
+              
+              roadmapData[phaseKey][status].push({
+                number: issue.number,
+                title: issue.title,
+                priority: labels.find(l => l.startsWith('priority-')) || 'priority-p2',
+                component: labels.find(l => l.includes('component-')) || 'general',
+                url: issue.html_url
+              });
+            });
+            
+            return roadmapData;
+            
+      - name: Generate Roadmap Markdown
+        id: generate-markdown
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const roadmapData = ${{ steps.fetch-issues.outputs.result }};
+            
+            let markdown = `# 🗺️ OTW Chart - Project Roadmap
+            
+            > **Last Updated:** ${new Date().toISOString().split('T')[0]}
+            > **Auto-generated from GitHub Issues**
+            
+            ## 📊 Progress Overview
+            
+            | Phase | Complete | In Progress | Planned | Total |
+            |-------|----------|-------------|---------|-------|
+            | **MVP** | ${roadmapData.mvp.complete.length} | ${roadmapData.mvp.inProgress.length} | ${roadmapData.mvp.planned.length} | ${roadmapData.mvp.complete.length + roadmapData.mvp.inProgress.length + roadmapData.mvp.planned.length} |
+            | **Phase 2** | ${roadmapData.phase2.complete.length} | ${roadmapData.phase2.inProgress.length} | ${roadmapData.phase2.planned.length} | ${roadmapData.phase2.complete.length + roadmapData.phase2.inProgress.length + roadmapData.phase2.planned.length} |
+            | **Phase 3** | ${roadmapData.phase3.complete.length} | ${roadmapData.phase3.inProgress.length} | ${roadmapData.phase3.planned.length} | ${roadmapData.phase3.complete.length + roadmapData.phase3.inProgress.length + roadmapData.phase3.planned.length} |
+            | **Phase 4** | ${roadmapData.phase4.complete.length} | ${roadmapData.phase4.inProgress.length} | ${roadmapData.phase4.planned.length} | ${roadmapData.phase4.complete.length + roadmapData.phase4.inProgress.length + roadmapData.phase4.planned.length} |
+            
+            ---
+            
+            ## ✅ Phase 1: MVP (Q4 2025)
+            
+            ### Complete (${roadmapData.mvp.complete.length})
+            ${roadmapData.mvp.complete.map(issue => `- [x] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ### 🚧 In Progress (${roadmapData.mvp.inProgress.length})
+            ${roadmapData.mvp.inProgress.map(issue => `- [ ] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ### 📅 Planned (${roadmapData.mvp.planned.length})
+            ${roadmapData.mvp.planned.map(issue => `- [ ] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ---
+            
+            ## 🚀 Phase 2: Enhanced Engagement (Q1 2026)
+            
+            ### Complete (${roadmapData.phase2.complete.length})
+            ${roadmapData.phase2.complete.map(issue => `- [x] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ### 🚧 In Progress (${roadmapData.phase2.inProgress.length})
+            ${roadmapData.phase2.inProgress.map(issue => `- [ ] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ### 📅 Planned (${roadmapData.phase2.planned.length})
+            ${roadmapData.phase2.planned.map(issue => `- [ ] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ---
+            
+            ## 🌟 Phase 3: Social & Artist Features (Q2 2026)
+            
+            ### Complete (${roadmapData.phase3.complete.length})
+            ${roadmapData.phase3.complete.map(issue => `- [x] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ### 🚧 In Progress (${roadmapData.phase3.inProgress.length})
+            ${roadmapData.phase3.inProgress.map(issue => `- [ ] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ### 📅 Planned (${roadmapData.phase3.planned.length})
+            ${roadmapData.phase3.planned.map(issue => `- [ ] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ---
+            
+            ## 🔮 Phase 4: Scale & Expansion (Q3-Q4 2026)
+            
+            ### Complete (${roadmapData.phase4.complete.length})
+            ${roadmapData.phase4.complete.map(issue => `- [x] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ### 🚧 In Progress (${roadmapData.phase4.inProgress.length})
+            ${roadmapData.phase4.inProgress.map(issue => `- [ ] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ### 📅 Planned (${roadmapData.phase4.planned.length})
+            ${roadmapData.phase4.planned.map(issue => `- [ ] [#${issue.number}](${issue.url}) ${issue.title}`).join('\n') || '- None yet'}
+            
+            ---
+            
+            ## 📋 Legend
+            
+            - ✅ **Complete**: Feature implemented and deployed
+            - 🚧 **In Progress**: Currently being developed
+            - 📅 **Planned**: Scheduled for development
+            
+            **Priority Levels:**
+            - 🔴 **P0**: Critical - Must have for launch
+            - 🟠 **P1**: High - Important for core experience
+            - 🟡 **P2**: Medium - Valuable but not essential
+            - 🟢 **P3**: Low - Nice to have
+            
+            ---
+            
+            _This roadmap is automatically generated from GitHub Issues. To update, create or modify issues with the \`requirement\` label and appropriate phase labels (\`phase-1\`, \`phase-2\`, etc.)._
+            `;
+            
+            return markdown;
+            
+      - name: Update ROADMAP.md
+        run: |
+          echo '${{ steps.generate-markdown.outputs.result }}' > ROADMAP.md
+          
+      - name: Commit Changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add ROADMAP.md
+          git diff --quiet && git diff --staged --quiet || git commit -m "🗺️ Auto-update roadmap from issues"
+          git push
+          
+      - name: Comment on Issue (if triggered by issue)
+        if: github.event_name == 'issues'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '✅ Roadmap has been automatically updated to reflect this change! View it here: [ROADMAP.md](../ROADMAP.md)'
+            });
