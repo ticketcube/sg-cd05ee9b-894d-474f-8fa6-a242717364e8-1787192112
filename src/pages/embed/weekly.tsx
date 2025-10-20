@@ -22,7 +22,7 @@ export default function WeeklyEmbedPage() {
     const [artists, setArtists] = useState <WeeklyVotingArtist[]>([]);
     const [currentArtistIndex, setCurrentArtistIndex] = useState(0);
     const [weekIdentifier, setWeekIdentifier] = useState<string>('');
-    const [weeklyListId, setWeeklyListId] = useState <number|null>(null);
+    const [weeklyListId, setWeeklyListId] = useState<number|null>(null);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [videoWatchTimes, setVideoWatchTimes] = useState <Record<string,number>>({});
