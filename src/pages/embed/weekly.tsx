@@ -19,14 +19,14 @@ export default function WeeklyEmbedPage() {
     const router = useRouter();
     const { user } = useUserProfile();
 
-    const [artists, setArtists] = useState < WeeklyVotingArtist[] > ([]);
+    const [artists, setArtists] = useState <WeeklyVotingArtist[]>([]);
     const [currentArtistIndex, setCurrentArtistIndex] = useState(0);
-    const [weekIdentifier, setWeekIdentifier] = useState < string > ('');
-    const [weeklyListId, setWeeklyListId] = useState < number | null > (null);
+    const [weekIdentifier, setWeekIdentifier] = useState<string>('');
+    const [weeklyListId, setWeeklyListId] = useState <number|null>(null);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [videoWatchTimes, setVideoWatchTimes] = useState < Record < string, number>> ({});
-    const [votedArtists, setVotedArtists] = useState < Set < string >> (new Set());
+    const [videoWatchTimes, setVideoWatchTimes] = useState <Record<string,number>>({});
+    const [votedArtists, setVotedArtists] = useState <Set<string>>(new Set());
     const [allArtistsRated, setAllArtistsRated] = useState(false);
 
     const currentArtist = artists[currentArtistIndex];
@@ -52,7 +52,7 @@ export default function WeeklyEmbedPage() {
                 setWeeklyListId(listId);
 
                 // Check which artists have been voted on
-                const votedSet = new Set < string > ();
+                const votedSet = new Set<string>();
                 for (const artist of fetchedArtists) {
                     const alreadyVoted = await checkIfAlreadyVoted(artist.uuid, userId, week);
                     if (alreadyVoted) {
