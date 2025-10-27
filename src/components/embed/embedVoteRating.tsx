@@ -184,23 +184,6 @@ export function EmbedVoteRating({
                     </Button>
                 )}
             </div>
-
-            {/* Watch Time Progress */}
-            {!alreadyVoted && videoWatchTime < minWatchTime && (
-                <div className="mt-2">
-                    <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
-                        <motion.div
-                            className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${(videoWatchTime / minWatchTime) * 100}%` }}
-                            transition={{ duration: 0.5 }}
-                        />
-                    </div>
-                    <p className="text-xs text-white/80 text-center mt-1">
-                        {videoWatchTime}/{minWatchTime}s watched
-                    </p>
-                </div>
-            )}
         </div>
     );
 }

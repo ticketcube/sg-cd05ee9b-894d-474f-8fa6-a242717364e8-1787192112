@@ -282,8 +282,8 @@ export default function WeeklyEmbedPage() {
                     </div>
                 </div>
 
-                {/* Main Content - No padding bottom, minimal padding all around */}
-                <div className="max-w-7xl mx-auto px-2 pt-2 pb-0">
+                {/* Main Content - Minimal padding */}
+                <div className="max-w-7xl mx-auto px-2 py-2">
                     <div className="grid md:grid-cols-2 gap-2">
                         {/* Video Section */}
                         <div className="bg-black rounded-2xl overflow-hidden shadow-2xl">
@@ -298,7 +298,7 @@ export default function WeeklyEmbedPage() {
                             )}
                         </div>
 
-                        {/* Rating Section - Match video height exactly */}
+                        {/* Rating Section */}
                         <div className="rounded-2xl overflow-hidden shadow-2xl h-full">
                             {currentArtist && (
                                 <EmbedVoteRating
@@ -310,6 +310,15 @@ export default function WeeklyEmbedPage() {
                                     minWatchTime={10}
                                 />
                             )}
+                        </div>
+                    </div>
+
+                    {/* Progress Indicator - Compact with no extra spacing */}
+                    <div className="mt-2 pb-2">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 text-center">
+                            <p className="text-white text-sm font-semibold">
+                                Rated {votedArtists.size} of {artists.length} artists
+                            </p>
                         </div>
                     </div>
                 </div>
