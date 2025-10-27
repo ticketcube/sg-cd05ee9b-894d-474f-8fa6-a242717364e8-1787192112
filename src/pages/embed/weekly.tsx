@@ -242,7 +242,7 @@ export default function WeeklyEmbedPage() {
                                                 px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
                                                 ${isActive
                                                     ? 'bg-black text-white shadow-lg scale-105'
-                                                    : 'bg-purple-lit text-white hover:bg-black/40 backdrop-blur-sm'
+                                                    : 'bg-blacktext-white hover:bg-black/40 backdrop-blur-sm'
                                                 }
                                                 ${isVoted ? 'ring-2 ring-purple-med' : ''}
                                             `}
