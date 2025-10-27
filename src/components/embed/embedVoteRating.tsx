@@ -68,8 +68,7 @@ export function EmbedVoteRating({
         <div className="flex flex-col h-full bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
             {/* Header - More compact */}
             <div className="mb-4">
-                <h3 className="text-xl font-bold text-white text-center">
-                {artistName}
+                <h3 className="text-xl font-bold text-white text-center">{artistName}
                 </h3>
             </div>
 
