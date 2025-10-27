@@ -25,6 +25,15 @@ export function EmbedVoteRating({
     const [shareInterest, setShareInterest] = useState(50);
     const [slidersChanged, setSlidersChanged] = useState(false);
 
+    // Reset sliders to center when artist changes (only if not already voted)
+    useEffect(() => {
+        if (!alreadyVoted) {
+            setTicketInterest(50);
+            setShareInterest(50);
+            setSlidersChanged(false);
+        }
+    }, [artistName, alreadyVoted]);
+
     const canSubmit = !alreadyVoted && !isSubmitting && slidersChanged && videoWatchTime >= minWatchTime;
 
     const handleTicketInterestChange = (value: number[]) => {
