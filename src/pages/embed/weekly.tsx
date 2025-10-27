@@ -229,63 +229,62 @@ export default function WeeklyEmbedPage() {
 
             <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
                 {/* Artist Navigation Tabs */}
-<div className="bg-white/20 backdrop-blur-sm border-b border-white/20">
-    <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between gap-2">
-            
-            {/* Previous Button */}
-            <Button
-                onClick={handlePrevious}
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/10"
-            >
-                <ChevronLeft className="w-5 h-5" />
-            </Button>
+                <div className="bg-white/20 backdrop-blur-sm border-b border-white/20">
+                    <div className="max-w-7xl mx-auto px-4 py-2">
+                        <div className="flex items-center justify-between gap-2">
+                            
+                            {/* Previous Button */}
+                            <Button
+                                onClick={handlePrevious}
+                                variant="ghost"
+                                size="sm"
+                                className="text-white hover:bg-white/10"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </Button>
 
-            {/* Artist Tabs */}
-            <div className="flex-1 flex justify-center gap-2 overflow-x-auto">
-                {artists.map((artist, index) => {
-                    const isActive = currentArtistIndex === index;
-                    const isVoted = votedArtists.has(artist.uuid);
+                            {/* Artist Tabs */}
+                            <div className="flex-1 flex justify-center gap-2 overflow-x-auto">
+                                {artists.map((artist, index) => {
+                                    const isActive = currentArtistIndex === index;
+                                    const isVoted = votedArtists.has(artist.uuid);
 
-                    return (
-                        <button
-                            key={artist.uuid}
-                            onClick={() => handleTabClick(index)}
-                            className={`
-                                px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
-                                ${isActive
-                                    ? 'bg-white text-black shadow-lg scale-105'
-                                    : 'bg-white/30 text-white hover:bg-white/40 backdrop-blur-sm'
-                                }
-                                ${isVoted ? 'ring-2 ring-green-400' : ''}
-                            `}
-                        >
-                            {artist.artist_name}
-                            {isVoted && <span className="ml-1">✓</span>}
-                        </button>
-                    );
-                })}
-            </div>
+                                    return (
+                                        <button
+                                            key={artist.uuid}
+                                            onClick={() => handleTabClick(index)}
+                                            className={`
+                                                px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
+                                                ${isActive
+                                                    ? 'bg-white text-black shadow-lg scale-105'
+                                                    : 'bg-white/30 text-white hover:bg-white/40 backdrop-blur-sm'
+                                                }
+                                                ${isVoted ? 'ring-2 ring-green-400' : ''}
+                                            `}
+                                        >
+                                            {artist.artist_name}
+                                            {isVoted && <span className="ml-1">✓</span>}
+                                        </button>
+                                    );
+                                })}
+                            </div>
 
-            {/* Next Button */}
-            <Button
-                onClick={handleNext}
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/10"
-            >
-                <ChevronRight className="w-5 h-5" />
-            </Button>
-        </div>
-    </div>
-</div>
+                            {/* Next Button */}
+                            <Button
+                                onClick={handleNext}
+                                variant="ghost"
+                                size="sm"
+                                className="text-white hover:bg-white/10"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
 
-
-                {/* Main Content */}
-                <div className="max-w-7xl mx-auto p-4">
-                    <div className="grid md:grid-cols-2 gap-4 min-h-[600px]">
+                {/* Main Content - Reduced padding and removed min-height */}
+                <div className="max-w-7xl mx-auto p-2">
+                    <div className="grid md:grid-cols-2 gap-2">
                         {/* Video Section */}
                         <div className="bg-black rounded-2xl overflow-hidden shadow-2xl">
                             {currentArtist && (
@@ -299,28 +298,27 @@ export default function WeeklyEmbedPage() {
                             )}
                         </div>
 
-                       {/* Rating Section - Remove bg-white to allow component's gradient to show */}
-                        <div className="rounded-2xl overflow-hidden shadow-2xl">
-    {currentArtist && (
-        <EmbedVoteRating
-            artistName={currentArtist.artist_name}
-            onSubmit={handleRatingSubmit}
-            isSubmitting={isSubmitting}
-            alreadyVoted={votedArtists.has(currentArtist.uuid)}
-            videoWatchTime={currentWatchTime}
-            minWatchTime={10}
-        />
-    )}
-</div>
-
+                        {/* Rating Section - Match video height exactly */}
+                        <div className="rounded-2xl overflow-hidden shadow-2xl h-full">
+                            {currentArtist && (
+                                <EmbedVoteRating
+                                    artistName={currentArtist.artist_name}
+                                    onSubmit={handleRatingSubmit}
+                                    isSubmitting={isSubmitting}
+                                    alreadyVoted={votedArtists.has(currentArtist.uuid)}
+                                    videoWatchTime={currentWatchTime}
+                                    minWatchTime={10}
+                                />
+                            )}
+                        </div>
                     </div>
 
-                    {/* Progress Indicator */}
-                    <div className="mt-6 text-center">
-                        <p className="text-white text-lg font-semibold">
+                    {/* Progress Indicator - Reduced margin */}
+                    <div className="mt-3 text-center">
+                        <p className="text-white text-sm font-semibold">
                             Rated {votedArtists.size} of {artists.length} artists
                         </p>
-                        <div className="mt-2 max-w-md mx-auto h-2 bg-white/20 rounded-full overflow-hidden">
+                        <div className="mt-1 max-w-md mx-auto h-1.5 bg-white/20 rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500"
                                 style={{ width: `${(votedArtists.size / artists.length) * 100}%` }}
