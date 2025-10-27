@@ -282,8 +282,8 @@ export default function WeeklyEmbedPage() {
                     </div>
                 </div>
 
-                {/* Main Content - Reduced padding and removed min-height */}
-                <div className="max-w-7xl mx-auto p-2">
+                {/* Main Content - No padding bottom, minimal padding all around */}
+                <div className="max-w-7xl mx-auto px-2 pt-2 pb-0">
                     <div className="grid md:grid-cols-2 gap-2">
                         {/* Video Section */}
                         <div className="bg-black rounded-2xl overflow-hidden shadow-2xl">
@@ -310,19 +310,6 @@ export default function WeeklyEmbedPage() {
                                     minWatchTime={10}
                                 />
                             )}
-                        </div>
-                    </div>
-
-                    {/* Progress Indicator - Reduced margin */}
-                    <div className="mt-3 text-center">
-                        <p className="text-white text-sm font-semibold">
-                            Rated {votedArtists.size} of {artists.length} artists
-                        </p>
-                        <div className="mt-1 max-w-md mx-auto h-1.5 bg-white/20 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500"
-                                style={{ width: `${(votedArtists.size / artists.length) * 100}%` }}
-                            />
                         </div>
                     </div>
                 </div>
