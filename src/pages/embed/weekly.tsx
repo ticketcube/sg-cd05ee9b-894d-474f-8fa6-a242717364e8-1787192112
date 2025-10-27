@@ -303,7 +303,7 @@ export default function WeeklyEmbedPage() {
                         </div>
 
                        {/* Rating Section */}
-<div className="bg-white rounded-2xl overflow-hidden shadow-2xl text-black">
+                        <div className="embed-rating text-black !text-black [&_*]:!text-black bg-white rounded-2xl overflow-hidden shadow-2xl p-4">
     {currentArtist && (
         <EmbedVoteRating
             artistName={currentArtist.artist_name}
