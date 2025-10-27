@@ -162,6 +162,27 @@ export default function WeeklyEmbedPage() {
         }
     };
 
+    // Auto-scroll to active tab when index changes
+    useEffect(() => {
+        if (currentArtist) {
+            const tabsContainer = document.querySelector('.artist-tabs-container');
+            const activeTab = document.querySelector(`[data-artist-index="${currentArtistIndex}"]`);
+            
+            if (tabsContainer && activeTab) {
+                const containerWidth = (tabsContainer as HTMLElement).clientWidth;
+                const tabLeft = (activeTab as HTMLElement).offsetLeft;
+                const tabWidth = (activeTab as HTMLElement).offsetWidth;
+                
+                // Scroll to center the active tab
+                const scrollPosition = tabLeft - (containerWidth / 2) + (tabWidth / 2);
+                (tabsContainer as HTMLElement).scrollTo({
+                    left: scrollPosition,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }, [currentArtistIndex, currentArtist]);
+
     const handleTabClick = (index: number) => {
         setCurrentArtistIndex(index);
     };
@@ -232,7 +253,7 @@ export default function WeeklyEmbedPage() {
                             </Button>
 
                     {/* Artist Tabs */}
-                    <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide">
+                    <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide artist-tabs-container">
                         <div className="flex items-center gap-2 min-w-max px-1">
                             {artists.map((artist, index) => {
                                 const isActive = currentArtistIndex === index;
@@ -241,6 +262,7 @@ export default function WeeklyEmbedPage() {
                                 return (
                                     <button
                                         key={artist.uuid}
+                                        data-artist-index={index}
                                         onClick={() => handleTabClick(index)}
                                         className={`
                                             px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap flex-shrink-0
@@ -248,7 +270,6 @@ export default function WeeklyEmbedPage() {
                                                 ? 'bg-white text-black shadow-lg scale-105'
                                                 : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
                                             }
-                                            ${isVoted ? 'ring-2 ring-green-400' : ''}
                                         `}
                                     >
                                         {artist.artist_name}
