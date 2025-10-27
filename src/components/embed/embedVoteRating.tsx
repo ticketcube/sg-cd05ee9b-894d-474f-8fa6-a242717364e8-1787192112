@@ -74,17 +74,14 @@ export function EmbedVoteRating({
             </div>
 
             {/* Rating Controls - More compact spacing */}
-            <div className="flex-1 space-y-6">
+            <div className="flex-1 space-y-4">
                 {/* Ticket Interest Slider */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                     <div className="flex items-center gap-2">
                         <div className="p-1.5 bg-blue-500/20 rounded-lg">
                             <Ticket className="w-4 h-4 text-blue-400" />
                         </div>
-                        <div className="flex-1">
-                            <h4 className="text-sm font-semibold text-white">Concert Interest</h4>
-                            <p className="text-xs text-white/80">Would you buy tickets?</p>
-                        </div>
+                        <h4 className="text-sm font-semibold text-white">Would you buy tickets?</h4>
                     </div>
                     <div className="px-1">
                         <div className="relative mb-2">
@@ -116,15 +113,12 @@ export function EmbedVoteRating({
                 </div>
 
                 {/* Share Interest Slider */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                     <div className="flex items-center gap-2">
                         <div className="p-1.5 bg-green-500/20 rounded-lg">
                             <Users className="w-4 h-4 text-green-400" />
                         </div>
-                        <div className="flex-1">
-                            <h4 className="text-sm font-semibold text-white">Sharing Interest</h4>
-                            <p className="text-xs text-white/80">Would you recommend?</p>
-                        </div>
+                        <h4 className="text-sm font-semibold text-white">Would you share with friends?</h4>
                     </div>
                     <div className="px-1">
                         <div className="relative mb-2">
@@ -156,8 +150,8 @@ export function EmbedVoteRating({
                 </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="mt-4">
+            {/* Submit Button - Reduced top margin */}
+            <div className="mt-2">
                 {alreadyVoted ? (
                     <div className="bg-green-600/20 border border-green-500 rounded-lg p-3 flex items-center justify-center gap-2">
                         <CheckCircle className="w-5 h-5 text-green-400" />
@@ -193,7 +187,7 @@ export function EmbedVoteRating({
 
             {/* Watch Time Progress */}
             {!alreadyVoted && videoWatchTime < minWatchTime && (
-                <div className="mt-3">
+                <div className="mt-2">
                     <div className="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
                         <motion.div
                             className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
