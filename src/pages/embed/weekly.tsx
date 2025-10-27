@@ -211,7 +211,7 @@ export default function WeeklyEmbedPage() {
                 <title>Weekly Artist Voting - OTW Live</title>
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 lg:mb-6 text-center">
+            <h1 className="text-3 sm:text-4xl lg:text-4xl font-extrabold tracking-tight mb-6 lg:mb-6 text-center">
                 This Week's Rising Stars
             </h1>
 
