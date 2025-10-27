@@ -297,19 +297,20 @@ export default function WeeklyEmbedPage() {
                             )}
                         </div>
 
-                        {/* Rating Section */}
-                        <div className="bg-white/5 backdrop-blur-sm rounded-2xl overflow-hidden shadow-2xl">
-                            {currentArtist && (
-                                <EmbedVoteRating
-                                    artistName={currentArtist.artist_name}
-                                    onSubmit={handleRatingSubmit}
-                                    isSubmitting={isSubmitting}
-                                    alreadyVoted={votedArtists.has(currentArtist.uuid)}
-                                    videoWatchTime={currentWatchTime}
-                                    minWatchTime={10}
-                                />
-                            )}
-                        </div>
+                       {/* Rating Section */}
+<div className="bg-white rounded-2xl overflow-hidden shadow-2xl text-black">
+    {currentArtist && (
+        <EmbedVoteRating
+            artistName={currentArtist.artist_name}
+            onSubmit={handleRatingSubmit}
+            isSubmitting={isSubmitting}
+            alreadyVoted={votedArtists.has(currentArtist.uuid)}
+            videoWatchTime={currentWatchTime}
+            minWatchTime={10}
+        />
+    )}
+</div>
+
                     </div>
 
                     {/* Progress Indicator */}
