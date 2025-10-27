@@ -238,7 +238,7 @@ export default function WeeklyEmbedPage() {
 
            <div className="min-height:100vh bg-white rounded-2xl">
                 {/* Artist Navigation Tabs */}
-                <div className="bg-purple-700 bg-opacity-80 rounded-2xl shadow-lg">
+                <div className="bg-purple-deep bg-opacity-80 rounded-2xl shadow-lg">
                     <div className="max-w-7xl mx-auto px-4 py-2">
                         <div className="flex items-center justify-between gap-2">
                             {/* Previous Button */}
