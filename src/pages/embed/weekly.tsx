@@ -214,7 +214,7 @@ export default function WeeklyEmbedPage() {
 
             <div className="min-h-screen">
                 {/* Artist Navigation Tabs */}
-                <div className="bg-white backdrop-blur-sm border-b border-white/20">
+                <div className="bg-purple-lit backdrop-blur-sm border-b border-white/20">
                     <div className="max-w-7xl mx-auto px-4 py-2">
                         <div className="flex items-center justify-between gap-2">
                             
