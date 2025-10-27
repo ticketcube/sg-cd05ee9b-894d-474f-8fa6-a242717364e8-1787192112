@@ -212,7 +212,7 @@ export default function WeeklyEmbedPage() {
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
             <h1 className="text-3 sm:text-4xl lg:text-4xl font-extrabold tracking-tight mb-6 lg:mb-6 text-center">
-                This Week's Rising Stars
+                Discover This Week's Rising Stars!
             </h1>
 
             <div className="min-height:100vh bg-purple-deep">
