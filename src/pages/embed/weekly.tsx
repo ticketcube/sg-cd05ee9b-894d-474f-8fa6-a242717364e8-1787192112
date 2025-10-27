@@ -232,67 +232,67 @@ export default function WeeklyEmbedPage() {
                 <title>Weekly Artist Voting - OTW Live</title>
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
-            <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold tracking-tight mb-6 lg:mb-6 text-center">
+            <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold tracking-tight mb-6 text-center">
                 Discover Artists, Earn Rewards!
             </h1>
 
-            <div className="min-height:100vh bg-white rounded-2xl">
+            <div className="min-h-screen bg-white rounded-2xl">
                 {/* Artist Navigation Tabs */}
-                <div className="bg-purple-deep rounded-2xl ">
+                <div className="bg-purple-deep rounded-2xl">
                     <div className="max-w-7xl mx-auto px-4 py-2">
                         <div className="flex items-center justify-between gap-2">
-                            
                             {/* Previous Button */}
                             <Button
                                 onClick={handlePrevious}
                                 variant="ghost"
                                 size="sm"
-                                className="text-white hover:bg-white/10"
+                                className="text-white hover:bg-white/10 md:w-12 md:h-12 w-10 h-10"
                             >
-                                <ChevronLeft className="w-10 h-10" />
+                                <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
                             </Button>
 
-                    {/* Artist Tabs */}
-                    <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide artist-tabs-container">
-                        <div className="flex items-center gap-2 min-w-max px-12">
-                            {artists.map((artist, index) => {
-                                const isActive = currentArtistIndex === index;
-                                const isVoted = votedArtists.has(artist.uuid);
+                            {/* Artist Tabs */}
+                            <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide artist-tabs-container">
+                                <div className="flex items-center gap-2 min-w-max px-2 sm:px-6">
+                                    {artists.map((artist, index) => {
+                                        const isActive = currentArtistIndex === index;
+                                        const isVoted = votedArtists.has(artist.uuid);
 
-                                return (
-                                    <button
-                                        key={artist.uuid}
-                                        data-artist-index={index}
-                                        onClick={() => handleTabClick(index)}
-                                        className={`
-                                            px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap flex-shrink-0
-                                            ${isActive
-                                                ? 'bg-white text-black shadow-lg scale-105'
-                                                : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
-                                            }
-                                        `}
-                                    >
-                                        {artist.artist_name}
-                                        {isVoted && <span className="ml-1">✓</span>}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
+                                        return (
+                                            <button
+                                                key={artist.uuid}
+                                                data-artist-index={index}
+                                                onClick={() => handleTabClick(index)}
+                                                className={`
+                                                px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap flex-shrink-0
+                                                ${isActive
+                                                        ? 'bg-white text-black shadow-lg scale-105'
+                                                        : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
+                                                    }
+                                            `}
+                                            >
+                                                {artist.artist_name}
+                                                {isVoted && <span className="ml-1">✓</span>}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             {/* Next Button */}
                             <Button
                                 onClick={handleNext}
                                 variant="ghost"
                                 size="sm"
-                                className="text-white hover:bg-white/10"
+                                className="text-white hover:bg-white/10 md:w-12 md:h-12 w-10 h-10"
                             >
-                                <ChevronRight className="w-10 h-10" />
+                                <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
                             </Button>
                         </div>
                     </div>
                 </div>
 
-                {/* Main Content - Minimal padding */}
+                {/* Main Content - Video and Rating Section */}
                 <div className="max-w-7xl mx-auto px-2 py-2">
                     <div className="grid md:grid-cols-2 gap-2">
                         {/* Video Section */}
@@ -323,7 +323,7 @@ export default function WeeklyEmbedPage() {
                         </div>
                     </div>
 
-                    {/* Progress Indicator - Compact with no extra spacing */}
+                    {/* Progress Indicator */}
                     <div className="mt-2 pb-2">
                         <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 text-center">
                             <p className="text-white text-sm font-semibold">
