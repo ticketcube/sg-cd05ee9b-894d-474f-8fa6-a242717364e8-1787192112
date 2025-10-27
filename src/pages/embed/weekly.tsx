@@ -212,7 +212,7 @@ export default function WeeklyEmbedPage() {
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
 
-            <div className="min-h-screen">
+            <div className="min-h-screen bg-purple-deep">
                 {/* Artist Navigation Tabs */}
                 <div className="bg-purple-lit backdrop-blur-sm border-b border-white/20">
                     <div className="max-w-7xl mx-auto px-4 py-2">
