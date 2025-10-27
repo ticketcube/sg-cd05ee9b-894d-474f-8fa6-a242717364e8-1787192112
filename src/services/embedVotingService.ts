@@ -130,7 +130,7 @@ export async function checkIfAlreadyVoted(
     }
 }
 
-// Submit a vote for an artist
+// Submit a vote for an artist (ONLY for authenticated users with real UUIDs)
 export async function submitArtistVote(
     artistUuid: string,
     weekIdentifier: string,
@@ -140,19 +140,28 @@ export async function submitArtistVote(
     userId?: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const sessionId = userId || getOrCreateSessionId();
+        // CRITICAL: Only submit to database if userId is a valid UUID (logged in user)
+        if (!userId) {
+            return { success: false, error: "User must be logged in to save votes to database" };
+        }
+
+        // Validate that userId is a proper UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(userId)) {
+            return { success: false, error: "Invalid user ID format - must be authenticated" };
+        }
 
         const { error } = await supabase
             .from("user_engagements")
             .insert({
-                user_id: sessionId,
+                user_id: userId,
                 artist_uuid: artistUuid,
                 week_identifier: weekIdentifier,
                 weekly_list_id: weeklyListId,
                 engagement_type: "quadrant",
                 x_quadrant: xQuadrant,
                 y_quadrant: yQuadrant,
-                points_earned: userId ? 10 : 0, // Only award points if logged in
+                points_earned: 10, // Always award points for authenticated users
             });
 
         if (error) {
