@@ -103,42 +103,40 @@ export default function WeeklyEmbedPage() {
         return () => clearInterval(timer);
     }, [currentArtist, votedArtists]);
 
-    const handleRatingSubmit = async (data: { x: number; y: number }) => {
+     const handleRatingSubmit = async (data: { x: number; y: number }) => {
         if (!currentArtist || !weeklyListId) return;
 
         setIsSubmitting(true);
         try {
-            const result = await submitArtistVote(
-                currentArtist.uuid,
+            // Save vote to localStorage (no database call yet)
+            const localVote: LocalVote = {
+                artistUuid: currentArtist.uuid,
+                artistName: currentArtist.artist_name,
                 weekIdentifier,
                 weeklyListId,
-                data.x,
-                data.y,
-                user?.id
-            );
+                xQuadrant: data.x,
+                yQuadrant: data.y,
+                timestamp: Date.now(),
+            };
 
-            if (result.success) {
-                toast.success(`Rating submitted for ${currentArtist.artist_name}!`);
+            saveVoteLocally(localVote);
+            toast.success(`Rating saved for ${currentArtist.artist_name}!`);
 
-                // Mark this artist as voted
-                setVotedArtists(prev => new Set([...prev, currentArtist.uuid]));
+            // Mark this artist as voted
+            setVotedArtists(prev => new Set([...prev, currentArtist.uuid]));
 
-                // Check if all artists are now rated
-                const newVotedCount = votedArtists.size + 1;
-                if (newVotedCount === artists.length) {
-                    setAllArtistsRated(true);
-                    // Show auth modal or completion message
-                    toast.success('All artists rated! Create an account to be eligible for rewards.');
-                } else {
-                    // Move to next unrated artist
-                    moveToNextUnratedArtist();
-                }
+            // Check if all artists are now rated
+            const newVotedCount = votedArtists.size + 1;
+            if (newVotedCount === artists.length) {
+                setAllArtistsRated(true);
+                toast.success('All artists rated! Sign in to save and earn 40 points!');
             } else {
-                toast.error(result.error || 'Failed to submit rating');
+                // Move to next unrated artist
+                moveToNextUnratedArtist();
             }
         } catch (error) {
-            console.error('Error submitting rating:', error);
-            toast.error('Failed to submit rating');
+            console.error('Error saving rating:', error);
+            toast.error('Failed to save rating');
         } finally {
             setIsSubmitting(false);
         }
