@@ -69,7 +69,7 @@ export function EmbedVoteRating({
             {/* Header - More compact */}
             <div className="mb-4">
                 <h3 className="text-xl font-bold text-white text-center">
-                    Rate {artistName}
+                {artistName}
                 </h3>
             </div>
 
