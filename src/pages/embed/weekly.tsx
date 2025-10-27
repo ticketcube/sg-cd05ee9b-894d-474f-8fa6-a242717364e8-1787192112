@@ -231,32 +231,33 @@ export default function WeeklyEmbedPage() {
                                 <ChevronLeft className="w-10 h-10" />
                             </Button>
 
-                            {/* Artist Tabs */}
-                            <div className="flex items-center flex gap-2 overflow-x-auto">
-                                {artists.map((artist, index) => {
-                                    const isActive = currentArtistIndex === index;
-                                    const isVoted = votedArtists.has(artist.uuid);
+                    {/* Artist Tabs */}
+                    <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide">
+                        <div className="flex items-center gap-2 min-w-max px-1">
+                            {artists.map((artist, index) => {
+                                const isActive = currentArtistIndex === index;
+                                const isVoted = votedArtists.has(artist.uuid);
 
-                                    return (
-                                        <button
-                                            key={artist.uuid}
-                                            onClick={() => handleTabClick(index)}
-                                            className={`
-                                                px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
-                                                ${isActive
-                                                    ? 'bg-black text-white shadow-lg scale-105'
-                                                : 'bg-white/10 backdrop-blur-sm text-white hover:bg-black/40 backdrop-blur-sm'
-                                                }
-                                                ${isVoted ? 'ring-2 ring-purple-deep' : ''}
-                                            `}
-                                        >
-                                            {artist.artist_name}
-                                            {isVoted && <span className="ml-1">✓</span>}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
+                                return (
+                                    <button
+                                        key={artist.uuid}
+                                        onClick={() => handleTabClick(index)}
+                                        className={`
+                                            px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap flex-shrink-0
+                                            ${isActive
+                                                ? 'bg-white text-black shadow-lg scale-105'
+                                                : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
+                                            }
+                                            ${isVoted ? 'ring-2 ring-green-400' : ''}
+                                        `}
+                                    >
+                                        {artist.artist_name}
+                                        {isVoted && <span className="ml-1">✓</span>}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                             {/* Next Button */}
                             <Button
                                 onClick={handleNext}
