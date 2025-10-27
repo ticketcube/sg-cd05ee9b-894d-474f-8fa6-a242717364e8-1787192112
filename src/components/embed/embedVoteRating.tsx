@@ -71,7 +71,7 @@ export function EmbedVoteRating({
                 <h3 className="text-2xl font-bold text-white text-center mb-2">
                     Rate {artistName}
                 </h3>
-                <p className="text-sm text-gray-300 text-center">
+                <p className="text-sm text-white/90 text-center">
                     Share your honest opinion
                 </p>
             </div>
@@ -86,7 +86,7 @@ export function EmbedVoteRating({
                         </div>
                         <div className="flex-1">
                             <h4 className="text-base font-semibold text-white">Concert Interest</h4>
-                            <p className="text-xs text-gray-300">Would you buy tickets?</p>
+                            <p className="text-xs text-white/80">Would you buy tickets?</p>
                         </div>
                     </div>
                     <div className="px-2">
@@ -108,9 +108,9 @@ export function EmbedVoteRating({
                                 className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-6 [&_[data-radix-slider-thumb]]:h-6 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-2 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-lg [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform"
                             />
                         </div>
-                        <div className="flex justify-between text-xs text-gray-300">
+                        <div className="flex justify-between text-xs text-white/90">
                             <span>Not For Me</span>
-                            <span className="font-semibold text-white bg-gray-800/50 px-2 py-1 rounded">
+                            <span className="font-semibold text-white bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
                                 {getTicketLabel(ticketInterest)}
                             </span>
                             <span>I'd Buy</span>
@@ -126,7 +126,7 @@ export function EmbedVoteRating({
                         </div>
                         <div className="flex-1">
                             <h4 className="text-base font-semibold text-white">Sharing Interest</h4>
-                            <p className="text-xs text-gray-300">Would you recommend?</p>
+                            <p className="text-xs text-white/80">Would you recommend?</p>
                         </div>
                     </div>
                     <div className="px-2">
@@ -148,9 +148,9 @@ export function EmbedVoteRating({
                                 className="w-full relative z-10 [&_[data-radix-slider-track]]:bg-transparent [&_[data-radix-slider-thumb]]:w-6 [&_[data-radix-slider-thumb]]:h-6 [&_[data-radix-slider-thumb]]:bg-white [&_[data-radix-slider-thumb]]:border-2 [&_[data-radix-slider-thumb]]:border-gray-900 [&_[data-radix-slider-thumb]]:shadow-lg [&_[data-radix-slider-thumb]]:cursor-pointer hover:[&_[data-radix-slider-thumb]]:scale-110 [&_[data-radix-slider-thumb]]:transition-transform"
                             />
                         </div>
-                        <div className="flex justify-between text-xs text-gray-300">
+                        <div className="flex justify-between text-xs text-white/90">
                             <span>Not For Them</span>
-                            <span className="font-semibold text-white bg-gray-800/50 px-2 py-1 rounded">
+                            <span className="font-semibold text-white bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
                                 {getShareLabel(shareInterest)}
                             </span>
                             <span>I'd Share</span>
@@ -173,8 +173,8 @@ export function EmbedVoteRating({
                         className={`
                             w-full py-6 text-lg font-bold rounded-lg transition-all duration-300
                             ${canSubmit
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg'
-                                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
+                                : 'bg-gray-600/50 text-white/60 cursor-not-allowed'
                             }
                         `}
                     >
@@ -186,7 +186,7 @@ export function EmbedVoteRating({
                         ) : videoWatchTime < minWatchTime ? (
                             <span>Watch {minWatchTime - videoWatchTime}s more to rate</span>
                         ) : !slidersChanged ? (
-                            <span>Adjust sliders to submit</span>
+                            <span>Move sliders to submit your rating</span>
                         ) : (
                             <span>Submit Rating</span>
                         )}
@@ -205,7 +205,7 @@ export function EmbedVoteRating({
                             transition={{ duration: 0.5 }}
                         />
                     </div>
-                    <p className="text-xs text-gray-400 text-center mt-2">
+                    <p className="text-xs text-white/80 text-center mt-2">
                         {videoWatchTime}/{minWatchTime}s watched
                     </p>
                 </div>
