@@ -166,6 +166,13 @@
 }
 
 
+/* 🔥 Force black text inside rating UI */
+.embed-rating,
+.embed-rating * {
+  color: #000 !important;
+  fill: #000 !important;
+  --tw-text-opacity: 1 !important;
+}
 
 
 /* Simplified black and white slider styles */
