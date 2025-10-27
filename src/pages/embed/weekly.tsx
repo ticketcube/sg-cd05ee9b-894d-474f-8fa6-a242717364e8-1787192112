@@ -212,9 +212,9 @@ export default function WeeklyEmbedPage() {
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
 
-                <div className="h-screen max-h-screen overflow-hidden bg-purple-deep flex flex-col">
+            <div className="min-height:100vh bg-purple-deep">
                 {/* Artist Navigation Tabs */}
-                <div className="backdrop-blur-sm border-b border-white/20 flex-shrink-0">
+                <div className="backdrop-blur-sm border-b border-white/20">
                     <div className="max-w-7xl mx-auto px-4 py-2">
                         <div className="flex items-center justify-between gap-2">
                             
@@ -268,13 +268,12 @@ export default function WeeklyEmbedPage() {
                 </div>
 
                 {/* Main Content - Minimal padding */}
-                    <div className="flex-1 max-w-7xl mx-auto px-2 py-2 overflow-y-auto flex flex-col">
-                        <div className="grid md:grid-cols-2 gap-2 flex-1">
+                <div className="max-w-7xl mx-auto px-2 py-2">
+                    <div className="grid md:grid-cols-2 gap-2">
                         {/* Video Section */}
-                        <div className="bg-black rounded-2xl overflow-hidden shadow-2xl h-full flex flex-col">
-
+                        <div className="bg-black rounded-2xl overflow-hidden shadow-2xl">
                             {currentArtist && (
-                                <div className="flex-1 w-full">
+                                <div className="aspect-video w-full">
                                     <ArtistVideoPlayer
                                         artist={currentArtist}
                                         isEmbed={true}
@@ -285,7 +284,7 @@ export default function WeeklyEmbedPage() {
                         </div>
 
                         {/* Rating Section */}
-                       <div className="rounded-2xl overflow-hidden shadow-2xl h-full flex flex-col">
+                        <div className="rounded-2xl overflow-hidden shadow-2xl h-full">
                             {currentArtist && (
                                 <EmbedVoteRating
                                     artistName={currentArtist.artist_name}
@@ -300,7 +299,7 @@ export default function WeeklyEmbedPage() {
                     </div>
 
                     {/* Progress Indicator - Compact with no extra spacing */}
-                    <div className="flex-shrink-0 pb-2">
+                    <div className="mt-2 pb-2">
                         <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 text-center">
                             <p className="text-white text-sm font-semibold">
                                 Rated {votedArtists.size} of {artists.length} artists
