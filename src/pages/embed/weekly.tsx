@@ -212,7 +212,7 @@ export default function WeeklyEmbedPage() {
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
 
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+            <div className="min-h-screen">
                 {/* Artist Navigation Tabs */}
                 <div className="bg-white/20 backdrop-blur-sm border-b border-white/20">
                     <div className="max-w-7xl mx-auto px-4 py-2">
