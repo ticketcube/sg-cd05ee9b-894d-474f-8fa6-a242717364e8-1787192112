@@ -229,7 +229,7 @@ export default function WeeklyEmbedPage() {
 
             <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
                 {/* Artist Navigation Tabs */}
-<div className="bg-white/20 backdrop-blur-sm border-b border-black/10">
+<div className="bg-white/20 backdrop-blur-sm border-b border-white/20">
     <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-2">
             
@@ -238,7 +238,7 @@ export default function WeeklyEmbedPage() {
                 onClick={handlePrevious}
                 variant="ghost"
                 size="sm"
-                className="text-black hover:bg-black/10"
+                className="text-white hover:bg-white/10"
             >
                 <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -254,20 +254,17 @@ export default function WeeklyEmbedPage() {
                             key={artist.uuid}
                             onClick={() => handleTabClick(index)}
                             className={`
-                             px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
-                              border-2 border-black text-black
-                             ${currentArtistIndex === index
-                                    ? 'bg-white'
-                                    : 'bg-white hover:bg-gray-100'
+                                px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
+                                ${isActive
+                                    ? 'bg-white text-black shadow-lg scale-105'
+                                    : 'bg-white/30 text-white hover:bg-white/40 backdrop-blur-sm'
                                 }
-                                  ${votedArtists.has(artist.uuid) ? 'ring-2 ring-green-500' : ''}
-                             `}
-                              >
-                                 {artist.artist_name}
-                                 {votedArtists.has(artist.uuid) && <span className="ml-1">✓</span>}
-                         </button>
-
-
+                                ${isVoted ? 'ring-2 ring-green-400' : ''}
+                            `}
+                        >
+                            {artist.artist_name}
+                            {isVoted && <span className="ml-1">✓</span>}
+                        </button>
                     );
                 })}
             </div>
@@ -277,7 +274,7 @@ export default function WeeklyEmbedPage() {
                 onClick={handleNext}
                 variant="ghost"
                 size="sm"
-                className="text-black hover:bg-black/10"
+                className="text-white hover:bg-white/10"
             >
                 <ChevronRight className="w-5 h-5" />
             </Button>
@@ -303,7 +300,7 @@ export default function WeeklyEmbedPage() {
                         </div>
 
                        {/* Rating Section */}
-                        <div className="embed-rating text-black !text-black [&_*]:!text-black bg-white rounded-2xl overflow-hidden shadow-2xl p-4">
+                        <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
     {currentArtist && (
         <EmbedVoteRating
             artistName={currentArtist.artist_name}
