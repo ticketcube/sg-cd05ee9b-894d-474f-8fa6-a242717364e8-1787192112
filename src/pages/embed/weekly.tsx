@@ -299,8 +299,8 @@ export default function WeeklyEmbedPage() {
                             )}
                         </div>
 
-                       {/* Rating Section */}
-                        <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
+                       {/* Rating Section - Remove bg-white to allow component's gradient to show */}
+                        <div className="rounded-2xl overflow-hidden shadow-2xl">
     {currentArtist && (
         <EmbedVoteRating
             artistName={currentArtist.artist_name}
