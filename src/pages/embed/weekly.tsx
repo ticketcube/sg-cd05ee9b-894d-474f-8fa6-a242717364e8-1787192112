@@ -241,7 +241,7 @@ export default function WeeklyEmbedPage() {
                                             className={`
                                                 px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
                                                 ${isActive
-                                                    ? 'bg-purple-deep text-white shadow-lg scale-105'
+                                                    ? 'bg-black text-white shadow-lg scale-105'
                                                     : 'bg-purple-lit text-white hover:bg-black/40 backdrop-blur-sm'
                                                 }
                                                 ${isVoted ? 'ring-2 ring-purple-med' : ''}
