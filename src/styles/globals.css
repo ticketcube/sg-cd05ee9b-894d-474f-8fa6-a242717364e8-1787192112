@@ -213,3 +213,11 @@
     display: none;
     /* Chrome, Safari and Opera */
 }
+
+.artist-tabs-container {
+    scroll-snap-type: x mandatory;
+}
+
+.artist-tabs-container button {
+    scroll-snap-align: center;
+}
