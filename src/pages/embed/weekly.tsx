@@ -203,13 +203,6 @@ export default function WeeklyEmbedPage() {
                 pointsToEarn={artists.length * 10}
             />
         );
-    } if (allArtistsRated && !user) {
-        return (
-            <EmbedVotingCompleteAuth
-                artistCount={artists.length}
-                pointsToEarn={artists.length * 10}
-            />
-        );
     }
 
     return (
