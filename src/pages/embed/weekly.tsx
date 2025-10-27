@@ -232,7 +232,7 @@ export default function WeeklyEmbedPage() {
                             </Button>
 
                             {/* Artist Tabs */}
-                            <div className="flex-1 flex gap-2 overflow-x-auto">
+                            <div className="flex items-center flex gap-2 overflow-x-auto">
                                 {artists.map((artist, index) => {
                                     const isActive = currentArtistIndex === index;
                                     const isVoted = votedArtists.has(artist.uuid);
