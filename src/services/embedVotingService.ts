@@ -165,14 +165,7 @@ export async function submitArtistVote(
         console.error("Error in submitArtistVote:", error);
         return { success: false, error: error.message };
     }
-
-    // ============================================
-// LOCAL STORAGE FUNCTIONS FOR ANONYMOUS VOTING
 }
-
-// ============================================
-// LOCAL STORAGE FUNCTIONS FOR ANONYMOUS VOTING
-// ============================================
 
 export interface LocalVote {
     artistUuid: string;
