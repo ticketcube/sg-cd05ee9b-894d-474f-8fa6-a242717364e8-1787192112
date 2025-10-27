@@ -229,54 +229,57 @@ export default function WeeklyEmbedPage() {
 
             <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
                 {/* Artist Navigation Tabs */}
-                <div className="bg-black/30 backdrop-blur-sm border-b border-white/10">
-                    <div className="max-w-7xl mx-auto px-4 py-3">
-                        <div className="flex items-center justify-between gap-2">
-                            {/* Previous Button */}
-                            <Button
-                                onClick={handlePrevious}
-                                variant="ghost"
-                                size="sm"
-                                className="text-white hover:bg-white/10"
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                            </Button>
+<div className="bg-white/20 backdrop-blur-sm border-b border-black/10">
+    <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="flex items-center justify-between gap-2">
+            
+            {/* Previous Button */}
+            <Button
+                onClick={handlePrevious}
+                variant="ghost"
+                size="sm"
+                className="text-black hover:bg-black/10"
+            >
+                <ChevronLeft className="w-5 h-5" />
+            </Button>
 
-                            {/* Artist Tabs */}
-                            <div className="flex-1 flex justify-center gap-2 overflow-x-auto">
-                                {artists.map((artist, index) => (
-                                    <button
-                                        key={artist.uuid}
-                                        onClick={() => handleTabClick(index)}
-                                        className={`
-                      px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
-                      ${currentArtistIndex === index
-                                                ? 'bg-white text-purple-900 shadow-lg'
-                                                : 'bg-white/10 text-white hover:bg-white/20'
-                                            }
-                      ${votedArtists.has(artist.uuid) ? 'ring-2 ring-green-400' : ''}
-                    `}
-                                    >
-                                        {artist.artist_name}
-                                        {votedArtists.has(artist.uuid) && (
-                                            <span className="ml-1">✓</span>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
+            {/* Artist Tabs */}
+            <div className="flex-1 flex justify-center gap-2 overflow-x-auto">
+                {artists.map((artist, index) => {
+                    const isActive = currentArtistIndex === index;
+                    const isVoted = votedArtists.has(artist.uuid);
 
-                            {/* Next Button */}
-                            <Button
-                                onClick={handleNext}
-                                variant="ghost"
-                                size="sm"
-                                className="text-white hover:bg-white/10"
-                            >
-                                <ChevronRight className="w-5 h-5" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
+                    return (
+                        <button
+                            key={artist.uuid}
+                            onClick={() => handleTabClick(index)}
+                            className={`
+                                px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
+                                border border-black text-black
+                                ${isActive ? 'bg-white' : 'bg-gray-200 hover:bg-gray-300'}
+                                ${isVoted ? 'ring-2 ring-green-500' : ''}
+                            `}
+                        >
+                            {artist.artist_name}
+                            {isVoted && <span className="ml-1">✓</span>}
+                        </button>
+                    );
+                })}
+            </div>
+
+            {/* Next Button */}
+            <Button
+                onClick={handleNext}
+                variant="ghost"
+                size="sm"
+                className="text-black hover:bg-black/10"
+            >
+                <ChevronRight className="w-5 h-5" />
+            </Button>
+        </div>
+    </div>
+</div>
+
 
                 {/* Main Content */}
                 <div className="max-w-7xl mx-auto p-4">
