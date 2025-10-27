@@ -197,10 +197,10 @@ export default function WeeklyEmbedPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center rounded-2xl">
+            <div className="min-h-screen bg-white flex items-center justify-center rounded-2xl">
                 <div className="text-center">
-                    <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
-                    <p className="text-white text-lg">Loading this week's artists...</p>
+                    <Loader2 className="w-12 h-12 text-black animate-spin mx-auto mb-4" />
+                    <p className="text-black text-lg">Loading this week's artists...</p>
                 </div>
             </div>
         );
@@ -208,7 +208,7 @@ export default function WeeklyEmbedPage() {
 
     if (artists.length === 0) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center rounded-2xl">
+            <div className="min-h-screen bg-white flex items-center justify-center rounded-2xl">
                 <div className="text-center">
                     <p className="text-white text-xl">No artists available for this week</p>
                     <p className="text-gray-300 text-sm mt-2">Check back later!</p>
@@ -233,10 +233,10 @@ export default function WeeklyEmbedPage() {
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
             <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold tracking-tight mb-6 lg:mb-6 text-center">
-                Discover This Week's Rising Stars!
+                Discover Artists, Earn Rewards!
             </h1>
 
-            <div className="min-height:100vh bg-purple-deep rounded-2xl">
+            <div className="min-height:100vh bg-white rounded-2xl">
                 {/* Artist Navigation Tabs */}
                 <div className="bg-purple-deep rounded-2xl ">
                     <div className="max-w-7xl mx-auto px-4 py-2">
