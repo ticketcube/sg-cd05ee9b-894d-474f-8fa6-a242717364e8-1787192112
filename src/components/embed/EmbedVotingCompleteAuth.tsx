@@ -14,7 +14,7 @@ interface EmbedVotingCompleteAuthProps {
 }
 
 export function EmbedVotingCompleteAuth({ artistCount, pointsToEarn }: EmbedVotingCompleteAuthProps) {
-    const [mode, setMode] = useState < 'choice' | 'signup' | 'login' > ('choice');
+    const [mode, setMode] = useState<'choice'|'signup'|'login'> ('choice');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
