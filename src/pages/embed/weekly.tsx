@@ -215,7 +215,7 @@ export default function WeeklyEmbedPage() {
                 Discover This Week's Rising Stars!
             </h1>
 
-            <div className="min-height:100vh bg-purple-deep rounded">
+            <div className="min-height:100vh bg-purple-deep rounded-2xl">
                 {/* Artist Navigation Tabs */}
                 <div className="backdrop-blur-sm border-b border-white/20">
                     <div className="max-w-7xl mx-auto px-4 py-2">
