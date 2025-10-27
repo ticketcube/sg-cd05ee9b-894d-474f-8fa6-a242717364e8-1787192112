@@ -279,4 +279,3 @@ export function clearLocalVotes(): void {
     if (typeof window === "undefined") return;
     localStorage.removeItem(LOCAL_VOTES_KEY);
 }
-}
