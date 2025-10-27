@@ -254,7 +254,7 @@ export default function WeeklyEmbedPage() {
                             {/* Artist Tabs */}
                                  <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide artist-tabs-container">
                             {/* For small screens (2 artists visible) and larger screens (4 artists centered) */}
-                           <div className="flex items-center gap-2 min-w-max px-2 sm:px-6 justify-start sm:justify-center <div className="flex items-center gap-2 min-w-max px-2 sm:px-6 justify-start sm:justify-center
+                                <div className="flex items-center gap-2 min-w-max px-2 sm:px-6 justify-start sm:justify-center
             w-[45vw] sm:w-auto">
                                     {artists.map((artist, index) => {
                                         const isActive = currentArtistIndex === index;
