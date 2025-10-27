@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import ArtistVideoPlayer from '@/components/ArtistVideoPlayer';
 import { EmbedVoteRating } from '@/components/embed/embedVoteRating';
+import { EmbedVotingCompleteAuth } from '@/components/embed/EmbedVotingCompleteAuth';
 import { Button } from '@/components/ui/button';
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -197,37 +198,17 @@ export default function WeeklyEmbedPage() {
 
     if (allArtistsRated && !user) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center p-6">
-                <div className="max-w-md bg-white rounded-2xl shadow-2xl p-8 text-center">
-                    <div className="mb-6">
-                        <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-4xl">🎉</span>
-                        </div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                            Thanks for Playing!
-                        </h2>
-                        <p className="text-gray-600 mb-6">
-                            You've rated all {artists.length} artists this week. Create an account to be eligible for rewards and track your points!
-                        </p>
-                    </div>
-
-                    <div className="space-y-3">
-                        <Button
-                            onClick={() => router.push('/auth/signup')}
-                            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-6 text-lg font-bold rounded-lg"
-                        >
-                            Create Account
-                        </Button>
-                        <Button
-                            onClick={() => router.push('/auth/login')}
-                            variant="outline"
-                            className="w-full py-6 text-lg font-bold rounded-lg"
-                        >
-                            Sign In
-                        </Button>
-                    </div>
-                </div>
-            </div>
+            <EmbedVotingCompleteAuth
+                artistCount={artists.length}
+                pointsToEarn={artists.length * 10}
+            />
+        );
+    } if (allArtistsRated && !user) {
+        return (
+            <EmbedVotingCompleteAuth
+                artistCount={artists.length}
+                pointsToEarn={artists.length * 10}
+            />
         );
     }
 
