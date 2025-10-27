@@ -168,6 +168,10 @@ export async function submitArtistVote(
 
     // ============================================
 // LOCAL STORAGE FUNCTIONS FOR ANONYMOUS VOTING
+}
+
+// ============================================
+// LOCAL STORAGE FUNCTIONS FOR ANONYMOUS VOTING
 // ============================================
 
 export interface LocalVote {
@@ -188,15 +192,15 @@ export function saveVoteLocally(vote: LocalVote): void {
 
     try {
         const existingVotes = getLocalVotes();
-        
+
         // Remove any existing vote for this artist in this week
         const filteredVotes = existingVotes.filter(
             v => !(v.artistUuid === vote.artistUuid && v.weekIdentifier === vote.weekIdentifier)
         );
-        
+
         // Add the new vote
         filteredVotes.push(vote);
-        
+
         localStorage.setItem(LOCAL_VOTES_KEY, JSON.stringify(filteredVotes));
     } catch (error) {
         console.error("Error saving vote locally:", error);
@@ -210,7 +214,7 @@ export function getLocalVotes(): LocalVote[] {
     try {
         const votesJson = localStorage.getItem(LOCAL_VOTES_KEY);
         if (!votesJson) return [];
-        
+
         return JSON.parse(votesJson) as LocalVote[];
     } catch (error) {
         console.error("Error reading local votes:", error);
@@ -237,7 +241,7 @@ export async function submitAllLocalVotes(userId: string): Promise<{
     errors: string[];
 }> {
     const localVotes = getLocalVotes();
-    
+
     if (localVotes.length === 0) {
         return { success: true, submittedCount: 0, errors: [] };
     }
