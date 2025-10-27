@@ -259,7 +259,7 @@ export default function WeeklyEmbedPage() {
                                 onClick={handleNext}
                                 variant="ghost"
                                 size="sm"
-                                className="text-white hover:bg-white/10"
+                                className="text-purple-deep hover:bg-white/10"
                             >
                                 <ChevronRight className="w-5 h-5" />
                             </Button>
