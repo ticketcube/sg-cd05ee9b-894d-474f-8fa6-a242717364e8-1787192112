@@ -232,13 +232,13 @@ export default function WeeklyEmbedPage() {
                 <title>Weekly Artist Voting - OTW Live</title>
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
-            <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold tracking-tight mb-6 text-center">
+            <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold tracking-tight mb-6 text-center text-white">
                 Discover Artists, Earn Rewards!
             </h1>
 
-            <div className="min-h-screen bg-white rounded-2xl">
+            <div className="min-h-screen bg-gradient-to-b from-purple-800 via-purple-600 to-purple-500 rounded-2xl">
                 {/* Artist Navigation Tabs */}
-                <div className="bg-white rounded-2xl">
+                <div className="bg-purple-700 bg-opacity-80 rounded-2xl shadow-lg">
                     <div className="max-w-7xl mx-auto px-4 py-2">
                         <div className="flex items-center justify-between gap-2">
                             {/* Previous Button */}
@@ -246,7 +246,7 @@ export default function WeeklyEmbedPage() {
                                 onClick={handlePrevious}
                                 variant="ghost"
                                 size="sm"
-                                className="text-purple-deep hover:bg-white/10 md:w-12 md:h-12 w-10 h-10"
+                                className="text-white hover:bg-white/20 md:w-12 md:h-12 w-10 h-10"
                             >
                                 <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
                             </Button>
@@ -266,13 +266,13 @@ export default function WeeklyEmbedPage() {
                                                 className={`
                                                 px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap flex-shrink-0
                                                 ${isActive
-                                                        ? 'bg-black text-white shadow-lg scale-105'
+                                                        ? 'bg-white text-black shadow-lg scale-105'
                                                         : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
                                                     }
                                             `}
                                             >
                                                 {artist.artist_name}
-                                                {isVoted && <span className="ml-1">✓</span>}
+                                                {isVoted && <span className="ml-1 text-mint-400">✓</span>}
                                             </button>
                                         );
                                     })}
@@ -284,7 +284,7 @@ export default function WeeklyEmbedPage() {
                                 onClick={handleNext}
                                 variant="ghost"
                                 size="sm"
-                                className="text-purple-deep hover:bg-white/10 md:w-12 md:h-12 w-10 h-10"
+                                className="text-white hover:bg-white/20 md:w-12 md:h-12 w-10 h-10"
                             >
                                 <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
                             </Button>
@@ -296,7 +296,7 @@ export default function WeeklyEmbedPage() {
                 <div className="max-w-7xl mx-auto px-2 py-2">
                     <div className="grid md:grid-cols-2 gap-2">
                         {/* Video Section */}
-                        <div className="bg-black rounded-2xl overflow-hidden shadow-2xl">
+                        <div className="bg-black rounded-2xl overflow-hidden shadow-xl">
                             {currentArtist && (
                                 <div className="aspect-video w-full">
                                     <ArtistVideoPlayer
@@ -309,7 +309,7 @@ export default function WeeklyEmbedPage() {
                         </div>
 
                         {/* Rating Section */}
-                        <div className="rounded-2xl overflow-hidden shadow-2xl h-full">
+                        <div className="rounded-2xl overflow-hidden shadow-xl h-full bg-gradient-to-t from-purple-900 to-transparent">
                             {currentArtist && (
                                 <EmbedVoteRating
                                     artistName={currentArtist.artist_name}
@@ -325,7 +325,7 @@ export default function WeeklyEmbedPage() {
 
                     {/* Progress Indicator */}
                     <div className="mt-2 pb-2">
-                        <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 text-center">
+                        <div className="bg-purple-800/60 backdrop-blur-sm rounded-lg px-4 py-2 text-center">
                             <p className="text-white text-sm font-semibold">
                                 Rated {votedArtists.size} of {artists.length} artists
                             </p>
@@ -335,4 +335,5 @@ export default function WeeklyEmbedPage() {
             </div>
         </>
     );
+
 }
