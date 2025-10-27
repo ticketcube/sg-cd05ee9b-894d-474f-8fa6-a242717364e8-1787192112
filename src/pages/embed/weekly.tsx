@@ -11,7 +11,11 @@ import {
     submitArtistVote,
     checkIfAlreadyVoted,
     getOrCreateSessionId,
+    saveVoteLocally,
+    getCurrentWeekLocalVotes,
+    hasVotedLocallyForArtist,
     type WeeklyVotingArtist,
+    type LocalVote,
 } from '@/services/embedVotingService';
 import { useUserProfile } from '@/contexts/UserProfileContext';
 
@@ -51,12 +55,21 @@ export default function WeeklyEmbedPage() {
                 setWeekIdentifier(week);
                 setWeeklyListId(listId);
 
-                // Check which artists have been voted on
+                   // Check which artists have been voted on (check localStorage first)
                 const votedSet = new Set<string>();
+                const localVotes = getCurrentWeekLocalVotes(week);
+                
                 for (const artist of fetchedArtists) {
-                    const alreadyVoted = await checkIfAlreadyVoted(artist.uuid, userId, week);
-                    if (alreadyVoted) {
+                    // Check localStorage first
+                    const hasLocalVote = hasVotedLocallyForArtist(artist.uuid, week);
+                    if (hasLocalVote) {
                         votedSet.add(artist.uuid);
+                    } else if (user) {
+                        // Only check database if user is logged in
+                        const alreadyVoted = await checkIfAlreadyVoted(artist.uuid, userId, week);
+                        if (alreadyVoted) {
+                            votedSet.add(artist.uuid);
+                        }
                     }
                 }
                 setVotedArtists(votedSet);
