@@ -211,6 +211,9 @@ export default function WeeklyEmbedPage() {
                 <title>Weekly Artist Voting - OTW Live</title>
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 lg:mb-6">
+                We Reward Discovery
+            </h1>
 
             <div className="min-height:100vh bg-purple-deep">
                 {/* Artist Navigation Tabs */}
