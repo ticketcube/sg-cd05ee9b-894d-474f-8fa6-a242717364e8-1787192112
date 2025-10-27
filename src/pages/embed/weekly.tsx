@@ -247,7 +247,7 @@ export default function WeeklyEmbedPage() {
                                                     ? 'bg-black text-white shadow-lg scale-105'
                                                 : 'bg-white/10 backdrop-blur-sm text-white hover:bg-black/40 backdrop-blur-sm'
                                                 }
-                                                ${isVoted ? 'ring-2 ring-purple-med' : ''}
+                                                ${isVoted ? 'ring-2 ring-purple-deep' : ''}
                                             `}
                                         >
                                             {artist.artist_name}
