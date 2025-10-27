@@ -250,19 +250,23 @@ export default function WeeklyEmbedPage() {
                     const isVoted = votedArtists.has(artist.uuid);
 
                     return (
-                        <button
-                            key={artist.uuid}
-                            onClick={() => handleTabClick(index)}
-                            className={`
-                                px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
-                                border border-black text-black
-                                ${isActive ? 'bg-white' : 'bg-gray-200 hover:bg-gray-300'}
-                                ${isVoted ? 'ring-2 ring-green-500' : ''}
-                            `}
-                        >
-                            {artist.artist_name}
-                            {isVoted && <span className="ml-1">✓</span>}
-                        </button>
+                       <button
+    key={artist.uuid}
+    onClick={() => handleTabClick(index)}
+    className={`
+        px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap
+        border border-black text-black
+        ${currentArtistIndex === index
+            ? 'bg-white'
+            : 'bg-white/70 hover:bg-white/90'
+        }
+        ${votedArtists.has(artist.uuid) ? 'ring-2 ring-green-500' : ''}
+    `}
+>
+    {artist.artist_name}
+    {votedArtists.has(artist.uuid) && <span className="ml-1">✓</span>}
+</button>
+
                     );
                 })}
             </div>
