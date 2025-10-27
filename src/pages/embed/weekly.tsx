@@ -238,7 +238,7 @@ export default function WeeklyEmbedPage() {
 
             <div className="min-h-screen bg-white rounded-2xl">
                 {/* Artist Navigation Tabs */}
-                <div className="bg-purple-deep rounded-2xl">
+                <div className="bg-white rounded-2xl">
                     <div className="max-w-7xl mx-auto px-4 py-2">
                         <div className="flex items-center justify-between gap-2">
                             {/* Previous Button */}
@@ -246,7 +246,7 @@ export default function WeeklyEmbedPage() {
                                 onClick={handlePrevious}
                                 variant="ghost"
                                 size="sm"
-                                className="text-white hover:bg-white/10 md:w-12 md:h-12 w-10 h-10"
+                                className="text-purple-deep hover:bg-white/10 md:w-12 md:h-12 w-10 h-10"
                             >
                                 <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
                             </Button>
@@ -266,7 +266,7 @@ export default function WeeklyEmbedPage() {
                                                 className={`
                                                 px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap flex-shrink-0
                                                 ${isActive
-                                                        ? 'bg-white text-black shadow-lg scale-105'
+                                                        ? 'bg-black text-white shadow-lg scale-105'
                                                         : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
                                                     }
                                             `}
@@ -284,7 +284,7 @@ export default function WeeklyEmbedPage() {
                                 onClick={handleNext}
                                 variant="ghost"
                                 size="sm"
-                                className="text-white hover:bg-white/10 md:w-12 md:h-12 w-10 h-10"
+                                className="text-purple-deep hover:bg-white/10 md:w-12 md:h-12 w-10 h-10"
                             >
                                 <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
                             </Button>
