@@ -223,7 +223,7 @@ export default function WeeklyEmbedPage() {
     return (
         <>
             <Head>
-                <title>Weekly Artist Voting - OTW Chart</title>
+                <title>Weekly Artist Voting - OTW Live</title>
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
 
