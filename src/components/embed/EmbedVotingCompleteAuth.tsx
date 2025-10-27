@@ -35,15 +35,18 @@ export function EmbedVotingCompleteAuth({ artistCount, pointsToEarn }: EmbedVoti
             if (error) throw error;
 
             if (data.user) {
-                // Submit all local votes
-                const result = await submitAllLocalVotes(data.user.id);
+    // Submit all local votes
+    const result = await submitAllLocalVotes(data.user.id);
 
-                if (result.success) {
-                    toast.success(`Account created! ${result.submittedCount} ratings saved. Check your email to verify.`);
-                } else {
-                    toast.warning('Account created, but some ratings failed to save.');
-                }
-            }
+    if (result.success) {
+        toast.success(`Account created! ${result.submittedCount} ratings saved and ${pointsToEarn} points earned!`);
+        clearLocalVotes();
+        // Redirect to discovery dashboard
+        window.location.href = '/discovery-dashboard';
+    } else {
+        toast.warning('Account created, but some ratings failed to save.');
+    }
+}
         } catch (error: any) {
             console.error('Signup error:', error);
             toast.error(error.message || 'Failed to create account');
@@ -64,18 +67,19 @@ export function EmbedVotingCompleteAuth({ artistCount, pointsToEarn }: EmbedVoti
 
             if (error) throw error;
 
-            if (data.user) {
-                // Submit all local votes
-                const result = await submitAllLocalVotes(data.user.id);
+           if (data.user) {
+    // Submit all local votes
+    const result = await submitAllLocalVotes(data.user.id);
 
-                if (result.success) {
-                    toast.success(`Welcome back! ${result.submittedCount} ratings saved and ${pointsToEarn} points earned!`);
-                    clearLocalVotes();
-                    window.location.reload();
-                } else {
-                    toast.warning('Logged in, but some ratings failed to save.');
-                }
-            }
+    if (result.success) {
+        toast.success(`Welcome back! ${result.submittedCount} ratings saved and ${pointsToEarn} points earned!`);
+        clearLocalVotes();
+        // Redirect to discovery dashboard
+        window.location.href = '/discovery-dashboard';
+    } else {
+        toast.warning('Logged in, but some ratings failed to save.');
+    }
+}
         } catch (error: any) {
             console.error('Login error:', error);
             toast.error(error.message || 'Failed to sign in');
@@ -90,7 +94,7 @@ export function EmbedVotingCompleteAuth({ artistCount, pointsToEarn }: EmbedVoti
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider,
                 options: {
-                    redirectTo: `${window.location.origin}/embed/weekly`,
+                    redirectTo: `${window.location.origin}/discovery-dashboard`,
                 },
             });
 
