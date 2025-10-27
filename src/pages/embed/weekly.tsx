@@ -232,7 +232,9 @@ export default function WeeklyEmbedPage() {
                 <title>Weekly Artist Voting - OTW Live</title>
                 <meta name="description" content="Vote on this week's featured artists" />
             </Head>
-            <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold tracking-tight mb-6 text-center text-white">
+
+            {/* Updated Title with Black Color */}
+            <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold tracking-tight mb-4 text-center text-black">
                 Discover Artists, Earn Rewards!
             </h1>
 
@@ -293,7 +295,7 @@ export default function WeeklyEmbedPage() {
                 </div>
 
                 {/* Main Content - Video and Rating Section */}
-                <div className="max-w-7xl mx-auto px-2 py-2">
+                <div className="max-w-7xl mx-auto px-2 py-4">
                     <div className="grid md:grid-cols-2 gap-2">
                         {/* Video Section */}
                         <div className="bg-black rounded-2xl overflow-hidden shadow-xl">
@@ -324,7 +326,7 @@ export default function WeeklyEmbedPage() {
                     </div>
 
                     {/* Progress Indicator */}
-                    <div className="mt-2 pb-2">
+                    <div className="mt-2 pb-4">
                         <div className="bg-purple-800/60 backdrop-blur-sm rounded-lg px-4 py-2 text-center">
                             <p className="text-white text-sm font-semibold">
                                 Rated {votedArtists.size} of {artists.length} artists
@@ -335,5 +337,6 @@ export default function WeeklyEmbedPage() {
             </div>
         </>
     );
+
 
 }
