@@ -165,4 +165,118 @@ export async function submitArtistVote(
         console.error("Error in submitArtistVote:", error);
         return { success: false, error: error.message };
     }
+
+    // ============================================
+// LOCAL STORAGE FUNCTIONS FOR ANONYMOUS VOTING
+// ============================================
+
+export interface LocalVote {
+    artistUuid: string;
+    artistName: string;
+    weekIdentifier: string;
+    weeklyListId: number;
+    xQuadrant: number;
+    yQuadrant: number;
+    timestamp: number;
+}
+
+const LOCAL_VOTES_KEY = "weekly_embed_votes";
+
+// Save a vote to localStorage
+export function saveVoteLocally(vote: LocalVote): void {
+    if (typeof window === "undefined") return;
+
+    try {
+        const existingVotes = getLocalVotes();
+        
+        // Remove any existing vote for this artist in this week
+        const filteredVotes = existingVotes.filter(
+            v => !(v.artistUuid === vote.artistUuid && v.weekIdentifier === vote.weekIdentifier)
+        );
+        
+        // Add the new vote
+        filteredVotes.push(vote);
+        
+        localStorage.setItem(LOCAL_VOTES_KEY, JSON.stringify(filteredVotes));
+    } catch (error) {
+        console.error("Error saving vote locally:", error);
+    }
+}
+
+// Get all local votes
+export function getLocalVotes(): LocalVote[] {
+    if (typeof window === "undefined") return [];
+
+    try {
+        const votesJson = localStorage.getItem(LOCAL_VOTES_KEY);
+        if (!votesJson) return [];
+        
+        return JSON.parse(votesJson) as LocalVote[];
+    } catch (error) {
+        console.error("Error reading local votes:", error);
+        return [];
+    }
+}
+
+// Get votes for current week only
+export function getCurrentWeekLocalVotes(weekIdentifier: string): LocalVote[] {
+    const allVotes = getLocalVotes();
+    return allVotes.filter(v => v.weekIdentifier === weekIdentifier);
+}
+
+// Check if artist has been voted on locally
+export function hasVotedLocallyForArtist(artistUuid: string, weekIdentifier: string): boolean {
+    const weekVotes = getCurrentWeekLocalVotes(weekIdentifier);
+    return weekVotes.some(v => v.artistUuid === artistUuid);
+}
+
+// Submit all local votes to database (called after login)
+export async function submitAllLocalVotes(userId: string): Promise<{
+    success: boolean;
+    submittedCount: number;
+    errors: string[];
+}> {
+    const localVotes = getLocalVotes();
+    
+    if (localVotes.length === 0) {
+        return { success: true, submittedCount: 0, errors: [] };
+    }
+
+    const errors: string[] = [];
+    let submittedCount = 0;
+
+    for (const vote of localVotes) {
+        const result = await submitArtistVote(
+            vote.artistUuid,
+            vote.weekIdentifier,
+            vote.weeklyListId,
+            vote.xQuadrant,
+            vote.yQuadrant,
+            userId
+        );
+
+        if (result.success) {
+            submittedCount++;
+        } else {
+            errors.push(`Failed to submit vote for ${vote.artistName}: ${result.error}`);
+        }
+    }
+
+    // Clear local votes after successful submission
+    if (submittedCount > 0) {
+        clearLocalVotes();
+    }
+
+    return {
+        success: errors.length === 0,
+        submittedCount,
+        errors
+    };
+}
+
+// Clear all local votes
+export function clearLocalVotes(): void {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(LOCAL_VOTES_KEY);
+}
 }
