@@ -236,7 +236,7 @@ export default function WeeklyEmbedPage() {
                 Discover Artists, Earn Rewards!
             </h1>
 
-            <div className="min-h-screen bg-gradient-to-b from-purple-800 via-purple-600 to-purple-500 rounded-2xl">
+           <div className="min-height:100vh bg-white rounded-2xl">
                 {/* Artist Navigation Tabs */}
                 <div className="bg-purple-700 bg-opacity-80 rounded-2xl shadow-lg">
                     <div className="max-w-7xl mx-auto px-4 py-2">
