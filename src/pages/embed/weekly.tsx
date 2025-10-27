@@ -254,7 +254,7 @@ export default function WeeklyEmbedPage() {
 
                     {/* Artist Tabs */}
                     <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-hide artist-tabs-container">
-                        <div className="flex items-center gap-2 min-w-max px-1">
+                        <div className="flex items-center gap-2 min-w-max px-12">
                             {artists.map((artist, index) => {
                                 const isActive = currentArtistIndex === index;
                                 const isVoted = votedArtists.has(artist.uuid);
