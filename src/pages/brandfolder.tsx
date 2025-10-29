@@ -1,8 +1,9 @@
-import { withAdminGuard } from "@/components/guards/withAdminGuard";
-import { BrandfolderUploadPage } from "@/components/brandfolderUploadPage";
 
-function BrandfolderUpload() {
-  return <BrandfolderUploadPage />;
+import { withAdminGuard } from "@/components/guards/withAdminGuard";
+import { StaffDashboard } from "@/components/StaffDashboard";
+
+function StaffDashboardPage() {
+  return <StaffDashboard />;
 }
 
-export default withAdminGuard(BrandfolderUpload);
+export default withAdminGuard(StaffDashboardPage);
