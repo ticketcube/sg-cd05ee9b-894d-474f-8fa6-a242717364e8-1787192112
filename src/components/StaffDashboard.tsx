@@ -205,10 +205,10 @@ export function StaffDashboard() {
 
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => router.push("/profile")}
-                    className="border-slate-300 hover:bg-slate-50"
+                                      variant="default"
+                                      size="sm"
+                                      onClick={() => router.push("/profile")}
+                                      className="bg-purple-900 hover:bg-purple-800 text-white font-medium whitespace-nowrap shadow-md"
                   >
                     <User className="w-4 h-4 mr-2" />
                     Profile
