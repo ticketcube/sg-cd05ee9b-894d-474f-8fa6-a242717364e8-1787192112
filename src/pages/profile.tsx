@@ -134,31 +134,34 @@ export default function ProfilePage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="space-y-8">
-            {/* Fan Profile Header */}
+            {/* Fan Profile Header - Three Column Layout */}
             <Card className="bg-white border-2 border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
               <CardContent className="p-6">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                <div className="grid grid-cols-[auto_1fr_auto] gap-4 items-center">
+                  {/* Column 1: Avatar */}
                   <Avatar className="h-20 w-20 border-4 border-purple-100 shadow-md bg-gradient-to-br from-purple-100 to-pink-100">
                     <AvatarFallback className="text-purple-700 font-bold text-2xl">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
 
-                  <div className="flex-1 text-center sm:text-left">
-                    <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                  {/* Column 2: Centered, Stacked Content */}
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    {/* Username with Edit Icon */}
+                    <div className="flex items-center gap-2">
                       {isEditingUsername ? (
                         <div className="flex items-center gap-2">
                           <input
                             type="text"
                             value={newUsername}
                             onChange={(e) => setNewUsername(e.target.value)}
-                            className="text-2xl font-bold text-slate-900 border-b-2 border-purple-400 outline-none bg-transparent"
+                            className="text-xl font-bold text-slate-900 border-b-2 border-purple-400 outline-none bg-transparent text-center"
                             autoFocus
                           />
                           <Button
                             size="sm"
                             onClick={handleEditUsername}
-                            className="bg-purple-600 hover:bg-purple-700"
+                            className="bg-purple-600 hover:bg-purple-700 h-7"
                           >
                             Save
                           </Button>
@@ -166,13 +169,14 @@ export default function ProfilePage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => setIsEditingUsername(false)}
+                            className="h-7"
                           >
                             Cancel
                           </Button>
                         </div>
                       ) : (
                         <>
-                          <h2 className="text-2xl font-bold text-slate-900">
+                          <h2 className="text-xl font-bold text-slate-900">
                             {profile.username || "Fan"}
                           </h2>
                           <Button
@@ -187,37 +191,41 @@ export default function ProfilePage() {
                       )}
                     </div>
 
-                    <div className="flex flex-col items-center sm:items-start gap-2 text-sm text-slate-600">
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-slate-400" />
-                        <span>{user.email}</span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleResetPassword}
-                        disabled={isResettingPassword}
-                        className="h-8 px-3 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
-                      >
-                        <KeyRound className="w-4 h-4 mr-2" />
-                        {isResettingPassword ? "Sending..." : "Reset Password"}
-                      </Button>
+                    {/* Email */}
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <Mail className="w-4 h-4 text-slate-400" />
+                      <span>{user.email}</span>
                     </div>
+
+                    {/* Reset Password Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleResetPassword}
+                      disabled={isResettingPassword}
+                      className="h-8 px-3 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+                    >
+                      <KeyRound className="w-4 h-4 mr-2" />
+                      {isResettingPassword ? "Sending..." : "Reset Password"}
+                    </Button>
                   </div>
 
-                  {isAdmin && (
-                    <div className="flex gap-2">
+                  {/* Column 3: Staff Dashboard Button (Admin Only) */}
+                  <div className="flex items-center justify-end">
+                    {isAdmin ? (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => router.push("/staffdashboard")}
-                        className="border-blue-300 hover:bg-blue-50 text-blue-700 font-medium"
+                        className="border-blue-300 hover:bg-blue-50 text-blue-700 font-medium whitespace-nowrap"
                       >
                         <Shield className="w-4 h-4 mr-2" />
                         Staff Dashboard
                       </Button>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="w-[140px]"></div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
