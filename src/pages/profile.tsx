@@ -218,7 +218,7 @@ export default function ProfilePage() {
 
                   {/* Column 3: Staff Dashboard Button (Admin Only) */}
                   <div className="flex items-center justify-end">
-                    {/* Debug info - temporary */}
+                   
                    
                     {isAdmin ? (
                       <Button
