@@ -183,7 +183,7 @@ export default function UserNav() {
                    className="text-sm px-2 py-1.5 hover:bg-accent rounded-md text-blue-600 font-medium"
                    onClick={handleNavigationClick}
                  >
-                   Staff Dashboard
+                   Staff Dashb
                  </Link>
                </>
              )}
