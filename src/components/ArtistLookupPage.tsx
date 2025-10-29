@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Search, Edit, Trash2, Plus, Eye, ExternalLink } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ArtistFormData {
   artist_name: string;
@@ -190,7 +191,19 @@ export function ArtistLookupPage() {
     }
   };
 
+  // Validation function for required fields
+  const isFormValid = () => {
+    return (
+      formData.artist_name.trim() !== "" &&
+      formData.artist_home.trim() !== "" &&
+      formData.artist_genre.trim() !== "" &&
+      formData.artist_videolink.trim() !== "" &&
+      formData.Top_List.trim() !== ""
+    );
+  };
+
   const isEditing = editMode || createMode;
+  const canSave = isFormValid();
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
@@ -389,7 +402,8 @@ export function ArtistLookupPage() {
                       <Button
                         size="sm"
                         onClick={handleSave}
-                        className="bg-purple-600 hover:bg-purple-700"
+                        disabled={!canSave}
+                        className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Save
                       </Button>
@@ -402,7 +416,9 @@ export function ArtistLookupPage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="artist_name" className="text-white">Artist Name</Label>
+                      <Label htmlFor="artist_name" className="text-white">
+                        Artist Name <span className="text-red-400">*</span>
+                      </Label>
                       <Input
                         id="artist_name"
                         value={formData.artist_name}
@@ -436,7 +452,9 @@ export function ArtistLookupPage() {
                     )}
                     
                     <div>
-                      <Label htmlFor="artist_home" className="text-white">Home City</Label>
+                      <Label htmlFor="artist_home" className="text-white">
+                        Home City <span className="text-red-400">*</span>
+                      </Label>
                       <Input
                         id="artist_home"
                         value={formData.artist_home}
@@ -449,7 +467,9 @@ export function ArtistLookupPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="artist_genre" className="text-white">Genre</Label>
+                      <Label htmlFor="artist_genre" className="text-white">
+                        Genre <span className="text-red-400">*</span>
+                      </Label>
                       <Input
                         id="artist_genre"
                         value={formData.artist_genre}
@@ -511,14 +531,34 @@ export function ArtistLookupPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="Top_List" className="text-white">Top List</Label>
-                      <Input
-                        id="Top_List"
-                        value={formData.Top_List}
-                        onChange={(e) => handleFormChange("Top_List", e.target.value)}
-                        disabled={!isEditing}
-                        className="bg-gray-800 border-gray-600 text-white"
-                      />
+                      <Label htmlFor="Top_List" className="text-white">
+                        Top List <span className="text-red-400">*</span>
+                      </Label>
+                      {isEditing ? (
+                        <Select
+                          value={formData.Top_List}
+                          onValueChange={(value) => handleFormChange("Top_List", value)}
+                        >
+                          <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                            <SelectValue placeholder="Select a list..." />
+                          </SelectTrigger>
+                          <SelectContent className="bg-gray-800 border-gray-600">
+                            <SelectItem value="RisingStar" className="text-white hover:bg-gray-700">RisingStar</SelectItem>
+                            <SelectItem value="Featured" className="text-white hover:bg-gray-700">Featured</SelectItem>
+                            <SelectItem value="ClassOf" className="text-white hover:bg-gray-700">ClassOf</SelectItem>
+                            <SelectItem value="Groover" className="text-white hover:bg-gray-700">Groover</SelectItem>
+                            <SelectItem value="StaffPick" className="text-white hover:bg-gray-700">StaffPick</SelectItem>
+                            <SelectItem value="2026New" className="text-white hover:bg-gray-700">2026New</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          id="Top_List"
+                          value={formData.Top_List}
+                          disabled
+                          className="bg-gray-800 border-gray-600 text-white"
+                        />
+                      )}
                     </div>
                     
                     <div>
@@ -537,7 +577,9 @@ export function ArtistLookupPage() {
                   <Separator className="bg-gray-700" />
 
                   <div>
-                    <Label htmlFor="artist_videolink" className="text-white">Video Link</Label>
+                    <Label htmlFor="artist_videolink" className="text-white">
+                      Video Link <span className="text-red-400">*</span>
+                    </Label>
                     <div className="flex space-x-2">
                       <Input
                         id="artist_videolink"
