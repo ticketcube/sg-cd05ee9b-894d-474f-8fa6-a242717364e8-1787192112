@@ -46,7 +46,7 @@ export default function ProfilePage() {
   console.log('[Profile Page] context.role:', role);
   console.log('[Profile Page] Full profile object:', profile);
 
-  const isAdmin = profile.role === "admin" || role === "admin";
+  const isAdmin = profile.role === "otwstaff" || role === "otwstaff";
   console.log('[Profile Page] isAdmin:', isAdmin);
 
   const handleEditUsername = async () => {
