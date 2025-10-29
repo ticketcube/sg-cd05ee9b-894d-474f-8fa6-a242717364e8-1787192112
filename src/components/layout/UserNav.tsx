@@ -113,7 +113,7 @@ export default function UserNav() {
       <DropdownMenuItem asChild>
         <Link href="/profile" onClick={handleNavigationClick}>Wallet</Link>
       </DropdownMenuItem>
-      {profile?.role === 'admin' && (
+      {profile?.role === 'otwstaff' && (
         <>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
