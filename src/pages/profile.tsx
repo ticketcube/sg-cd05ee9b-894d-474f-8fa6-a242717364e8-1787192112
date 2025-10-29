@@ -214,10 +214,10 @@ export default function ProfilePage() {
                   <div className="flex items-center justify-end">
                     {isAdmin ? (
                       <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
                         onClick={() => router.push("/staffdashboard")}
-                        className="border-blue-300 hover:bg-blue-50 text-blue-700 font-medium whitespace-nowrap"
+                        className="bg-purple-900 hover:bg-purple-800 text-white font-medium whitespace-nowrap shadow-md"
                       >
                         <Shield className="w-4 h-4 mr-2" />
                         Staff Dashboard
