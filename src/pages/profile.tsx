@@ -41,13 +41,7 @@ export default function ProfilePage() {
     ? profile.username.charAt(0).toUpperCase()
     : user.email?.charAt(0).toUpperCase() || "F";
 
-  // Debug logging
-  console.log('[Profile Page] profile.role:', profile.role);
-  console.log('[Profile Page] context.role:', role);
-  console.log('[Profile Page] Full profile object:', profile);
-
   const isAdmin = profile.role === "otwstaff" || role === "otwstaff";
-  console.log('[Profile Page] isAdmin:', isAdmin);
 
   const handleEditUsername = async () => {
     if (!isEditingUsername) {
@@ -218,8 +212,6 @@ export default function ProfilePage() {
 
                   {/* Column 3: Staff Dashboard Button (Admin Only) */}
                   <div className="flex items-center justify-end">
-                   
-                   
                     {isAdmin ? (
                       <Button
                         variant="default"
