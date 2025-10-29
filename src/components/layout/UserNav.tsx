@@ -113,7 +113,7 @@ export default function UserNav() {
       <DropdownMenuItem asChild>
         <Link href="/profile" onClick={handleNavigationClick}>Profile</Link>
       </DropdownMenuItem>
-      {profile?.is_admin && (
+      {profile?.role === 'admin' && (
         <>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
@@ -175,7 +175,7 @@ export default function UserNav() {
              >
                 Tix & Merch
              </Link>
-             {profile?.is_admin && (
+             {profile?.role === 'admin' && (
                <>
                  <div className="border-b my-2"></div>
                  <Link 
