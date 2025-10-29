@@ -4,11 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { getUserProfile, getUserEngagementHistory, subscribeToProfileChanges, type UserProfile, type UserEngagementHistory } from "@/services/userProfileService";
 import { Database } from "@/integrations/supabase/types";
 
-export type UserProfile = Database["public"]["Tables"]["profiles"]["Row"] & {
-  is_admin?: boolean;
-  role?: string;
-};
-
 interface UserProfileContextType {
   user: User | null;
   profile: UserProfile | null;
