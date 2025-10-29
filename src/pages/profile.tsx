@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FavoriteArtistsGrid } from "@/components/profile/FavoriteArtistsGrid";
 import { MvpSurvey } from "@/components/profile/MvpSurvey";
-import { User, Mail, Edit, KeyRound } from "lucide-react";
+import { User, Mail, Edit, KeyRound, Shield } from "lucide-react";
 import { useRouter } from "next/router";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -40,6 +40,8 @@ export default function ProfilePage() {
   const initials = profile.username
     ? profile.username.charAt(0).toUpperCase()
     : user.email?.charAt(0).toUpperCase() || "F";
+
+  const isAdmin = profile.role === "admin";
 
   const handleEditUsername = async () => {
     if (!isEditingUsername) {
@@ -185,26 +187,37 @@ export default function ProfilePage() {
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-600">
+                    <div className="flex flex-col items-center sm:items-start gap-2 text-sm text-slate-600">
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4 text-slate-400" />
                         <span>{user.email}</span>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleResetPassword}
+                        disabled={isResettingPassword}
+                        className="h-8 px-3 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+                      >
+                        <KeyRound className="w-4 h-4 mr-2" />
+                        {isResettingPassword ? "Sending..." : "Reset Password"}
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleResetPassword}
-                      disabled={isResettingPassword}
-                      className="border-purple-300 hover:bg-purple-50 text-purple-700"
-                    >
-                      <KeyRound className="w-4 h-4 mr-2" />
-                      {isResettingPassword ? "Sending..." : "Reset Password"}
-                    </Button>
-                  </div>
+                  {isAdmin && (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push("/staffdashboard")}
+                        className="border-blue-300 hover:bg-blue-50 text-blue-700 font-medium"
+                      >
+                        <Shield className="w-4 h-4 mr-2" />
+                        Staff Dashboard
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
