@@ -161,18 +161,16 @@ export function ArtistLookupPage() {
     try {
       setAddingToList(true);
       
-      // Import supabase client
       const { supabase } = await import("@/integrations/supabase/client");
       
-      // Insert new row into weekly_list_artists table
       const { data, error } = await supabase
         .from("weekly_list_artists")
         .insert([
           {
             artist_uuid: selectedArtist.uuid,
             weekly_list_id: parseInt(weeklyListId),
-            position: 0, // Default position
-            week_identifier: null // Can be set later if needed
+            position: 0,
+            week_identifier: null
           }
         ])
         .select();
@@ -181,7 +179,6 @@ export function ArtistLookupPage() {
         throw error;
       }
 
-      // Success - clear form and show success message
       setWeeklyListId("");
       alert(`Successfully added ${selectedArtist.artist_name} to weekly list ${weeklyListId}!`);
       
@@ -216,189 +213,192 @@ export function ArtistLookupPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Search Panel */}
-          <Card className="bg-gray-900 border-gray-700">
-            <CardHeader>
-              <CardTitle className="flex items-center text-white">
-                <Search className="w-5 h-5 mr-2" />
-                Search Artists
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search by artist name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                />
-                {loading && (
-                  <div className="absolute right-3 top-3">
-                    <div className="animate-spin w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full" />
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {searchResults.map((artist) => (
-                  <div
-                    key={artist.uuid}
-                    onClick={() => handleArtistSelect(artist)}
-                        className={`text-white p-3 rounded-lg cursor-pointer transition-colors ${
-                      selectedArtist?.uuid === artist.uuid
-                        ? "bg-purple-900/50 border border-purple-500"
-                        : "bg-gray-800 hover:bg-gray-700"
-                    }`}
-                  >
-                    <div className="font-medium">{artist.artist_name}</div>
-                    <div className="text-sm text-white">
-                      {artist.artist_home && `${artist.artist_home} • `}
-                      {artist.artist_genre}
-                    </div>
-                  </div>
-                ))}
-                {searchQuery && !loading && searchResults.length === 0 && (
-                  <div className="text-center py-8 text-gray-400">
-                    No artists found matching "{searchQuery}"
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Add to Weekly List Panel - Only show when an artist is selected */}
-          {selectedArtist && (
+          {/* Left Column */}
+          <div className="space-y-6">
+            {/* Search Panel */}
             <Card className="bg-gray-900 border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center text-green-400">
-                  <Plus className="w-5 h-5 mr-2" />
-                  Add to Weekly List
+                <CardTitle className="flex items-center text-white">
+                  <Search className="w-5 h-5 mr-2" />
+                  Search Artists
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-white">Selected Artist</Label>
-                  <div className="p-3 bg-gray-800 rounded-lg border border-gray-600">
-                    <div className="font-medium text-white">{selectedArtist.artist_name}</div>
-                    <div className="text-sm text-gray-400 mt-1">
-                      UUID: {selectedArtist.uuid}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="weekly_list_id" className="text-white">Weekly List ID</Label>
+                <div className="relative">
                   <Input
-                    id="weekly_list_id"
-                    type="number"
-                    value={weeklyListId}
-                    onChange={(e) => setWeeklyListId(e.target.value)}
-                    className="bg-gray-800 border-gray-600 text-white"
-                    placeholder="Enter weekly list ID number..."
+                    type="text"
+                    placeholder="Search by artist name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
                   />
+                  {loading && (
+                    <div className="absolute right-3 top-3">
+                      <div className="animate-spin w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full" />
+                    </div>
+                  )}
                 </div>
 
-                <Button 
-                  onClick={handleAddToWeeklyList}
-                  disabled={!weeklyListId.trim() || addingToList}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                >
-                  {addingToList ? (
-                    <>
-                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                      Adding...
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add to Weekly List
-                    </>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {searchResults.map((artist) => (
+                    <div
+                      key={artist.uuid}
+                      onClick={() => handleArtistSelect(artist)}
+                      className={`text-white p-3 rounded-lg cursor-pointer transition-colors ${
+                        selectedArtist?.uuid === artist.uuid
+                          ? "bg-purple-900/50 border border-purple-500"
+                          : "bg-gray-800 hover:bg-gray-700"
+                      }`}
+                    >
+                      <div className="font-medium">{artist.artist_name}</div>
+                      <div className="text-sm text-white">
+                        {artist.artist_home && `${artist.artist_home} • `}
+                        {artist.artist_genre}
+                      </div>
+                    </div>
+                  ))}
+                  {searchQuery && !loading && searchResults.length === 0 && (
+                    <div className="text-center py-8 text-gray-400">
+                      No artists found matching "{searchQuery}"
+                    </div>
                   )}
-                </Button>
+                </div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Artist Details Panel */}
-          <Card className="bg-gray-900 border-gray-700">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center text-white">
-                  <Eye className="w-5 h-5 mr-2" />
-                  {createMode ? "Create New Artist" : selectedArtist ? "Artist Details" : "Select an Artist"}
-                </CardTitle>
-                
-                {selectedArtist && !isEditing && (
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditMode(true)}
-                      className="border-gray-600 hover:bg-gray-700"
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
-                    
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-red-600 text-red-400 hover:bg-red-900/20"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-gray-900 border-gray-700">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="text-white">Delete Artist</AlertDialogTitle>
-                          <AlertDialogDescription className="text-gray-300">
-                            Are you sure you want to delete "{selectedArtist.artist_name}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700">
-                            Cancel
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleDelete}
-                            className="bg-red-600 hover:bg-red-700"
+            {/* Add to Weekly List Panel - MOVED HERE */}
+            {selectedArtist && (
+              <Card className="bg-gray-900 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-green-400">
+                    <Plus className="w-5 h-5 mr-2" />
+                    Add to Weekly List
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="text-white">Selected Artist</Label>
+                    <div className="p-3 bg-gray-800 rounded-lg border border-gray-600">
+                      <div className="font-medium text-white">{selectedArtist.artist_name}</div>
+                      <div className="text-sm text-gray-400 mt-1">
+                        UUID: {selectedArtist.uuid}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="weekly_list_id" className="text-white">Weekly List ID</Label>
+                    <Input
+                      id="weekly_list_id"
+                      type="number"
+                      value={weeklyListId}
+                      onChange={(e) => setWeeklyListId(e.target.value)}
+                      className="bg-gray-800 border-gray-600 text-white"
+                      placeholder="Enter weekly list ID number..."
+                    />
+                  </div>
+
+                  <Button 
+                    onClick={handleAddToWeeklyList}
+                    disabled={!weeklyListId.trim() || addingToList}
+                    className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {addingToList ? (
+                      <>
+                        <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add to Weekly List
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Right Column - Artist Details/Edit (shows when artist selected or in create mode) */}
+          {(selectedArtist || createMode) && (
+            <Card className="bg-gray-900 border-gray-700 lg:sticky lg:top-6 h-fit">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center text-white">
+                    <Eye className="w-5 h-5 mr-2" />
+                    {createMode ? "Create New Artist" : "Artist Details"}
+                  </CardTitle>
+                  
+                  {selectedArtist && !isEditing && (
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditMode(true)}
+                        className="border-gray-600 hover:bg-gray-700"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-red-600 text-red-400 hover:bg-red-900/20"
                           >
+                            <Trash2 className="w-4 h-4 mr-1" />
                             Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="bg-gray-900 border-gray-700">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-white">Delete Artist</AlertDialogTitle>
+                            <AlertDialogDescription className="text-gray-300">
+                              Are you sure you want to delete "{selectedArtist.artist_name}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700">
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={handleDelete}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
 
-                {isEditing && (
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={resetToViewMode}
-                      className="border-gray-600 hover:bg-gray-700"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleSave}
-                      className="bg-purple-600 hover:bg-purple-700"
-                    >
-                      Save
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              {(selectedArtist || createMode) ? (
+                  {isEditing && (
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={resetToViewMode}
+                        className="border-gray-600 hover:bg-gray-700"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSave}
+                        className="bg-purple-600 hover:bg-purple-700"
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -624,15 +624,9 @@ export function ArtistLookupPage() {
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-12 text-gray-400">
-                  <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Search for an artist to view their details</p>
-                  <p className="text-sm mt-2">Or create a new artist profile</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
