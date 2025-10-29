@@ -219,9 +219,7 @@ export default function ProfilePage() {
                   {/* Column 3: Staff Dashboard Button (Admin Only) */}
                   <div className="flex items-center justify-end">
                     {/* Debug info - temporary */}
-                    <div className="text-xs text-slate-500 mr-2">
-                      Role: {profile.role || "none"} | Admin: {isAdmin ? "YES" : "NO"}
-                    </div>
+                   
                     {isAdmin ? (
                       <Button
                         variant="default"
