@@ -111,7 +111,7 @@ export default function UserNav() {
         <Link href="/discovery-dashboard" onClick={handleNavigationClick}>Rewards</Link>
       </DropdownMenuItem>
       <DropdownMenuItem asChild>
-        <Link href="/profile" onClick={handleNavigationClick}>Profile</Link>
+        <Link href="/profile" onClick={handleNavigationClick}>Wallet</Link>
       </DropdownMenuItem>
       {profile?.role === 'admin' && (
         <>
