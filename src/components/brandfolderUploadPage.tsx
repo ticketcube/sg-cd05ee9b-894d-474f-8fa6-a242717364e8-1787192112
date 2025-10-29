@@ -79,7 +79,7 @@ function brandfolderUploadPage() {
                 setUploadProgress((prev) => Math.min(prev + Math.random() * 15, 90));
             }, 400);
 
-            const response = await fetch("/api/brandfolder/upload", {
+            const response = await fetch("/pages/api/brandfolder/upload", {
                 method: "POST",
                 body: formData,
             });
