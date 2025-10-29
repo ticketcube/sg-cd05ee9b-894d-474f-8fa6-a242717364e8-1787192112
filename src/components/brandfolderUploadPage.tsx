@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { useRouter } from "next/router";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 import {
     Upload,
     CheckCircle,
@@ -13,7 +15,6 @@ import {
     Video,
     X,
 } from "lucide-react";
-import { useRouter } from "next/router";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
@@ -23,13 +24,13 @@ interface FilePreview {
     type: "image" | "video" | "other";
 }
 
-function brandfolderUploadPage() {
+export function BrandfolderUploadPage() {
     const router = useRouter();
     const { user, profile } = useUserProfile();
-    const fileInputRef = useRef < HTMLInputElement > (null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [selectedFile, setSelectedFile] = useState < FilePreview | null > (null);
-    const [uploadStatus, setUploadStatus] = useState < UploadStatus > ("idle");
+    const [selectedFile, setSelectedFile] = useState<FilePreview | null>(null);
+    const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
     const [uploadProgress, setUploadProgress] = useState(0);
     const [description, setDescription] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -79,7 +80,7 @@ function brandfolderUploadPage() {
                 setUploadProgress((prev) => Math.min(prev + Math.random() * 15, 90));
             }, 400);
 
-            const response = await fetch("/pages/api/brandfolder/upload", {
+            const response = await fetch("/api/brandfolder/upload", {
                 method: "POST",
                 body: formData,
             });

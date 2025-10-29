@@ -56,10 +56,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         });
 
-        console.log("Debug - API Key exists:", !!BF_API_KEY);
-        console.log("Debug - Brandfolder ID:", BRANDFOLDER_ID);
-        console.log("Debug - Section ID:", SECTION_ID);
-
         if (!uploadReq.ok) {
             const text = await uploadReq.text();
             return res.status(uploadReq.status).json({ error: `Upload request failed: ${text}` });
