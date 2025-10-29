@@ -173,7 +173,7 @@ export default function UserNav() {
                className="text-sm px-2 py-1.5 hover:bg-accent rounded-md"
                onClick={handleNavigationClick}
              >
-                Tix & Merch
+                Wallet
              </Link>
              {profile?.role === 'otwstaff' && (
                <>
