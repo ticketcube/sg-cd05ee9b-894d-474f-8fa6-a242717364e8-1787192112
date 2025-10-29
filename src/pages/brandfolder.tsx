@@ -2,8 +2,8 @@
 import { withAdminGuard } from "@/components/guards/withAdminGuard";
 import { brandfolderUploadPage } from "@/components/brandfolderUploadPage";
 
-function ArtistLookup() {
-  return <ArtistLookupPage />;
+function brandfolderUpload() {
+  return <brandfolderUpload />;
 }
 
-export default withAdminGuard(ArtistLookup);
+export default withAdminGuard(brandfolderUpload);
