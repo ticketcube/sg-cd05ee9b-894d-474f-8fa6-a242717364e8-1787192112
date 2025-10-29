@@ -117,7 +117,7 @@ export default function UserNav() {
         <>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/brandfolder" onClick={handleNavigationClick} className="text-blue-600 font-medium">
+            <Link href="/staffdashboard" onClick={handleNavigationClick} className="text-blue-600 font-medium">
               Staff Dashboard
             </Link>
           </DropdownMenuItem>
@@ -179,7 +179,7 @@ export default function UserNav() {
                <>
                  <div className="border-b my-2"></div>
                  <Link 
-                   href="/brandfolder" 
+                   href="/staffdashboard" 
                    className="text-sm px-2 py-1.5 hover:bg-accent rounded-md text-blue-600 font-medium"
                    onClick={handleNavigationClick}
                  >
