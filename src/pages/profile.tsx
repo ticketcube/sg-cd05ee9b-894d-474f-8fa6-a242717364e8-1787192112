@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
-  const { profile, user, loading: profileLoading, isAuthenticated } = useUserProfile();
+  const { profile, user, loading: profileLoading, isAuthenticated, role } = useUserProfile();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState("");
@@ -41,7 +41,13 @@ export default function ProfilePage() {
     ? profile.username.charAt(0).toUpperCase()
     : user.email?.charAt(0).toUpperCase() || "F";
 
-  const isAdmin = profile.role === "admin";
+  // Debug logging
+  console.log('[Profile Page] profile.role:', profile.role);
+  console.log('[Profile Page] context.role:', role);
+  console.log('[Profile Page] Full profile object:', profile);
+
+  const isAdmin = profile.role === "admin" || role === "admin";
+  console.log('[Profile Page] isAdmin:', isAdmin);
 
   const handleEditUsername = async () => {
     if (!isEditingUsername) {
@@ -212,6 +218,10 @@ export default function ProfilePage() {
 
                   {/* Column 3: Staff Dashboard Button (Admin Only) */}
                   <div className="flex items-center justify-end">
+                    {/* Debug info - temporary */}
+                    <div className="text-xs text-slate-500 mr-2">
+                      Role: {profile.role || "none"} | Admin: {isAdmin ? "YES" : "NO"}
+                    </div>
                     {isAdmin ? (
                       <Button
                         variant="default"
