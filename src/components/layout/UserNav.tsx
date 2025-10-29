@@ -113,6 +113,16 @@ export default function UserNav() {
       <DropdownMenuItem asChild>
         <Link href="/profile" onClick={handleNavigationClick}>Profile</Link>
       </DropdownMenuItem>
+      {profile?.is_admin && (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/brandfolder" onClick={handleNavigationClick} className="text-blue-600 font-medium">
+              Staff Dashboard
+            </Link>
+          </DropdownMenuItem>
+        </>
+      )}
       <DropdownMenuSeparator />
       <DropdownMenuItem 
         onClick={handleLogout} 
@@ -165,6 +175,18 @@ export default function UserNav() {
              >
                 Tix & Merch
              </Link>
+             {profile?.is_admin && (
+               <>
+                 <div className="border-b my-2"></div>
+                 <Link 
+                   href="/brandfolder" 
+                   className="text-sm px-2 py-1.5 hover:bg-accent rounded-md text-blue-600 font-medium"
+                   onClick={handleNavigationClick}
+                 >
+                   Staff Dashboard
+                 </Link>
+               </>
+             )}
              <div className="border-b my-2"></div>
              <button 
                onClick={handleLogout} 
