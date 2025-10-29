@@ -175,7 +175,7 @@ export default function UserNav() {
              >
                 Tix & Merch
              </Link>
-             {profile?.role === 'admin' && (
+             {profile?.role === 'otwstaff' && (
                <>
                  <div className="border-b my-2"></div>
                  <Link 
