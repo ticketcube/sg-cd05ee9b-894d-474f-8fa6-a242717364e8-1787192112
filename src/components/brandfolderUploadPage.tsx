@@ -40,7 +40,7 @@ export function BrandfolderUploadPage() {
         if (!file) return;
 
         if (file.size > 15 * 1024 * 1024 * 1024) {
-            setErrorMessage("File size must be less than 15GB");
+            setErrorMessage("File size must be less than 250MB");
             return;
         }
 
@@ -199,7 +199,7 @@ export function BrandfolderUploadPage() {
                                 >
                                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-3" />
                                     <h3 className="font-semibold text-gray-700">Browse Files</h3>
-                                    <p className="text-gray-500 text-sm">Select files up to 15GB</p>
+                                    <p className="text-gray-500 text-sm">Select files up to 250MB</p>
                                     <input
                                         ref={fileInputRef}
                                         type="file"
