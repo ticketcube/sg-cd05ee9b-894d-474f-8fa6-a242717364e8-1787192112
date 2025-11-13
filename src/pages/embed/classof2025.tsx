@@ -14,7 +14,7 @@ import { useUserProfile } from '@/contexts/UserProfileContext';
 interface ClassOf2025Artist {
     uuid: string;
     artist_name: string;
-    youtube_url?: string;
+    artist_videolink?: string;
     artist_image?: string;
 }
 
@@ -36,7 +36,7 @@ export default function ClassOf2025Page() {
                 const { data, error } = await supabase
                     .from('artists')
                     .select('uuid, artist_name, artist_videolink, artist_image')
-                    .eq('Top_List', 'ClassOf')
+                    .eq('top_list', 'ClassOf')
                     .order('artist_name');
 
                 if (error) throw error;
