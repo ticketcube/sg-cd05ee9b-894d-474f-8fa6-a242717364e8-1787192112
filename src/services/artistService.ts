@@ -255,11 +255,10 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
         .select("primary_vibe, secondary_vibe")
-        .eq("Top_List", "100");
+        .eq("top_list", "100");
 
       if (error) {
-        console.error("Error fetching vibe counts:", error);
-        return {};
+        throw error;
       }
 
       const counts = data.reduce((acc, artist) => {
