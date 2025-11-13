@@ -36,7 +36,7 @@ export default function ClassOf2025Page() {
                 const { data, error } = await supabase
                     .from('artists')
                     .select('uuid, artist_name, youtube_url, artist_image')
-                    .eq('TopList', 'ClassOf')
+                    .eq('Top_List', 'ClassOf')
                     .order('artist_name');
 
                 if (error) throw error;
