@@ -126,7 +126,7 @@ export const getUserProfile = async (
     try {
         const { data, error } = await supabase
             .from('user_profiles')
-            .select('user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url, display_name')
+            .select('user_id, username, email, total_points, role, created_at, last_active, city_id, raw_city_input, avatar_url, display_name, stripe_customer_id, stripe_subscription_status')
             .eq('user_id', userId)
             .abortSignal(abortSignal)
             .single();
