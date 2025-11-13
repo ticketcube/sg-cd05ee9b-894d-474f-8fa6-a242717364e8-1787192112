@@ -33,22 +33,31 @@ export default function ClassOf2025Page() {
         const loadArtists = async () => {
             setLoading(true);
             try {
+                console.log('🔍 Fetching ClassOf artists...');
+
                 const { data, error } = await supabase
                     .from('artists')
                     .select('uuid, artist_name, artist_videolink, artist_image')
                     .eq('top_list', 'ClassOf')
                     .order('artist_name');
 
-                if (error) throw error;
+                console.log('📊 Query result:', { data, error });
+
+                if (error) {
+                    console.error('❌ Supabase error:', error);
+                    throw error;
+                }
 
                 if (!data || data.length === 0) {
+                    console.warn('⚠️ No artists found with top_list = ClassOf');
                     toast.error('No Class of 2025 artists available');
                     return;
                 }
 
+                console.log('✅ Artists loaded:', data.length);
                 setArtists(data);
             } catch (error) {
-                console.error('Error loading artists:', error);
+                console.error('💥 Error loading artists:', error);
                 toast.error('Failed to load artists');
             } finally {
                 setLoading(false);
