@@ -17,7 +17,7 @@ export interface Artist {
   attractionId?: string;
   artist_tiktok_username?: string;
   artist_tiktok_videoid?: string;
-  Top_List?: string;
+  top_list?: string;
   artist_otwcoverage?: number;
   primary_vibe?: string;
   secondary_vibe?: string;

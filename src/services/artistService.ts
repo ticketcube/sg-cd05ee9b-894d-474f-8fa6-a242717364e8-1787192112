@@ -320,7 +320,7 @@ export class ArtistService {
       const { data, error } = await supabase
         .from("artists")
         .select("*, city:city_latlong(*)")
-        .eq("Top_List", "Groover")
+        .eq("top_list", "Groover")
         .order("artist_otwcoverage", { ascending: false });
 
       if (error) {
