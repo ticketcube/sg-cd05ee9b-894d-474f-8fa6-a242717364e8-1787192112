@@ -57,9 +57,7 @@ export function OnestoWatchCubeEmbed({
                 <h3 className="text-xl font-bold text-black mb-1">
                     {artistName}
                 </h3>
-                <p className="text-sm text-gray-600">
-                    Exclusive TicketCube NFT
-                </p>
+              
             </div>
 
             {/* 3D Cube Embed - 1:1 aspect ratio */}
