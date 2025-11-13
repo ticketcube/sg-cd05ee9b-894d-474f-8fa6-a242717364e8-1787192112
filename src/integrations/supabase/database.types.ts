@@ -60,6 +60,48 @@ export type Database = {
                 }
                 Relationships: []
             }
+            artist_demo_requests: {
+                Row: {
+                    created_at: string | null
+                    email: string
+                    event_date: string | null
+                    event_type: string | null
+                    expected_attendees: string | null
+                    id: string
+                    message: string | null
+                    name: string
+                    status: string | null
+                    user_id: string | null
+                    venue: string | null
+                }
+                Insert: {
+                    created_at?: string | null
+                    email: string
+                    event_date?: string | null
+                    event_type?: string | null
+                    expected_attendees?: string | null
+                    id?: string
+                    message?: string | null
+                    name: string
+                    status?: string | null
+                    user_id?: string | null
+                    venue?: string | null
+                }
+                Update: {
+                    created_at?: string | null
+                    email?: string
+                    event_date?: string | null
+                    event_type?: string | null
+                    expected_attendees?: string | null
+                    id?: string
+                    message?: string | null
+                    name?: string
+                    status?: string | null
+                    user_id?: string | null
+                    venue?: string | null
+                }
+                Relationships: []
+            }
             artist_mint_payments: {
                 Row: {
                     artist_user_id: string
@@ -128,7 +170,7 @@ export type Database = {
                     cityid: number | null
                     primary_vibe: string | null
                     secondary_vibe: string | null
-                    Top_List: string | null
+                    top_list: string | null
                     uuid: string
                 }
                 Insert: {
@@ -151,7 +193,7 @@ export type Database = {
                     cityid?: number | null
                     primary_vibe?: string | null
                     secondary_vibe?: string | null
-                    Top_List?: string | null
+                    top_list?: string | null
                     uuid?: string
                 }
                 Update: {
@@ -174,7 +216,7 @@ export type Database = {
                     cityid?: number | null
                     primary_vibe?: string | null
                     secondary_vibe?: string | null
-                    Top_List?: string | null
+                    top_list?: string | null
                     uuid?: string
                 }
                 Relationships: []
@@ -214,6 +256,9 @@ export type Database = {
             }
             cube_faces: {
                 Row: {
+                    action_type: string | null
+                    action_type_video_title: string | null
+                    action_url: string | null
                     background_color: string | null
                     content_text: string | null
                     content_type: string
@@ -222,12 +267,18 @@ export type Database = {
                     face_number: number
                     face_title: string | null
                     image_url: string | null
+                    is_current: boolean | null
                     is_editable: boolean
+                    parent_face_id: string | null
                     text_color: string | null
                     ticketcube_id: string
                     user_id: string
+                    version_number: number | null
                 }
                 Insert: {
+                    action_type?: string | null
+                    action_type_video_title?: string | null
+                    action_url?: string | null
                     background_color?: string | null
                     content_text?: string | null
                     content_type: string
@@ -236,12 +287,18 @@ export type Database = {
                     face_number: number
                     face_title?: string | null
                     image_url?: string | null
+                    is_current?: boolean | null
                     is_editable?: boolean
+                    parent_face_id?: string | null
                     text_color?: string | null
                     ticketcube_id: string
                     user_id: string
+                    version_number?: number | null
                 }
                 Update: {
+                    action_type?: string | null
+                    action_type_video_title?: string | null
+                    action_url?: string | null
                     background_color?: string | null
                     content_text?: string | null
                     content_type?: string
@@ -250,12 +307,22 @@ export type Database = {
                     face_number?: number
                     face_title?: string | null
                     image_url?: string | null
+                    is_current?: boolean | null
                     is_editable?: boolean
+                    parent_face_id?: string | null
                     text_color?: string | null
                     ticketcube_id?: string
                     user_id?: string
+                    version_number?: number | null
                 }
                 Relationships: [
+                    {
+                        foreignKeyName: "cube_faces_parent_face_id_fkey"
+                        columns: ["parent_face_id"]
+                        isOneToOne: false
+                        referencedRelation: "cube_faces"
+                        referencedColumns: ["face_id"]
+                    },
                     {
                         foreignKeyName: "cube_faces_ticketcube_id_fkey"
                         columns: ["ticketcube_id"]
@@ -327,6 +394,254 @@ export type Database = {
                         referencedColumns: ["cube_id"]
                     },
                 ]
+            }
+            cube_update_notifications: {
+                Row: {
+                    artist_user_id: string | null
+                    created_at: string | null
+                    holder_cube_id: string | null
+                    holder_user_id: string | null
+                    is_applied: boolean | null
+                    is_dismissed: boolean | null
+                    is_viewed: boolean | null
+                    notification_id: string
+                    template_id: string | null
+                    update_mode: string
+                }
+                Insert: {
+                    artist_user_id?: string | null
+                    created_at?: string | null
+                    holder_cube_id?: string | null
+                    holder_user_id?: string | null
+                    is_applied?: boolean | null
+                    is_dismissed?: boolean | null
+                    is_viewed?: boolean | null
+                    notification_id?: string
+                    template_id?: string | null
+                    update_mode: string
+                }
+                Update: {
+                    artist_user_id?: string | null
+                    created_at?: string | null
+                    holder_cube_id?: string | null
+                    holder_user_id?: string | null
+                    is_applied?: boolean | null
+                    is_dismissed?: boolean | null
+                    is_viewed?: boolean | null
+                    notification_id?: string
+                    template_id?: string | null
+                    update_mode?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "cube_update_notifications_holder_cube_id_fkey"
+                        columns: ["holder_cube_id"]
+                        isOneToOne: false
+                        referencedRelation: "ticketcubes"
+                        referencedColumns: ["cube_id"]
+                    },
+                    {
+                        foreignKeyName: "cube_update_notifications_template_id_fkey"
+                        columns: ["template_id"]
+                        isOneToOne: false
+                        referencedRelation: "ticketcubes"
+                        referencedColumns: ["cube_id"]
+                    },
+                ]
+            }
+            cube_update_payments: {
+                Row: {
+                    amount_total: number | null
+                    created_at: string | null
+                    notification_id: string | null
+                    payment_id: string
+                    payment_status: string | null
+                    stripe_payment_intent_id: string | null
+                    user_id: string | null
+                }
+                Insert: {
+                    amount_total?: number | null
+                    created_at?: string | null
+                    notification_id?: string | null
+                    payment_id?: string
+                    payment_status?: string | null
+                    stripe_payment_intent_id?: string | null
+                    user_id?: string | null
+                }
+                Update: {
+                    amount_total?: number | null
+                    created_at?: string | null
+                    notification_id?: string | null
+                    payment_id?: string
+                    payment_status?: string | null
+                    stripe_payment_intent_id?: string | null
+                    user_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "cube_update_payments_notification_id_fkey"
+                        columns: ["notification_id"]
+                        isOneToOne: false
+                        referencedRelation: "cube_update_notifications"
+                        referencedColumns: ["notification_id"]
+                    },
+                ]
+            }
+            minting_price_configs: {
+                Row: {
+                    config_data: Json | null
+                    config_id: string
+                    created_at: string | null
+                    custom_features: Json | null
+                    is_active: boolean | null
+                    price_cents: number | null
+                    price_type: string | null
+                    stripe_price_id: string | null
+                    ticketcube_id: string | null
+                }
+                Insert: {
+                    config_data?: Json | null
+                    config_id?: string
+                    created_at?: string | null
+                    custom_features?: Json | null
+                    is_active?: boolean | null
+                    price_cents?: number | null
+                    price_type?: string | null
+                    stripe_price_id?: string | null
+                    ticketcube_id?: string | null
+                }
+                Update: {
+                    config_data?: Json | null
+                    config_id?: string
+                    created_at?: string | null
+                    custom_features?: Json | null
+                    is_active?: boolean | null
+                    price_cents?: number | null
+                    price_type?: string | null
+                    stripe_price_id?: string | null
+                    ticketcube_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "minting_price_configs_ticketcube_id_fkey"
+                        columns: ["ticketcube_id"]
+                        isOneToOne: false
+                        referencedRelation: "ticketcubes"
+                        referencedColumns: ["cube_id"]
+                    },
+                ]
+            }
+            minting_transactions: {
+                Row: {
+                    artist_revenue_cents: number | null
+                    artist_user_id: string | null
+                    buyer_user_id: string | null
+                    cloned_cube_id: string | null
+                    completed_at: string | null
+                    created_at: string | null
+                    cube_id: string | null
+                    platform_fee_cents: number | null
+                    price_cents: number | null
+                    status: string | null
+                    stripe_checkout_session_id: string | null
+                    stripe_payment_intent_id: string | null
+                    template_id: string | null
+                    transaction_id: string
+                    user_id: string | null
+                }
+                Insert: {
+                    artist_revenue_cents?: number | null
+                    artist_user_id?: string | null
+                    buyer_user_id?: string | null
+                    cloned_cube_id?: string | null
+                    completed_at?: string | null
+                    created_at?: string | null
+                    cube_id?: string | null
+                    platform_fee_cents?: number | null
+                    price_cents?: number | null
+                    status?: string | null
+                    stripe_checkout_session_id?: string | null
+                    stripe_payment_intent_id?: string | null
+                    template_id?: string | null
+                    transaction_id?: string
+                    user_id?: string | null
+                }
+                Update: {
+                    artist_revenue_cents?: number | null
+                    artist_user_id?: string | null
+                    buyer_user_id?: string | null
+                    cloned_cube_id?: string | null
+                    completed_at?: string | null
+                    created_at?: string | null
+                    cube_id?: string | null
+                    platform_fee_cents?: number | null
+                    price_cents?: number | null
+                    status?: string | null
+                    stripe_checkout_session_id?: string | null
+                    stripe_payment_intent_id?: string | null
+                    template_id?: string | null
+                    transaction_id?: string
+                    user_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "minting_transactions_cloned_cube_id_fkey"
+                        columns: ["cloned_cube_id"]
+                        isOneToOne: false
+                        referencedRelation: "ticketcubes"
+                        referencedColumns: ["cube_id"]
+                    },
+                    {
+                        foreignKeyName: "minting_transactions_cube_id_fkey"
+                        columns: ["cube_id"]
+                        isOneToOne: false
+                        referencedRelation: "ticketcubes"
+                        referencedColumns: ["cube_id"]
+                    },
+                    {
+                        foreignKeyName: "minting_transactions_template_id_fkey"
+                        columns: ["template_id"]
+                        isOneToOne: false
+                        referencedRelation: "ticketcubes"
+                        referencedColumns: ["cube_id"]
+                    },
+                ]
+            }
+            pending_artist_templates: {
+                Row: {
+                    artist_name: string | null
+                    pending_id: string
+                }
+                Insert: {
+                    artist_name?: string | null
+                    pending_id?: string
+                }
+                Update: {
+                    artist_name?: string | null
+                    pending_id?: string
+                }
+                Relationships: []
+            }
+            platform_config: {
+                Row: {
+                    config_key: string
+                    config_value: Json | null
+                    created_at: string | null
+                    description: string | null
+                }
+                Insert: {
+                    config_key: string
+                    config_value?: Json | null
+                    created_at?: string | null
+                    description?: string | null
+                }
+                Update: {
+                    config_key?: string
+                    config_value?: Json | null
+                    created_at?: string | null
+                    description?: string | null
+                }
+                Relationships: []
             }
             points_config: {
                 Row: {
@@ -415,6 +730,7 @@ export type Database = {
                     id: string
                     role: string | null
                     updated_at: string | null
+                    user_role: string | null
                 }
                 Insert: {
                     avatar_url?: string | null
@@ -422,6 +738,7 @@ export type Database = {
                     id: string
                     role?: string | null
                     updated_at?: string | null
+                    user_role?: string | null
                 }
                 Update: {
                     avatar_url?: string | null
@@ -429,6 +746,40 @@ export type Database = {
                     id?: string
                     role?: string | null
                     updated_at?: string | null
+                    user_role?: string | null
+                }
+                Relationships: []
+            }
+            referral_tracking: {
+                Row: {
+                    artist_id: string | null
+                    artist_name: string | null
+                    claimed_at: string | null
+                    cube_id: string | null
+                    id: string
+                    referral_source: string
+                    user_id: string | null
+                    visited_at: string | null
+                }
+                Insert: {
+                    artist_id?: string | null
+                    artist_name?: string | null
+                    claimed_at?: string | null
+                    cube_id?: string | null
+                    id?: string
+                    referral_source: string
+                    user_id?: string | null
+                    visited_at?: string | null
+                }
+                Update: {
+                    artist_id?: string | null
+                    artist_name?: string | null
+                    claimed_at?: string | null
+                    cube_id?: string | null
+                    id?: string
+                    referral_source?: string
+                    user_id?: string | null
+                    visited_at?: string | null
                 }
                 Relationships: []
             }
@@ -494,6 +845,7 @@ export type Database = {
                     artist_id: string | null
                     artist_name: string | null
                     artist_tier: string | null
+                    artist_upfront_per_cube: number | null
                     clone_price_fan: number | null
                     created_at: string | null
                     cube_id: string
@@ -502,6 +854,7 @@ export type Database = {
                     description: string | null
                     event_date: string | null
                     event_name: string | null
+                    fan_fee_model: string | null
                     glb_url: string | null
                     is_active: boolean | null
                     is_minting_enabled: boolean | null
@@ -511,23 +864,32 @@ export type Database = {
                     max_mint_count: number | null
                     mint_price_artist: number | null
                     parent_cube_id: string | null
+                    payment_model: string | null
                     platform_revenue_share: number | null
                     premium_features: Json | null
                     refresh_count: number
+                    revenue_recovered: number | null
                     slug: string | null
                     stripe_payment_intent_id: string | null
                     tcube_contract_address: string | null
                     theme_config: Json | null
                     tier: string | null
                     title: string
+                    update_notification_cost: number | null
                     updated_at: string | null
+                    upfront_fee_paid: boolean | null
+                    upfront_payment_bypassed: boolean | null
+                    upfront_payment_completed: boolean | null
+                    upfront_stripe_payment_intent_id: string | null
                     user_id: string
+                    uses_revenue_recovery: boolean | null
                     venue: string | null
                 }
                 Insert: {
                     artist_id?: string | null
                     artist_name?: string | null
                     artist_tier?: string | null
+                    artist_upfront_per_cube?: number | null
                     clone_price_fan?: number | null
                     created_at?: string | null
                     cube_id?: string
@@ -536,6 +898,7 @@ export type Database = {
                     description?: string | null
                     event_date?: string | null
                     event_name?: string | null
+                    fan_fee_model?: string | null
                     glb_url?: string | null
                     is_active?: boolean | null
                     is_minting_enabled?: boolean | null
@@ -545,23 +908,32 @@ export type Database = {
                     max_mint_count?: number | null
                     mint_price_artist?: number | null
                     parent_cube_id?: string | null
+                    payment_model?: string | null
                     platform_revenue_share?: number | null
                     premium_features?: Json | null
                     refresh_count?: number
+                    revenue_recovered?: number | null
                     slug?: string | null
                     stripe_payment_intent_id?: string | null
                     tcube_contract_address?: string | null
                     theme_config?: Json | null
                     tier?: string | null
                     title: string
+                    update_notification_cost?: number | null
                     updated_at?: string | null
+                    upfront_fee_paid?: boolean | null
+                    upfront_payment_bypassed?: boolean | null
+                    upfront_payment_completed?: boolean | null
+                    upfront_stripe_payment_intent_id?: string | null
                     user_id: string
+                    uses_revenue_recovery?: boolean | null
                     venue?: string | null
                 }
                 Update: {
                     artist_id?: string | null
                     artist_name?: string | null
                     artist_tier?: string | null
+                    artist_upfront_per_cube?: number | null
                     clone_price_fan?: number | null
                     created_at?: string | null
                     cube_id?: string
@@ -570,6 +942,7 @@ export type Database = {
                     description?: string | null
                     event_date?: string | null
                     event_name?: string | null
+                    fan_fee_model?: string | null
                     glb_url?: string | null
                     is_active?: boolean | null
                     is_minting_enabled?: boolean | null
@@ -579,17 +952,25 @@ export type Database = {
                     max_mint_count?: number | null
                     mint_price_artist?: number | null
                     parent_cube_id?: string | null
+                    payment_model?: string | null
                     platform_revenue_share?: number | null
                     premium_features?: Json | null
                     refresh_count?: number
+                    revenue_recovered?: number | null
                     slug?: string | null
                     stripe_payment_intent_id?: string | null
                     tcube_contract_address?: string | null
                     theme_config?: Json | null
                     tier?: string | null
                     title?: string
+                    update_notification_cost?: number | null
                     updated_at?: string | null
+                    upfront_fee_paid?: boolean | null
+                    upfront_payment_bypassed?: boolean | null
+                    upfront_payment_completed?: boolean | null
+                    upfront_stripe_payment_intent_id?: string | null
                     user_id?: string
+                    uses_revenue_recovery?: boolean | null
                     venue?: string | null
                 }
                 Relationships: [
@@ -776,6 +1157,8 @@ export type Database = {
                     last_active: string | null
                     raw_city_input: string | null
                     role: string | null
+                    stripe_customer_id: string | null
+                    stripe_subscription_status: string | null
                     total_points: number | null
                     user_id: string
                     username: string
@@ -789,6 +1172,8 @@ export type Database = {
                     last_active?: string | null
                     raw_city_input?: string | null
                     role?: string | null
+                    stripe_customer_id?: string | null
+                    stripe_subscription_status?: string | null
                     total_points?: number | null
                     user_id: string
                     username: string
@@ -802,6 +1187,8 @@ export type Database = {
                     last_active?: string | null
                     raw_city_input?: string | null
                     role?: string | null
+                    stripe_customer_id?: string | null
+                    stripe_subscription_status?: string | null
                     total_points?: number | null
                     user_id?: string
                     username?: string
@@ -976,17 +1363,15 @@ export type Database = {
                     cube_id: string
                 }[]
             }
+            decrement_mint_count: { Args: { p_cube_id: string }; Returns: undefined }
             get_artist_vote_counts: {
-                Args: Record<PropertyKey, never>
+                Args: never
                 Returns: {
                     artist_name: string
                     vote_count: number
                 }[]
             }
-            get_user_role: {
-                Args: { user_id: string }
-                Returns: string
-            }
+            get_user_role: { Args: { user_id: string }; Returns: string }
             get_weekly_list_for_user: {
                 Args: { p_user_id: string; p_week_identifier: string }
                 Returns: Json
@@ -997,6 +1382,7 @@ export type Database = {
                     artist_id: string | null
                     artist_name: string | null
                     artist_tier: string | null
+                    artist_upfront_per_cube: number | null
                     clone_price_fan: number | null
                     created_at: string | null
                     cube_id: string
@@ -1005,6 +1391,7 @@ export type Database = {
                     description: string | null
                     event_date: string | null
                     event_name: string | null
+                    fan_fee_model: string | null
                     glb_url: string | null
                     is_active: boolean | null
                     is_minting_enabled: boolean | null
@@ -1014,18 +1401,32 @@ export type Database = {
                     max_mint_count: number | null
                     mint_price_artist: number | null
                     parent_cube_id: string | null
+                    payment_model: string | null
                     platform_revenue_share: number | null
                     premium_features: Json | null
                     refresh_count: number
+                    revenue_recovered: number | null
                     slug: string | null
                     stripe_payment_intent_id: string | null
                     tcube_contract_address: string | null
                     theme_config: Json | null
                     tier: string | null
                     title: string
+                    update_notification_cost: number | null
                     updated_at: string | null
+                    upfront_fee_paid: boolean | null
+                    upfront_payment_bypassed: boolean | null
+                    upfront_payment_completed: boolean | null
+                    upfront_stripe_payment_intent_id: string | null
                     user_id: string
+                    uses_revenue_recovery: boolean | null
                     venue: string | null
+                }
+                SetofOptions: {
+                    from: "*"
+                    to: "ticketcubes"
+                    isOneToOne: true
+                    isSetofReturn: false
                 }
             }
             increment_user_points: {
@@ -1036,10 +1437,7 @@ export type Database = {
                 Args: { p_email: string; p_user_id?: string; p_username: string }
                 Returns: Json
             }
-            is_otwstaff: {
-                Args: Record<PropertyKey, never>
-                Returns: boolean
-            }
+            is_otwstaff: { Args: never; Returns: boolean }
             recalculate_user_dashboard_stats: {
                 Args: { p_user_id: string }
                 Returns: undefined
