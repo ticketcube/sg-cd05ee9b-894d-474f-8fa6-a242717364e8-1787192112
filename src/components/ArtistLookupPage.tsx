@@ -102,7 +102,7 @@ export function ArtistLookupPage() {
       artist_otwcategory: artist.artist_otwcategory || "",
       primary_vibe: artist.primary_vibe || "",
       secondary_vibe: artist.secondary_vibe || "",
-      Top_List: artist.Top_List || "",
+      Top_List: artist.top_list || "",
       artist_otwcoverage: artist.artist_otwcoverage || 0,
     });
   };
