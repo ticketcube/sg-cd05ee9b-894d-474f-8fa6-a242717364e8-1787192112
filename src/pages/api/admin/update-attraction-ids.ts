@@ -26,7 +26,9 @@ export default async function handler(
   }
 
   // ENFORCE MAX BATCH SIZE - Prevent timeouts
-  let { limit = 20, offset = 0, testMode = false } = req.body;
+  let limit = req.body.limit || 20;
+  const offset = req.body.offset || 0;
+  const testMode = req.body.testMode || false;
   
   // Hard limit to prevent timeouts (20 artists × 250ms = ~5 seconds)
   if (limit > 20) {
