@@ -44,7 +44,7 @@ export default function TestTMApi() {
   };
 
   const runFullBulkRefresh = async () => {
-    if (!confirm("This will refresh events for ALL 492 artists. This will take ~2 minutes. Continue?")) {
+    if (!confirm("This will refresh events for ALL 492 artists with a 6-month lookahead. This will take ~2 minutes. Continue?")) {
       return;
     }
 
@@ -70,9 +70,10 @@ export default function TestTMApi() {
 
       <div className="mb-4 p-4 bg-blue-50 rounded">
         <p className="text-sm text-gray-700">
-          <strong>Date Range:</strong> Today → 3 months from now<br/>
+          <strong>Date Range:</strong> Today → 6 months from now (Nov 14, 2025 - May 14, 2026)<br/>
           <strong>Artists with attractionId:</strong> 492 artists<br/>
-          <strong>Rate Limit:</strong> 250ms delay between requests (4 req/sec)
+          <strong>Rate Limit:</strong> 250ms delay between requests (4 req/sec)<br/>
+          <strong>Est. Runtime:</strong> ~2 minutes for full refresh
         </p>
       </div>
 
@@ -94,6 +95,16 @@ export default function TestTMApi() {
           {bulkRefreshRunning ? "Running... (~2 min)" : "⚡ Full Bulk Refresh (492 Artists)"}
         </Button>
       </div>
+
+      {bulkRefreshRunning && (
+        <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400">
+          <p className="text-sm text-yellow-800">
+            🔄 <strong>Bulk refresh in progress...</strong><br/>
+            Processing 492 artists with 250ms delays between requests.<br/>
+            This will take approximately 2 minutes. Please wait...
+          </p>
+        </div>
+      )}
 
       {results && (
         <Card>

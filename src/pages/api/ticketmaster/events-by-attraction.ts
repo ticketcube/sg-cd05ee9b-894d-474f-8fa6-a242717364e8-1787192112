@@ -67,11 +67,11 @@ export default async function handler(
 
   try {
     const today = new Date();
-    const threeMonthsFromNow = new Date();
-    threeMonthsFromNow.setMonth(today.getMonth() + 3);
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(today.getMonth() + 6);
 
     const startDate = today.toISOString().split('T')[0];
-    const endDate = threeMonthsFromNow.toISOString().split('T')[0];
+    const endDate = sixMonthsFromNow.toISOString().split('T')[0];
     
     const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${apiKey}&attractionId=${attractionId}&startDateTime=${startDate}T00:00:00Z&endDateTime=${endDate}T23:59:59Z&sort=date,asc&size=100`;
     
