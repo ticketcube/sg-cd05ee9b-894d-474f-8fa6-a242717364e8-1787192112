@@ -66,16 +66,7 @@ export default async function handler(
   }
 
   try {
-    const today = new Date();
-    const sixMonthsFromNow = new Date();
-    sixMonthsFromNow.setMonth(today.getMonth() + 6);
-
-    // Format dates as YYYY-MM-DDTHH:MM:SSZ (ISO 8601)
-    const startDateTime = today.toISOString().split('.')[0] + 'Z';
-    const endDateTime = sixMonthsFromNow.toISOString().split('.')[0] + 'Z';
-    
-    // TM API expects attractionId parameter
-    // Try without date filters first to see if we get ANY results
+    // SIMPLIFIED: No date filters to test if that's blocking results
     const baseUrl = `https://app.ticketmaster.com/discovery/v2/events.json`;
     const params = new URLSearchParams({
       apikey: apiKey,
@@ -84,36 +75,19 @@ export default async function handler(
       sort: 'date,asc'
     });
     
-    // Add date filters (but test both ways)
-    const urlWithDates = `${baseUrl}?${params.toString()}&startDateTime=${startDateTime}&endDateTime=${endDateTime}`;
-    const urlWithoutDates = `${baseUrl}?${params.toString()}`;
+    const url = `${baseUrl}?${params.toString()}`;
     
-    console.log("\n🎫 === TICKETMASTER API CALL DEBUG ===");
+    console.log("\n🎫 === TICKETMASTER API CALL (SIMPLIFIED) ===");
     console.log("📌 attractionId:", attractionId);
-    console.log("📅 Start date:", startDateTime);
-    console.log("📅 End date:", endDateTime);
-    console.log("🔗 URL WITH dates (masked):", urlWithDates.replace(apiKey, "***"));
-    console.log("🔗 URL WITHOUT dates (masked):", urlWithoutDates.replace(apiKey, "***"));
+    console.log("🔗 URL (masked):", url.replace(apiKey, "***"));
+    console.log("📝 Note: Testing WITHOUT date filters to see if we get any results");
     
-    // Try WITH date filters first
-    console.log("\n🔄 Trying WITH date filters...");
-    let response = await fetch(urlWithDates);
-    let data: TicketmasterApiResponse = await response.json();
+    const response = await fetch(url);
+    const data: TicketmasterApiResponse = await response.json();
     
     console.log("📊 Response status:", response.status);
     console.log("📊 Total elements:", data.page?.totalElements || 0);
     console.log("📊 Events returned:", data._embedded?.events?.length || 0);
-    
-    // If no results, try WITHOUT date filters
-    if (!data._embedded?.events || data._embedded.events.length === 0) {
-      console.log("\n⚠️ No events with date filters. Trying WITHOUT date filters...");
-      response = await fetch(urlWithoutDates);
-      data = await response.json();
-      
-      console.log("📊 Response status (no dates):", response.status);
-      console.log("📊 Total elements (no dates):", data.page?.totalElements || 0);
-      console.log("📊 Events returned (no dates):", data._embedded?.events?.length || 0);
-    }
     
     if (!response.ok) {
       console.error("❌ Ticketmaster API error:", response.status, response.statusText);
@@ -126,20 +100,22 @@ export default async function handler(
         events: [],
         attractionId,
         errorDetails: errorText,
-        debugUrls: {
-          withDates: urlWithDates.replace(apiKey, "***"),
-          withoutDates: urlWithoutDates.replace(apiKey, "***")
-        }
+        debugUrl: url.replace(apiKey, "***")
       });
     }
 
     const events = data._embedded?.events || [];
     
-    console.log(`✅ Found ${events.length} events for attractionId ${attractionId}`);
-    
     if (events.length > 0) {
-      console.log("📅 First event date:", events[0].dates.start.localDate);
-      console.log("📅 Last event date:", events[events.length - 1].dates.start.localDate);
+      console.log("✅ SUCCESS! Found", events.length, "events");
+      console.log("📅 First event:", events[0].name, "-", events[0].dates.start.localDate);
+      console.log("📅 Last event:", events[events.length - 1].name, "-", events[events.length - 1].dates.start.localDate);
+    } else {
+      console.log("⚠️ No events found for attractionId:", attractionId);
+      console.log("💡 This could mean:");
+      console.log("   1. Artist has no upcoming events in TM");
+      console.log("   2. attractionId is incorrect");
+      console.log("   3. Events exist but TM API returned empty");
     }
     
     const formattedEvents = events.map(event => {
@@ -165,15 +141,11 @@ export default async function handler(
       attractionId,
       totalEvents: data.page?.totalElements || 0,
       eventsReturned: events.length,
-      dateRange: { 
-        start: startDateTime, 
-        end: endDateTime 
-      },
       events: formattedEvents,
       rawPageInfo: data.page,
       debugInfo: {
-        urlUsed: events.length > 0 ? "with dates" : "without dates",
-        testedBothDateFormats: true
+        noDateFilters: true,
+        message: "Testing without date restrictions to maximize results"
       }
     });
   } catch (error) {
