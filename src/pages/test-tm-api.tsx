@@ -13,6 +13,7 @@ export default function TestTMApi() {
   const [bulkRefreshRunning, setBulkRefreshRunning] = useState(false);
   const [artistName, setArtistName] = useState("Laufey");
   const [currentOffset, setCurrentOffset] = useState(0);
+  const [eventRefreshOffset, setEventRefreshOffset] = useState(0);
   const BATCH_SIZE = 20; // LOCKED - DO NOT CHANGE (prevents timeouts)
 
   const testSingleArtist = async () => {
@@ -142,6 +143,57 @@ export default function TestTMApi() {
       setCurrentOffset(results.summary.nextOffset);
       setResults(null);
     }
+  };
+
+  const batchRefreshEvents = async () => {
+    if (!confirm(`Refresh events for ${BATCH_SIZE} artists (${eventRefreshOffset + 1}-${eventRefreshOffset + BATCH_SIZE})?\n\nThis will take ~7-10 seconds.`)) {
+      return;
+    }
+
+    setLoading(true);
+    setResults(null);
+
+    try {
+      const response = await fetch("/api/admin/batch-refresh-events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          limit: BATCH_SIZE, 
+          offset: eventRefreshOffset
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setResults(data);
+      
+      // Auto-advance offset if there are more artists
+      if (data.results && data.results.length === BATCH_SIZE) {
+        setEventRefreshOffset(eventRefreshOffset + BATCH_SIZE);
+      }
+    } catch (error) {
+      const errorResult = { 
+        error: error instanceof Error ? error.message : "Unknown error",
+        suggestion: "Try again with the same offset to retry the failed batch"
+      };
+      setResults(errorResult);
+      console.error("Batch event refresh error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetEventBatch = () => {
+    setEventRefreshOffset(0);
+    setResults(null);
+  };
+
+  const skipEventBatch = () => {
+    setEventRefreshOffset(eventRefreshOffset + BATCH_SIZE);
+    setResults(null);
   };
 
   const calculateProgress = () => {
@@ -299,28 +351,122 @@ export default function TestTMApi() {
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
               <strong>Step 2: Refresh Events</strong><br/>
-              Only run this AFTER all attractionIds are updated in Step 1.
+              Only run this AFTER all attractionIds are updated in Step 1. Process {BATCH_SIZE} artists at a time.
             </AlertDescription>
           </Alert>
 
-          <div className="flex flex-wrap gap-4">
-            <Button onClick={testSingleArtist} disabled={loading || bulkRefreshRunning}>
-              {loading ? "Testing..." : "Test Single Artist (Laufey)"}
-            </Button>
+          <Card>
+            <CardHeader>
+              <CardTitle>Batch Event Refresh</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-gray-50 rounded space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Current Batch Position</p>
+                    <p className="text-sm text-gray-600">
+                      Artists {eventRefreshOffset + 1} - {eventRefreshOffset + BATCH_SIZE}
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={resetEventBatch} 
+                    variant="ghost" 
+                    size="sm"
+                  >
+                    Reset to Start
+                  </Button>
+                </div>
+                
+                <div className="text-xs text-gray-500 space-y-1 pt-2 border-t">
+                  <p><strong>Batch Size:</strong> {BATCH_SIZE} artists</p>
+                  <p><strong>Date Range:</strong> Next 6 months (upcoming events only)</p>
+                  <p><strong>Time:</strong> ~7-10 seconds per batch</p>
+                  <p><strong>Rate Limit:</strong> 250ms between requests</p>
+                </div>
+              </div>
 
-            <Button onClick={testMultipleArtists} disabled={loading || bulkRefreshRunning} variant="secondary">
-              {loading ? "Testing..." : "Test 5 Artists"}
-            </Button>
+              <Button 
+                onClick={batchRefreshEvents} 
+                disabled={loading}
+                variant="default"
+                className="w-full"
+              >
+                {loading ? "Refreshing Events..." : "🔄 Refresh Events for This Batch"}
+              </Button>
 
-            <Button 
-              onClick={runFullBulkRefresh} 
-              disabled={loading || bulkRefreshRunning} 
-              variant="destructive"
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {bulkRefreshRunning ? "Running... (~2 min)" : "⚡ Full Bulk Refresh"}
-            </Button>
-          </div>
+              {results?.summary && !results?.error && (
+                <div className="p-4 bg-green-50 rounded space-y-2">
+                  <h3 className="font-bold text-green-800">✅ Batch Complete</h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div><strong>Artists Processed:</strong> {results.summary.processed}</div>
+                    <div><strong>New Events:</strong> {results.summary.totalNewEvents}</div>
+                    <div><strong>Updated Events:</strong> {results.summary.totalUpdatedEvents}</div>
+                    <div><strong>Cancelled Events:</strong> {results.summary.totalCancelledEvents}</div>
+                    <div><strong>Errors:</strong> {results.summary.errors}</div>
+                  </div>
+                </div>
+              )}
+
+              {results?.summary && results.summary.processed === BATCH_SIZE && !results?.error && (
+                <div className="space-y-2">
+                  <Button 
+                    onClick={batchRefreshEvents} 
+                    disabled={loading}
+                    variant="default"
+                    className="w-full"
+                  >
+                    ➡️ Process Next Batch ({eventRefreshOffset + 1}-{eventRefreshOffset + BATCH_SIZE})
+                  </Button>
+                  <Button 
+                    onClick={skipEventBatch} 
+                    disabled={loading}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                  >
+                    Skip to Next Batch →
+                  </Button>
+                </div>
+              )}
+
+              {results?.summary && results.summary.processed < BATCH_SIZE && results.summary.processed > 0 && !results?.error && (
+                <Alert className="bg-green-50 border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">
+                    <strong>✅ All artists processed!</strong><br/>
+                    No more artists with attractionIds to refresh.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {results?.error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Error:</strong> {results.error}<br/>
+                    {results.suggestion && <span className="text-sm">{results.suggestion}</span>}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Tests (Single Artists)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-4">
+                <Button onClick={testSingleArtist} disabled={loading || bulkRefreshRunning}>
+                  {loading ? "Testing..." : "Test Single Artist (Laufey)"}
+                </Button>
+
+                <Button onClick={testMultipleArtists} disabled={loading || bulkRefreshRunning} variant="secondary">
+                  {loading ? "Testing..." : "Test 5 Artists"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
           {bulkRefreshRunning && (
             <Alert className="bg-yellow-50 border-yellow-400">
@@ -334,7 +480,34 @@ export default function TestTMApi() {
         </TabsContent>
       </Tabs>
 
-      {results && !results.error && (
+      {results && !results.error && results.results && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Detailed Results (Per Artist)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 max-h-96 overflow-auto">
+              {results.results.map((result: any, idx: number) => (
+                <div key={idx} className="p-3 bg-gray-50 rounded text-sm">
+                  <div className="font-medium mb-1">{result.artistName}</div>
+                  <div className="text-xs text-gray-600 space-y-0.5">
+                    <div>attractionId: {result.attractionId}</div>
+                    {result.error ? (
+                      <div className="text-red-600">❌ Error: {result.error}</div>
+                    ) : (
+                      <>
+                        <div>✨ New: {result.newEvents} | 🔄 Updated: {result.updatedEvents} | ⚠️ Cancelled: {result.cancelledEvents}</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {results && !results.error && results.summary && !results.results && (
         <Card>
           <CardHeader>
             <CardTitle>Results</CardTitle>
