@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function TestTMApi() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
+  const [bulkRefreshRunning, setBulkRefreshRunning] = useState(false);
 
   const testSingleArtist = async () => {
     setLoading(true);
@@ -42,17 +43,55 @@ export default function TestTMApi() {
     }
   };
 
+  const runFullBulkRefresh = async () => {
+    if (!confirm("This will refresh events for ALL 492 artists. This will take ~2 minutes. Continue?")) {
+      return;
+    }
+
+    setBulkRefreshRunning(true);
+    try {
+      const response = await fetch("/api/admin/refresh-events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      const data = await response.json();
+      setResults(data);
+    } catch (error) {
+      setResults({ error: error instanceof Error ? error.message : "Unknown error" });
+    } finally {
+      setBulkRefreshRunning(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-8 max-w-4xl">
       <h1 className="text-3xl font-bold mb-6">Ticketmaster API Test</h1>
 
-      <div className="flex gap-4 mb-6">
-        <Button onClick={testSingleArtist} disabled={loading}>
+      <div className="mb-4 p-4 bg-blue-50 rounded">
+        <p className="text-sm text-gray-700">
+          <strong>Date Range:</strong> Today → 3 months from now<br/>
+          <strong>Artists with attractionId:</strong> 492 artists<br/>
+          <strong>Rate Limit:</strong> 250ms delay between requests (4 req/sec)
+        </p>
+      </div>
+
+      <div className="flex flex-wrap gap-4 mb-6">
+        <Button onClick={testSingleArtist} disabled={loading || bulkRefreshRunning}>
           {loading ? "Testing..." : "Test Single Artist (Laufey)"}
         </Button>
 
-        <Button onClick={testMultipleArtists} disabled={loading} variant="secondary">
+        <Button onClick={testMultipleArtists} disabled={loading || bulkRefreshRunning} variant="secondary">
           {loading ? "Testing..." : "Test 5 Artists"}
+        </Button>
+
+        <Button 
+          onClick={runFullBulkRefresh} 
+          disabled={loading || bulkRefreshRunning} 
+          variant="destructive"
+          className="bg-green-600 hover:bg-green-700"
+        >
+          {bulkRefreshRunning ? "Running... (~2 min)" : "⚡ Full Bulk Refresh (492 Artists)"}
         </Button>
       </div>
 
@@ -70,10 +109,25 @@ export default function TestTMApi() {
               <div className="mt-4 p-4 bg-blue-50 rounded">
                 <h3 className="font-bold mb-2">Summary:</h3>
                 <ul className="space-y-1">
-                  <li>Artists Tested: {results.summary.totalArtists}</li>
-                  <li>Artists with Events: {results.summary.artistsWithEvents}</li>
-                  <li>Total Events Found: {results.summary.totalEventsFound}</li>
-                  <li>Total Events Inserted: {results.summary.totalEventsInserted}</li>
+                  <li>Total Artists: {results.summary.totalArtists}</li>
+                  {results.summary.artistsWithEvents !== undefined && (
+                    <li>Artists with Events: {results.summary.artistsWithEvents}</li>
+                  )}
+                  {results.summary.totalEventsFound !== undefined && (
+                    <li>Total Events Found: {results.summary.totalEventsFound}</li>
+                  )}
+                  {results.summary.totalEventsInserted !== undefined && (
+                    <li>Total Events Inserted: {results.summary.totalEventsInserted}</li>
+                  )}
+                  {results.summary.processedCount !== undefined && (
+                    <li>Processed: {results.summary.processedCount}</li>
+                  )}
+                  {results.summary.successCount !== undefined && (
+                    <li>Success: {results.summary.successCount}</li>
+                  )}
+                  {results.summary.failureCount !== undefined && (
+                    <li>Failures: {results.summary.failureCount}</li>
+                  )}
                 </ul>
               </div>
             )}
