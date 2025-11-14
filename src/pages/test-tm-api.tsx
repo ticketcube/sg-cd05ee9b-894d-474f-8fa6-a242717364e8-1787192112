@@ -12,6 +12,7 @@ export default function TestTMApi() {
   const [results, setResults] = useState<any>(null);
   const [bulkRefreshRunning, setBulkRefreshRunning] = useState(false);
   const [artistName, setArtistName] = useState("Laufey");
+  const [attractionIdTest, setAttractionIdTest] = useState("2503872");
   const [currentOffset, setCurrentOffset] = useState(0);
   const [eventRefreshOffset, setEventRefreshOffset] = useState(0);
   const BATCH_SIZE = 20; // LOCKED - DO NOT CHANGE (prevents timeouts)
@@ -47,6 +48,32 @@ export default function TestTMApi() {
       setResults(data);
     } catch (error) {
       setResults({ error: error instanceof Error ? error.message : "Unknown error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const testAttractionIdDirect = async () => {
+    setLoading(true);
+    setResults(null);
+    try {
+      const response = await fetch(`/api/ticketmaster/events-by-attraction?attractionId=${attractionIdTest}`);
+      const data = await response.json();
+      
+      // Add extra metadata for debugging
+      setResults({
+        ...data,
+        _debug: {
+          timestamp: new Date().toISOString(),
+          attractionIdTested: attractionIdTest,
+          apiEndpoint: `/api/ticketmaster/events-by-attraction?attractionId=${attractionIdTest}`
+        }
+      });
+    } catch (error) {
+      setResults({ 
+        error: error instanceof Error ? error.message : "Unknown error",
+        attractionId: attractionIdTest
+      });
     } finally {
       setLoading(false);
     }
@@ -212,11 +239,127 @@ export default function TestTMApi() {
     <div className="container mx-auto p-8 max-w-6xl">
       <h1 className="text-3xl font-bold mb-6">Ticketmaster API Admin Tools</h1>
 
-      <Tabs defaultValue="attraction-ids" className="mb-6">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs defaultValue="test-attraction" className="mb-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="test-attraction">🔍 Test attractionId</TabsTrigger>
           <TabsTrigger value="attraction-ids">1. Find attractionIds</TabsTrigger>
           <TabsTrigger value="refresh-events">2. Refresh Events</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="test-attraction" className="space-y-4">
+          <Alert className="bg-purple-50 border-purple-200">
+            <AlertCircle className="h-4 w-4 text-purple-600" />
+            <AlertDescription className="text-purple-800">
+              <strong>🧪 Direct attractionId Testing</strong><br/>
+              Test a single attractionId to see raw TM API response and verify event fetching is working correctly.
+            </AlertDescription>
+          </Alert>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Test Single attractionId</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  value={attractionIdTest}
+                  onChange={(e) => setAttractionIdTest(e.target.value)}
+                  placeholder="Enter attractionId (e.g., 2503872 for Laufey)"
+                  className="flex-1 font-mono"
+                />
+                <Button onClick={testAttractionIdDirect} disabled={loading}>
+                  {loading ? "Testing..." : "🎫 Test API Call"}
+                </Button>
+              </div>
+
+              <div className="text-xs text-gray-500 space-y-1">
+                <p><strong>Common attractionIds:</strong></p>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <button 
+                    onClick={() => setAttractionIdTest("2503872")} 
+                    className="text-left text-blue-600 hover:underline"
+                  >
+                    2503872 - Laufey
+                  </button>
+                  <button 
+                    onClick={() => setAttractionIdTest("768011")} 
+                    className="text-left text-blue-600 hover:underline"
+                  >
+                    768011 - Taylor Swift
+                  </button>
+                </div>
+              </div>
+
+              {results && !results.error && results.success && (
+                <div className="space-y-4">
+                  <Alert className="bg-green-50 border-green-200">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">
+                      <strong>✅ API Call Successful</strong><br/>
+                      <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+                        <div><strong>attractionId:</strong> {results.attractionId}</div>
+                        <div><strong>Events Found:</strong> {results.eventsReturned}</div>
+                        <div><strong>Total in TM:</strong> {results.totalEvents}</div>
+                        <div><strong>Date Range:</strong> 6 months</div>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+
+                  {results.events && results.events.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-sm">📅 Upcoming Events ({results.events.length}):</h3>
+                      <div className="max-h-64 overflow-auto space-y-2">
+                        {results.events.map((event: any, idx: number) => (
+                          <div key={idx} className="p-3 bg-gray-50 rounded text-sm border">
+                            <div className="font-medium text-blue-600">{event.name}</div>
+                            <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+                              <div>📍 {event.venue_name}, {event.venue_city}{event.venue_state ? `, ${event.venue_state}` : ""}</div>
+                              <div>📅 {event.date} {event.time ? `at ${event.time}` : ""}</div>
+                              <div className="font-mono text-xs text-gray-400">ID: {event.id}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {results.events && results.events.length === 0 && (
+                    <Alert>
+                      <AlertDescription>
+                        No upcoming events found for this attractionId in the next 6 months.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              )}
+
+              {results && !results.success && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>❌ API Error:</strong> {results.message || results.error}<br/>
+                    {results.errorDetails && (
+                      <pre className="mt-2 text-xs overflow-auto">{results.errorDetails}</pre>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          {results && (
+            <Card>
+              <CardHeader>
+                <CardTitle>🔍 Raw API Response</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-96 text-xs font-mono">
+                  {JSON.stringify(results, null, 2)}
+                </pre>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
         <TabsContent value="attraction-ids" className="space-y-4">
           <Alert className="bg-blue-50 border-blue-200">
