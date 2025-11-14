@@ -25,31 +25,41 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { limit, testMode } = req.body;
+  const { limit = 20, offset = 0, testMode = false } = req.body;
 
   try {
-    console.log("Fetching artists...");
+    console.log(`Fetching artists (offset: ${offset}, limit: ${limit})...`);
 
-    const query = supabaseAdmin
+    // Get total count first
+    const { count: totalCount } = await supabaseAdmin
       .from("artists")
-      .select("uuid, artist_name, attractionId");
-    
-    if (limit) {
-      query.limit(limit);
-    }
+      .select("*", { count: "exact", head: true });
 
-    const { data: artists, error: artistError } = await query;
+    // Get batch of artists with offset
+    const { data: artists, error: artistError } = await supabaseAdmin
+      .from("artists")
+      .select("uuid, artist_name, attractionId")
+      .range(offset, offset + limit - 1)
+      .order("artist_name", { ascending: true });
 
     if (artistError) throw artistError;
     if (!artists || artists.length === 0) {
       return res.status(200).json({
         success: true,
-        message: "No artists found",
-        summary: { total: 0, updated: 0, failed: 0, skipped: 0 }
+        message: "No artists found in this batch",
+        summary: { 
+          total: totalCount || 0,
+          batchSize: 0,
+          offset,
+          updated: 0, 
+          failed: 0, 
+          skipped: 0,
+          hasMore: false
+        }
       });
     }
 
-    console.log(`Processing ${artists.length} artists...`);
+    console.log(`Processing ${artists.length} artists (batch ${Math.floor(offset / limit) + 1})...`);
 
     const apiKey = process.env.TM_API_KEY;
     if (!apiKey) {
@@ -132,7 +142,7 @@ export default async function handler(
             isExactMatch: !!exactMatch
           });
 
-          console.log(`${testMode ? '[TEST] Would update' : 'Updated'} ${artist.artist_name}: ${artist.attractionId || 'none'} → ${bestMatch.id}`);
+          console.log(`${testMode ? "[TEST] Would update" : "Updated"} ${artist.artist_name}: ${artist.attractionId || "none"} → ${bestMatch.id}`);
         } else {
           skipped++;
           results.push({
@@ -142,13 +152,8 @@ export default async function handler(
           });
         }
 
-        // Rate limiting
+        // Rate limiting: 250ms delay = 4 req/sec (safe for TM's 5 req/sec limit)
         await new Promise(resolve => setTimeout(resolve, 250));
-
-        // Progress logging
-        if ((updated + failed + skipped) % 10 === 0) {
-          console.log(`Progress: ${updated + failed + skipped}/${artists.length}`);
-        }
 
       } catch (error) {
         console.error(`Error processing ${artist.artist_name}:`, error);
@@ -161,16 +166,25 @@ export default async function handler(
       }
     }
 
+    const hasMore = (offset + limit) < (totalCount || 0);
+    const nextOffset = offset + limit;
+
     return res.status(200).json({
       success: true,
-      message: testMode ? "Test mode completed (no changes made)" : "Update completed",
+      message: testMode ? "Test mode completed (no changes made)" : "Batch completed",
       summary: {
-        total: artists.length,
+        total: totalCount || 0,
+        batchSize: artists.length,
+        offset,
+        currentBatch: Math.floor(offset / limit) + 1,
+        totalBatches: Math.ceil((totalCount || 0) / limit),
         updated,
         failed,
-        skipped
+        skipped,
+        hasMore,
+        nextOffset: hasMore ? nextOffset : null
       },
-      results: limit && limit <= 20 ? results : results.slice(0, 20)
+      results
     });
 
   } catch (error) {
