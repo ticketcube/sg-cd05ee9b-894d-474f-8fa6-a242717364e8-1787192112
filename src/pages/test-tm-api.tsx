@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, CheckCircle } from "lucide-react";
 
 export default function TestTMApi() {
   const [loading, setLoading] = useState(false);
@@ -11,7 +13,7 @@ export default function TestTMApi() {
   const [bulkRefreshRunning, setBulkRefreshRunning] = useState(false);
   const [artistName, setArtistName] = useState("Laufey");
   const [currentOffset, setCurrentOffset] = useState(0);
-  const [batchSize] = useState(20);
+  const BATCH_SIZE = 20; // LOCKED - DO NOT CHANGE (prevents timeouts)
 
   const testSingleArtist = async () => {
     setLoading(true);
@@ -83,32 +85,48 @@ export default function TestTMApi() {
     }
   };
 
-  const updateAttractionIdsBatch = async (testMode: boolean, offset: number) => {
-    if (!testMode && !confirm(`This will UPDATE attractionIds for batch starting at artist ${offset + 1}. Continue?`)) {
+  const updateAttractionIdsBatch = async (testMode: boolean) => {
+    if (!testMode && !confirm(`Update attractionIds for ${BATCH_SIZE} artists (${currentOffset + 1}-${currentOffset + BATCH_SIZE})?\n\nThis will take ~5 seconds.`)) {
       return;
     }
 
     setLoading(true);
+    setResults(null); // Clear previous results
+
     try {
       const response = await fetch("/api/admin/update-attraction-ids", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          limit: batchSize, 
-          offset,
+          limit: BATCH_SIZE, 
+          offset: currentOffset,
           testMode 
         })
       });
 
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+
       const data = await response.json();
       setResults(data);
       
-      // Auto-advance offset for convenience
-      if (data.summary?.hasMore) {
+      // Auto-advance offset if there's more to process
+      if (data.summary?.hasMore && !testMode) {
         setCurrentOffset(data.summary.nextOffset);
       }
     } catch (error) {
-      setResults({ error: error instanceof Error ? error.message : "Unknown error" });
+      const errorResult = { 
+        error: error instanceof Error ? error.message : "Unknown error",
+        possibleCauses: [
+          "API route timeout (processing took too long)",
+          "Network connection issue",
+          "Server error"
+        ],
+        suggestion: "Try again with the same offset to retry the failed batch"
+      };
+      setResults(errorResult);
+      console.error("Batch update error:", error);
     } finally {
       setLoading(false);
     }
@@ -119,10 +137,23 @@ export default function TestTMApi() {
     setResults(null);
   };
 
+  const skipBatch = () => {
+    if (results?.summary?.hasMore) {
+      setCurrentOffset(results.summary.nextOffset);
+      setResults(null);
+    }
+  };
+
   const calculateProgress = () => {
     if (!results?.summary) return 0;
     const { offset, batchSize, total } = results.summary;
     return Math.min(((offset + batchSize) / total) * 100, 100);
+  };
+
+  const getProgressText = () => {
+    if (!results?.summary) return "";
+    const { currentBatch, totalBatches, total } = results.summary;
+    return `Batch ${currentBatch} of ${totalBatches} (${currentOffset + 1}-${Math.min(currentOffset + BATCH_SIZE, total)} of ${total} artists)`;
   };
 
   return (
@@ -136,13 +167,13 @@ export default function TestTMApi() {
         </TabsList>
 
         <TabsContent value="attraction-ids" className="space-y-4">
-          <div className="p-4 bg-blue-50 rounded">
-            <h3 className="font-bold mb-2">Step 1: Find & Update attractionIds</h3>
-            <p className="text-sm text-gray-700">
-              <strong>Problem:</strong> Many artists have wrong attractionIds<br/>
-              <strong>Solution:</strong> Process in batches of {batchSize} to avoid timeouts
-            </p>
-          </div>
+          <Alert className="bg-blue-50 border-blue-200">
+            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800">
+              <strong>Step 1: Update attractionIds</strong><br/>
+              Process {BATCH_SIZE} artists at a time (~5 seconds per batch). Click "Next Batch" to continue through all artists.
+            </AlertDescription>
+          </Alert>
 
           <Card>
             <CardHeader>
@@ -165,11 +196,11 @@ export default function TestTMApi() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Batch Update attractionIds ({batchSize} at a time)</CardTitle>
+              <CardTitle>Batch Update attractionIds</CardTitle>
               {results?.summary && (
                 <div className="space-y-2 mt-2">
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>Batch {results.summary.currentBatch} of {results.summary.totalBatches}</span>
+                    <span>{getProgressText()}</span>
                     <span>{Math.round(calculateProgress())}% complete</span>
                   </div>
                   <Progress value={calculateProgress()} className="h-2" />
@@ -177,75 +208,100 @@ export default function TestTMApi() {
               )}
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="text-sm text-gray-600">
-                  Current offset: <strong>{currentOffset}</strong> (artists {currentOffset + 1}-{currentOffset + batchSize})
+              <div className="p-3 bg-gray-50 rounded space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Current Batch Position</p>
+                    <p className="text-sm text-gray-600">
+                      Artists {currentOffset + 1} - {currentOffset + BATCH_SIZE}
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={resetBatch} 
+                    variant="ghost" 
+                    size="sm"
+                  >
+                    Reset to Start
+                  </Button>
                 </div>
-                <Button 
-                  onClick={resetBatch} 
-                  variant="ghost" 
-                  size="sm"
-                  className="ml-auto"
-                >
-                  Reset to Start
-                </Button>
+                
+                <div className="text-xs text-gray-500 space-y-1 pt-2 border-t">
+                  <p><strong>Batch Size:</strong> {BATCH_SIZE} artists (locked)</p>
+                  <p><strong>Time:</strong> ~5 seconds per batch</p>
+                  <p><strong>Rate Limit:</strong> 250ms between requests (4 req/sec)</p>
+                </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <Button 
-                  onClick={() => updateAttractionIdsBatch(true, currentOffset)} 
+                  onClick={() => updateAttractionIdsBatch(true)} 
                   disabled={loading}
                   variant="secondary"
-                  className="flex-1"
                 >
-                  {loading ? "Testing..." : "🔍 Test Mode (Preview)"}
+                  {loading ? "Testing..." : "🔍 Test Preview"}
                 </Button>
                 <Button 
-                  onClick={() => updateAttractionIdsBatch(false, currentOffset)} 
+                  onClick={() => updateAttractionIdsBatch(false)} 
                   disabled={loading}
                   variant="default"
-                  className="flex-1"
                 >
                   {loading ? "Updating..." : "✅ Update Batch"}
                 </Button>
               </div>
 
-              {results?.summary?.hasMore && (
-                <div className="flex gap-2">
+              {results?.summary?.hasMore && !results?.error && (
+                <div className="space-y-2">
                   <Button 
-                    onClick={() => updateAttractionIdsBatch(false, results.summary.nextOffset)} 
+                    onClick={() => updateAttractionIdsBatch(false)} 
                     disabled={loading}
                     variant="default"
-                    className="flex-1"
+                    className="w-full"
                   >
-                    {loading ? "Processing..." : `➡️ Next Batch (${results.summary.nextOffset + 1}-${results.summary.nextOffset + batchSize})`}
+                    ➡️ Process Next Batch ({results.summary.nextOffset + 1}-{results.summary.nextOffset + BATCH_SIZE})
+                  </Button>
+                  <Button 
+                    onClick={skipBatch} 
+                    disabled={loading}
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                  >
+                    Skip to Next Batch →
                   </Button>
                 </div>
               )}
 
-              {results?.summary && !results.summary.hasMore && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded text-sm text-green-800">
-                  ✅ <strong>All batches complete!</strong> Processed {results.summary.total} artists.
-                </div>
+              {results?.summary && !results.summary.hasMore && !results?.error && (
+                <Alert className="bg-green-50 border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">
+                    <strong>✅ All batches complete!</strong><br/>
+                    Processed {results.summary.total} artists successfully.
+                  </AlertDescription>
+                </Alert>
               )}
 
-              <div className="p-3 bg-gray-50 rounded text-xs text-gray-600 space-y-1">
-                <p><strong>Batch Size:</strong> {batchSize} artists per batch (~5-7 seconds)</p>
-                <p><strong>Rate Limit:</strong> 250ms delay (4 req/sec) • TM limit: 5 req/sec</p>
-                <p><strong>How it works:</strong> Click "Update Batch" → Process 20 artists → Click "Next Batch" → Repeat</p>
-              </div>
+              {results?.error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Error:</strong> {results.error}<br/>
+                    {results.suggestion && <span className="text-sm">{results.suggestion}</span>}
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="refresh-events" className="space-y-4">
-          <div className="p-4 bg-green-50 rounded">
-            <h3 className="font-bold mb-2">Step 2: Refresh Events (After attractionIds are correct)</h3>
-            <p className="text-sm text-gray-700">
-              <strong>Date Range:</strong> Today → 6 months<br/>
-              <strong>Important:</strong> Only run this AFTER all attractionIds are updated
-            </p>
-          </div>
+          <Alert className="bg-green-50 border-green-200">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              <strong>Step 2: Refresh Events</strong><br/>
+              Only run this AFTER all attractionIds are updated in Step 1.
+            </AlertDescription>
+          </Alert>
 
           <div className="flex flex-wrap gap-4">
             <Button onClick={testSingleArtist} disabled={loading || bulkRefreshRunning}>
@@ -267,38 +323,40 @@ export default function TestTMApi() {
           </div>
 
           {bulkRefreshRunning && (
-            <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400">
-              <p className="text-sm text-yellow-800">
+            <Alert className="bg-yellow-50 border-yellow-400">
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-800">
                 🔄 <strong>Bulk refresh in progress...</strong><br/>
                 Processing all artists with attractionIds. This will take approximately 2 minutes.
-              </p>
-            </div>
+              </AlertDescription>
+            </Alert>
           )}
         </TabsContent>
       </Tabs>
 
-      {results && (
+      {results && !results.error && (
         <Card>
           <CardHeader>
             <CardTitle>Results</CardTitle>
           </CardHeader>
           <CardContent>
+            {results.summary && (
+              <div className="mb-4 p-4 bg-blue-50 rounded space-y-2">
+                <h3 className="font-bold">Batch Summary:</h3>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div><strong>Total Artists:</strong> {results.summary.total}</div>
+                  <div><strong>Current Batch:</strong> {results.summary.currentBatch} of {results.summary.totalBatches}</div>
+                  <div><strong>Updated:</strong> {results.summary.updated}</div>
+                  <div><strong>Skipped:</strong> {results.summary.skipped}</div>
+                  <div><strong>Failed:</strong> {results.summary.failed}</div>
+                  <div><strong>More to Process:</strong> {results.summary.hasMore ? "Yes" : "No"}</div>
+                </div>
+              </div>
+            )}
+
             <pre className="bg-gray-100 p-4 rounded overflow-auto max-h-96 text-sm">
               {JSON.stringify(results, null, 2)}
             </pre>
-
-            {results.summary && (
-              <div className="mt-4 p-4 bg-blue-50 rounded">
-                <h3 className="font-bold mb-2">Batch Summary:</h3>
-                <ul className="space-y-1 text-sm">
-                  {Object.entries(results.summary).map(([key, value]) => (
-                    <li key={key}>
-                      <strong>{key}:</strong> {String(value)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </CardContent>
         </Card>
       )}

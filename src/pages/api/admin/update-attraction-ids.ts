@@ -25,10 +25,17 @@ export default async function handler(
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { limit = 20, offset = 0, testMode = false } = req.body;
+  // ENFORCE MAX BATCH SIZE - Prevent timeouts
+  let { limit = 20, offset = 0, testMode = false } = req.body;
+  
+  // Hard limit to prevent timeouts (20 artists × 250ms = ~5 seconds)
+  if (limit > 20) {
+    console.warn(`Limit ${limit} exceeds max (20). Forcing to 20.`);
+    limit = 20;
+  }
 
   try {
-    console.log(`Fetching artists (offset: ${offset}, limit: ${limit})...`);
+    console.log(`[BATCH] offset: ${offset}, limit: ${limit}, testMode: ${testMode}`);
 
     // Get total count first
     const { count: totalCount } = await supabaseAdmin
