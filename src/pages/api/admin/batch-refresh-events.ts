@@ -200,11 +200,11 @@ export default async function handler(
 
     console.log(`Fetching artists with offset ${batchOffset}, limit ${batchSize}`);
 
-    // FIXED: Fetch artists with correct column name 'uuid' instead of 'id'
+    // FIXED: Use correct column name 'attractionId' from schema (not 'ticketmaster_attraction_id')
     const { data: artists, error: fetchError } = await supabaseAdmin
       .from("artists")
-      .select("uuid, artist_name, ticketmaster_attraction_id")
-      .not("ticketmaster_attraction_id", "is", null)
+      .select("uuid, artist_name, attractionId")
+      .not("attractionId", "is", null)
       .order("artist_name")
       .range(batchOffset, batchOffset + batchSize - 1);
 
@@ -243,7 +243,7 @@ export default async function handler(
       const result = await processArtistEvents(
         artist.uuid,
         artist.artist_name,
-        artist.ticketmaster_attraction_id
+        artist.attractionId
       );
 
       results.push(result);
