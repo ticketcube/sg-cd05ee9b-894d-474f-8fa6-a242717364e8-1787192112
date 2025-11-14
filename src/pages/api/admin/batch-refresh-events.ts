@@ -36,12 +36,12 @@ async function fetchEventsForAttraction(attractionId: string) {
 }
 
 async function processArtistEvents(
-  artistId: string,
+  artistUuid: string,
   artistName: string,
   attractionId: string
 ): Promise<EventResult> {
   const result: EventResult = {
-    artistId,
+    artistId: artistUuid,
     artistName,
     attractionId,
     newEvents: 0,
@@ -58,11 +58,11 @@ async function processArtistEvents(
       return result;
     }
 
-    // Get existing events for this artist
+    // Get existing events for this artist (FIXED: use artist_uuid)
     const { data: existingEvents, error: fetchError } = await supabaseAdmin
       .from("ticketmaster_events")
-      .select("event_id, name, date, venue_name, status")
-      .eq("artist_id", artistId);
+      .select("event_id, event_name, event_date, venue_name, status")
+      .eq("artist_uuid", artistUuid);
 
     if (fetchError) {
       console.error(`[${artistName}] Error fetching existing events:`, fetchError);
@@ -91,18 +91,20 @@ async function processArtistEvents(
         const venueCountry = venue?.country?.countryCode || "";
         const ticketUrl = event.url || "";
 
+        // FIXED: Use correct column names from schema
         const eventData = {
           event_id: eventId,
-          artist_id: artistId,
-          name: eventName,
-          date: eventDate,
-          time: eventTime,
+          artist_uuid: artistUuid,
+          attractionId: attractionId,
+          event_name: eventName,
+          event_date: eventDate,
+          event_time: eventTime,
           status: eventStatus,
           venue_name: venueName,
           venue_city: venueCity,
           venue_state: venueState,
           venue_country: venueCountry,
-          ticket_url: ticketUrl,
+          event_url: ticketUrl,
           updated_at: new Date().toISOString(),
         };
 
@@ -198,10 +200,10 @@ export default async function handler(
 
     console.log(`Fetching artists with offset ${batchOffset}, limit ${batchSize}`);
 
-    // Fetch artists with attractionIds
+    // FIXED: Fetch artists with correct column name 'uuid' instead of 'id'
     const { data: artists, error: fetchError } = await supabaseAdmin
       .from("artists")
-      .select("id, artist_name, ticketmaster_attraction_id")
+      .select("uuid, artist_name, ticketmaster_attraction_id")
       .not("ticketmaster_attraction_id", "is", null)
       .order("artist_name")
       .range(batchOffset, batchOffset + batchSize - 1);
@@ -239,7 +241,7 @@ export default async function handler(
       console.log(`\nProcessing ${i + 1}/${artists.length}: ${artist.artist_name}`);
 
       const result = await processArtistEvents(
-        artist.id,
+        artist.uuid,
         artist.artist_name,
         artist.ticketmaster_attraction_id
       );
