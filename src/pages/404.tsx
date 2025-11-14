@@ -12,8 +12,7 @@ export default function NotFound() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       
-          <iframe
-              src="https://www.ticketcube.io/cube/template/your-city-mhxs14kq"
+          <iframe src="https://www.ticketcube.io/cube/template/your-city-mhxs14kq"
               width="100%"
               height="800"
               frameborder="0"
