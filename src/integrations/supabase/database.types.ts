@@ -607,6 +607,50 @@ export type Database = {
                     },
                 ]
             }
+            newsletter_subscribers: {
+                Row: {
+                    city_id: number | null
+                    created_at: string | null
+                    email: string
+                    id: string
+                    last_email_sent_at: string | null
+                    raw_city_input: string | null
+                    status: string | null
+                    subscribed_at: string | null
+                    unsubscribe_token: string | null
+                }
+                Insert: {
+                    city_id?: number | null
+                    created_at?: string | null
+                    email: string
+                    id?: string
+                    last_email_sent_at?: string | null
+                    raw_city_input?: string | null
+                    status?: string | null
+                    subscribed_at?: string | null
+                    unsubscribe_token?: string | null
+                }
+                Update: {
+                    city_id?: number | null
+                    created_at?: string | null
+                    email?: string
+                    id?: string
+                    last_email_sent_at?: string | null
+                    raw_city_input?: string | null
+                    status?: string | null
+                    subscribed_at?: string | null
+                    unsubscribe_token?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "newsletter_subscribers_city_id_fkey"
+                        columns: ["city_id"]
+                        isOneToOne: false
+                        referencedRelation: "city_latlong"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             pending_artist_templates: {
                 Row: {
                     artist_name: string | null
