@@ -12,7 +12,7 @@ export default function TestTMApi() {
       const response = await fetch("/api/admin/test-tm-refresh", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ testArtistUuid: "4c680621-2b15-455a-b58b-bc8d70f454ac" })
+        body: JSON.stringify({ testArtistUuid: "5eae69ed-f8a0-4a25-93b5-fe8a1c7b062c" })
       });
 
       const data = await response.json();
@@ -48,7 +48,7 @@ export default function TestTMApi() {
 
       <div className="flex gap-4 mb-6">
         <Button onClick={testSingleArtist} disabled={loading}>
-          {loading ? "Testing..." : "Test Single Artist (August 8)"}
+          {loading ? "Testing..." : "Test Single Artist (Laufey)"}
         </Button>
 
         <Button onClick={testMultipleArtists} disabled={loading} variant="secondary">
