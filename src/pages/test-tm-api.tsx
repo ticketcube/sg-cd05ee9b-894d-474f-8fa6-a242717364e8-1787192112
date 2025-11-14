@@ -12,7 +12,7 @@ export default function TestTMApi() {
   const [results, setResults] = useState<any>(null);
   const [bulkRefreshRunning, setBulkRefreshRunning] = useState(false);
   const [artistName, setArtistName] = useState("Laufey");
-  const [attractionIdTest, setAttractionIdTest] = useState("2503872");
+  const [attractionIdTest, setAttractionIdTest] = useState("K8vZ917_N8f"); // Banners - has upcoming shows
   const [currentOffset, setCurrentOffset] = useState(0);
   const [eventRefreshOffset, setEventRefreshOffset] = useState(0);
   const BATCH_SIZE = 20; // LOCKED - DO NOT CHANGE (prevents timeouts)
@@ -57,8 +57,11 @@ export default function TestTMApi() {
     setLoading(true);
     setResults(null);
     try {
+      console.log("🧪 Testing attractionId:", attractionIdTest);
       const response = await fetch(`/api/ticketmaster/events-by-attraction?attractionId=${attractionIdTest}`);
       const data = await response.json();
+      
+      console.log("📦 API Response:", data);
       
       // Add extra metadata for debugging
       setResults({
@@ -66,10 +69,13 @@ export default function TestTMApi() {
         _debug: {
           timestamp: new Date().toISOString(),
           attractionIdTested: attractionIdTest,
-          apiEndpoint: `/api/ticketmaster/events-by-attraction?attractionId=${attractionIdTest}`
+          apiEndpoint: `/api/ticketmaster/events-by-attraction?attractionId=${attractionIdTest}`,
+          responseStatus: response.status,
+          responseOk: response.ok
         }
       });
     } catch (error) {
+      console.error("❌ Test error:", error);
       setResults({ 
         error: error instanceof Error ? error.message : "Unknown error",
         attractionId: attractionIdTest
@@ -252,6 +258,9 @@ export default function TestTMApi() {
             <AlertDescription className="text-purple-800">
               <strong>🧪 Direct attractionId Testing</strong><br/>
               Test a single attractionId to see raw TM API response and verify event fetching is working correctly.
+              <div className="mt-2 text-sm font-mono bg-purple-100 p-2 rounded">
+                Current test: Banners (K8vZ917_N8f) - Known to have upcoming shows
+              </div>
             </AlertDescription>
           </Alert>
 
@@ -264,7 +273,7 @@ export default function TestTMApi() {
                 <Input
                   value={attractionIdTest}
                   onChange={(e) => setAttractionIdTest(e.target.value)}
-                  placeholder="Enter attractionId (e.g., 2503872 for Laufey)"
+                  placeholder="Enter attractionId"
                   className="flex-1 font-mono"
                 />
                 <Button onClick={testAttractionIdDirect} disabled={loading}>
@@ -273,8 +282,14 @@ export default function TestTMApi() {
               </div>
 
               <div className="text-xs text-gray-500 space-y-1">
-                <p><strong>Common attractionIds:</strong></p>
+                <p><strong>Test attractionIds (known to have shows):</strong></p>
                 <div className="grid grid-cols-2 gap-2 mt-1">
+                  <button 
+                    onClick={() => setAttractionIdTest("K8vZ917_N8f")} 
+                    className="text-left text-blue-600 hover:underline"
+                  >
+                    K8vZ917_N8f - Banners ⭐
+                  </button>
                   <button 
                     onClick={() => setAttractionIdTest("2503872")} 
                     className="text-left text-blue-600 hover:underline"

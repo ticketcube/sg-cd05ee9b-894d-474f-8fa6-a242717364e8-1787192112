@@ -74,18 +74,50 @@ export default async function handler(
     const startDateTime = today.toISOString().split('.')[0] + 'Z';
     const endDateTime = sixMonthsFromNow.toISOString().split('.')[0] + 'Z';
     
-    // TM API expects attractionId parameter (NOT keyword)
-    const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${apiKey}&attractionId=${attractionId}&startDateTime=${startDateTime}&endDateTime=${endDateTime}&sort=date,asc&size=200`;
+    // TM API expects attractionId parameter
+    // Try without date filters first to see if we get ANY results
+    const baseUrl = `https://app.ticketmaster.com/discovery/v2/events.json`;
+    const params = new URLSearchParams({
+      apikey: apiKey,
+      attractionId: attractionId,
+      size: '200',
+      sort: 'date,asc'
+    });
     
-    console.log("🎫 Fetching TM events for attractionId:", attractionId);
-    console.log("📅 Date range:", startDateTime, "to", endDateTime);
-    console.log("🔗 API URL (masked):", url.replace(apiKey, "***"));
+    // Add date filters (but test both ways)
+    const urlWithDates = `${baseUrl}?${params.toString()}&startDateTime=${startDateTime}&endDateTime=${endDateTime}`;
+    const urlWithoutDates = `${baseUrl}?${params.toString()}`;
     
-    const response = await fetch(url);
+    console.log("\n🎫 === TICKETMASTER API CALL DEBUG ===");
+    console.log("📌 attractionId:", attractionId);
+    console.log("📅 Start date:", startDateTime);
+    console.log("📅 End date:", endDateTime);
+    console.log("🔗 URL WITH dates (masked):", urlWithDates.replace(apiKey, "***"));
+    console.log("🔗 URL WITHOUT dates (masked):", urlWithoutDates.replace(apiKey, "***"));
+    
+    // Try WITH date filters first
+    console.log("\n🔄 Trying WITH date filters...");
+    let response = await fetch(urlWithDates);
+    let data: TicketmasterApiResponse = await response.json();
+    
+    console.log("📊 Response status:", response.status);
+    console.log("📊 Total elements:", data.page?.totalElements || 0);
+    console.log("📊 Events returned:", data._embedded?.events?.length || 0);
+    
+    // If no results, try WITHOUT date filters
+    if (!data._embedded?.events || data._embedded.events.length === 0) {
+      console.log("\n⚠️ No events with date filters. Trying WITHOUT date filters...");
+      response = await fetch(urlWithoutDates);
+      data = await response.json();
+      
+      console.log("📊 Response status (no dates):", response.status);
+      console.log("📊 Total elements (no dates):", data.page?.totalElements || 0);
+      console.log("📊 Events returned (no dates):", data._embedded?.events?.length || 0);
+    }
     
     if (!response.ok) {
-      console.error(`❌ Ticketmaster API error: ${response.status} ${response.statusText}`);
-      const errorText = await response.text();
+      console.error("❌ Ticketmaster API error:", response.status, response.statusText);
+      const errorText = JSON.stringify(data);
       console.error("Error response:", errorText);
       
       return res.status(response.status).json({ 
@@ -93,15 +125,22 @@ export default async function handler(
         message: `Ticketmaster API error: ${response.statusText}`,
         events: [],
         attractionId,
-        errorDetails: errorText
+        errorDetails: errorText,
+        debugUrls: {
+          withDates: urlWithDates.replace(apiKey, "***"),
+          withoutDates: urlWithoutDates.replace(apiKey, "***")
+        }
       });
     }
 
-    const data: TicketmasterApiResponse = await response.json();
-    
     const events = data._embedded?.events || [];
     
     console.log(`✅ Found ${events.length} events for attractionId ${attractionId}`);
+    
+    if (events.length > 0) {
+      console.log("📅 First event date:", events[0].dates.start.localDate);
+      console.log("📅 Last event date:", events[events.length - 1].dates.start.localDate);
+    }
     
     const formattedEvents = events.map(event => {
       const venue = event._embedded?.venues?.[0];
@@ -119,6 +158,8 @@ export default async function handler(
       };
     });
 
+    console.log("=== END DEBUG ===\n");
+
     return res.status(200).json({
       success: true,
       attractionId,
@@ -129,7 +170,11 @@ export default async function handler(
         end: endDateTime 
       },
       events: formattedEvents,
-      rawPageInfo: data.page
+      rawPageInfo: data.page,
+      debugInfo: {
+        urlUsed: events.length > 0 ? "with dates" : "without dates",
+        testedBothDateFormats: true
+      }
     });
   } catch (error) {
     console.error("❌ Error fetching Ticketmaster events:", error);
