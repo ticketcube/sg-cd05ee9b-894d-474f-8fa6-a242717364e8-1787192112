@@ -37,12 +37,12 @@ async function fetchEventsFromTicketmaster(attractionId: string) {
     const params = new URLSearchParams({
       apikey: TM_API_KEY,
       attractionId: attractionId,
-      size: '200',
-      sort: 'date,asc'
+      size: "200",
+      sort: "date,asc"
     });
     
     const url = `${baseUrl}?${params.toString()}`;
-    console.log(`  🔗 Full URL (masked): ${url.replace(TM_API_KEY, '***API_KEY***')}`);
+    console.log(`  🔗 Full URL (masked): ${url.replace(TM_API_KEY, "***API_KEY***")}`);
     
     console.log(`  ⏰ Calling fetch()...`);
     const response = await fetch(url);
@@ -96,7 +96,7 @@ async function fetchEventsFromTicketmaster(attractionId: string) {
     console.error(`\n  ❌ ERROR in fetchEventsFromTicketmaster:`);
     console.error(`  ❌ Error type: ${error instanceof Error ? error.constructor.name : typeof error}`);
     console.error(`  ❌ Error message: ${error instanceof Error ? error.message : String(error)}`);
-    console.error(`  ❌ Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
+    console.error(`  ❌ Error stack:`, error instanceof Error ? error.stack : "No stack trace");
     console.error(`  ❌ attractionId that failed: ${attractionId}\n`);
     throw error;
   }
@@ -136,7 +136,7 @@ async function processArtistEvents(
     console.log(`   📊 Fetching existing events from database...`);
     const { data: existingEvents, error: fetchError } = await supabaseAdmin
       .from("ticketmaster_events")
-      .select("event_id, event_name, event_date, venue_name, status")
+      .select("event_id, event_name, event_date, venue_name, is_active")
       .eq("artist_uuid", artistUuid);
 
     if (fetchError) {
@@ -161,12 +161,12 @@ async function processArtistEvents(
           event_name: event.name,
           event_date: event.date,
           event_time: event.time || null,
-          status: "onsale",
           venue_name: event.venue_name || "",
           venue_city: event.venue_city || "",
           venue_state: event.venue_state || null,
           venue_country: event.venue_country || "",
           event_url: event.url || "",
+          is_active: true,
           updated_at: new Date().toISOString(),
         };
 
@@ -200,7 +200,7 @@ async function processArtistEvents(
     console.error(`\n   ❌ ERROR in processArtistEvents for ${artistName}:`);
     console.error(`   ❌ Error type: ${error instanceof Error ? error.constructor.name : typeof error}`);
     console.error(`   ❌ Error message: ${error instanceof Error ? error.message : String(error)}`);
-    console.error(`   ❌ Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
+    console.error(`   ❌ Error stack:`, error instanceof Error ? error.stack : "No stack trace");
     result.error = error instanceof Error ? error.message : "Unknown error";
     return result;
   }
