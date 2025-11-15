@@ -62,22 +62,22 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
       return;
     }
 
-    if (homeCity && !availableCities.includes(homeCity)) {
-      toast.error("Please select a valid city from the list");
-      return;
-    }
+    // Remove strict city validation - allow any city input
+    // Users can enter their city even if it's not in our current event list
+    const normalizedCity = homeCity.trim();
 
     setLoading(true);
 
     try {
-      const result = await newsletterService.subscribe(email, homeCity || undefined);
+      const result = await newsletterService.subscribe(email, normalizedCity || undefined);
 
       if (result.success) {
         toast.success(result.message);
         
         localStorage.setItem("newsletter_email", email);
-        if (homeCity) {
-          localStorage.setItem("newsletter_home_city", homeCity);
+        if (normalizedCity) {
+          localStorage.setItem("newsletter_home_city", normalizedCity);
+          console.log("✅ Saved home city to localStorage:", normalizedCity);
         }
 
         const response = await fetch("/api/newsletter/send-welcome", {

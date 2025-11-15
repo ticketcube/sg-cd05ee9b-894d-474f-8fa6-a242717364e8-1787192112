@@ -214,19 +214,47 @@ export default function NewsletterPage() {
         exactMatch: uniqueCities.find(c => c === userHomeCity)
       });
 
-      // Try to set user's home city as default
-      if (userHomeCity && uniqueCities.includes(userHomeCity)) {
-        console.log("✅ Setting selectedCity to user's home city:", userHomeCity);
-        setSelectedCity(userHomeCity);
-      } else if (uniqueCities.includes("Los Angeles")) {
-        console.log("⚠️ User city not found, falling back to Los Angeles");
-        setSelectedCity("Los Angeles");
-      } else if (uniqueCities.length > 0) {
-        console.log("⚠️ No LA found, using first city:", uniqueCities[0]);
-        setSelectedCity(uniqueCities[0]);
+      // Try to match user's home city (case-insensitive, trimmed)
+      if (userHomeCity) {
+        const normalizedUserCity = userHomeCity.trim().toLowerCase();
+        const matchingCity = uniqueCities.find(
+          city => city.trim().toLowerCase() === normalizedUserCity
+        );
+        
+        if (matchingCity) {
+          console.log("✅ Found matching city:", matchingCity);
+          setSelectedCity(matchingCity);
+        } else {
+          console.log("⚠️ User city not found in available cities:", {
+            userCity: userHomeCity,
+            normalizedUserCity,
+            availableCities: uniqueCities.map(c => c.trim().toLowerCase())
+          });
+          
+          // Fallback to Los Angeles if available
+          if (uniqueCities.includes("Los Angeles")) {
+            console.log("⚠️ User city not found, falling back to Los Angeles");
+            setSelectedCity("Los Angeles");
+          } else if (uniqueCities.length > 0) {
+            console.log("⚠️ No LA found, using first city:", uniqueCities[0]);
+            setSelectedCity(uniqueCities[0]);
+          } else {
+            console.log("❌ No cities found at all!");
+            setSelectedCity("all");
+          }
+        }
       } else {
-        console.log("❌ No cities found at all!");
-        setSelectedCity("all");
+        // Fallback to Los Angeles if available
+        if (uniqueCities.includes("Los Angeles")) {
+          console.log("⚠️ User city not found, falling back to Los Angeles");
+          setSelectedCity("Los Angeles");
+        } else if (uniqueCities.length > 0) {
+          console.log("⚠️ No LA found, using first city:", uniqueCities[0]);
+          setSelectedCity(uniqueCities[0]);
+        } else {
+          console.log("❌ No cities found at all!");
+          setSelectedCity("all");
+        }
       }
     } catch (error) {
       console.error("💥 Error loading events:", error);
@@ -245,12 +273,18 @@ export default function NewsletterPage() {
     });
 
     if (selectedCity && selectedCity !== "all") {
+      const normalizedSelectedCity = selectedCity.trim().toLowerCase();
+      
       filtered = filtered.filter(event => {
-        const matches = event.venue_city === selectedCity;
+        const normalizedEventCity = event.venue_city.trim().toLowerCase();
+        const matches = normalizedEventCity === normalizedSelectedCity;
+        
         if (!matches) {
           console.log("⏭️ Skipping event (city mismatch):", {
             eventCity: event.venue_city,
+            normalizedEventCity,
             selectedCity,
+            normalizedSelectedCity,
             eventName: event.event_name
           });
         }
