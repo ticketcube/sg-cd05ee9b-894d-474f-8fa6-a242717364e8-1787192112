@@ -390,16 +390,20 @@ export default function NewsletterPage() {
         ) : (
           <>
             <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center">
-              <div className="w-full md:w-64">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by City</label>
-                <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger><SelectValue placeholder="All Cities" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Cities</SelectItem>
-                    {availableCities.map(city => <SelectItem key={city} value={city}>{city}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="w-full md:w-64">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by City</label>
+                  <CityCombobox
+                    value={selectedCity}
+                    onValueChange={handleCityChange}
+                    placeholder="All Cities"
+                  />
+                  {selectedCityName !== "all" && (
+                    <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                      <span>✓</span>
+                      <span>Filtered to: {selectedCityName}</span>
+                    </p>
+                  )}
+                </div>
               <div className="w-full md:w-64">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Search Events</label>
                 <div className="relative">
