@@ -89,6 +89,29 @@ export default function NewsletterPage() {
   const loadEvents = async () => {
     setLoading(true);
     try {
+      // DIAGNOSTIC: Check what events actually exist
+      const { data: allEvents, error: diagError } = await supabase
+        .from("ticketmaster_events")
+        .select("event_date, event_name, is_active")
+        .order("event_date", { ascending: true })
+        .limit(20);
+
+      console.log("🔍 DIAGNOSTIC - Sample events in database:", {
+        error: diagError,
+        totalSampled: allEvents?.length,
+        activeCount: allEvents?.filter(e => e.is_active).length,
+        inactiveCount: allEvents?.filter(e => !e.is_active).length,
+        dateRange: allEvents ? {
+          earliest: allEvents[0]?.event_date,
+          latest: allEvents[allEvents.length - 1]?.event_date
+        } : null,
+        sampleEvents: allEvents?.slice(0, 5).map(e => ({
+          date: e.event_date,
+          name: e.event_name.substring(0, 40),
+          active: e.is_active
+        }))
+      });
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
@@ -113,7 +136,7 @@ export default function NewsletterPage() {
       const mondayStr = nextMonday.toISOString().split('T')[0];
       const endOfMonthStr = endOfMonth.toISOString().split('T')[0];
 
-      console.log("📅 Fixed date ranges:", { 
+      console.log("📅 Date ranges for queries:", { 
         today: todayStr, 
         thisSunday: sundayStr,
         nextMonday: mondayStr,
