@@ -207,55 +207,23 @@ export default function NewsletterPage() {
       // Get user's stored home city
       const userHomeCity = localStorage.getItem("newsletter_home_city");
       
-      console.log("🏠 CITY FILTER DEBUG:", {
+      console.log("🏠 HOME CITY DEFAULT (NOT FILTER):", {
         userHomeCity,
         uniqueCities,
-        includes: uniqueCities.includes(userHomeCity || ""),
-        exactMatch: uniqueCities.find(c => c === userHomeCity)
+        note: "Home city is just the dropdown default, NOT a filter!"
       });
 
-      // Try to match user's home city (case-insensitive, trimmed)
-      if (userHomeCity) {
-        const normalizedUserCity = userHomeCity.trim().toLowerCase();
-        const matchingCity = uniqueCities.find(
-          city => city.trim().toLowerCase() === normalizedUserCity
-        );
-        
-        if (matchingCity) {
-          console.log("✅ Found matching city:", matchingCity);
-          setSelectedCity(matchingCity);
-        } else {
-          console.log("⚠️ User city not found in available cities:", {
-            userCity: userHomeCity,
-            normalizedUserCity,
-            availableCities: uniqueCities.map(c => c.trim().toLowerCase())
-          });
-          
-          // Fallback to Los Angeles if available
-          if (uniqueCities.includes("Los Angeles")) {
-            console.log("⚠️ User city not found, falling back to Los Angeles");
-            setSelectedCity("Los Angeles");
-          } else if (uniqueCities.length > 0) {
-            console.log("⚠️ No LA found, using first city:", uniqueCities[0]);
-            setSelectedCity(uniqueCities[0]);
-          } else {
-            console.log("❌ No cities found at all!");
-            setSelectedCity("all");
-          }
-        }
-      } else {
-        // Fallback to Los Angeles if available
-        if (uniqueCities.includes("Los Angeles")) {
-          console.log("⚠️ User city not found, falling back to Los Angeles");
-          setSelectedCity("Los Angeles");
-        } else if (uniqueCities.length > 0) {
-          console.log("⚠️ No LA found, using first city:", uniqueCities[0]);
-          setSelectedCity(uniqueCities[0]);
-        } else {
-          console.log("❌ No cities found at all!");
-          setSelectedCity("all");
-        }
-      }
+      // ✅ IMPORTANT: Always start with "all" to show all events
+      // The home city is just a suggestion in the dropdown, not an automatic filter
+      setSelectedCity("all");
+      
+      // Log the clarification
+      console.log("✅ Newsletter page initialized:", {
+        selectedCity: "all",
+        userHomeCity: userHomeCity || "none",
+        totalEvents: weekendEvents.length + monthEvents.length,
+        message: "Showing ALL events. User can filter by their city if they want."
+      });
     } catch (error) {
       console.error("💥 Error loading events:", error);
     } finally {
@@ -549,11 +517,27 @@ export default function NewsletterPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Cities</SelectItem>
-                    {availableCities.map(city => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
+                    {(() => {
+                      const homeCity = localStorage.getItem("newsletter_home_city");
+                      const homeCityInList = homeCity && availableCities.includes(homeCity);
+                      
+                      return (
+                        <>
+                          {homeCityInList && (
+                            <SelectItem value={homeCity} className="font-semibold bg-blue-50">
+                              {homeCity} (Your City)
+                            </SelectItem>
+                          )}
+                          {availableCities
+                            .filter(city => city !== homeCity)
+                            .map(city => (
+                              <SelectItem key={city} value={city}>
+                                {city}
+                              </SelectItem>
+                            ))}
+                        </>
+                      );
+                    })()}
                   </SelectContent>
                 </Select>
               </div>
