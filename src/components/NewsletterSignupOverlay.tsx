@@ -106,17 +106,18 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
         </CardHeader>
 
         <CardContent>
-             <div className="mb-6 space-y-3 text-sm text-gray-600">
+          <div className="mb-6 space-y-3 text-sm text-gray-600">
             <p>
-              <strong className="text-gray-900">Welcome to OTW LIVE!</strong>
+              <strong className="text-gray-900">Welcome to OTW Discovery Club</strong>
             </p>
             <p>
-              As a member, once a week you'll receive an exclusive list of OTW Artists' shows in your city.
+              As a subscriber, once a week you'll receive an exclusive list of OTW Artists' shows in your city.
             </p>
             <p>
-             Buy tickets or reserve an OTW WilCall TicketCube™.  We Reward Discovery.
+              Every week you'll know who is playing this weekend and who's coming up.
+            </p>
             <p>
-             
+              See the shows, watch the artist videos, and reserve a ticket all in three clicks.
             </p>
           </div>
 
