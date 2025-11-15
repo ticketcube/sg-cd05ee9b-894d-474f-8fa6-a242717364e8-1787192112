@@ -235,48 +235,7 @@ export default function NewsletterPage() {
     return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   };
 
-  const TicketPurchaseRow = ({ event }: { event: NewsletterEvent }) => {
-    const isExpanded = expandedTicket === event.event_id;
-    return (
-      <>
-        <tr className="border-b last:border-0 hover:bg-gray-50 transition-colors">
-          <td className="py-3 px-2 font-medium text-sm">{event.event_name}</td>
-          <td className="py-3 px-2 text-sm">{event.venue_name}</td>
-          <td className="py-3 px-2 text-sm whitespace-nowrap">{formatDate(event.event_date)}</td>
-          <td className="py-3 px-2 text-right">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setExpandedTicket(isExpanded ? null : event.event_id)}
-              className="flex items-center gap-1"
-            >
-              <Ticket className="w-4 h-4" />
-              {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </Button>
-          </td>
-        </tr>
-        {isExpanded && (
-          <tr className="bg-gray-50 border-b">
-            <td colSpan={4} className="py-4 px-2">
-              <div className="flex gap-3 justify-center">
-                <Button asChild className="flex items-center gap-2">
-                  <a href={event.event_url} target="_blank" rel="noopener noreferrer">
-                    Buy Tickets <ExternalLink className="w-4 h-4" />
-                  </a>
-                </Button>
-                <Button variant="outline" className="flex items-center gap-2">
-                  OTW Live WillCall <Calendar className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="text-center mt-2 text-xs text-gray-500">
-                OTW Live WillCall - Coming Soon
-              </div>
-            </td>
-          </tr>
-        )}
-      </>
-    );
-  };
+
 
   const WeekendEventsSection = () => {
       const filtered = filterEvents(thisWeekendEvents);
@@ -295,35 +254,31 @@ export default function NewsletterPage() {
             </div>
           </div>
         </CardHeader>
-        {weekendExpanded && (
-          <CardContent>
-            {filtered.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
-                <p>No events found</p>
-              </div>
-            ) : (
-              dates.map(date => (
-                <div key={date} className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3 text-gray-700">{formatDate(date)}</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="border-b bg-gray-50">
-                        <tr className="text-left text-xs text-gray-600">
-                          <th className="pb-2 px-2 font-medium">Event</th>
-                          <th className="pb-2 px-2 font-medium">Venue</th>
-                          <th className="pb-2 px-2 font-medium">Date</th>
-                          <th className="pb-2 px-2 font-medium text-right">Tickets</th>
-                        </tr>
-                      </thead>
-                      <tbody>{grouped[date].map(event => <TicketPurchaseRow key={event.event_id} event={event} />)}</tbody>
-                    </table>
-                  </div>
-                </div>
-              ))
+            {weekendExpanded && (
+                <CardContent>
+                    {filtered.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                            <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
+                            <p>No events found</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-8">
+                            {dates.map(date => (
+                                <div key={date}>
+                                    <h3 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                                        {formatDate(date)}
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {grouped[date].map(event => (
+                                            <EventCard key={event.event_id} event={event} />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
             )}
-          </CardContent>
-        )}
       </Card>
     );
   };
@@ -346,35 +301,31 @@ export default function NewsletterPage() {
             </div>
           </div>
         </CardHeader>
-        {nextWeekExpanded && (
-          <CardContent>
-            {filtered.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
-                <p>No events found</p>
-              </div>
-            ) : (
-              dates.map(date => (
-                <div key={date} className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3 text-gray-700">{formatDate(date)}</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="border-b bg-gray-50">
-                        <tr className="text-left text-xs text-gray-600">
-                          <th className="pb-2 px-2 font-medium">Event</th>
-                          <th className="pb-2 px-2 font-medium">Venue</th>
-                          <th className="pb-2 px-2 font-medium">Date</th>
-                          <th className="pb-2 px-2 font-medium text-right">Tickets</th>
-                        </tr>
-                      </thead>
-                      <tbody>{grouped[date].map(event => <TicketPurchaseRow key={event.event_id} event={event} />)}</tbody>
-                    </table>
-                  </div>
-                </div>
-              ))
+            {nextWeekExpanded && (
+                <CardContent>
+                    {filtered.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                            <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
+                            <p>No events found</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-8">
+                            {dates.map(date => (
+                                <div key={date}>
+                                    <h3 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                                        {formatDate(date)}
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {grouped[date].map(event => (
+                                            <EventCard key={event.event_id} event={event} />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
             )}
-          </CardContent>
-        )}
       </Card>
     );
   };
