@@ -1,5 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { supabase } from "@/integrations/supabase/client";
+import { createClient } from "@supabase/supabase-js";
+
+// Use Service Role Key to bypass RLS (same as batch-refresh-events.ts)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 interface TMArtist {
   uuid: string;
@@ -21,7 +26,7 @@ export default async function handler(
     let artistsToTest: TMArtist[] = [];
 
     if (testArtistUuid) {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("artists")
         .select("uuid, artist_name, attractionId")
         .eq("uuid", testArtistUuid)
@@ -35,7 +40,7 @@ export default async function handler(
 
       artistsToTest = [data as TMArtist];
     } else {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("artists")
         .select("uuid, artist_name, attractionId")
         .not("attractionId", "is", null)
@@ -77,10 +82,11 @@ export default async function handler(
             event_url: event.url,
             attractionId: artist.attractionId,
             is_active: true,
-            updated_at: new Date().toISOString()  // ✅ FIXED: Use correct column name
+            updated_at: new Date().toISOString()
           }));
 
-          const { data: upsertData, error: upsertError } = await supabase
+          // Use supabaseAdmin (Service Role Key) to bypass RLS
+          const { data: upsertData, error: upsertError } = await supabaseAdmin
             .from("ticketmaster_events")
             .upsert(eventsToInsert, {
               onConflict: "event_id",
