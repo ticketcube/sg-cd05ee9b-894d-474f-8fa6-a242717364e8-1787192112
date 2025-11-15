@@ -422,7 +422,7 @@ export default function NewsletterPage() {
                       alt="OTW Live"
                       width={60}
                       height={60}
-                      className="rounded-md justify-center"
+                      className="rounded-md flex items-center justify-center"
                   />
                 </div>
 
