@@ -120,7 +120,7 @@ export default function TestTMApi() {
     }
   };
 
-  const updateAttractionIdsBatch = async (testMode: boolean, onlyMissing = false) => {
+  const updateAttractionIdsBatch = async (testMode: boolean, onlyMissing: boolean = false) => {
     const modeText = onlyMissing ? "missing attractionIds" : `${BATCH_SIZE} artists (${currentOffset + 1}-${currentOffset + BATCH_SIZE})`;
     if (!testMode && !confirm(`Update ${modeText}?\n\nThis will take ~5 seconds.`)) {
       return;
@@ -130,15 +130,18 @@ export default function TestTMApi() {
     setResults(null); // Clear previous results
 
     try {
+      // Explicitly create clean payload object with only primitive values
+      const payload = {
+        limit: BATCH_SIZE,
+        offset: onlyMissing ? 0 : currentOffset,
+        testMode: Boolean(testMode),
+        onlyMissing: Boolean(onlyMissing)
+      };
+
       const response = await fetch("/api/admin/update-attraction-ids", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          limit: BATCH_SIZE, 
-          offset: onlyMissing ? 0 : currentOffset,
-          testMode,
-          onlyMissing
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
