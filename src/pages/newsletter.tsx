@@ -230,7 +230,8 @@ export default function NewsletterPage() {
   };
 
   const WeekendEventsSection = () => {
-    const filtered = filterEvents(thisWeekendEvents);
+      const filtered = filterEvents(thisWeekendEvents);
+      if (filtered.length === 0) return null;
     const grouped = groupEventsByDate(filtered);
     const dates = Object.keys(grouped).sort();
     return (
@@ -279,7 +280,9 @@ export default function NewsletterPage() {
   };
 
   const NextWeekEventsSection = () => {
-    const filtered = filterEvents(nextWeekEvents);
+      const filtered = filterEvents(nextWeekEvents);
+      if (filtered.length === 0) return null;
+
     const grouped = groupEventsByDate(filtered);
     const dates = Object.keys(grouped).sort();
     return (
