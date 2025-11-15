@@ -39,7 +39,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   const [geoLoading, setGeoLoading] = useState(false);
 
   const fetchCities = async (search?: string) => {
-    console.log("Fetching cities from city_latlong table, search:", search);
+    console.log("🔍 [CityCombobox] fetchCities called, search:", search);
     setLoading(true);
     try {
       // Query city_latlong table for stable city list
@@ -48,18 +48,35 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
         .select("id, name, normalized_name, state_code, country_code")
         .not("normalized_name", "is", null);
 
+      console.log("📊 [CityCombobox] Building query for city_latlong table");
+
       // Add search filter if provided
       if (search && search.length >= 2) {
+        console.log("🔎 [CityCombobox] Adding search filter:", search);
         query = query.ilike("normalized_name", `%${search}%`);
       }
 
       // Limit results for performance
       query = query.limit(100);
 
+      console.log("⏳ [CityCombobox] Executing query...");
       const { data, error } = await query;
 
+      console.log("📦 [CityCombobox] Query result:", {
+        error: error?.message,
+        dataCount: data?.length,
+        sample: data?.[0]
+      });
+
       if (error) {
-        console.error("Error fetching cities from city_latlong:", error);
+        console.error("❌ [CityCombobox] Error fetching cities from city_latlong:", error);
+        setCities([]);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        console.warn("⚠️ [CityCombobox] No cities found in city_latlong table!");
+        console.warn("⚠️ [CityCombobox] This table might be empty. Check your database.");
         setCities([]);
         return;
       }
@@ -69,10 +86,12 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
         a.normalized_name.localeCompare(b.normalized_name)
       );
 
-      console.log("Found", sortedCities.length, "cities from city_latlong table");
+      console.log("✅ [CityCombobox] Successfully fetched", sortedCities.length, "cities from city_latlong table");
+      console.log("📋 [CityCombobox] First 5 cities:", sortedCities.slice(0, 5).map(c => c.normalized_name));
+      
       setCities(sortedCities as City[]);
     } catch (error) {
-      console.error('Error fetching cities:', error);
+      console.error('💥 [CityCombobox] Unexpected error fetching cities:', error);
       setCities([]);
     } finally {
       setLoading(false);
@@ -155,6 +174,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
 
   // Initial load of cities
   useEffect(() => {
+    console.log("🚀 [CityCombobox] Component mounted, fetching initial cities...");
     fetchCities();
   }, []);
 
@@ -162,8 +182,10 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchValue.length >= 2) {
+        console.log("🔍 [CityCombobox] Search triggered for:", searchValue);
         fetchCities(searchValue);
       } else if (searchValue.length === 0) {
+        console.log("🔄 [CityCombobox] Search cleared, fetching all cities");
         fetchCities();
       }
     }, 300);
