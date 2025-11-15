@@ -98,17 +98,7 @@ export default function NewsletterPage() {
       const sundayStr = sunday.toISOString().split('T')[0];
       const endOfMonthStr = endOfMonth.toISOString().split('T')[0];
 
-      console.log("Date ranges:", { thursdayStr, sundayStr, endOfMonthStr });
-
-      // First, let's check if there are ANY active events
-      const { data: allEvents, error: allError } = await supabase
-        .from("ticketmaster_events")
-        .select("event_id, event_date, is_active, artist_uuid")
-        .eq("is_active", true)
-        .limit(10);
-
-      console.log("Sample active events:", allEvents);
-      console.log("Total active events error:", allError);
+      console.log("📅 Date ranges:", { thursdayStr, sundayStr, endOfMonthStr });
 
       // Query for weekend events with proper join
       const { data: weekendData, error: weekendError } = await supabase
@@ -134,8 +124,11 @@ export default function NewsletterPage() {
         .lte("event_date", sundayStr)
         .order("event_date", { ascending: true });
 
-      console.log("Weekend query error:", weekendError);
-      console.log("Weekend data raw:", weekendData);
+      console.log("🎫 Weekend query result:", { 
+        error: weekendError, 
+        count: weekendData?.length,
+        sample: weekendData?.[0]
+      });
 
       // Query for month events
       const { data: monthData, error: monthError } = await supabase
@@ -161,16 +154,17 @@ export default function NewsletterPage() {
         .lte("event_date", endOfMonthStr)
         .order("event_date", { ascending: true });
 
-      console.log("Month query error:", monthError);
-      console.log("Month data raw:", monthData);
+      console.log("📆 Month query result:", { 
+        error: monthError, 
+        count: monthData?.length 
+      });
 
       const formatEvents = (data: any[]): NewsletterEvent[] => {
         if (!data) return [];
         
         return data
-          .filter(event => event.artists) // Only include events with artist data
+          .filter(event => event.artists)
           .map(event => {
-            // Handle both array and object artist data
             const artistData = Array.isArray(event.artists) ? event.artists[0] : event.artists;
             
             return {
@@ -193,28 +187,49 @@ export default function NewsletterPage() {
       const weekendEvents = formatEvents(weekendData || []);
       const monthEvents = formatEvents(monthData || []);
 
-      console.log("Formatted weekend events:", weekendEvents);
-      console.log("Formatted month events:", monthEvents);
+      console.log("✅ Formatted events:", { 
+        weekend: weekendEvents.length, 
+        month: monthEvents.length 
+      });
 
       setThisWeekendEvents(weekendEvents);
       setThisMonthEvents(monthEvents);
 
+      // Extract unique cities
       const allEventsForCities = [...weekendEvents, ...monthEvents];
       const uniqueCities = Array.from(
         new Set(allEventsForCities.map(e => e.venue_city))
       ).sort();
+      
+      console.log("🌆 Unique cities extracted:", uniqueCities);
       setAvailableCities(uniqueCities);
 
+      // Get user's stored home city
       const userHomeCity = localStorage.getItem("newsletter_home_city");
+      
+      console.log("🏠 CITY FILTER DEBUG:", {
+        userHomeCity,
+        uniqueCities,
+        includes: uniqueCities.includes(userHomeCity || ""),
+        exactMatch: uniqueCities.find(c => c === userHomeCity)
+      });
+
+      // Try to set user's home city as default
       if (userHomeCity && uniqueCities.includes(userHomeCity)) {
+        console.log("✅ Setting selectedCity to user's home city:", userHomeCity);
         setSelectedCity(userHomeCity);
       } else if (uniqueCities.includes("Los Angeles")) {
+        console.log("⚠️ User city not found, falling back to Los Angeles");
         setSelectedCity("Los Angeles");
       } else if (uniqueCities.length > 0) {
+        console.log("⚠️ No LA found, using first city:", uniqueCities[0]);
         setSelectedCity(uniqueCities[0]);
+      } else {
+        console.log("❌ No cities found at all!");
+        setSelectedCity("all");
       }
     } catch (error) {
-      console.error("Error loading events:", error);
+      console.error("💥 Error loading events:", error);
     } finally {
       setLoading(false);
     }
@@ -223,17 +238,47 @@ export default function NewsletterPage() {
   const filterEvents = (events: NewsletterEvent[]) => {
     let filtered = events;
 
+    console.log("🔍 FILTER DEBUG:", {
+      totalEvents: events.length,
+      selectedCity,
+      willFilter: selectedCity && selectedCity !== "all"
+    });
+
     if (selectedCity && selectedCity !== "all") {
-      filtered = filtered.filter(event => event.venue_city === selectedCity);
+      filtered = filtered.filter(event => {
+        const matches = event.venue_city === selectedCity;
+        if (!matches) {
+          console.log("⏭️ Skipping event (city mismatch):", {
+            eventCity: event.venue_city,
+            selectedCity,
+            eventName: event.event_name
+          });
+        }
+        return matches;
+      });
+      
+      console.log("✅ Filtered by city:", {
+        selectedCity,
+        beforeCount: events.length,
+        afterCount: filtered.length
+      });
     }
 
     if (artistSearch.trim()) {
       const searchTerm = artistSearch.toLowerCase();
+      const beforeSearchCount = filtered.length;
       filtered = filtered.filter(event => 
         event.artist_name.toLowerCase().includes(searchTerm)
       );
+      
+      console.log("🔍 Filtered by artist search:", {
+        searchTerm,
+        beforeCount: beforeSearchCount,
+        afterCount: filtered.length
+      });
     }
 
+    console.log("📊 Final filtered result:", filtered.length, "events");
     return filtered;
   };
 
