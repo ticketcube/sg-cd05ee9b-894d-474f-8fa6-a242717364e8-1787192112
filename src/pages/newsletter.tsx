@@ -414,10 +414,13 @@ export default function NewsletterPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">OTW Live</h1>
-          <p className="text-gray-600">Never miss a show from your favorite emerging artists</p>
-        </div>
+              <Image
+                  src="/otwlive.png"
+                  alt="OTW Live"
+                  width={60}
+                  height={60}
+                  className="rounded-md"
+              />
 
         {!isSubscribed && (
           <NewsletterSignupOverlay 
