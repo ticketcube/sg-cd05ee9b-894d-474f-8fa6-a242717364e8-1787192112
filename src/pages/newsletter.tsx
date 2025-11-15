@@ -71,7 +71,7 @@ export default function NewsletterPage() {
 
                 if (cityMatch) {
                     console.log("✅ Setting filter to saved home city:", cityMatch);
-                    setSelectedCity(cityMatch);
+                    setSelectedCityName(cityMatch);
                     return;
                 }
             }
@@ -83,7 +83,7 @@ export default function NewsletterPage() {
 
             if (losAngeles) {
                 console.log("✅ Defaulting filter to Los Angeles");
-                setSelectedCity(losAngeles);
+                setSelectedCityName(losAngeles);
             }
         }
     }, [isSubscribed, availableCities]);
