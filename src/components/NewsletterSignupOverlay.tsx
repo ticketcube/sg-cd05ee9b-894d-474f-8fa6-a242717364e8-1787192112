@@ -111,7 +111,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
               <strong className="text-gray-900">Welcome to OTW LIVE!</strong>
             </p>
             <p>
-                          As a member, every Thursday you'll receive an exclusive list of OTW Artists' weekend shows in your city. Browse, Click & Buy. 
+                          As a member, every Thursday you'll receive an exclusive list of OTW Artists' weekend shows in your city. 
             </p>
             <p>
                     We Reward Discoverry      ™
