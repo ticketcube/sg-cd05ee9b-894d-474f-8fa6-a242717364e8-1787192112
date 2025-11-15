@@ -422,9 +422,9 @@ export default function NewsletterPage() {
                       alt="OTW Live"
                       width={60}
                       height={60}
-                      className="rounded-md"
+                      className="rounded-md justify-center"
                   />
-        </div>
+                </div>
 
         {!isSubscribed && (
           <NewsletterSignupOverlay 
