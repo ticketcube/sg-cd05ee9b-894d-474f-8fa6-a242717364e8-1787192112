@@ -79,103 +79,356 @@ export default function NewsletterPage() {
     }
   };
 
-    const loadEvents = async () => {
-        setLoading(true);
-        try {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+  const loadEvents = async () => {
+  setLoading(true);
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-            // --- THIS WEEKEND (Thu → Sun) ---
-            const day = today.getDay();
-            const thisThursday = new Date(today);
-            const daysUntilThursday = (4 - day + 7) % 7;
-            thisThursday.setDate(today.getDate() + daysUntilThursday);
+    //
+    // --- THIS WEEKEND (Thu–Sun): unchanged ---
+    //
+    const thisThursday = new Date(today);
+    const day = today.getDay(); // Sun=0, Mon=1, ... Sat=6
 
-            const thisSunday = new Date(thisThursday);
-            thisSunday.setDate(thisThursday.getDate() + 3);
+    // Find upcoming Thursday (this week's)
+    const daysUntilThursday = (4 - day + 7) % 7;
+    thisThursday.setDate(today.getDate() + daysUntilThursday);
 
-            // --- NEXT WEEK (Mon → Sun) ---
-            const nextMonday = new Date(thisSunday);
-            nextMonday.setDate(thisSunday.getDate() + 1);
+    const thisSunday = new Date(thisThursday);
+    thisSunday.setDate(thisThursday.getDate() + 3); // Thu + 3 = Sun
 
-            const nextSunday = new Date(nextMonday);
-            nextSunday.setDate(nextMonday.getDate() + 6);
+    //
+    // --- NEXT WEEKEND (Mon–Sun of next week) ---
+    //
+    const nextMonday = new Date(thisThursday);
+    nextMonday.setDate(thisThursday.getDate() + 4); // Mon after this Sun
 
-            // Format YYYY-MM-DD
-            const fmt = (d: Date) => d.toISOString().split("T")[0];
-            const thuStr = fmt(thisThursday);
-            const sundayStr = fmt(thisSunday);
-            const nextMonStr = fmt(nextMonday);
-            const nextSunStr = fmt(nextSunday);
+    const nextSunday = new Date(nextMonday);
+    nextSunday.setDate(nextMonday.getDate() + 6); // Mon + 6 = Sun
 
-            console.log("📅 Loading events:", {
-                thisWeekend: `${thuStr} → ${sundayStr}`,
-                nextWeek: `${nextMonStr} → ${nextSunStr}`
-            });
+    // Format YYYY-MM-DD
+    const fmt = d => d.toISOString().split("T")[0];
+    const todayStr = fmt(today);
+    const thuStr = fmt(thisThursday);
+    const sunStr = fmt(thisSunday);
+    const nextMonStr = fmt(nextMonday);
+    const nextSunStr = fmt(nextSunday);
 
-            // --- Load THIS WEEKEND ---
-            const { data: weekendData, error: weekendError } = await supabase
-                .from("ticketmaster_events")
-                .select(`
-        event_id,
-        event_name,
-        event_date,
-        event_time,
-        venue_name,
-        venue_city,
-        venue_state,
-        venue_country,
-        event_url
-      `)
-                .eq("is_active", true)
-                .gte("event_date", thuStr)
-                .lte("event_date", sundayStr)
-                .order("event_date");
+    console.log("📅 Loading events for date ranges:", { 
+      thisWeekend: `${thuStr} → ${sunStr}`,
+      nextWeekend: `${nextMonStr} → ${nextSunStr}`
+    });
 
-            if (weekendError) console.error("Weekend fetch error:", weekendError);
+      // Load weekend events
+      const { data: weekendData, error: weekendError } = await supabase
+        .from("ticketmaster_events")
+        .select(`
+          event_id,
+          event_name,
+          event_date,
+          event_time,
+          venue_name,
+          venue_city,
+          venue_state,
+          venue_country,
+          event_url
+        `)
+        .eq("is_active", true)
+        .gte("event_date", todayStr)
+        .lte("event_date", sundayStr)
+        .order("event_date", { ascending: true });
 
-            // --- Load NEXT WEEK ---
-            const { data: nextWeekData, error: nextWeekError } = await supabase
-                .from("ticketmaster_events")
-                .select(`
-        event_id,
-        event_name,
-        event_date,
-        event_time,
-        venue_name,
-        venue_city,
-        venue_state,
-        venue_country,
-        event_url
-      `)
-                .eq("is_active", true)
-                .gte("event_date", nextMonStr)
-                .lte("event_date", nextSunStr)
-                .order("event_date");
+      if (weekendError) {
+        console.error("❌ Weekend events error:", weekendError);
+      } else {
+        console.log("✅ Weekend events loaded:", weekendData?.length || 0);
+      }
 
-            if (nextWeekError) console.error("Next week fetch error:", nextWeekError);
+      // Load next week events
+      const { data: monthData, error: monthError } = await supabase
+        .from("ticketmaster_events")
+        .select(`
+          event_id,
+          event_name,
+          event_date,
+          event_time,
+          venue_name,
+          venue_city,
+          venue_state,
+          venue_country,
+          event_url
+        `)
+        .eq("is_active", true)
+        .gt("event_date", sundayStr)
+        .lte("event_date", endOfMonthStr)
+        .order("event_date", { ascending: true });
 
-            // Save results
-            const weekendEvents = weekendData || [];
-            const nextWeekEvents = nextWeekData || [];
+      if (monthError) {
+        console.error("❌ Month events error:", monthError);
+      } else {
+        console.log("✅ Month events loaded:", monthData?.length || 0);
+      }
 
-            setThisWeekendEvents(weekendEvents);
-            setnextWeekEvents(nextWeekEvents);
+      const weekendEvents = weekendData || [];
+      const monthEvents = monthData || [];
 
-            // Unique city list
-            const allEvents = [...weekendEvents, ...nextWeekEvents];
-            const uniqueCities = [...new Set(allEvents.map(e => e.venue_city))].sort();
+      setThisWeekendEvents(weekendEvents);
+      setThisMonthEvents(monthEvents);
 
-            setAvailableCities(uniqueCities);
-            setSelectedCity("all");
+      // Extract unique cities from all loaded events
+      const allEvents = [...weekendEvents, ...monthEvents];
+      const uniqueCities = Array.from(
+        new Set(allEvents.map(e => e.venue_city))
+      ).sort();
+      
+      console.log("🌆 Available cities:", uniqueCities.length, uniqueCities.slice(0, 10));
+      setAvailableCities(uniqueCities);
+      
+      // Always start with "all" to show all events
+      setSelectedCity("all");
+      
+      console.log("✅ Events loaded successfully:", {
+        weekend: weekendEvents.length,
+        month: monthEvents.length,
+        cities: uniqueCities.length
+      });
+    } catch (error) {
+      console.error("💥 Error loading events:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        } catch (err) {
-            console.error("💥 Error loading events:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const filterEvents = (events: NewsletterEvent[]) => {
+    let filtered = events;
 
+    // Filter by city if not "all"
+    if (selectedCity && selectedCity !== "all") {
+      filtered = filtered.filter(event => 
+        event.venue_city.toLowerCase() === selectedCity.toLowerCase()
+      );
+    }
+
+    // Filter by event name search
+    if (artistSearch.trim()) {
+      const searchTerm = artistSearch.toLowerCase();
+      filtered = filtered.filter(event => 
+        event.event_name.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return filtered;
+  };
+
+  const groupEventsByDate = (events: NewsletterEvent[]) => {
+    const grouped: { [date: string]: NewsletterEvent[] } = {};
+    events.forEach(event => {
+      if (!grouped[event.event_date]) {
+        grouped[event.event_date] = [];
+      }
+      grouped[event.event_date].push(event);
+    });
+    return grouped;
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric"
+    });
+  };
+
+  const TicketPurchaseRow = ({ event }: { event: NewsletterEvent }) => {
+    const isExpanded = expandedTicket === event.event_id;
+
+    return (
+      <>
+        <tr className="border-b last:border-0 hover:bg-gray-50 transition-colors">
+          <td className="py-3 px-2">
+            <div className="font-medium text-sm">{event.event_name}</div>
+          </td>
+          <td className="py-3 px-2 text-sm">{event.venue_name}</td>
+          <td className="py-3 px-2 text-sm whitespace-nowrap">
+            {formatDate(event.event_date)}
+          </td>
+          <td className="py-3 px-2 text-right">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setExpandedTicket(isExpanded ? null : event.event_id)}
+              className="flex items-center gap-1"
+            >
+              <Ticket className="w-4 h-4" />
+              {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </Button>
+          </td>
+        </tr>
+        {isExpanded && (
+          <tr className="bg-gray-50 border-b">
+            <td colSpan={4} className="py-4 px-2">
+              <div className="flex gap-3 justify-center">
+                <Button
+                  asChild
+                  className="flex items-center gap-2"
+                >
+                  <a 
+                    href={event.event_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    Buy Tickets
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {/* Will open WillCall component */}}
+                  className="flex items-center gap-2"
+                >
+                  OTW Live WillCall
+                  <Calendar className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="text-center mt-2 text-xs text-gray-500">
+                OTW Live WillCall - Coming Soon
+              </div>
+            </td>
+          </tr>
+        )}
+      </>
+    );
+  };
+
+  const WeekendEventsSection = () => {
+    const filteredEvents = filterEvents(thisWeekendEvents);
+    const groupedEvents = groupEventsByDate(filteredEvents);
+    const dates = Object.keys(groupedEvents).sort();
+
+    return (
+      <Card>
+        <CardHeader 
+          className="cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => setWeekendExpanded(!weekendExpanded)}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                🎵 This Weekend
+                {weekendExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </CardTitle>
+              <p className="text-sm text-gray-500 mt-1">
+                {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        {weekendExpanded && (
+          <CardContent>
+            {filteredEvents.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
+                <p>No events found</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {dates.map(date => (
+                  <div key={date}>
+                    <h3 className="text-lg font-semibold mb-3 text-gray-700">
+                      {formatDate(date)}
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="border-b bg-gray-50">
+                          <tr className="text-left text-xs text-gray-600">
+                            <th className="pb-2 px-2 font-medium">Event</th>
+                            <th className="pb-2 px-2 font-medium">Venue</th>
+                            <th className="pb-2 px-2 font-medium">Date</th>
+                            <th className="pb-2 px-2 font-medium text-right">Tickets</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {groupedEvents[date].map(event => (
+                            <TicketPurchaseRow key={event.event_id} event={event} />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
+    );
+  };
+
+  const MonthEventsSection = () => {
+    const filteredEvents = filterEvents(thisMonthEvents);
+    const groupedEvents = groupEventsByDate(filteredEvents);
+    const dates = Object.keys(groupedEvents).sort();
+
+    return (
+      <Card>
+        <CardHeader
+          className="cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => setWeekendExpanded(!weekendExpanded)}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                🎵 This Weekend
+                {weekendExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </CardTitle>
+              <p className="text-sm text-gray-500 mt-1">
+                {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        {weekendExpanded && (
+          <CardContent>
+            {filteredEvents.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
+                <p>No events found</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {dates.map(date => (
+                  <div key={date}>
+                    <h3 className="text-lg font-semibold mb-3 text-gray-700">
+                      {formatDate(date)}
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="border-b bg-gray-50">
+                          <tr className="text-left text-xs text-gray-600">
+                            <th className="pb-2 px-2 font-medium">Event</th>
+                            <th className="pb-2 px-2 font-medium">Venue</th>
+                            <th className="pb-2 px-2 font-medium">Date</th>
+                            <th className="pb-2 px-2 font-medium text-right">Tickets</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {groupedEvents[date].map(event => (
+                            <TicketPurchaseRow key={event.event_id} event={event} />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
+    );
+  };
 
   if (checkingSubscription) {
     return (
@@ -237,10 +490,10 @@ export default function NewsletterPage() {
               </div>
             </div>
 
-                      <div className="space-y-6">
-                          <WeekendEventsSection />
-                          <NextWeekEventsSection />
-                      </div>
+            <div className="space-y-6">
+              <WeekendEventsSection />
+              <MonthEventsSection />
+            </div>
 
             {loading && (
               <div className="text-center py-4">
