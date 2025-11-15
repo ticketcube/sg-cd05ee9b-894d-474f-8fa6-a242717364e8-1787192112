@@ -417,13 +417,7 @@ export default function NewsletterPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
               <div className="mb-4 flex justify-center">
-                  <Image
-                      src="/otwlive.png"
-                      alt="OTW Live"
-                      width={60}
-                      height={60}
-                      className="rounded-md"
-                  />
+                  OTW Artists LIVE This Week!
               </div>
 
         {!isSubscribed && (
