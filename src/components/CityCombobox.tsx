@@ -189,9 +189,9 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   }, [searchValue]);
 
   const displayValue = value ? 
-    `${value.normalized_name}${value.state_code ? `, ${value.state_code}` : ''}${value.country_code ? ` (${value.country_code})` : ''}` :
+    `${value.normalized_name}${value.state_code ? `, ${value.state_code}` : ''}` :
     searchValue.trim() ? 
-      `Typing: "${searchValue}"... (select below)` :
+      `"${searchValue}" - Select below or press Enter` :
       placeholder;
 
   const handleSelectCity = (cityName: string) => {
@@ -242,7 +242,10 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="flex-1 justify-between text-left min-h-[44px]"
+              className={cn(
+                "flex-1 justify-between text-left min-h-[44px]",
+                searchValue.trim() && !value && "border-blue-500 ring-2 ring-blue-200 animate-pulse"
+              )}
               type="button"
             >
               <span className="truncate">{displayValue}</span>

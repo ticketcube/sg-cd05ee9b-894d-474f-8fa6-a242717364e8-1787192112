@@ -141,17 +141,18 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
               <CityCombobox
                 value={homeCity}
                 onValueChange={handleCityChange}
-                placeholder="Select or type your city..."
+                placeholder="Click here, then type your city..."
               />
-              {(homeCity || customCity) && (
-                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                  <span>✓</span>
-                  <span>Selected: {homeCity?.normalized_name || customCity}</span>
+              {!homeCity && !customCity && (
+                <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                  <span>💡</span>
+                  <span>Click the box above, type your city, then click to select it from the list</span>
                 </p>
               )}
-              {!homeCity && !customCity && (
-                <p className="text-xs text-gray-500 mt-1">
-                  We'll prioritize shows in your city
+              {(homeCity || customCity) && (
+                <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                  <span>✓</span>
+                  <span>Selected: {homeCity?.normalized_name || customCity}</span>
                 </p>
               )}
             </div>
