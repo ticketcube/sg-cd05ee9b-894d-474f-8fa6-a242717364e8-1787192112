@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Calendar, ExternalLink, ChevronDown, ChevronUp, Ticket } from "lucide-react";
+import { Search, Calendar, ExternalLink, ChevronDown, ChevronUp, Ticket, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NewsletterEvent {
@@ -33,6 +33,7 @@ export default function NewsletterPage() {
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [weekendExpanded, setWeekendExpanded] = useState(true);
   const [monthExpanded, setMonthExpanded] = useState(true);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   useEffect(() => {
     checkSubscriptionStatus();
@@ -65,6 +66,17 @@ export default function NewsletterPage() {
     if (email) {
       const subscribed = await newsletterService.isEmailSubscribed(email);
       setIsSubscribed(subscribed);
+      
+      if (subscribed) {
+        const subscriber = await newsletterService.getSubscriberByEmail(email);
+        if (subscriber?.home_city) {
+          console.log("🏠 Found subscriber home_city:", subscriber.home_city);
+          setSelectedCity(subscriber.home_city);
+        } else {
+          console.log("🏠 No home_city found, defaulting to Los Angeles");
+          setSelectedCity("Los Angeles");
+        }
+      }
     }
     setCheckingSubscription(false);
   };
@@ -77,13 +89,90 @@ export default function NewsletterPage() {
     }
   };
 
+  const findNearestCity = async (lat: number, lon: number): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase
+        .from("city_latlong")
+        .select("city_name, lat, long")
+        .not("lat", "is", null)
+        .not("long", "is", null);
+
+      if (error || !data || data.length === 0) {
+        console.error("Error fetching cities for location:", error);
+        return null;
+      }
+
+      let nearestCity = data[0].city_name;
+      let minDistance = Infinity;
+
+      data.forEach(city => {
+        const cityLat = parseFloat(city.lat as string);
+        const cityLon = parseFloat(city.long as string);
+        
+        const distance = Math.sqrt(
+          Math.pow(lat - cityLat, 2) + Math.pow(lon - cityLon, 2)
+        );
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestCity = city.city_name;
+        }
+      });
+
+      console.log("📍 Nearest city found:", nearestCity);
+      return nearestCity;
+    } catch (error) {
+      console.error("Error finding nearest city:", error);
+      return null;
+    }
+  };
+
+  const handleUseMyLocation = async () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setGettingLocation(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log("📍 Got user location:", { latitude, longitude });
+        
+        const nearestCity = await findNearestCity(latitude, longitude);
+        
+        if (nearestCity && availableCities.includes(nearestCity)) {
+          setSelectedCity(nearestCity);
+          console.log("✅ Set city filter to:", nearestCity);
+        } else if (nearestCity) {
+          console.log("⚠️ Nearest city not in available cities, defaulting to 'all'");
+          setSelectedCity("all");
+        } else {
+          alert("Could not find nearest city. Please select manually.");
+        }
+        
+        setGettingLocation(false);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        alert("Could not get your location. Please select a city manually.");
+        setGettingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
   const loadEvents = async () => {
     setLoading(true);
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      // THIS WEEKEND: Today through this coming Sunday
       const thisSunday = new Date(today);
       const daysUntilSunday = (7 - today.getDay()) % 7;
       thisSunday.setDate(today.getDate() + daysUntilSunday);
@@ -92,7 +181,6 @@ export default function NewsletterPage() {
         thisSunday.setDate(today.getDate());
       }
 
-      // THIS MONTH: Day after this Sunday through end of month
       const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
       const todayStr = today.toISOString().split('T')[0];
@@ -104,7 +192,6 @@ export default function NewsletterPage() {
         month: `After ${sundayStr} to ${endOfMonthStr}`
       });
 
-      // Load weekend events
       const { data: weekendData, error: weekendError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -129,7 +216,6 @@ export default function NewsletterPage() {
         console.log("✅ Weekend events loaded:", weekendData?.length || 0);
       }
 
-      // Load month events
       const { data: monthData, error: monthError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -160,7 +246,6 @@ export default function NewsletterPage() {
       setThisWeekendEvents(weekendEvents);
       setThisMonthEvents(monthEvents);
 
-      // Extract unique cities from all loaded events
       const allEvents = [...weekendEvents, ...monthEvents];
       const uniqueCities = Array.from(
         new Set(allEvents.map(e => e.venue_city))
@@ -169,13 +254,11 @@ export default function NewsletterPage() {
       console.log("🌆 Available cities:", uniqueCities.length, uniqueCities.slice(0, 10));
       setAvailableCities(uniqueCities);
       
-      // Always start with "all" to show all events
-      setSelectedCity("all");
-      
       console.log("✅ Events loaded successfully:", {
         weekend: weekendEvents.length,
         month: monthEvents.length,
-        cities: uniqueCities.length
+        cities: uniqueCities.length,
+        currentFilter: selectedCity
       });
     } catch (error) {
       console.error("💥 Error loading events:", error);
@@ -187,14 +270,12 @@ export default function NewsletterPage() {
   const filterEvents = (events: NewsletterEvent[]) => {
     let filtered = events;
 
-    // Filter by city if not "all"
     if (selectedCity && selectedCity !== "all") {
       filtered = filtered.filter(event => 
         event.venue_city.toLowerCase() === selectedCity.toLowerCase()
       );
     }
 
-    // Filter by event name search
     if (artistSearch.trim()) {
       const searchTerm = artistSearch.toLowerCase();
       filtered = filtered.filter(event => 
@@ -269,7 +350,7 @@ export default function NewsletterPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => {/* Will open WillCall component */}}
+                  onClick={() => {}}
                   className="flex items-center gap-2"
                 >
                   OTW Live WillCall
@@ -447,7 +528,22 @@ export default function NewsletterPage() {
                 </Select>
               </div>
 
-              <div className="w-full md:w-64">
+              <div className="w-full md:w-auto">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  &nbsp;
+                </label>
+                <Button
+                  variant="outline"
+                  onClick={handleUseMyLocation}
+                  disabled={gettingLocation}
+                  className="flex items-center gap-2"
+                >
+                  <MapPin className="w-4 h-4" />
+                  {gettingLocation ? "Getting Location..." : "Use My Location"}
+                </Button>
+              </div>
+
+              <div className="w-full md:flex-1">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Search Events
                 </label>

@@ -203,6 +203,23 @@ class NewsletterService {
       return false;
     }
   }
+
+  async getSubscriberByEmail(email: string): Promise<NewsletterSubscriber | null> {
+    try {
+      const { data, error } = await supabase
+        .from("newsletter_subscribers")
+        .select("*")
+        .eq("email", email.toLowerCase().trim())
+        .eq("status", "active")
+        .single();
+
+      if (error || !data) return null;
+      return data;
+    } catch (error) {
+      console.error("Error fetching subscriber by email:", error);
+      return null;
+    }
+  }
 }
 
 export const newsletterService = new NewsletterService();
