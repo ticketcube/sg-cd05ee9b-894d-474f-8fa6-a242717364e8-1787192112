@@ -140,13 +140,13 @@ class BrevoEmailService {
     `;
 
     const textContent = `
-Welcome to OTW Discovery Club! 🎵
+Welcome to OTW LIVE! 🎵
 
-Thank you for subscribing to the OnesToWatch Discovery Club newsletter!
+Thank you for joining the OnesToWatch LIVE Club!
 
 Here's what you'll receive every week:
 - An exclusive list of OTW Artists' shows in cities near you
-- What's happening this weekend
+- What's happening this weekendv
 - What's coming up this month
 - Direct links to reserve tickets in just three clicks
 
