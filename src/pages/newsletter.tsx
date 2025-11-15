@@ -200,8 +200,8 @@ export default function NewsletterPage() {
       const allEvents = [...(weekendData || []), ...(nextWeekData || [])];
       const uniqueCities = [...new Set(allEvents.map(e => e.venue_city))].sort();
       setAvailableCities(uniqueCities);
-      setSelectedCity("all");
-
+      setSelectedCity(null);
+      setSelectedCityName("all");
     } catch (err) {
       console.error("💥 Error loading events:", err);
     } finally {
