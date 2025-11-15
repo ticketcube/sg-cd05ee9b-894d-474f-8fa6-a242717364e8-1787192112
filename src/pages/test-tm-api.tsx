@@ -122,16 +122,20 @@ export default function TestTMApi() {
   };
 
   const updateAttractionIdsBatch = async (testMode: boolean, onlyMissing: boolean = false) => {
+    // Explicitly convert to primitives to prevent event object capture
+    const cleanTestMode = Boolean(testMode);
+    const cleanOnlyMissing = Boolean(onlyMissing);
+
     // Update the mode state when explicitly set
-    if (onlyMissing) {
+    if (cleanOnlyMissing) {
       setOnlyMissingMode(true);
-    } else if (!onlyMissing && testMode === false) {
+    } else if (!cleanOnlyMissing && cleanTestMode === false) {
       // Only reset onlyMissingMode if we're doing a real update (not a test)
       setOnlyMissingMode(false);
     }
 
-    const modeText = onlyMissing ? "missing attractionIds" : `${BATCH_SIZE} artists (${currentOffset + 1}-${currentOffset + BATCH_SIZE})`;
-    if (!testMode && !confirm(`Update ${modeText}?\n\nThis will take ~5 seconds.`)) {
+    const modeText = cleanOnlyMissing ? "missing attractionIds" : `${BATCH_SIZE} artists (${currentOffset + 1}-${currentOffset + BATCH_SIZE})`;
+    if (!cleanTestMode && !confirm(`Update ${modeText}?\n\nThis will take ~5 seconds.`)) {
       return;
     }
 
@@ -139,12 +143,12 @@ export default function TestTMApi() {
     setResults(null); // Clear previous results
 
     try {
-      // Explicitly create clean payload object with only primitive values
+      // Create completely clean payload with no references
       const payload = {
-        limit: BATCH_SIZE,
-        offset: onlyMissing ? 0 : currentOffset,
-        testMode: Boolean(testMode),
-        onlyMissing: Boolean(onlyMissing)
+        limit: Number(BATCH_SIZE),
+        offset: Number(cleanOnlyMissing ? 0 : currentOffset),
+        testMode: cleanTestMode,
+        onlyMissing: cleanOnlyMissing
       };
 
       const response = await fetch("/api/admin/update-attraction-ids", {
@@ -451,7 +455,11 @@ export default function TestTMApi() {
                   </div>
                 </div>
                 <Button 
-                  onClick={() => updateAttractionIdsBatch(false, true)} 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    updateAttractionIdsBatch(false, true);
+                  }}
                   disabled={loading}
                   variant="default"
                   className="w-full bg-yellow-600 hover:bg-yellow-700"
@@ -495,14 +503,22 @@ export default function TestTMApi() {
 
               <div className="grid grid-cols-2 gap-2">
                 <Button 
-                  onClick={() => updateAttractionIdsBatch(true, false)} 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    updateAttractionIdsBatch(true, false);
+                  }}
                   disabled={loading}
                   variant="secondary"
                 >
                   {loading ? "Testing..." : "🔍 Test Preview"}
                 </Button>
                 <Button 
-                  onClick={() => updateAttractionIdsBatch(false, false)} 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    updateAttractionIdsBatch(false, false);
+                  }}
                   disabled={loading}
                   variant="default"
                 >
@@ -516,7 +532,11 @@ export default function TestTMApi() {
                   {!results.summary.onlyMissing && (
                     <>
                       <Button 
-                        onClick={() => updateAttractionIdsBatch(false, false)} 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          updateAttractionIdsBatch(false, false);
+                        }}
                         disabled={loading}
                         variant="default"
                         className="w-full"
