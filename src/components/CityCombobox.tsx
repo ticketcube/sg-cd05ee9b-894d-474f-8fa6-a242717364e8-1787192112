@@ -236,10 +236,19 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 z-[99999]" align="start">
-            {searchValue.trim() && !value && (
-              <div className="px-3 py-2 bg-blue-50 border-b text-sm text-blue-700 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <span>Searching for: <strong>"{searchValue}"</strong></span>
+            {searchValue.trim() && (
+              <div className="px-3 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b text-sm flex items-center gap-2 animate-in fade-in-50 slide-in-from-top-2">
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  <span className="text-gray-700">
+                    Searching: <strong className="text-blue-700">"{searchValue}"</strong>
+                  </span>
+                </div>
+                {cities.length > 0 && (
+                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                    {cities.length} {cities.length === 1 ? 'match' : 'matches'}
+                  </span>
+                )}
               </div>
             )}
             <Command className="w-full">
@@ -248,6 +257,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
                 value={searchValue}
                 onValueChange={setSearchValue}
                 onKeyDown={handleKeyDown}
+                className="text-base"
               />
               <CommandList className="max-h-[200px]">
                 <CommandEmpty>
