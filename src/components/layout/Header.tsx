@@ -14,7 +14,7 @@ export default function Header() {
               src="/otwlive.png"
               alt="OTW Live"
               width={40}
-              height={400}
+              height={40}
               className="rounded-md"
             />
             <span className="hidden font-bold sm:inline-block">
