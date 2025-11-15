@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Calendar, ExternalLink, ChevronDown, ChevronUp, Ticket } from "lucide-react";
 import CityCombobox from "@/components/CityCombobox";
 import { supabase } from "@/integrations/supabase/client";
+import { EventCard } from "@/components/EventCard";
 
 interface NewsletterEvent {
   event_id: string;
