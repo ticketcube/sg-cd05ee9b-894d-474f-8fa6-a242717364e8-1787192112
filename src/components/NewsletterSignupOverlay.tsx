@@ -146,7 +146,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
               {!homeCity && !customCity && (
                 <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
                   <span>💡</span>
-                  <span><strong>Quick tip:</strong> Click the box above → Start typing (you'll see it search) → Click to select</span>
+
                 </p>
               )}
               {(homeCity || customCity) && (
