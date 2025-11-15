@@ -24,17 +24,30 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
 
   const loadAvailableCities = async () => {
     try {
+      console.log("Loading cities from ticketmaster_events...");
+      
       const { data, error } = await supabase
         .from("ticketmaster_events")
         .select("venue_city")
         .eq("is_active", true);
 
-      if (error) throw error;
+      console.log("Cities query result:", { data, error });
+
+      if (error) {
+        console.error("Error loading cities:", error);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        console.warn("No active events found with cities");
+        return;
+      }
 
       const uniqueCities = Array.from(
         new Set(data?.map(event => event.venue_city).filter(Boolean))
       ).sort();
 
+      console.log("Unique cities found:", uniqueCities);
       setAvailableCities(uniqueCities as string[]);
     } catch (error) {
       console.error("Error loading cities:", error);
