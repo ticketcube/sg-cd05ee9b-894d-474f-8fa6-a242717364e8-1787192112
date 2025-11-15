@@ -500,27 +500,48 @@ export default function TestTMApi() {
 
               {results?.summary?.hasMore && !results?.error && (
                 <div className="space-y-2 mt-4">
-                  <Button 
-                    onClick={() => updateAttractionIdsBatch(false, results.summary.onlyMissing || false)} 
-                    disabled={loading}
-                    variant="default"
-                    className="w-full"
-                  >
-                    ➡️ Process Next Batch ({results.summary.nextOffset + 1}-{results.summary.nextOffset + BATCH_SIZE})
-                  </Button>
-                  <Button 
-                    onClick={skipBatch} 
-                    disabled={loading}
-                    variant="ghost"
-                    size="sm"
-                    className="w-full"
-                  >
-                    Skip to Next Batch →
-                  </Button>
+                  {/* Only show next batch button if NOT in onlyMissing mode */}
+                  {!results.summary.onlyMissing && (
+                    <>
+                      <Button 
+                        onClick={() => updateAttractionIdsBatch(false, false)} 
+                        disabled={loading}
+                        variant="default"
+                        className="w-full"
+                      >
+                        ➡️ Process Next Batch ({results.summary.nextOffset + 1}-{results.summary.nextOffset + BATCH_SIZE})
+                      </Button>
+                      <Button 
+                        onClick={skipBatch} 
+                        disabled={loading}
+                        variant="ghost"
+                        size="sm"
+                        className="w-full"
+                      >
+                        Skip to Next Batch →
+                      </Button>
+                    </>
+                  )}
                 </div>
               )}
 
-              {results?.summary && !results.summary.hasMore && !results?.error && (
+              {/* Show completion message for onlyMissing mode */}
+              {results?.summary && results.summary.onlyMissing && !results?.error && (
+                <Alert className="bg-green-50 border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">
+                    <strong>✅ Missing attractionIds update complete!</strong><br/>
+                    Updated: {results.summary.updated} | Skipped: {results.summary.skipped} | Failed: {results.summary.failed}
+                    <div className="mt-2 text-sm">
+                      {results.summary.hasMore 
+                        ? "Some artists still need attractionIds. Click the button above to process more."
+                        : "All artists with missing attractionIds have been processed."}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {results?.summary && !results.summary.hasMore && !results.summary.onlyMissing && !results?.error && (
                 <Alert className="bg-green-50 border-green-200">
                   <CheckCircle className="h-4 w-4 text-green-600" />
                   <AlertDescription className="text-green-800">
