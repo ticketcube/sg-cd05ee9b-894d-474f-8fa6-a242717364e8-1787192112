@@ -416,7 +416,7 @@ export default function NewsletterPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="center mb-8">
+              <div className="justify-center mb-4">
                   <Image
                       src="/otwlive.png"
                       alt="OTW Live"
