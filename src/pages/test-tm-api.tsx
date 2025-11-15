@@ -16,6 +16,7 @@ export default function TestTMApi() {
   const [currentOffset, setCurrentOffset] = useState(0);
   const [eventRefreshOffset, setEventRefreshOffset] = useState(0);
   const [eventRefreshBatchNumber, setEventRefreshBatchNumber] = useState(1); // NEW: Batch number selector
+  const [onlyMissingMode, setOnlyMissingMode] = useState(false); // NEW: Track onlyMissing mode state
   const BATCH_SIZE = 20; // LOCKED - DO NOT CHANGE (prevents timeouts)
 
   const testSingleArtist = async () => {
@@ -121,6 +122,14 @@ export default function TestTMApi() {
   };
 
   const updateAttractionIdsBatch = async (testMode: boolean, onlyMissing: boolean = false) => {
+    // Update the mode state when explicitly set
+    if (onlyMissing) {
+      setOnlyMissingMode(true);
+    } else if (!onlyMissing && testMode === false) {
+      // Only reset onlyMissingMode if we're doing a real update (not a test)
+      setOnlyMissingMode(false);
+    }
+
     const modeText = onlyMissing ? "missing attractionIds" : `${BATCH_SIZE} artists (${currentOffset + 1}-${currentOffset + BATCH_SIZE})`;
     if (!testMode && !confirm(`Update ${modeText}?\n\nThis will take ~5 seconds.`)) {
       return;
@@ -529,7 +538,7 @@ export default function TestTMApi() {
               )}
 
               {/* Show completion message for onlyMissing mode */}
-              {results?.summary && results.summary.onlyMissing && !results?.error && (
+              {results?.summary && onlyMissingMode && !results?.error && (
                 <Alert className="bg-green-50 border-green-200">
                   <CheckCircle className="h-4 w-4 text-green-600" />
                   <AlertDescription className="text-green-800">
@@ -540,11 +549,25 @@ export default function TestTMApi() {
                         ? "Some artists still need attractionIds. Click the button above to process more."
                         : "All artists with missing attractionIds have been processed."}
                     </div>
+                    {!results.summary.hasMore && (
+                      <Button 
+                        onClick={() => {
+                          setOnlyMissingMode(false);
+                          setResults(null);
+                          resetBatch();
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                      >
+                        Return to Normal Mode
+                      </Button>
+                    )}
                   </AlertDescription>
                 </Alert>
               )}
 
-              {results?.summary && !results.summary.hasMore && !results.summary.onlyMissing && !results?.error && (
+              {results?.summary && !results.summary.hasMore && !onlyMissingMode && !results?.error && (
                 <Alert className="bg-green-50 border-green-200">
                   <CheckCircle className="h-4 w-4 text-green-600" />
                   <AlertDescription className="text-green-800">
