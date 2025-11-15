@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Calendar, ExternalLink, ChevronDown, ChevronUp, Ticket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import Image from "next/image";
+
 
 interface NewsletterEvent {
   event_id: string;
