@@ -85,120 +85,193 @@ export default function NewsletterPage() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    //
-    // --- THIS WEEKEND (Thu–Sun): unchanged ---
-    //
+    // --- THIS WEEKEND (Thu → Sun) ---
+    const day = today.getDay();
     const thisThursday = new Date(today);
-    const day = today.getDay(); // Sun=0, Mon=1, ... Sat=6
-
-    // Find upcoming Thursday (this week's)
     const daysUntilThursday = (4 - day + 7) % 7;
     thisThursday.setDate(today.getDate() + daysUntilThursday);
 
     const thisSunday = new Date(thisThursday);
-    thisSunday.setDate(thisThursday.getDate() + 3); // Thu + 3 = Sun
+    thisSunday.setDate(thisThursday.getDate() + 3);
 
-    //
-    // --- NEXT WEEKEND (Mon–Sun of next week) ---
-    //
-    const nextMonday = new Date(thisThursday);
-    nextMonday.setDate(thisThursday.getDate() + 4); // Mon after this Sun
+    // --- NEXT WEEK (Mon → Sun) ---
+    const nextMonday = new Date(thisSunday);
+    nextMonday.setDate(thisSunday.getDate() + 1);
 
     const nextSunday = new Date(nextMonday);
-    nextSunday.setDate(nextMonday.getDate() + 6); // Mon + 6 = Sun
+    nextSunday.setDate(nextMonday.getDate() + 6);
 
     // Format YYYY-MM-DD
-    const fmt = d => d.toISOString().split("T")[0];
-    const todayStr = fmt(today);
+    const fmt = (d: Date) => d.toISOString().split("T")[0];
     const thuStr = fmt(thisThursday);
-    const sunStr = fmt(thisSunday);
+    const sundayStr = fmt(thisSunday);
     const nextMonStr = fmt(nextMonday);
     const nextSunStr = fmt(nextSunday);
 
-    console.log("📅 Loading events for date ranges:", { 
-      thisWeekend: `${thuStr} → ${sunStr}`,
-      nextWeekend: `${nextMonStr} → ${nextSunStr}`
+    console.log("📅 Loading events:", {
+      thisWeekend: `${thuStr} → ${sundayStr}`,
+      nextWeek: `${nextMonStr} → ${nextSunStr}`
     });
 
-      // Load weekend events
-      const { data: weekendData, error: weekendError } = await supabase
-        .from("ticketmaster_events")
-        .select(`
-          event_id,
-          event_name,
-          event_date,
-          event_time,
-          venue_name,
-          venue_city,
-          venue_state,
-          venue_country,
-          event_url
-        `)
-        .eq("is_active", true)
-        .gte("event_date", todayStr)
-        .lte("event_date", sundayStr)
-        .order("event_date", { ascending: true });
+    // --- Load THIS WEEKEND ---
+    const { data: weekendData, error: weekendError } = await supabase
+      .from("ticketmaster_events")
+      .select(`
+        event_id,
+        event_name,
+        event_date,
+        event_time,
+        venue_name,
+        venue_city,
+        venue_state,
+        venue_country,
+        event_url
+      `)
+      .eq("is_active", true)
+      .gte("event_date", thuStr)
+      .lte("event_date", sundayStr)
+      .order("event_date");
 
-      if (weekendError) {
-        console.error("❌ Weekend events error:", weekendError);
-      } else {
-        console.log("✅ Weekend events loaded:", weekendData?.length || 0);
-      }
+    if (weekendError) console.error("Weekend fetch error:", weekendError);
 
-      // Load next week events
-      const { data: monthData, error: monthError } = await supabase
-        .from("ticketmaster_events")
-        .select(`
-          event_id,
-          event_name,
-          event_date,
-          event_time,
-          venue_name,
-          venue_city,
-          venue_state,
-          venue_country,
-          event_url
-        `)
-        .eq("is_active", true)
-        .gt("event_date", sundayStr)
-        .lte("event_date", endOfMonthStr)
-        .order("event_date", { ascending: true });
+    // --- Load NEXT WEEK ---
+    const { data: nextWeekData, error: nextWeekError } = await supabase
+      .from("ticketmaster_events")
+      .select(`
+        event_id,
+        event_name,
+        event_date,
+        event_time,
+        venue_name,
+        venue_city,
+        venue_state,
+        venue_country,
+        event_url
+      `)
+      .eq("is_active", true)
+      .gte("event_date", nextMonStr)
+      .lte("event_date", nextSunStr)
+      .order("event_date");
 
-      if (monthError) {
-        console.error("❌ Month events error:", monthError);
-      } else {
-        console.log("✅ Month events loaded:", monthData?.length || 0);
-      }
+    if (nextWeekError) console.error("Next week fetch error:", nextWeekError);
 
-      const weekendEvents = weekendData || [];
-      const monthEvents = monthData || [];
+    // Save results
+    const weekendEvents = weekendData || [];
+    const nextWeekEvents = nextWeekData || [];
 
-      setThisWeekendEvents(weekendEvents);
-      setThisMonthEvents(monthEvents);
+    setThisWeekendEvents(weekendEvents);
+    setnextWeekEvents(nextWeekEvents);
 
-      // Extract unique cities from all loaded events
-      const allEvents = [...weekendEvents, ...monthEvents];
-      const uniqueCities = Array.from(
-        new Set(allEvents.map(e => e.venue_city))
-      ).sort();
-      
-      console.log("🌆 Available cities:", uniqueCities.length, uniqueCities.slice(0, 10));
-      setAvailableCities(uniqueCities);
-      
-      // Always start with "all" to show all events
-      setSelectedCity("all");
-      
-      console.log("✅ Events loaded successfully:", {
-        weekend: weekendEvents.length,
-        month: monthEvents.length,
-        cities: uniqueCities.length
-      });
-    } catch (error) {
-      console.error("💥 Error loading events:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Unique city list
+    const allEvents = [...weekendEvents, ...nextWeekEvents];
+    const uniqueCities = [...new Set(allEvents.map(e => e.venue_city))].sort();
+
+    setAvailableCities(uniqueCities);
+    setSelectedCity("all");
+
+  } catch (err) {
+    console.error("💥 Error loading events:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+    const loadEvents = async () => {
+        setLoading(true);
+        try {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // --- THIS WEEKEND (Thu → Sun) ---
+            const day = today.getDay();
+            const thisThursday = new Date(today);
+            const daysUntilThursday = (4 - day + 7) % 7;
+            thisThursday.setDate(today.getDate() + daysUntilThursday);
+
+            const thisSunday = new Date(thisThursday);
+            thisSunday.setDate(thisThursday.getDate() + 3);
+
+            // --- NEXT WEEK (Mon → Sun) ---
+            const nextMonday = new Date(thisSunday);
+            nextMonday.setDate(thisSunday.getDate() + 1);
+
+            const nextSunday = new Date(nextMonday);
+            nextSunday.setDate(nextMonday.getDate() + 6);
+
+            // Format YYYY-MM-DD
+            const fmt = (d: Date) => d.toISOString().split("T")[0];
+            const thuStr = fmt(thisThursday);
+            const sundayStr = fmt(thisSunday);
+            const nextMonStr = fmt(nextMonday);
+            const nextSunStr = fmt(nextSunday);
+
+            console.log("📅 Loading events:", {
+                thisWeekend: `${thuStr} → ${sundayStr}`,
+                nextWeek: `${nextMonStr} → ${nextSunStr}`
+            });
+
+            // --- Load THIS WEEKEND ---
+            const { data: weekendData, error: weekendError } = await supabase
+                .from("ticketmaster_events")
+                .select(`
+        event_id,
+        event_name,
+        event_date,
+        event_time,
+        venue_name,
+        venue_city,
+        venue_state,
+        venue_country,
+        event_url
+      `)
+                .eq("is_active", true)
+                .gte("event_date", thuStr)
+                .lte("event_date", sundayStr)
+                .order("event_date");
+
+            if (weekendError) console.error("Weekend fetch error:", weekendError);
+
+            // --- Load NEXT WEEK ---
+            const { data: nextWeekData, error: nextWeekError } = await supabase
+                .from("ticketmaster_events")
+                .select(`
+        event_id,
+        event_name,
+        event_date,
+        event_time,
+        venue_name,
+        venue_city,
+        venue_state,
+        venue_country,
+        event_url
+      `)
+                .eq("is_active", true)
+                .gte("event_date", nextMonStr)
+                .lte("event_date", nextSunStr)
+                .order("event_date");
+
+            if (nextWeekError) console.error("Next week fetch error:", nextWeekError);
+
+            // Save results
+            const weekendEvents = weekendData || [];
+            const nextWeekEvents = nextWeekData || [];
+
+            setThisWeekendEvents(weekendEvents);
+            setnextWeekEvents(nextWeekEvents);
+
+            // Unique city list
+            const allEvents = [...weekendEvents, ...nextWeekEvents];
+            const uniqueCities = [...new Set(allEvents.map(e => e.venue_city))].sort();
+
+            setAvailableCities(uniqueCities);
+            setSelectedCity("all");
+
+        } catch (err) {
+            console.error("💥 Error loading events:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
   const filterEvents = (events: NewsletterEvent[]) => {
     let filtered = events;
