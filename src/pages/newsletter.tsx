@@ -43,6 +43,36 @@ export default function NewsletterPage() {
     if (isSubscribed) loadEvents();
   }, [isSubscribed]);
 
+    // Set default city from localStorage or default to Los Angeles
+    useEffect(() => {
+        if (isSubscribed && availableCities.length > 0) {
+            const savedHomeCity = localStorage.getItem("newsletter_home_city");
+
+            if (savedHomeCity) {
+                // Check if saved city exists in available cities (case-insensitive)
+                const cityMatch = availableCities.find(
+                    city => city.toLowerCase() === savedHomeCity.toLowerCase()
+                );
+
+                if (cityMatch) {
+                    console.log("✅ Setting filter to saved home city:", cityMatch);
+                    setSelectedCity(cityMatch);
+                    return;
+                }
+            }
+
+            // Default to Los Angeles if no match or no saved city
+            const losAngeles = availableCities.find(
+                city => city.toLowerCase() === "los angeles"
+            );
+
+            if (losAngeles) {
+                console.log("✅ Defaulting filter to Los Angeles");
+                setSelectedCity(losAngeles);
+            }
+        }
+    }, [isSubscribed, availableCities]);
+
   // Handle mobile expand/collapse
   useEffect(() => {
     const handleResize = () => {
