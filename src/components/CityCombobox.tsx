@@ -191,7 +191,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   const displayValue = value ? 
     `${value.normalized_name}${value.state_code ? `, ${value.state_code}` : ''}` :
     searchValue.trim() ? 
-      `"${searchValue}" - Select below or press Enter` :
+      `Typing: "${searchValue}"...` :  // ← More obvious feedback
       placeholder;
 
   const handleSelectCity = (cityName: string) => {
@@ -253,6 +253,12 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 z-[99999]" align="start">
+            {searchValue.trim() && !value && (
+              <div className="px-3 py-2 bg-blue-50 border-b text-sm text-blue-700 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                <span>Searching for: <strong>"{searchValue}"</strong></span>
+              </div>
+            )}
             <Command className="w-full">
               <CommandInput 
                 placeholder="Type to search cities..."

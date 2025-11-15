@@ -144,9 +144,9 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
                 placeholder="Click here, then type your city..."
               />
               {!homeCity && !customCity && (
-                <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                <p className="text-xs text-blue-600 mt-2 flex items-center gap-1 animate-pulse">
                   <span>💡</span>
-                  <span>Click the box above, type your city, then click to select it from the list</span>
+                  <span><strong>How to select:</strong> Click the box → Type city name → Click to select from dropdown</span>
                 </p>
               )}
               {(homeCity || customCity) && (
