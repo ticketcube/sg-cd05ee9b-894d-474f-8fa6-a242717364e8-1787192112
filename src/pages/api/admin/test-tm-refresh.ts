@@ -77,7 +77,7 @@ export default async function handler(
             event_url: event.url,
             attractionId: artist.attractionId,
             is_active: true,
-            last_updated: new Date().toISOString()
+            updated_at: new Date().toISOString()  // ✅ FIXED: Use correct column name
           }));
 
           const { data: upsertData, error: upsertError } = await supabase
