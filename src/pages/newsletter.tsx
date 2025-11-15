@@ -416,7 +416,7 @@ export default function NewsletterPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-              <div className="mb-4 flex justify-center">
+              <div className="mb-4 flex justify-center text-2xl">
                   OTW Artists LIVE This Week!
               </div>
 
