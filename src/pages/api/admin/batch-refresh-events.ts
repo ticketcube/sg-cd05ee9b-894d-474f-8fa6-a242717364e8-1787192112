@@ -24,32 +24,54 @@ interface EventResult {
  */
 async function fetchEventsFromTicketmaster(attractionId: string) {
   try {
-    console.log(`  📞 Fetching events from TM API for attractionId: ${attractionId}`);
+    console.log(`\n  🔍 fetchEventsFromTicketmaster() called`);
+    console.log(`  📌 attractionId: ${attractionId}`);
+    console.log(`  🔑 API Key exists: ${!!TM_API_KEY}`);
+    console.log(`  🔑 API Key length: ${TM_API_KEY?.length || 0}`);
+    
+    if (!TM_API_KEY) {
+      throw new Error("TM_API_KEY is not configured");
+    }
     
     const baseUrl = `https://app.ticketmaster.com/discovery/v2/events.json`;
     const params = new URLSearchParams({
-      apikey: TM_API_KEY!,
+      apikey: TM_API_KEY,
       attractionId: attractionId,
       size: '200',
       sort: 'date,asc'
     });
     
     const url = `${baseUrl}?${params.toString()}`;
+    console.log(`  🔗 Full URL (masked): ${url.replace(TM_API_KEY, '***API_KEY***')}`);
     
+    console.log(`  ⏰ Calling fetch()...`);
     const response = await fetch(url);
     
-    console.log(`  📊 TM API Response: ${response.status} ${response.statusText}`);
+    console.log(`  📊 Response received!`);
+    console.log(`  📊 Status: ${response.status} ${response.statusText}`);
+    console.log(`  📊 OK: ${response.ok}`);
+    console.log(`  📊 Headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`  ❌ TM API error:`, errorText.substring(0, 200));
+      console.error(`  ❌ TM API error response:`, errorText.substring(0, 500));
       throw new Error(`TM API returned ${response.status}: ${errorText.substring(0, 100)}`);
     }
 
+    console.log(`  📦 Parsing JSON response...`);
     const data = await response.json();
+    console.log(`  📦 JSON parsed successfully`);
+    console.log(`  📦 Has _embedded: ${!!data._embedded}`);
+    console.log(`  📦 Has _embedded.events: ${!!data._embedded?.events}`);
+    console.log(`  📦 Events array length: ${data._embedded?.events?.length || 0}`);
+    
     const events = data._embedded?.events || [];
     
     console.log(`  ✅ Found ${events.length} events from TM`);
+    
+    if (events.length > 0) {
+      console.log(`  📅 First event: ${events[0].name} on ${events[0].dates?.start?.localDate}`);
+    }
     
     // Format events to match our expected structure
     const formattedEvents = events.map((event: any) => {
@@ -68,9 +90,14 @@ async function fetchEventsFromTicketmaster(attractionId: string) {
       };
     });
 
+    console.log(`  ✅ Formatted ${formattedEvents.length} events\n`);
     return formattedEvents;
   } catch (error) {
-    console.error(`  ❌ Error fetching from TM:`, error instanceof Error ? error.message : String(error));
+    console.error(`\n  ❌ ERROR in fetchEventsFromTicketmaster:`);
+    console.error(`  ❌ Error type: ${error instanceof Error ? error.constructor.name : typeof error}`);
+    console.error(`  ❌ Error message: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`  ❌ Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
+    console.error(`  ❌ attractionId that failed: ${attractionId}\n`);
     throw error;
   }
 }
@@ -90,27 +117,30 @@ async function processArtistEvents(
   };
 
   try {
-    console.log(`\n[${artistName}] Starting event fetch...`);
-    console.log(`[${artistName}] attractionId: ${attractionId}`);
+    console.log(`\n🎵 [${artistName}] Starting event fetch...`);
+    console.log(`   UUID: ${artistUuid}`);
+    console.log(`   attractionId: ${attractionId}`);
     
     // Fetch directly from Ticketmaster API (no internal API calls)
+    console.log(`   📞 Calling fetchEventsFromTicketmaster()...`);
     const events = await fetchEventsFromTicketmaster(attractionId);
     
-    console.log(`[${artistName}] ✅ Found ${events.length} events from TM`);
+    console.log(`   ✅ fetchEventsFromTicketmaster() returned ${events.length} events`);
 
     if (events.length === 0) {
-      console.log(`[${artistName}] No events found, skipping...`);
+      console.log(`   ⚠️ No events found, skipping database operations...`);
       return result;
     }
 
     // Get existing events for this artist
+    console.log(`   📊 Fetching existing events from database...`);
     const { data: existingEvents, error: fetchError } = await supabaseAdmin
       .from("ticketmaster_events")
       .select("event_id, event_name, event_date, venue_name, status")
       .eq("artist_uuid", artistUuid);
 
     if (fetchError) {
-      console.error(`[${artistName}] ❌ Error fetching existing events:`, fetchError);
+      console.error(`   ❌ Error fetching existing events:`, fetchError);
       result.error = `DB fetch error: ${fetchError.message}`;
       return result;
     }
@@ -119,7 +149,7 @@ async function processArtistEvents(
       existingEvents?.map((e) => e.event_id) || []
     );
 
-    console.log(`[${artistName}] Existing events in DB: ${existingEventIds.size}`);
+    console.log(`   📊 Found ${existingEventIds.size} existing events in DB`);
 
     // Process each event
     for (const event of events) {
@@ -148,7 +178,7 @@ async function processArtistEvents(
           });
 
         if (upsertError) {
-          console.error(`[${artistName}] ❌ Error upserting event ${event.id}:`, upsertError);
+          console.error(`   ❌ Error upserting event ${event.id}:`, upsertError);
           result.error = `Upsert error: ${upsertError.message}`;
           continue;
         }
@@ -159,15 +189,18 @@ async function processArtistEvents(
           result.newEvents++;
         }
       } catch (eventError) {
-        console.error(`[${artistName}] ❌ Error processing individual event:`, eventError);
+        console.error(`   ❌ Error processing individual event:`, eventError);
         continue;
       }
     }
 
-    console.log(`[${artistName}] ✅ Completed: ${result.newEvents} new, ${result.updatedEvents} updated`);
+    console.log(`   ✅ Processing complete: ${result.newEvents} new, ${result.updatedEvents} updated`);
     return result;
   } catch (error) {
-    console.error(`[${artistName}] ❌ Error in processArtistEvents:`, error);
+    console.error(`\n   ❌ ERROR in processArtistEvents for ${artistName}:`);
+    console.error(`   ❌ Error type: ${error instanceof Error ? error.constructor.name : typeof error}`);
+    console.error(`   ❌ Error message: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`   ❌ Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
     result.error = error instanceof Error ? error.message : "Unknown error";
     return result;
   }
@@ -184,9 +217,16 @@ export default async function handler(
   console.log("\n🎫 ================================");
   console.log("🎫 BATCH REFRESH EVENTS STARTING");
   console.log("🎫 ================================");
+  console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
 
   try {
     // Validate environment variables
+    console.log("\n🔍 Validating environment...");
+    console.log(`   NEXT_PUBLIC_SUPABASE_URL exists: ${!!supabaseUrl}`);
+    console.log(`   SUPABASE_SERVICE_ROLE_KEY exists: ${!!supabaseServiceKey}`);
+    console.log(`   TM_API_KEY exists: ${!!TM_API_KEY}`);
+    console.log(`   TM_API_KEY length: ${TM_API_KEY?.length || 0}`);
+    
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error("❌ Missing Supabase credentials");
       return res.status(500).json({ 
@@ -202,15 +242,20 @@ export default async function handler(
     }
 
     const { offset = 0, limit = 20 } = req.body;
-    console.log(`📊 Request params: offset=${offset}, limit=${limit}`);
+    console.log(`\n📊 Request params received:`);
+    console.log(`   offset: ${offset}`);
+    console.log(`   limit: ${limit}`);
 
     // Enforce max batch size
     const batchSize = Math.min(Math.max(1, limit), 20);
     const batchOffset = Math.max(0, offset);
 
-    console.log(`📊 Processing batch: offset=${batchOffset}, size=${batchSize}`);
+    console.log(`\n📊 Final batch params:`);
+    console.log(`   offset: ${batchOffset}`);
+    console.log(`   size: ${batchSize}`);
 
     // Fetch artists with attractionIds
+    console.log(`\n📊 Fetching artists from database...`);
     const { data: artists, error: fetchError } = await supabaseAdmin
       .from("artists")
       .select("uuid, artist_name, attractionId")
@@ -223,9 +268,17 @@ export default async function handler(
       throw new Error(`Failed to fetch artists: ${fetchError.message}`);
     }
 
-    console.log(`✅ Found ${artists?.length || 0} artists to process\n`);
+    console.log(`✅ Found ${artists?.length || 0} artists with attractionIds`);
+    
+    if (artists && artists.length > 0) {
+      console.log(`\n📋 Artists to process:`);
+      artists.forEach((a, i) => {
+        console.log(`   ${i + 1}. ${a.artist_name} (${a.attractionId})`);
+      });
+    }
 
     if (!artists || artists.length === 0) {
+      console.log("\n⚠️ No artists to process, returning empty result");
       return res.status(200).json({
         message: "No more artists to process",
         results: [],
@@ -240,6 +293,7 @@ export default async function handler(
     }
 
     // Process each artist with rate limiting
+    console.log(`\n🔄 Starting to process ${artists.length} artists...\n`);
     const results: EventResult[] = [];
     let totalNewEvents = 0;
     let totalUpdatedEvents = 0;
@@ -248,8 +302,11 @@ export default async function handler(
 
     for (let i = 0; i < artists.length; i++) {
       const artist = artists[i];
-      console.log(`\n🎵 [${i + 1}/${artists.length}] ${artist.artist_name}`);
+      console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      console.log(`🎵 [${i + 1}/${artists.length}] Processing: ${artist.artist_name}`);
+      console.log(`   UUID: ${artist.uuid}`);
       console.log(`   attractionId: ${artist.attractionId}`);
+      console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
 
       try {
         const result = await processArtistEvents(
@@ -263,9 +320,15 @@ export default async function handler(
         totalNewEvents += result.newEvents;
         totalUpdatedEvents += result.updatedEvents;
         totalCancelledEvents += result.cancelledEvents;
-        if (result.error) errorCount++;
+        if (result.error) {
+          errorCount++;
+          console.log(`   ⚠️ Completed with error: ${result.error}`);
+        } else {
+          console.log(`   ✅ Completed successfully`);
+        }
       } catch (error) {
-        console.error(`   ❌ Failed to process ${artist.artist_name}:`, error);
+        console.error(`\n   ❌ CRITICAL ERROR processing ${artist.artist_name}:`);
+        console.error(`   ❌ Error:`, error);
         results.push({
           artistId: artist.uuid,
           artistName: artist.artist_name,
@@ -280,18 +343,20 @@ export default async function handler(
 
       // Rate limiting between artists
       if (i < artists.length - 1) {
-        console.log(`   ⏳ Waiting ${RATE_LIMIT_DELAY}ms...`);
+        console.log(`\n   ⏳ Rate limiting: waiting ${RATE_LIMIT_DELAY}ms before next artist...`);
         await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY));
       }
     }
 
     console.log("\n🎫 ================================");
-    console.log("🎫 BATCH COMPLETE");
+    console.log("🎫 BATCH REFRESH COMPLETE");
     console.log("🎫 ================================");
-    console.log(`✨ New: ${totalNewEvents}`);
-    console.log(`🔄 Updated: ${totalUpdatedEvents}`);
-    console.log(`⚠️  Cancelled: ${totalCancelledEvents}`);
+    console.log(`📊 Artists processed: ${artists.length}`);
+    console.log(`✨ New events: ${totalNewEvents}`);
+    console.log(`🔄 Updated events: ${totalUpdatedEvents}`);
+    console.log(`⚠️  Cancelled events: ${totalCancelledEvents}`);
     console.log(`❌ Errors: ${errorCount}`);
+    console.log(`⏰ Completed at: ${new Date().toISOString()}`);
     console.log("🎫 ================================\n");
 
     return res.status(200).json({
@@ -307,20 +372,21 @@ export default async function handler(
     });
   } catch (error) {
     console.error("\n❌ ================================");
-    console.error("❌ BATCH REFRESH ERROR");
+    console.error("❌ CRITICAL BATCH REFRESH ERROR");
     console.error("❌ ================================");
-    console.error("Error:", error);
-    console.error("Error type:", error instanceof Error ? error.constructor.name : typeof error);
-    console.error("Error message:", error instanceof Error ? error.message : String(error));
-    console.error("Error stack:", error instanceof Error ? error.stack : "No stack");
+    console.error("❌ Error type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("❌ Error message:", error instanceof Error ? error.message : String(error));
+    console.error("❌ Error stack:", error instanceof Error ? error.stack : "No stack trace");
+    console.error("❌ Time:", new Date().toISOString());
     console.error("❌ ================================\n");
     
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
     
     return res.status(500).json({
       error: errorMessage,
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
       details: error instanceof Error ? error.stack : String(error),
-      suggestion: "Check server logs for detailed error information"
+      suggestion: "Check server logs for detailed error information. Look for the full error trace above."
     });
   }
 }
