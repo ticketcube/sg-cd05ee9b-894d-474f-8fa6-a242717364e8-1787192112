@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Check, ChevronsUpDown, MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { supabase } from "@/integrations/supabase/client";
 
 interface City {
   id: number;
@@ -39,16 +39,55 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   const [geoLoading, setGeoLoading] = useState(false);
 
   const fetchCities = async (search?: string) => {
-    console.log("Fetching cities for query:", search);
+    console.log("Fetching cities directly from Supabase, search:", search);
     setLoading(true);
     try {
-      const url = search ? `/api/cities?search=${encodeURIComponent(search)}` : '/api/cities';
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('Failed to fetch cities');
+      // Query ticketmaster_events directly for unique cities
+      let query = supabase
+        .from("ticketmaster_events")
+        .select("venue_city, venue_state, venue_country")
+        .eq("is_active", true)
+        .not("venue_city", "is", null);
+
+      // Add search filter if provided
+      if (search && search.length >= 2) {
+        query = query.ilike("venue_city", `%${search}%`);
       }
-      const data = await response.json();
-      setCities(Array.isArray(data) ? data : []);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching cities:", error);
+        setCities([]);
+        return;
+      }
+
+      // Deduplicate cities by name
+      const cityMap = new Map<string, City>();
+      
+      data?.forEach((event, index) => {
+        const cityName = event.venue_city;
+        if (cityName) {
+          const normalizedName = cityName.trim();
+          if (!cityMap.has(normalizedName)) {
+            cityMap.set(normalizedName, {
+              id: index,
+              name: cityName,
+              normalized_name: normalizedName,
+              state_code: event.venue_state || undefined,
+              country_code: event.venue_country || undefined
+            });
+          }
+        }
+      });
+
+      // Convert to array and sort
+      const uniqueCities = Array.from(cityMap.values()).sort((a, b) => 
+        a.normalized_name.localeCompare(b.normalized_name)
+      );
+
+      console.log("Found", uniqueCities.length, "unique cities");
+      setCities(uniqueCities);
     } catch (error) {
       console.error('Error fetching cities:', error);
       setCities([]);
@@ -71,7 +110,6 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
         try {
           const { latitude, longitude } = position.coords;
           
-          // Use a free geocoding service to get city name
           const response = await fetch(
             `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
           );
@@ -84,23 +122,15 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
           const cityName = locationData.city || locationData.locality || locationData.principalSubdivision;
           
           if (cityName) {
-            // Try to find the city in our database first
-            const searchResponse = await fetch(`/api/cities?search=${encodeURIComponent(cityName)}`);
-            if (searchResponse.ok) {
-              const searchData = await searchResponse.json();
-              const matchingCity = searchData.find((city: City) => 
-                city.normalized_name.toLowerCase() === cityName.toLowerCase()
-              );
-              
-              if (matchingCity) {
-                onValueChange(matchingCity);
-              } else {
-                // Use as custom city if not found in database
-                const normalizedCustom = cityName.replace(/\b\w/g, (l: string) => l.toUpperCase());
-                onValueChange(null, normalizedCustom);
-              }
+            // Search our cities for a match
+            const matchingCity = cities.find((city: City) => 
+              city.normalized_name.toLowerCase() === cityName.toLowerCase()
+            );
+            
+            if (matchingCity) {
+              onValueChange(matchingCity);
             } else {
-              // Fallback to custom city
+              // Use as custom city if not found
               const normalizedCustom = cityName.replace(/\b\w/g, (l: string) => l.toUpperCase());
               onValueChange(null, normalizedCustom);
             }
