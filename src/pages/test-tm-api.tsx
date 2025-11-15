@@ -15,6 +15,7 @@ export default function TestTMApi() {
   const [attractionIdTest, setAttractionIdTest] = useState("K8vZ917_N8f"); // Banners - has upcoming shows
   const [currentOffset, setCurrentOffset] = useState(0);
   const [eventRefreshOffset, setEventRefreshOffset] = useState(0);
+  const [eventRefreshBatchNumber, setEventRefreshBatchNumber] = useState(1); // NEW: Batch number selector
   const BATCH_SIZE = 20; // LOCKED - DO NOT CHANGE (prevents timeouts)
 
   const testSingleArtist = async () => {
@@ -119,8 +120,9 @@ export default function TestTMApi() {
     }
   };
 
-  const updateAttractionIdsBatch = async (testMode: boolean) => {
-    if (!testMode && !confirm(`Update attractionIds for ${BATCH_SIZE} artists (${currentOffset + 1}-${currentOffset + BATCH_SIZE})?\n\nThis will take ~5 seconds.`)) {
+  const updateAttractionIdsBatch = async (testMode: boolean, onlyMissing = false) => {
+    const modeText = onlyMissing ? "missing attractionIds" : `${BATCH_SIZE} artists (${currentOffset + 1}-${currentOffset + BATCH_SIZE})`;
+    if (!testMode && !confirm(`Update ${modeText}?\n\nThis will take ~5 seconds.`)) {
       return;
     }
 
@@ -133,8 +135,9 @@ export default function TestTMApi() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           limit: BATCH_SIZE, 
-          offset: currentOffset,
-          testMode 
+          offset: onlyMissing ? 0 : currentOffset,
+          testMode,
+          onlyMissing
         })
       });
 
@@ -145,8 +148,8 @@ export default function TestTMApi() {
       const data = await response.json();
       setResults(data);
       
-      // Auto-advance offset if there's more to process
-      if (data.summary?.hasMore && !testMode) {
+      // Auto-advance offset if there's more to process (only in normal mode, not onlyMissing)
+      if (data.summary?.hasMore && !testMode && !onlyMissing) {
         setCurrentOffset(data.summary.nextOffset);
       }
     } catch (error) {
@@ -164,6 +167,13 @@ export default function TestTMApi() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // NEW: Update offset when batch number changes
+  const handleBatchNumberChange = (batchNum: number) => {
+    const newBatchNumber = Math.max(1, batchNum);
+    setEventRefreshBatchNumber(newBatchNumber);
+    setEventRefreshOffset((newBatchNumber - 1) * BATCH_SIZE);
   };
 
   const resetBatch = () => {
@@ -418,6 +428,35 @@ export default function TestTMApi() {
               )}
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* NEW: Update Only Missing Button */}
+              <div className="p-3 bg-yellow-50 border-2 border-yellow-200 rounded space-y-2">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="font-medium text-yellow-900">🔄 Update Only Missing attractionIds</p>
+                    <p className="text-sm text-yellow-700 mt-1">
+                      Only process artists that don't have an attractionId yet (~1% of artists)
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => updateAttractionIdsBatch(false, true)} 
+                  disabled={loading}
+                  variant="default"
+                  className="w-full bg-yellow-600 hover:bg-yellow-700"
+                >
+                  {loading ? "Updating..." : "🎯 Update Missing Only"}
+                </Button>
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-gray-500">Or process by batch</span>
+                </div>
+              </div>
+
               <div className="p-3 bg-gray-50 rounded space-y-2">
                 <div className="flex items-center justify-between">
                   <div>
@@ -444,14 +483,14 @@ export default function TestTMApi() {
 
               <div className="grid grid-cols-2 gap-2">
                 <Button 
-                  onClick={() => updateAttractionIdsBatch(true)} 
+                  onClick={() => updateAttractionIdsBatch(true, false)} 
                   disabled={loading}
                   variant="secondary"
                 >
                   {loading ? "Testing..." : "🔍 Test Preview"}
                 </Button>
                 <Button 
-                  onClick={() => updateAttractionIdsBatch(false)} 
+                  onClick={() => updateAttractionIdsBatch(false, false)} 
                   disabled={loading}
                   variant="default"
                 >
@@ -459,10 +498,10 @@ export default function TestTMApi() {
                 </Button>
               </div>
 
-              {results?.summary?.hasMore && !results?.error && (
+              {results?.summary && !results?.error && (
                 <div className="space-y-2">
                   <Button 
-                    onClick={() => updateAttractionIdsBatch(false)} 
+                    onClick={updateAttractionIdsBatch} 
                     disabled={loading}
                     variant="default"
                     className="w-full"
@@ -518,21 +557,48 @@ export default function TestTMApi() {
               <CardTitle>Batch Event Refresh</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-3 bg-gray-50 rounded space-y-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Current Batch Position</p>
-                    <p className="text-sm text-gray-600">
-                      Artists {eventRefreshOffset + 1} - {eventRefreshOffset + BATCH_SIZE}
-                    </p>
-                  </div>
+              {/* NEW: Batch Number Selector */}
+              <div className="p-3 bg-blue-50 border-2 border-blue-200 rounded space-y-3">
+                <div>
+                  <p className="font-medium text-blue-900">📍 Select Starting Batch</p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Choose which batch to start from. Each batch = {BATCH_SIZE} artists.
+                  </p>
+                </div>
+                <div className="flex gap-2 items-center">
+                  <label className="text-sm font-medium whitespace-nowrap">Start from Batch:</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={eventRefreshBatchNumber}
+                    onChange={(e) => handleBatchNumberChange(parseInt(e.target.value) || 1)}
+                    className="w-24"
+                  />
+                  <span className="text-sm text-gray-600">
+                    (Artists {eventRefreshOffset + 1}-{eventRefreshOffset + BATCH_SIZE})
+                  </span>
                   <Button 
                     onClick={resetEventBatch} 
                     variant="ghost" 
                     size="sm"
                   >
-                    Reset to Start
+                    Reset to Batch 1
                   </Button>
+                </div>
+                <div className="text-xs text-gray-500 pt-2 border-t space-y-1">
+                  <p><strong>💡 Tip:</strong> Check the <code>batch_progress</code> table to see where you left off</p>
+                  <p><strong>Example:</strong> If you stopped at offset 240, start from batch 13</p>
+                </div>
+              </div>
+
+              <div className="p-3 bg-gray-50 rounded space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Current Batch Position</p>
+                    <p className="text-sm text-gray-600">
+                      Batch {eventRefreshBatchNumber} • Artists {eventRefreshOffset + 1} - {eventRefreshOffset + BATCH_SIZE}
+                    </p>
+                  </div>
                 </div>
                 
                 <div className="text-xs text-gray-500 space-y-1 pt-2 border-t">

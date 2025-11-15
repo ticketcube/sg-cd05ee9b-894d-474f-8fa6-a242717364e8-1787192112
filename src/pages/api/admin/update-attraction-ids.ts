@@ -29,6 +29,7 @@ export default async function handler(
   let limit = req.body.limit || 20;
   const offset = req.body.offset || 0;
   const testMode = req.body.testMode || false;
+  const onlyMissing = req.body.onlyMissing || false; // NEW: Only process artists with NULL attractionId
   
   // Hard limit to prevent timeouts (20 artists × 250ms = ~5 seconds)
   if (limit > 20) {
@@ -37,25 +38,39 @@ export default async function handler(
   }
 
   try {
-    console.log(`[BATCH] offset: ${offset}, limit: ${limit}, testMode: ${testMode}`);
+    console.log(`[BATCH] offset: ${offset}, limit: ${limit}, testMode: ${testMode}, onlyMissing: ${onlyMissing}`);
 
-    // Get total count first
-    const { count: totalCount } = await supabaseAdmin
+    // Build query based on onlyMissing flag
+    let query = supabaseAdmin
       .from("artists")
       .select("*", { count: "exact", head: true });
+    
+    if (onlyMissing) {
+      query = query.is("attractionId", null);
+    }
 
-    // Get batch of artists with offset
-    const { data: artists, error: artistError } = await supabaseAdmin
+    // Get total count first
+    const { count: totalCount } = await query;
+
+    // Get batch of artists
+    let artistQuery = supabaseAdmin
       .from("artists")
       .select("uuid, artist_name, attractionId")
-      .range(offset, offset + limit - 1)
       .order("artist_name", { ascending: true });
+    
+    if (onlyMissing) {
+      artistQuery = artistQuery.is("attractionId", null);
+    }
+    
+    artistQuery = artistQuery.range(offset, offset + limit - 1);
+
+    const { data: artists, error: artistError } = await artistQuery;
 
     if (artistError) throw artistError;
     if (!artists || artists.length === 0) {
       return res.status(200).json({
         success: true,
-        message: "No artists found in this batch",
+        message: onlyMissing ? "No artists with missing attractionIds found" : "No artists found in this batch",
         summary: { 
           total: totalCount || 0,
           batchSize: 0,
@@ -63,12 +78,13 @@ export default async function handler(
           updated: 0, 
           failed: 0, 
           skipped: 0,
-          hasMore: false
+          hasMore: false,
+          onlyMissing
         }
       });
     }
 
-    console.log(`Processing ${artists.length} artists (batch ${Math.floor(offset / limit) + 1})...`);
+    console.log(`Processing ${artists.length} artists (batch ${Math.floor(offset / limit) + 1})${onlyMissing ? " [MISSING ONLY]" : ""}...`);
 
     const apiKey = process.env.TM_API_KEY;
     if (!apiKey) {
@@ -180,7 +196,11 @@ export default async function handler(
 
     return res.status(200).json({
       success: true,
-      message: testMode ? "Test mode completed (no changes made)" : "Batch completed",
+      message: testMode 
+        ? "Test mode completed (no changes made)" 
+        : onlyMissing 
+          ? "Missing attractionIds batch completed" 
+          : "Batch completed",
       summary: {
         total: totalCount || 0,
         batchSize: artists.length,
@@ -191,7 +211,8 @@ export default async function handler(
         failed,
         skipped,
         hasMore,
-        nextOffset: hasMore ? nextOffset : null
+        nextOffset: hasMore ? nextOffset : null,
+        onlyMissing
       },
       results
     });
