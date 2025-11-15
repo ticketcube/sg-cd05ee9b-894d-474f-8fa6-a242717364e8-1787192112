@@ -6,6 +6,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 const RATE_LIMIT_DELAY = 250; // 4 requests per second
+const FETCH_TIMEOUT = 10000; // 10 second timeout
 
 interface EventResult {
   artistId: string;
@@ -19,48 +20,67 @@ interface EventResult {
 
 /**
  * Fetch events using the SAME endpoint that works in the test tab
- * Now with better error handling and URL construction
+ * WITH robust error handling and timeout protection
  */
 async function fetchEventsForAttraction(attractionId: string, baseUrl: string) {
   try {
     // CRITICAL: Use the SAME endpoint that works in the test tab
-    const url = `${baseUrl}/api/ticketmaster/events-by-attraction?attractionId=${attractionId}`;
+    const url = `${baseUrl}/api/ticketmaster/events-by-attraction?attractionId=${encodeURIComponent(attractionId)}`;
     
-    console.log(`  📞 Calling URL: ${url}`);
-    console.log(`  📞 attractionId: ${attractionId}`);
-    console.log(`  📞 baseUrl: ${baseUrl}`);
+    console.log(`  📞 Calling internal API:`);
+    console.log(`     URL: ${url}`);
+    console.log(`     attractionId: ${attractionId}`);
+    console.log(`     baseUrl: ${baseUrl}`);
+    
+    // Create fetch with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
     
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
-    });
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
     
-    console.log(`  📊 Response status: ${response.status} ${response.statusText}`);
-    console.log(`  📊 Response ok: ${response.ok}`);
+    console.log(`  📊 Response: ${response.status} ${response.statusText}`);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`  ❌ Response error body:`, errorText.substring(0, 500));
-      throw new Error(`API error: ${response.status} ${response.statusText} - ${errorText.substring(0, 200)}`);
+      console.error(`  ❌ Response error:`, errorText.substring(0, 500));
+      throw new Error(`API returned ${response.status}: ${errorText.substring(0, 200)}`);
     }
 
     const data = await response.json();
     
-    console.log(`  📦 Response parsed: success=${data.success}, events=${data.events?.length || 0}`);
+    console.log(`  📦 Parsed response:`, {
+      success: data.success,
+      eventsCount: data.events?.length || 0,
+      hasEvents: !!data.events,
+      totalEvents: data.totalEvents
+    });
     
     if (!data.success) {
-      console.error(`  ❌ API returned success=false:`, data.message || 'No message provided');
+      console.error(`  ❌ API success=false:`, data.message);
       throw new Error(data.message || "API returned success=false");
     }
 
     // Return the formatted events from our working endpoint
     return data.events || [];
   } catch (error) {
-    console.error(`  ❌ Error in fetchEventsForAttraction:`, error);
-    console.error(`  ❌ Error type:`, error instanceof Error ? error.constructor.name : typeof error);
-    console.error(`  ❌ Error message:`, error instanceof Error ? error.message : String(error));
+    // Enhanced error logging
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        console.error(`  ❌ Request timeout after ${FETCH_TIMEOUT}ms`);
+        throw new Error(`Request timeout: attractionId ${attractionId}`);
+      }
+      console.error(`  ❌ Fetch error:`, error.message);
+      console.error(`  ❌ Error stack:`, error.stack?.substring(0, 300));
+    } else {
+      console.error(`  ❌ Unknown error:`, String(error));
+    }
     throw error;
   }
 }
@@ -83,7 +103,6 @@ async function processArtistEvents(
   try {
     console.log(`\n[${artistName}] Starting event fetch...`);
     console.log(`[${artistName}] attractionId: ${attractionId}`);
-    console.log(`[${artistName}] baseUrl: ${baseUrl}`);
     
     // Use the SAME working endpoint
     const events = await fetchEventsForAttraction(attractionId, baseUrl);
@@ -195,27 +214,31 @@ export default async function handler(
 
     console.log(`📊 Processing batch: offset=${batchOffset}, size=${batchSize}`);
 
-    // Get base URL for internal API calls with better detection
-    const protocol = req.headers["x-forwarded-proto"] || "http";
-    const host = req.headers.host;
+    // Get base URL for internal API calls with comprehensive detection
+    const protocol = req.headers["x-forwarded-proto"] || 
+                    (req.headers["x-forwarded-host"] ? "https" : "http");
+    const host = req.headers["x-forwarded-host"] || req.headers.host;
     
     if (!host) {
       console.error("❌ Missing host header - cannot construct baseUrl");
+      console.error("Available headers:", JSON.stringify(req.headers, null, 2));
       return res.status(500).json({ 
         error: "Server configuration error: Missing host header",
-        suggestion: "This is likely a deployment environment issue"
+        suggestion: "This is likely a deployment environment issue",
+        availableHeaders: Object.keys(req.headers)
       });
     }
     
     const baseUrl = `${protocol}://${host}`;
-    console.log(`🔗 Base URL: ${baseUrl}`);
-    console.log(`🔗 Protocol: ${protocol}`);
-    console.log(`🔗 Host: ${host}`);
-    console.log(`🔗 Headers:`, JSON.stringify({
-      host: req.headers.host,
-      'x-forwarded-proto': req.headers['x-forwarded-proto'],
-      'x-forwarded-host': req.headers['x-forwarded-host']
-    }, null, 2));
+    console.log(`🔗 Constructed Base URL: ${baseUrl}`);
+    console.log(`🔗 Environment details:`, {
+      protocol,
+      host,
+      originalHost: req.headers.host,
+      forwardedProto: req.headers["x-forwarded-proto"],
+      forwardedHost: req.headers["x-forwarded-host"],
+      nodeEnv: process.env.NODE_ENV
+    });
 
     // Fetch artists with attractionIds
     const { data: artists, error: fetchError } = await supabaseAdmin
@@ -258,19 +281,33 @@ export default async function handler(
       console.log(`\n🎵 [${i + 1}/${artists.length}] ${artist.artist_name}`);
       console.log(`   attractionId: ${artist.attractionId}`);
 
-      const result = await processArtistEvents(
-        artist.uuid,
-        artist.artist_name,
-        artist.attractionId,
-        baseUrl
-      );
+      try {
+        const result = await processArtistEvents(
+          artist.uuid,
+          artist.artist_name,
+          artist.attractionId,
+          baseUrl
+        );
 
-      results.push(result);
+        results.push(result);
 
-      totalNewEvents += result.newEvents;
-      totalUpdatedEvents += result.updatedEvents;
-      totalCancelledEvents += result.cancelledEvents;
-      if (result.error) errorCount++;
+        totalNewEvents += result.newEvents;
+        totalUpdatedEvents += result.updatedEvents;
+        totalCancelledEvents += result.cancelledEvents;
+        if (result.error) errorCount++;
+      } catch (error) {
+        console.error(`   ❌ Failed to process ${artist.artist_name}:`, error);
+        results.push({
+          artistId: artist.uuid,
+          artistName: artist.artist_name,
+          attractionId: artist.attractionId,
+          newEvents: 0,
+          updatedEvents: 0,
+          cancelledEvents: 0,
+          error: error instanceof Error ? error.message : "Unknown error"
+        });
+        errorCount++;
+      }
 
       // Rate limiting
       if (i < artists.length - 1) {
@@ -313,7 +350,8 @@ export default async function handler(
     
     return res.status(500).json({
       error: errorMessage,
-      details: error instanceof Error ? error.stack : String(error)
+      details: error instanceof Error ? error.stack : String(error),
+      suggestion: "Check server logs for detailed error information"
     });
   }
 }
