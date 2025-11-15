@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { newsletterService } from "@/services/newsletterService";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import CityCombobox from "@/components/CityCombobox";
 
 interface NewsletterSignupOverlayProps {
   onSubscribed: () => void;
@@ -14,43 +14,18 @@ interface NewsletterSignupOverlayProps {
 
 export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSignupOverlayProps) {
   const [email, setEmail] = useState("");
-  const [homeCity, setHomeCity] = useState("");
+  const [homeCity, setHomeCity] = useState<{ id: number; name: string; normalized_name: string } | null>(null);
+  const [customCity, setCustomCity] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [availableCities, setAvailableCities] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadAvailableCities();
-  }, []);
-
-  const loadAvailableCities = async () => {
-    try {
-      console.log("Loading cities from ticketmaster_events...");
-      
-      const { data, error } = await supabase
-        .from("ticketmaster_events")
-        .select("venue_city")
-        .eq("is_active", true);
-
-      console.log("Cities query result:", { data, error });
-
-      if (error) {
-        console.error("Error loading cities:", error);
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        console.warn("No active events found with cities");
-        return;
-      }
-
-      const uniqueCities = Array.from(
-        new Set(data?.map(event => event.venue_city).filter(Boolean))
-      ).sort();
-
-      console.log("Unique cities found:", uniqueCities);
-      setAvailableCities(uniqueCities as string[]);
-    } catch (error) {
-      console.error("Error loading cities:", error);
+  const handleCityChange = (city: any, customInput?: string) => {
+    console.log("City selected:", city, "Custom input:", customInput);
+    if (city) {
+      setHomeCity(city);
+      setCustomCity("");
+    } else if (customInput) {
+      setHomeCity(null);
+      setCustomCity(customInput);
     }
   };
 
@@ -62,9 +37,11 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
       return;
     }
 
-    // Remove strict city validation - allow any city input
-    // Users can enter their city even if it's not in our current event list
-    const normalizedCity = homeCity.trim();
+    // Get final city value (from CityCombobox or custom input)
+    const finalCity = homeCity?.normalized_name || customCity;
+    const normalizedCity = finalCity?.trim();
+
+    console.log("Submitting with city:", normalizedCity);
 
     setLoading(true);
 
@@ -158,20 +135,14 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
             </div>
 
             <div>
-              <Input
-                type="text"
-                placeholder="Home City (optional)"
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Home City (optional)
+              </label>
+              <CityCombobox
                 value={homeCity}
-                onChange={(e) => setHomeCity(e.target.value)}
-                className="w-full"
-                list="cities-list"
-                disabled={loading}
+                onValueChange={handleCityChange}
+                placeholder="Select or type your city..."
               />
-              <datalist id="cities-list">
-                {availableCities.map((city) => (
-                  <option key={city} value={city} />
-                ))}
-              </datalist>
               <p className="text-xs text-gray-500 mt-1">
                 We'll prioritize shows in your city
               </p>
