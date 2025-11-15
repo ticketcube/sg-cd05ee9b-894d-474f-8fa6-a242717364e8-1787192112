@@ -5,7 +5,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-const TICKETMASTER_API_KEY = process.env.TICKETMASTER_API_KEY!;
 const RATE_LIMIT_DELAY = 250; // 4 requests per second to be safe
 
 interface EventResult {
@@ -18,27 +17,39 @@ interface EventResult {
   error?: string;
 }
 
-async function fetchEventsForAttraction(attractionId: string) {
-  const startDateTime = new Date().toISOString();
-  const endDate = new Date();
-  endDate.setMonth(endDate.getMonth() + 6);
-  const endDateTime = endDate.toISOString();
-
-  const url = `https://app.ticketmaster.com/discovery/v2/events.json?attractionId=${attractionId}&startDateTime=${startDateTime}&endDateTime=${endDateTime}&size=200&apikey=${TICKETMASTER_API_KEY}`;
-
+/**
+ * Fetch events using the SAME endpoint that works in the test tab
+ * This ensures consistency and uses the proven working logic
+ */
+async function fetchEventsForAttraction(attractionId: string, baseUrl: string) {
+  // CRITICAL: Use the SAME endpoint that works in the test tab
+  const url = `${baseUrl}/api/ticketmaster/events-by-attraction?attractionId=${attractionId}`;
+  
+  console.log(`  📞 Calling: ${url}`);
+  
   const response = await fetch(url);
+  
   if (!response.ok) {
-    throw new Error(`Ticketmaster API error: ${response.status}`);
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
   }
 
   const data = await response.json();
-  return data._embedded?.events || [];
+  
+  console.log(`  📦 Response: success=${data.success}, events=${data.events?.length || 0}`);
+  
+  if (!data.success) {
+    throw new Error(data.message || "API returned success=false");
+  }
+
+  // Return the formatted events from our working endpoint
+  return data.events || [];
 }
 
 async function processArtistEvents(
   artistUuid: string,
   artistName: string,
-  attractionId: string
+  attractionId: string,
+  baseUrl: string
 ): Promise<EventResult> {
   const result: EventResult = {
     artistId: artistUuid,
@@ -50,22 +61,26 @@ async function processArtistEvents(
   };
 
   try {
-    // Fetch events from Ticketmaster
-    const events = await fetchEventsForAttraction(attractionId);
-    console.log(`[${artistName}] Found ${events.length} events from Ticketmaster`);
+    console.log(`\n[${artistName}] Starting event fetch...`);
+    
+    // Use the SAME working endpoint
+    const events = await fetchEventsForAttraction(attractionId, baseUrl);
+    
+    console.log(`[${artistName}] ✅ Found ${events.length} events from API`);
 
     if (events.length === 0) {
+      console.log(`[${artistName}] No events found, skipping...`);
       return result;
     }
 
-    // Get existing events for this artist (FIXED: use artist_uuid)
+    // Get existing events for this artist
     const { data: existingEvents, error: fetchError } = await supabaseAdmin
       .from("ticketmaster_events")
       .select("event_id, event_name, event_date, venue_name, status")
       .eq("artist_uuid", artistUuid);
 
     if (fetchError) {
-      console.error(`[${artistName}] Error fetching existing events:`, fetchError);
+      console.error(`[${artistName}] ❌ Error fetching existing events:`, fetchError);
       result.error = `DB fetch error: ${fetchError.message}`;
       return result;
     }
@@ -81,17 +96,15 @@ async function processArtistEvents(
       try {
         const eventId = event.id;
         const eventName = event.name;
-        const eventDate = event.dates?.start?.localDate;
-        const eventTime = event.dates?.start?.localTime;
-        const eventStatus = event.dates?.status?.code || "onsale";
-        const venue = event._embedded?.venues?.[0];
-        const venueName = venue?.name || "";
-        const venueCity = venue?.city?.name || "";
-        const venueState = venue?.state?.stateCode || "";
-        const venueCountry = venue?.country?.countryCode || "";
+        const eventDate = event.date;
+        const eventTime = event.time;
+        const venueName = event.venue_name || "";
+        const venueCity = event.venue_city || "";
+        const venueState = event.venue_state || "";
+        const venueCountry = event.venue_country || "";
         const ticketUrl = event.url || "";
 
-        // FIXED: Use correct column names from schema
+        // Build event data for upsert
         const eventData = {
           event_id: eventId,
           artist_uuid: artistUuid,
@@ -99,7 +112,7 @@ async function processArtistEvents(
           event_name: eventName,
           event_date: eventDate,
           event_time: eventTime,
-          status: eventStatus,
+          status: "onsale",
           venue_name: venueName,
           venue_city: venueCity,
           venue_state: venueState,
@@ -107,28 +120,6 @@ async function processArtistEvents(
           event_url: ticketUrl,
           updated_at: new Date().toISOString(),
         };
-
-        // Check if event is cancelled
-        if (
-          eventStatus === "cancelled" ||
-          eventStatus === "canceled" ||
-          eventStatus === "postponed"
-        ) {
-          result.cancelledEvents++;
-
-          // Update existing event status if it exists
-          if (existingEventIds.has(eventId)) {
-            const { error: updateError } = await supabaseAdmin
-              .from("ticketmaster_events")
-              .update({ status: eventStatus, updated_at: new Date().toISOString() })
-              .eq("event_id", eventId);
-            
-            if (updateError) {
-              console.error(`[${artistName}] Error updating cancelled event ${eventId}:`, updateError);
-            }
-          }
-          continue;
-        }
 
         // Upsert event (insert new or update existing)
         const { error: upsertError } = await supabaseAdmin
@@ -139,7 +130,7 @@ async function processArtistEvents(
           });
 
         if (upsertError) {
-          console.error(`[${artistName}] Error upserting event ${eventId}:`, upsertError);
+          console.error(`[${artistName}] ❌ Error upserting event ${eventId}:`, upsertError);
           result.error = `Upsert error: ${upsertError.message}`;
           continue;
         }
@@ -151,15 +142,15 @@ async function processArtistEvents(
           result.newEvents++;
         }
       } catch (eventError) {
-        console.error(`[${artistName}] Error processing individual event:`, eventError);
+        console.error(`[${artistName}] ❌ Error processing individual event:`, eventError);
         continue;
       }
     }
 
-    console.log(`[${artistName}] Completed: ${result.newEvents} new, ${result.updatedEvents} updated, ${result.cancelledEvents} cancelled`);
+    console.log(`[${artistName}] ✅ Completed: ${result.newEvents} new, ${result.updatedEvents} updated`);
     return result;
   } catch (error) {
-    console.error(`[${artistName}] Error in processArtistEvents:`, error);
+    console.error(`[${artistName}] ❌ Error in processArtistEvents:`, error);
     result.error = error instanceof Error ? error.message : "Unknown error";
     return result;
   }
@@ -173,34 +164,35 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  console.log("=== Batch Refresh Events Starting ===");
+  console.log("\n🎫 ================================");
+  console.log("🎫 BATCH REFRESH EVENTS STARTING");
+  console.log("🎫 ================================");
 
   try {
     // Validate environment variables
-    if (!TICKETMASTER_API_KEY) {
-      console.error("Missing TICKETMASTER_API_KEY");
-      return res.status(500).json({ 
-        error: "Server configuration error: Missing TICKETMASTER_API_KEY" 
-      });
-    }
-
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error("Missing Supabase credentials");
+      console.error("❌ Missing Supabase credentials");
       return res.status(500).json({ 
         error: "Server configuration error: Missing Supabase credentials" 
       });
     }
 
     const { offset = 0, limit = 20 } = req.body;
-    console.log(`Request params: offset=${offset}, limit=${limit}`);
+    console.log(`📊 Request params: offset=${offset}, limit=${limit}`);
 
     // Enforce max batch size
     const batchSize = Math.min(Math.max(1, limit), 20);
     const batchOffset = Math.max(0, offset);
 
-    console.log(`Fetching artists with offset ${batchOffset}, limit ${batchSize}`);
+    console.log(`📊 Processing batch: offset=${batchOffset}, size=${batchSize}`);
 
-    // FIXED: Use correct column name 'attractionId' from schema (not 'ticketmaster_attraction_id')
+    // Get base URL for internal API calls
+    const protocol = req.headers["x-forwarded-proto"] || "http";
+    const host = req.headers.host || "localhost:3000";
+    const baseUrl = `${protocol}://${host}`;
+    console.log(`🔗 Base URL: ${baseUrl}`);
+
+    // Fetch artists with attractionIds
     const { data: artists, error: fetchError } = await supabaseAdmin
       .from("artists")
       .select("uuid, artist_name, attractionId")
@@ -209,11 +201,11 @@ export default async function handler(
       .range(batchOffset, batchOffset + batchSize - 1);
 
     if (fetchError) {
-      console.error("Error fetching artists:", fetchError);
+      console.error("❌ Error fetching artists:", fetchError);
       throw new Error(`Failed to fetch artists: ${fetchError.message}`);
     }
 
-    console.log(`Found ${artists?.length || 0} artists to process`);
+    console.log(`✅ Found ${artists?.length || 0} artists to process\n`);
 
     if (!artists || artists.length === 0) {
       return res.status(200).json({
@@ -238,12 +230,14 @@ export default async function handler(
 
     for (let i = 0; i < artists.length; i++) {
       const artist = artists[i];
-      console.log(`\nProcessing ${i + 1}/${artists.length}: ${artist.artist_name}`);
+      console.log(`\n🎵 [${i + 1}/${artists.length}] ${artist.artist_name}`);
+      console.log(`   attractionId: ${artist.attractionId}`);
 
       const result = await processArtistEvents(
         artist.uuid,
         artist.artist_name,
-        artist.attractionId
+        artist.attractionId,
+        baseUrl
       );
 
       results.push(result);
@@ -255,12 +249,19 @@ export default async function handler(
 
       // Rate limiting: wait between requests (except for last one)
       if (i < artists.length - 1) {
+        console.log(`   ⏳ Waiting ${RATE_LIMIT_DELAY}ms before next request...`);
         await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY));
       }
     }
 
-    console.log("\n=== Batch Complete ===");
-    console.log(`Total: ${totalNewEvents} new, ${totalUpdatedEvents} updated, ${totalCancelledEvents} cancelled, ${errorCount} errors`);
+    console.log("\n🎫 ================================");
+    console.log("🎫 BATCH COMPLETE");
+    console.log("🎫 ================================");
+    console.log(`✨ New: ${totalNewEvents}`);
+    console.log(`🔄 Updated: ${totalUpdatedEvents}`);
+    console.log(`⚠️  Cancelled: ${totalCancelledEvents}`);
+    console.log(`❌ Errors: ${errorCount}`);
+    console.log("🎫 ================================\n");
 
     return res.status(200).json({
       message: `Processed ${artists.length} artists`,
@@ -274,9 +275,13 @@ export default async function handler(
       },
     });
   } catch (error) {
-    console.error("=== Batch refresh events error ===", error);
+    console.error("\n❌ ================================");
+    console.error("❌ BATCH REFRESH ERROR");
+    console.error("❌ ================================");
+    console.error(error);
+    console.error("❌ ================================\n");
+    
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
-    console.error("Error details:", errorMessage);
     
     return res.status(500).json({
       error: errorMessage,
