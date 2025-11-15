@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Calendar, ExternalLink, ChevronDown, ChevronUp, Ticket } from "lucide-react";
+import CityCombobox from "@/components/CityCombobox";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NewsletterEvent {
@@ -26,7 +27,8 @@ export default function NewsletterPage() {
   const [thisWeekendEvents, setThisWeekendEvents] = useState<NewsletterEvent[]>([]);
   const [nextWeekEvents, setnextWeekEvents] = useState<NewsletterEvent[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<string>("all");
+  const [selectedCity, setSelectedCity] = useState<{ id: number; name: string; normalized_name: string } | null>(null);
+  const [selectedCityName, setSelectedCityName] = useState<string>("all");
   const [artistSearch, setArtistSearch] = useState("");
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
