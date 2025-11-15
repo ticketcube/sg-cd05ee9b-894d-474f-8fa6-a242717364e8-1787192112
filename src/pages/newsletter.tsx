@@ -98,6 +98,7 @@ export default function NewsletterPage() {
       const sundayStr = sunday.toISOString().split('T')[0];
       const endOfMonthStr = endOfMonth.toISOString().split('T')[0];
 
+      // Query for weekend events with simpler join syntax
       const { data: weekendData, error: weekendError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -111,7 +112,7 @@ export default function NewsletterPage() {
           venue_country,
           event_url,
           artist_uuid,
-          artists!ticketmaster_events_artist_uuid_fkey (
+          artists (
             artist_name,
             artist_image
           )
@@ -121,8 +122,12 @@ export default function NewsletterPage() {
         .lte("event_date", sundayStr)
         .order("event_date", { ascending: true });
 
-      if (weekendError) throw weekendError;
+      if (weekendError) {
+        console.error("Weekend query error:", weekendError);
+        throw weekendError;
+      }
 
+      // Query for month events with simpler join syntax
       const { data: monthData, error: monthError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -136,7 +141,7 @@ export default function NewsletterPage() {
           venue_country,
           event_url,
           artist_uuid,
-          artists!ticketmaster_events_artist_uuid_fkey (
+          artists (
             artist_name,
             artist_image
           )
@@ -146,7 +151,13 @@ export default function NewsletterPage() {
         .lte("event_date", endOfMonthStr)
         .order("event_date", { ascending: true });
 
-      if (monthError) throw monthError;
+      if (monthError) {
+        console.error("Month query error:", monthError);
+        throw monthError;
+      }
+
+      console.log("Weekend data:", weekendData);
+      console.log("Month data:", monthData);
 
       const formatEvents = (data: any[]): NewsletterEvent[] => {
         return data.map(event => ({
