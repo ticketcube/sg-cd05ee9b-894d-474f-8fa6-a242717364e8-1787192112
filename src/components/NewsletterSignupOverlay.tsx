@@ -134,13 +134,11 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Home City (optional)
-              </label>
+            
               <CityCombobox
                 value={homeCity}
                 onValueChange={handleCityChange}
-                placeholder="Click here, then type your city..."
+                placeholder="Enter City (optional)."
               />
               {!homeCity && !customCity && (
                 <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
