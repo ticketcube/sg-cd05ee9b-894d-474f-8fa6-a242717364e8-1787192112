@@ -498,10 +498,10 @@ export default function TestTMApi() {
                 </Button>
               </div>
 
-              {results?.summary && !results?.error && (
-                <div className="space-y-2">
+              {results?.summary?.hasMore && !results?.error && (
+                <div className="space-y-2 mt-4">
                   <Button 
-                    onClick={updateAttractionIdsBatch} 
+                    onClick={() => updateAttractionIdsBatch(false, results.summary.onlyMissing || false)} 
                     disabled={loading}
                     variant="default"
                     className="w-full"
