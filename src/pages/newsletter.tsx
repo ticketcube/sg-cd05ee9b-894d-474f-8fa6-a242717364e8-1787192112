@@ -27,14 +27,14 @@ export default function NewsletterPage() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [thisWeekendEvents, setThisWeekendEvents] = useState<NewsletterEvent[]>([]);
-  const [thisMonthEvents, setThisMonthEvents] = useState<NewsletterEvent[]>([]);
+  const [nextWeekEvents, setnextWeekEvents] = useState<NewsletterEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [artistSearch, setArtistSearch] = useState("");
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [weekendExpanded, setWeekendExpanded] = useState(true);
-  const [monthExpanded, setMonthExpanded] = useState(true);
+  const [nextWeekExpanded, setnextWeekExpanded] = useState(true);
 
   useEffect(() => {
     checkSubscriptionStatus();
@@ -50,10 +50,10 @@ export default function NewsletterPage() {
     const handleResize = () => {
       if (window.innerWidth < 768) {
         setWeekendExpanded(true);
-        setMonthExpanded(false);
+        setnextWeekExpanded(false);
       } else {
         setWeekendExpanded(true);
-        setMonthExpanded(true);
+        setnextWeekExpanded(true);
       }
     };
 
@@ -146,7 +146,7 @@ export default function NewsletterPage() {
       }
 
       // Load next week events
-      const { data: monthData, error: monthError } = await supabase
+      const { data: nextWeekData, error: nextWeekError } = await supabase
         .from("ticketmaster_events")
         .select(`
           event_id,
@@ -161,23 +161,23 @@ export default function NewsletterPage() {
         `)
         .eq("is_active", true)
         .gt("event_date", sundayStr)
-        .lte("event_date", endOfMonthStr)
+        .lte("event_date", endOfnextWeekStr)
         .order("event_date", { ascending: true });
 
-      if (monthError) {
-        console.error("❌ Month events error:", monthError);
+      if (nextWeekError) {
+        console.error("❌ nextWeek events error:", nextWeekError);
       } else {
-        console.log("✅ Month events loaded:", monthData?.length || 0);
+        console.log("✅ nextWeek events loaded:", nextWeekData?.length || 0);
       }
 
       const weekendEvents = weekendData || [];
-      const monthEvents = monthData || [];
+      const nextWeekEvents = nextWeekData || [];
 
       setThisWeekendEvents(weekendEvents);
-      setThisMonthEvents(monthEvents);
+      setnextWeekEvents(nextWeekEvents);
 
       // Extract unique cities from all loaded events
-      const allEvents = [...weekendEvents, ...monthEvents];
+      const allEvents = [...weekendEvents, ...nextWeekEvents];
       const uniqueCities = Array.from(
         new Set(allEvents.map(e => e.venue_city))
       ).sort();
@@ -190,7 +190,7 @@ export default function NewsletterPage() {
       
       console.log("✅ Events loaded successfully:", {
         weekend: weekendEvents.length,
-        month: monthEvents.length,
+        nextWeek: nextWeekEvents.length,
         cities: uniqueCities.length
       });
     } catch (error) {
@@ -367,7 +367,7 @@ export default function NewsletterPage() {
   };
 
   const MonthEventsSection = () => {
-    const filteredEvents = filterEvents(thisMonthEvents);
+    const filteredEvents = filterEvents(nextWeekEvents);
     const groupedEvents = groupEventsByDate(filteredEvents);
     const dates = Object.keys(groupedEvents).sort();
 
