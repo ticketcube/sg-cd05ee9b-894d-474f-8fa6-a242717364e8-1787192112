@@ -106,7 +106,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
         </CardHeader>
 
         <CardContent>
-          <div className="mb-6 space-y-3 text-sm text-gray-600">
+                  <div className="mb-6 space-y-3 text-sm text-center text-gray-900">
             <p>
               <strong className="text-gray-900">Welcome to OTW LIVE!</strong>
             </p>
