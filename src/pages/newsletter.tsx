@@ -209,11 +209,14 @@ export default function NewsletterPage() {
     }
   };
 
-  // --- Filtering & grouping ---
   const filterEvents = (events: NewsletterEvent[]) => {
     let filtered = events;
-    if (selectedCity !== "all") filtered = filtered.filter(e => e.venue_city.toLowerCase() === selectedCity.toLowerCase());
-    if (artistSearch.trim()) filtered = filtered.filter(e => e.event_name.toLowerCase().includes(artistSearch.toLowerCase()));
+    if (selectedCityName !== "all") {
+      filtered = filtered.filter(e => e.venue_city.toLowerCase() === selectedCityName.toLowerCase());
+    }
+    if (artistSearch.trim()) {
+      filtered = filtered.filter(e => e.event_name.toLowerCase().includes(artistSearch.toLowerCase()));
+    }
     return filtered;
   };
 
