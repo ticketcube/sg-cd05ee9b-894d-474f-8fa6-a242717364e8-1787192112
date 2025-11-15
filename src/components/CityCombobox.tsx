@@ -190,7 +190,9 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
 
   const displayValue = value ? 
     `${value.normalized_name}${value.state_code ? `, ${value.state_code}` : ''}${value.country_code ? ` (${value.country_code})` : ''}` :
-    placeholder;
+    searchValue.trim() ? 
+      `Typing: "${searchValue}"... (select below)` :
+      placeholder;
 
   const handleSelectCity = (cityName: string) => {
     console.log("Selecting city with name:", cityName);
@@ -199,6 +201,7 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
       console.log("Found city:", selectedCity);
       onValueChange(selectedCity);
       setOpen(false);
+      setSearchValue(""); // Clear search after selection
     }
   };
 
@@ -209,6 +212,17 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
       onValueChange(null, normalizedCustom);
       setOpen(false);
       setSearchValue(""); // Clear search after selection
+    }
+  };
+
+  // Auto-select if only one city matches and user presses Enter
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && cities.length === 1) {
+      e.preventDefault();
+      handleSelectCity(cities[0].normalized_name);
+    } else if (e.key === "Enter" && cities.length === 0 && searchValue.trim()) {
+      e.preventDefault();
+      handleCustomCity();
     }
   };
 
@@ -238,44 +252,56 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
           <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 z-[99999]" align="start">
             <Command className="w-full">
               <CommandInput 
-                placeholder="Search cities..."
+                placeholder="Type to search cities..."
                 value={searchValue}
                 onValueChange={setSearchValue}
+                onKeyDown={handleKeyDown}
               />
               <CommandList className="max-h-[200px]">
                 <CommandEmpty>
                   {loading ? (
                     <div className="p-4 text-center text-sm text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
-                      Loading cities...
+                      Searching for cities...
                     </div>
                   ) : searchValue.length >= 2 ? (
-                    <div className="p-4 text-center space-y-2">
+                    <div className="p-4 text-center space-y-3">
                       <p className="text-sm text-muted-foreground">
-                        No cities found matching "{searchValue}"
+                        No existing cities match "{searchValue}"
                       </p>
-                      <Button
-                        variant="default"
-                        onClick={handleCustomCity}
-                        className="w-full"
-                        type="button"
-                        size="sm"
-                      >
-                        ✓ Use "{searchValue}"
-                      </Button>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Click above to use this city
-                      </p>
+                      <div className="space-y-2">
+                        <Button
+                          variant="default"
+                          onClick={handleCustomCity}
+                          className="w-full"
+                          type="button"
+                        >
+                          ✓ Add "{searchValue}" as my city
+                        </Button>
+                        <p className="text-xs text-muted-foreground">
+                          Or press <kbd className="px-1 py-0.5 bg-gray-100 border rounded text-xs">Enter</kbd>
+                        </p>
+                      </div>
+                    </div>
+                  ) : searchValue.length === 1 ? (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                      <p className="mb-1">Keep typing...</p>
+                      <p className="text-xs">Type at least 2 characters</p>
                     </div>
                   ) : (
                     <div className="p-4 text-center text-sm text-muted-foreground">
-                      <p className="mb-2">Type at least 2 characters to search</p>
-                      <p className="text-xs">Example: "Los Angeles", "New York"</p>
+                      <p className="mb-2">Start typing to search cities</p>
+                      <p className="text-xs text-gray-400">Example: "Los Angeles", "New York"</p>
                     </div>
                   )}
                 </CommandEmpty>
                 {cities.length > 0 && (
                   <CommandGroup>
+                    {cities.length === 1 && searchValue.length >= 2 && (
+                      <div className="px-2 py-1.5 text-xs text-muted-foreground bg-blue-50 border-b">
+                        💡 Press <kbd className="px-1 py-0.5 bg-white border rounded text-xs">Enter</kbd> to select this city
+                      </div>
+                    )}
                     {cities.map((city) => (
                       <CommandItem
                         key={city.id}
