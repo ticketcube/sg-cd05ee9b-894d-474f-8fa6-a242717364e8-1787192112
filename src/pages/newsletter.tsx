@@ -93,21 +93,21 @@ export default function NewsletterPage() {
     try {
       const { data, error } = await supabase
         .from("city_latlong")
-        .select("city_name, lat, long")
-        .not("lat", "is", null)
-        .not("long", "is", null);
+        .select("name, latitude, longitude")
+        .not("latitude", "is", null)
+        .not("longitude", "is", null);
 
       if (error || !data || data.length === 0) {
         console.error("Error fetching cities for location:", error);
         return null;
       }
 
-      let nearestCity = data[0].city_name;
+      let nearestCity = data[0].name;
       let minDistance = Infinity;
 
       data.forEach(city => {
-        const cityLat = parseFloat(city.lat as string);
-        const cityLon = parseFloat(city.long as string);
+        const cityLat = city.latitude as number;
+        const cityLon = city.longitude as number;
         
         const distance = Math.sqrt(
           Math.pow(lat - cityLat, 2) + Math.pow(lon - cityLon, 2)
@@ -115,7 +115,7 @@ export default function NewsletterPage() {
 
         if (distance < minDistance) {
           minDistance = distance;
-          nearestCity = city.city_name;
+          nearestCity = city.name;
         }
       });
 
