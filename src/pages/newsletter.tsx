@@ -76,6 +76,16 @@ export default function NewsletterPage() {
     }
   };
 
+  const handleCityChange = (newCity: string) => {
+    console.log("🎯 CITY DROPDOWN CHANGED:", {
+      newValue: newCity,
+      currentValue: selectedCity,
+      availableCities: availableCities.slice(0, 5),
+      willFilterNext: newCity !== "all"
+    });
+    setSelectedCity(newCity);
+  };
+
   const loadEvents = async () => {
     setLoading(true);
     try {
@@ -213,14 +223,22 @@ export default function NewsletterPage() {
   const filterEvents = (events: NewsletterEvent[]) => {
     let filtered = events;
 
-    console.log("🔍 FILTER DEBUG:", {
+    console.log("🔍 FILTER DEBUG - START:", {
       totalEvents: events.length,
       selectedCity,
+      selectedCityType: typeof selectedCity,
       willFilter: selectedCity && selectedCity !== "all"
     });
 
     if (selectedCity && selectedCity !== "all") {
       const normalizedSelectedCity = selectedCity.trim().toLowerCase();
+      
+      console.log("🌆 Filtering by city:", {
+        original: selectedCity,
+        normalized: normalizedSelectedCity,
+        firstEventCity: events[0]?.venue_city,
+        firstEventNormalized: events[0]?.venue_city.trim().toLowerCase()
+      });
       
       filtered = filtered.filter(event => {
         const normalizedEventCity = event.venue_city.trim().toLowerCase();
@@ -232,17 +250,25 @@ export default function NewsletterPage() {
             normalizedEventCity,
             selectedCity,
             normalizedSelectedCity,
-            eventName: event.event_name
+            eventName: event.event_name.substring(0, 50)
+          });
+        } else {
+          console.log("✅ Including event (city match):", {
+            eventCity: event.venue_city,
+            eventName: event.event_name.substring(0, 50)
           });
         }
         return matches;
       });
       
-      console.log("✅ Filtered by city:", {
+      console.log("✅ Filtered by city result:", {
         selectedCity,
         beforeCount: events.length,
-        afterCount: filtered.length
+        afterCount: filtered.length,
+        matchedCities: filtered.slice(0, 3).map(e => e.venue_city)
       });
+    } else {
+      console.log("⏭️ Skipping city filter (showing all cities)");
     }
 
     if (artistSearch.trim()) {
@@ -259,7 +285,13 @@ export default function NewsletterPage() {
       });
     }
 
-    console.log("📊 Final filtered result:", filtered.length, "events");
+    console.log("📊 FILTER DEBUG - FINAL RESULT:", {
+      totalInput: events.length,
+      totalOutput: filtered.length,
+      selectedCity,
+      artistSearch
+    });
+    
     return filtered;
   };
 
@@ -490,7 +522,7 @@ export default function NewsletterPage() {
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Filter by City
                 </label>
-                <Select value={selectedCity} onValueChange={setSelectedCity}>
+                <Select value={selectedCity} onValueChange={handleCityChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="All Cities" />
                   </SelectTrigger>
@@ -499,6 +531,13 @@ export default function NewsletterPage() {
                     {(() => {
                       const homeCity = localStorage.getItem("newsletter_home_city");
                       const homeCityInList = homeCity && availableCities.includes(homeCity);
+                      
+                      console.log("🏠 Dropdown render:", {
+                        homeCity,
+                        homeCityInList,
+                        availableCitiesCount: availableCities.length,
+                        selectedCity
+                      });
                       
                       return (
                         <>
