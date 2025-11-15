@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { newsletterService } from "@/services/newsletterService";
 import { NewsletterSignupOverlay } from "@/components/NewsletterSignupOverlay";
@@ -5,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Calendar, MapPin, ExternalLink, ChevronDown, ChevronUp, Ticket } from "lucide-react";
+import { Search, Calendar, ExternalLink, ChevronDown, ChevronUp, Ticket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NewsletterEvent {
@@ -76,75 +77,34 @@ export default function NewsletterPage() {
     }
   };
 
-  const handleCityChange = (newCity: string) => {
-    console.log("🎯 CITY DROPDOWN CHANGED:", {
-      newValue: newCity,
-      currentValue: selectedCity,
-      availableCities: availableCities.slice(0, 5),
-      willFilterNext: newCity !== "all"
-    });
-    setSelectedCity(newCity);
-  };
-
   const loadEvents = async () => {
     setLoading(true);
     try {
-      // DIAGNOSTIC: Check what events actually exist
-      const { data: allEvents, error: diagError } = await supabase
-        .from("ticketmaster_events")
-        .select("event_date, event_name, is_active")
-        .order("event_date", { ascending: true })
-        .limit(20);
-
-      console.log("🔍 DIAGNOSTIC - Sample events in database:", {
-        error: diagError,
-        totalSampled: allEvents?.length,
-        activeCount: allEvents?.filter(e => e.is_active).length,
-        inactiveCount: allEvents?.filter(e => !e.is_active).length,
-        dateRange: allEvents ? {
-          earliest: allEvents[0]?.event_date,
-          latest: allEvents[allEvents.length - 1]?.event_date
-        } : null,
-        sampleEvents: allEvents?.slice(0, 5).map(e => ({
-          date: e.event_date,
-          name: e.event_name.substring(0, 40),
-          active: e.is_active
-        }))
-      });
-
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
       // THIS WEEKEND: Today through this coming Sunday
       const thisSunday = new Date(today);
-      const daysUntilSunday = (7 - today.getDay()) % 7; // 0 if today is Sunday
+      const daysUntilSunday = (7 - today.getDay()) % 7;
       thisSunday.setDate(today.getDate() + daysUntilSunday);
       
-      // If today is Sunday, include today
       if (today.getDay() === 0) {
         thisSunday.setDate(today.getDate());
       }
 
       // THIS MONTH: Day after this Sunday through end of month
-      const nextMonday = new Date(thisSunday);
-      nextMonday.setDate(thisSunday.getDate() + 1);
-      
       const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
       const todayStr = today.toISOString().split('T')[0];
       const sundayStr = thisSunday.toISOString().split('T')[0];
-      const mondayStr = nextMonday.toISOString().split('T')[0];
       const endOfMonthStr = endOfMonth.toISOString().split('T')[0];
 
-      console.log("📅 Date ranges for queries:", { 
-        today: todayStr, 
-        thisSunday: sundayStr,
-        nextMonday: mondayStr,
-        endOfMonth: endOfMonthStr,
-        todayDayOfWeek: today.getDay()
+      console.log("📅 Loading events for date ranges:", { 
+        weekend: `${todayStr} to ${sundayStr}`,
+        month: `After ${sundayStr} to ${endOfMonthStr}`
       });
 
-      // Query for weekend events (today through Sunday)
+      // Load weekend events
       const { data: weekendData, error: weekendError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -163,14 +123,13 @@ export default function NewsletterPage() {
         .lte("event_date", sundayStr)
         .order("event_date", { ascending: true });
 
-      console.log("🎫 Weekend query result:", { 
-        error: weekendError, 
-        count: weekendData?.length,
-        sample: weekendData?.[0],
-        dateRange: `${todayStr} to ${sundayStr}`
-      });
+      if (weekendError) {
+        console.error("❌ Weekend events error:", weekendError);
+      } else {
+        console.log("✅ Weekend events loaded:", weekendData?.length || 0);
+      }
 
-      // Query for month events (after Sunday through end of month)
+      // Load month events
       const { data: monthData, error: monthError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -189,68 +148,34 @@ export default function NewsletterPage() {
         .lte("event_date", endOfMonthStr)
         .order("event_date", { ascending: true });
 
-      console.log("📆 Month query result:", { 
-        error: monthError, 
-        count: monthData?.length,
-        dateRange: `${mondayStr} to ${endOfMonthStr}`
-      });
+      if (monthError) {
+        console.error("❌ Month events error:", monthError);
+      } else {
+        console.log("✅ Month events loaded:", monthData?.length || 0);
+      }
 
-      const formatEvents = (data: any[]): NewsletterEvent[] => {
-        if (!data) return [];
-        
-        // No filtering needed - just return all events
-        return data.map(event => ({
-          event_id: event.event_id,
-          event_name: event.event_name,
-          event_date: event.event_date,
-          event_time: event.event_time,
-          venue_name: event.venue_name,
-          venue_city: event.venue_city,
-          venue_state: event.venue_state,
-          venue_country: event.venue_country,
-          event_url: event.event_url
-        }));
-      };
-
-      const weekendEvents = formatEvents(weekendData || []);
-      const monthEvents = formatEvents(monthData || []);
-
-      console.log("✅ Formatted events:", { 
-        weekend: weekendEvents.length, 
-        month: monthEvents.length 
-      });
+      const weekendEvents = weekendData || [];
+      const monthEvents = monthData || [];
 
       setThisWeekendEvents(weekendEvents);
       setThisMonthEvents(monthEvents);
 
-      // Extract unique cities
-      const allEventsForCities = [...weekendEvents, ...monthEvents];
+      // Extract unique cities from all loaded events
+      const allEvents = [...weekendEvents, ...monthEvents];
       const uniqueCities = Array.from(
-        new Set(allEventsForCities.map(e => e.venue_city))
+        new Set(allEvents.map(e => e.venue_city))
       ).sort();
       
-      console.log("🌆 Unique cities extracted:", uniqueCities);
+      console.log("🌆 Available cities:", uniqueCities.length, uniqueCities.slice(0, 10));
       setAvailableCities(uniqueCities);
-
-      // Get user's stored home city
-      const userHomeCity = localStorage.getItem("newsletter_home_city");
       
-      console.log("🏠 HOME CITY DEFAULT (NOT FILTER):", {
-        userHomeCity,
-        uniqueCities,
-        note: "Home city is just the dropdown default, NOT a filter!"
-      });
-
-      // ✅ IMPORTANT: Always start with "all" to show all events
-      // The home city is just a suggestion in the dropdown, not an automatic filter
+      // Always start with "all" to show all events
       setSelectedCity("all");
       
-      // Log the clarification
-      console.log("✅ Newsletter page initialized:", {
-        selectedCity: "all",
-        userHomeCity: userHomeCity || "none",
-        totalEvents: weekendEvents.length + monthEvents.length,
-        message: "Showing ALL events. User can filter by their city if they want."
+      console.log("✅ Events loaded successfully:", {
+        weekend: weekendEvents.length,
+        month: monthEvents.length,
+        cities: uniqueCities.length
       });
     } catch (error) {
       console.error("💥 Error loading events:", error);
@@ -262,75 +187,21 @@ export default function NewsletterPage() {
   const filterEvents = (events: NewsletterEvent[]) => {
     let filtered = events;
 
-    console.log("🔍 FILTER DEBUG - START:", {
-      totalEvents: events.length,
-      selectedCity,
-      selectedCityType: typeof selectedCity,
-      willFilter: selectedCity && selectedCity !== "all"
-    });
-
+    // Filter by city if not "all"
     if (selectedCity && selectedCity !== "all") {
-      const normalizedSelectedCity = selectedCity.trim().toLowerCase();
-      
-      console.log("🌆 Filtering by city:", {
-        original: selectedCity,
-        normalized: normalizedSelectedCity,
-        firstEventCity: events[0]?.venue_city,
-        firstEventNormalized: events[0]?.venue_city.trim().toLowerCase()
-      });
-      
-      filtered = filtered.filter(event => {
-        const normalizedEventCity = event.venue_city.trim().toLowerCase();
-        const matches = normalizedEventCity === normalizedSelectedCity;
-        
-        if (!matches) {
-          console.log("⏭️ Skipping event (city mismatch):", {
-            eventCity: event.venue_city,
-            normalizedEventCity,
-            selectedCity,
-            normalizedSelectedCity,
-            eventName: event.event_name.substring(0, 50)
-          });
-        } else {
-          console.log("✅ Including event (city match):", {
-            eventCity: event.venue_city,
-            eventName: event.event_name.substring(0, 50)
-          });
-        }
-        return matches;
-      });
-      
-      console.log("✅ Filtered by city result:", {
-        selectedCity,
-        beforeCount: events.length,
-        afterCount: filtered.length,
-        matchedCities: filtered.slice(0, 3).map(e => e.venue_city)
-      });
-    } else {
-      console.log("⏭️ Skipping city filter (showing all cities)");
+      filtered = filtered.filter(event => 
+        event.venue_city.toLowerCase() === selectedCity.toLowerCase()
+      );
     }
 
+    // Filter by event name search
     if (artistSearch.trim()) {
       const searchTerm = artistSearch.toLowerCase();
-      const beforeSearchCount = filtered.length;
       filtered = filtered.filter(event => 
         event.event_name.toLowerCase().includes(searchTerm)
       );
-      
-      console.log("🔍 Filtered by event search:", {
-        searchTerm,
-        beforeCount: beforeSearchCount,
-        afterCount: filtered.length
-      });
     }
 
-    console.log("📊 FILTER DEBUG - FINAL RESULT:", {
-      totalInput: events.length,
-      totalOutput: filtered.length,
-      selectedCity,
-      artistSearch
-    });
-    
     return filtered;
   };
 
@@ -561,40 +432,17 @@ export default function NewsletterPage() {
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
                   Filter by City
                 </label>
-                <Select value={selectedCity} onValueChange={handleCityChange}>
+                <Select value={selectedCity} onValueChange={setSelectedCity}>
                   <SelectTrigger>
                     <SelectValue placeholder="All Cities" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Cities</SelectItem>
-                    {(() => {
-                      const homeCity = localStorage.getItem("newsletter_home_city");
-                      const homeCityInList = homeCity && availableCities.includes(homeCity);
-                      
-                      console.log("🏠 Dropdown render:", {
-                        homeCity,
-                        homeCityInList,
-                        availableCitiesCount: availableCities.length,
-                        selectedCity
-                      });
-                      
-                      return (
-                        <>
-                          {homeCityInList && (
-                            <SelectItem value={homeCity} className="font-semibold bg-blue-50">
-                              {homeCity} (Your City)
-                            </SelectItem>
-                          )}
-                          {availableCities
-                            .filter(city => city !== homeCity)
-                            .map(city => (
-                              <SelectItem key={city} value={city}>
-                                {city}
-                              </SelectItem>
-                            ))}
-                        </>
-                      );
-                    })()}
+                    {availableCities.map(city => (
+                      <SelectItem key={city} value={city}>
+                        {city}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
