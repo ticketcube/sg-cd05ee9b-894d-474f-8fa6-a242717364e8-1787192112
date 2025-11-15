@@ -111,14 +111,12 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
               <strong className="text-gray-900">Welcome to OTW LIVE!</strong>
             </p>
             <p>
-                          As a member, once a week you'll receive an exclusive list of OTW Artists' shows in your city. 
-                      </p>
-                      <p>
-                          Discover Shows & Buy Tickets. v </p>
+                          As a member, once a week you'll receive an exclusive list of OTW Artists' shows in your city. Discover Shows & Buy Tickets.
+            </p>
             <p>
                     We Reward Discoverry      ™
 
-           
+            </p>
           </div>
           
 
