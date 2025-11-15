@@ -5,7 +5,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-const RATE_LIMIT_DELAY = 250; // 4 requests per second to be safe
+const RATE_LIMIT_DELAY = 250; // 4 requests per second
 
 interface EventResult {
   artistId: string;
@@ -19,30 +19,50 @@ interface EventResult {
 
 /**
  * Fetch events using the SAME endpoint that works in the test tab
- * This ensures consistency and uses the proven working logic
+ * Now with better error handling and URL construction
  */
 async function fetchEventsForAttraction(attractionId: string, baseUrl: string) {
-  // CRITICAL: Use the SAME endpoint that works in the test tab
-  const url = `${baseUrl}/api/ticketmaster/events-by-attraction?attractionId=${attractionId}`;
-  
-  console.log(`  📞 Calling: ${url}`);
-  
-  const response = await fetch(url);
-  
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status} ${response.statusText}`);
-  }
+  try {
+    // CRITICAL: Use the SAME endpoint that works in the test tab
+    const url = `${baseUrl}/api/ticketmaster/events-by-attraction?attractionId=${attractionId}`;
+    
+    console.log(`  📞 Calling URL: ${url}`);
+    console.log(`  📞 attractionId: ${attractionId}`);
+    console.log(`  📞 baseUrl: ${baseUrl}`);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    console.log(`  📊 Response status: ${response.status} ${response.statusText}`);
+    console.log(`  📊 Response ok: ${response.ok}`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`  ❌ Response error body:`, errorText.substring(0, 500));
+      throw new Error(`API error: ${response.status} ${response.statusText} - ${errorText.substring(0, 200)}`);
+    }
 
-  const data = await response.json();
-  
-  console.log(`  📦 Response: success=${data.success}, events=${data.events?.length || 0}`);
-  
-  if (!data.success) {
-    throw new Error(data.message || "API returned success=false");
-  }
+    const data = await response.json();
+    
+    console.log(`  📦 Response parsed: success=${data.success}, events=${data.events?.length || 0}`);
+    
+    if (!data.success) {
+      console.error(`  ❌ API returned success=false:`, data.message || 'No message provided');
+      throw new Error(data.message || "API returned success=false");
+    }
 
-  // Return the formatted events from our working endpoint
-  return data.events || [];
+    // Return the formatted events from our working endpoint
+    return data.events || [];
+  } catch (error) {
+    console.error(`  ❌ Error in fetchEventsForAttraction:`, error);
+    console.error(`  ❌ Error type:`, error instanceof Error ? error.constructor.name : typeof error);
+    console.error(`  ❌ Error message:`, error instanceof Error ? error.message : String(error));
+    throw error;
+  }
 }
 
 async function processArtistEvents(
@@ -62,6 +82,8 @@ async function processArtistEvents(
 
   try {
     console.log(`\n[${artistName}] Starting event fetch...`);
+    console.log(`[${artistName}] attractionId: ${attractionId}`);
+    console.log(`[${artistName}] baseUrl: ${baseUrl}`);
     
     // Use the SAME working endpoint
     const events = await fetchEventsForAttraction(attractionId, baseUrl);
@@ -94,34 +116,22 @@ async function processArtistEvents(
     // Process each event
     for (const event of events) {
       try {
-        const eventId = event.id;
-        const eventName = event.name;
-        const eventDate = event.date;
-        const eventTime = event.time;
-        const venueName = event.venue_name || "";
-        const venueCity = event.venue_city || "";
-        const venueState = event.venue_state || "";
-        const venueCountry = event.venue_country || "";
-        const ticketUrl = event.url || "";
-
-        // Build event data for upsert
         const eventData = {
-          event_id: eventId,
+          event_id: event.id,
           artist_uuid: artistUuid,
           attractionId: attractionId,
-          event_name: eventName,
-          event_date: eventDate,
-          event_time: eventTime,
+          event_name: event.name,
+          event_date: event.date,
+          event_time: event.time || null,
           status: "onsale",
-          venue_name: venueName,
-          venue_city: venueCity,
-          venue_state: venueState,
-          venue_country: venueCountry,
-          event_url: ticketUrl,
+          venue_name: event.venue_name || "",
+          venue_city: event.venue_city || "",
+          venue_state: event.venue_state || null,
+          venue_country: event.venue_country || "",
+          event_url: event.url || "",
           updated_at: new Date().toISOString(),
         };
 
-        // Upsert event (insert new or update existing)
         const { error: upsertError } = await supabaseAdmin
           .from("ticketmaster_events")
           .upsert(eventData, {
@@ -130,13 +140,12 @@ async function processArtistEvents(
           });
 
         if (upsertError) {
-          console.error(`[${artistName}] ❌ Error upserting event ${eventId}:`, upsertError);
+          console.error(`[${artistName}] ❌ Error upserting event ${event.id}:`, upsertError);
           result.error = `Upsert error: ${upsertError.message}`;
           continue;
         }
 
-        // Track if this was new or updated
-        if (existingEventIds.has(eventId)) {
+        if (existingEventIds.has(event.id)) {
           result.updatedEvents++;
         } else {
           result.newEvents++;
@@ -186,11 +195,27 @@ export default async function handler(
 
     console.log(`📊 Processing batch: offset=${batchOffset}, size=${batchSize}`);
 
-    // Get base URL for internal API calls
+    // Get base URL for internal API calls with better detection
     const protocol = req.headers["x-forwarded-proto"] || "http";
-    const host = req.headers.host || "localhost:3000";
+    const host = req.headers.host;
+    
+    if (!host) {
+      console.error("❌ Missing host header - cannot construct baseUrl");
+      return res.status(500).json({ 
+        error: "Server configuration error: Missing host header",
+        suggestion: "This is likely a deployment environment issue"
+      });
+    }
+    
     const baseUrl = `${protocol}://${host}`;
     console.log(`🔗 Base URL: ${baseUrl}`);
+    console.log(`🔗 Protocol: ${protocol}`);
+    console.log(`🔗 Host: ${host}`);
+    console.log(`🔗 Headers:`, JSON.stringify({
+      host: req.headers.host,
+      'x-forwarded-proto': req.headers['x-forwarded-proto'],
+      'x-forwarded-host': req.headers['x-forwarded-host']
+    }, null, 2));
 
     // Fetch artists with attractionIds
     const { data: artists, error: fetchError } = await supabaseAdmin
@@ -247,9 +272,9 @@ export default async function handler(
       totalCancelledEvents += result.cancelledEvents;
       if (result.error) errorCount++;
 
-      // Rate limiting: wait between requests (except for last one)
+      // Rate limiting
       if (i < artists.length - 1) {
-        console.log(`   ⏳ Waiting ${RATE_LIMIT_DELAY}ms before next request...`);
+        console.log(`   ⏳ Waiting ${RATE_LIMIT_DELAY}ms...`);
         await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY));
       }
     }
@@ -278,14 +303,17 @@ export default async function handler(
     console.error("\n❌ ================================");
     console.error("❌ BATCH REFRESH ERROR");
     console.error("❌ ================================");
-    console.error(error);
+    console.error("Error:", error);
+    console.error("Error type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("Error message:", error instanceof Error ? error.message : String(error));
+    console.error("Error stack:", error instanceof Error ? error.stack : "No stack");
     console.error("❌ ================================\n");
     
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
     
     return res.status(500).json({
       error: errorMessage,
-      details: error instanceof Error ? error.stack : undefined
+      details: error instanceof Error ? error.stack : String(error)
     });
   }
 }
