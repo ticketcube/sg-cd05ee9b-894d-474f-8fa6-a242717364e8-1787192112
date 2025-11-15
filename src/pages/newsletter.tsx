@@ -45,6 +45,19 @@ export default function NewsletterPage() {
     if (isSubscribed) loadEvents();
   }, [isSubscribed]);
 
+  const handleCityChange = (city: any, customInput?: string) => {
+    if (city) {
+      setSelectedCity(city);
+      setSelectedCityName(city.normalized_name);
+    } else if (customInput) {
+      setSelectedCity(null);
+      setSelectedCityName(customInput);
+    } else {
+      setSelectedCity(null);
+      setSelectedCityName("all");
+    }
+  };
+
     // Set default city from localStorage or default to Los Angeles
     useEffect(() => {
         if (isSubscribed && availableCities.length > 0) {
