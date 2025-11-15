@@ -108,15 +108,17 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
         <CardContent>
           <div className="mb-6 space-y-3 text-sm text-gray-600">
             <p>
-              <strong className="text-gray-900">Welcome to OTW LIVE!</strong>
+              <strong className="text-gray-900">Welcome to OTW Discovery Club</strong>
             </p>
             <p>
-              As a member, once a week you'll receive an exclusive list of OTW Artists' shows in your city.
+              As a subscriber, once a week you'll receive an exclusive list of OTW Artists' shows in your city.
             </p>
             <p>
               Every week you'll know who is playing this weekend and who's coming up.
             </p>
-           
+            <p>
+              See the shows, watch the artist videos, and reserve a ticket all in three clicks.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -142,7 +144,10 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
                 placeholder="Click here, then type your city..."
               />
               {!homeCity && !customCity && (
-              
+                <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                  <span>💡</span>
+                  <span><strong>Quick tip:</strong> Click the box above → Start typing (you'll see it search) → Click to select</span>
+                </p>
               )}
               {(homeCity || customCity) && (
                 <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
