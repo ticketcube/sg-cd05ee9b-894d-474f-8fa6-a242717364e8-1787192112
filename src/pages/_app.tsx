@@ -78,6 +78,7 @@ function MyApp({ Component, pageProps }: AppProps) {
 
     // Define paths that should NOT have the main AppLayout
     const noLayoutPaths = ["/auth/callback"];
+    const noLayoutPaths = ["/newsletter"];
     const needsLayout = !noLayoutPaths.includes(router.pathname);
 
     const PageComponent = (
