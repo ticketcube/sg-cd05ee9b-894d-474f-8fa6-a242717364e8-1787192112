@@ -166,7 +166,7 @@ Unsubscribe: ${unsubscribeUrl}
         name: SENDER_NAME
       },
       to: [{ email }],
-      subject: "Welcome to OTW Discovery Club! 🎵",
+      subject: "Welcome to OTW LIVE! 🎵",
       htmlContent,
       textContent
     };
