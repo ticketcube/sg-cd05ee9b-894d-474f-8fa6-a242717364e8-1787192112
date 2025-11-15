@@ -368,18 +368,20 @@ export default function NewsletterPage() {
 
   const MonthEventsSection = () => {
     const filteredEvents = filterEvents(thisMonthEvents);
+    const groupedEvents = groupEventsByDate(filteredEvents);
+    const dates = Object.keys(groupedEvents).sort();
 
     return (
       <Card>
-        <CardHeader 
+        <CardHeader
           className="cursor-pointer hover:bg-gray-50 transition-colors"
-          onClick={() => setMonthExpanded(!monthExpanded)}
+          onClick={() => setWeekendExpanded(!weekendExpanded)}
         >
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-2xl flex items-center gap-2">
-                📅 This Month
-                {monthExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                🎵 This Weekend
+                {weekendExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </CardTitle>
               <p className="text-sm text-gray-500 mt-1">
                 {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
@@ -387,7 +389,7 @@ export default function NewsletterPage() {
             </div>
           </div>
         </CardHeader>
-        {monthExpanded && (
+        {weekendExpanded && (
           <CardContent>
             {filteredEvents.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
@@ -395,22 +397,31 @@ export default function NewsletterPage() {
                 <p>No events found</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="border-b bg-gray-50">
-                    <tr className="text-left text-xs text-gray-600">
-                      <th className="pb-2 px-2 font-medium">Event</th>
-                      <th className="pb-2 px-2 font-medium">Venue</th>
-                      <th className="pb-2 px-2 font-medium">Date</th>
-                      <th className="pb-2 px-2 font-medium text-right">Tickets</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredEvents.map(event => (
-                      <TicketPurchaseRow key={event.event_id} event={event} />
-                    ))}
-                  </tbody>
-                </table>
+              <div className="space-y-6">
+                {dates.map(date => (
+                  <div key={date}>
+                    <h3 className="text-lg font-semibold mb-3 text-gray-700">
+                      {formatDate(date)}
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="border-b bg-gray-50">
+                          <tr className="text-left text-xs text-gray-600">
+                            <th className="pb-2 px-2 font-medium">Event</th>
+                            <th className="pb-2 px-2 font-medium">Venue</th>
+                            <th className="pb-2 px-2 font-medium">Date</th>
+                            <th className="pb-2 px-2 font-medium text-right">Tickets</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {groupedEvents[date].map(event => (
+                            <TicketPurchaseRow key={event.event_id} event={event} />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>
