@@ -205,10 +205,19 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   const handleCustomCity = () => {
     if (searchValue.trim()) {
       const normalizedCustom = searchValue.trim().replace(/\b\w/g, l => l.toUpperCase());
+      console.log("Adding custom city:", normalizedCustom);
       onValueChange(null, normalizedCustom);
       setOpen(false);
+      setSearchValue(""); // Clear search after selection
     }
   };
+
+  // Auto-select if only one city matches
+  useEffect(() => {
+    if (cities.length === 1 && searchValue.length >= 2) {
+      console.log("Auto-selecting single matching city:", cities[0]);
+    }
+  }, [cities, searchValue]);
 
   return (
     <div className="space-y-2">
@@ -241,22 +250,27 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
                       Loading cities...
                     </div>
                   ) : searchValue.length >= 2 ? (
-                    <div className="p-4 text-center">
-                      <p className="text-sm text-muted-foreground mb-3">
+                    <div className="p-4 text-center space-y-2">
+                      <p className="text-sm text-muted-foreground">
                         No cities found matching "{searchValue}"
                       </p>
                       <Button
-                        variant="ghost"
+                        variant="default"
                         onClick={handleCustomCity}
                         className="w-full"
                         type="button"
+                        size="sm"
                       >
-                        Add "{searchValue}"
+                        ✓ Use "{searchValue}"
                       </Button>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Click above to use this city
+                      </p>
                     </div>
                   ) : (
                     <div className="p-4 text-center text-sm text-muted-foreground">
-                      Type to search for cities
+                      <p className="mb-2">Type at least 2 characters to search</p>
+                      <p className="text-xs">Example: "Los Angeles", "New York"</p>
                     </div>
                   )}
                 </CommandEmpty>
