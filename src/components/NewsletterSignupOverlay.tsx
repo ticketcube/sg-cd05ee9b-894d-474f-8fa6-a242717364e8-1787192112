@@ -127,7 +127,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full"
+                className="w-full text-blk"
                 required
                 disabled={loading}
               />
