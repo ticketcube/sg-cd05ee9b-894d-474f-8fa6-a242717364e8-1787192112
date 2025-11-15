@@ -18,9 +18,6 @@ interface NewsletterEvent {
   venue_state: string | null;
   venue_country: string;
   event_url: string;
-  artist_uuid: string;
-  artist_name: string;
-  artist_image: string | null;
 }
 
 export default function NewsletterPage() {
@@ -100,7 +97,7 @@ export default function NewsletterPage() {
 
       console.log("📅 Date ranges:", { thursdayStr, sundayStr, endOfMonthStr });
 
-      // Query for weekend events with proper join
+      // Query for weekend events - NO ARTIST JOIN
       const { data: weekendData, error: weekendError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -112,12 +109,7 @@ export default function NewsletterPage() {
           venue_city,
           venue_state,
           venue_country,
-          event_url,
-          artist_uuid,
-          artists!ticketmaster_events_artist_uuid_fkey (
-            artist_name,
-            artist_image
-          )
+          event_url
         `)
         .eq("is_active", true)
         .gte("event_date", thursdayStr)
@@ -130,7 +122,7 @@ export default function NewsletterPage() {
         sample: weekendData?.[0]
       });
 
-      // Query for month events
+      // Query for month events - NO ARTIST JOIN
       const { data: monthData, error: monthError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -142,12 +134,7 @@ export default function NewsletterPage() {
           venue_city,
           venue_state,
           venue_country,
-          event_url,
-          artist_uuid,
-          artists!ticketmaster_events_artist_uuid_fkey (
-            artist_name,
-            artist_image
-          )
+          event_url
         `)
         .eq("is_active", true)
         .gt("event_date", sundayStr)
@@ -162,26 +149,18 @@ export default function NewsletterPage() {
       const formatEvents = (data: any[]): NewsletterEvent[] => {
         if (!data) return [];
         
-        return data
-          .filter(event => event.artists)
-          .map(event => {
-            const artistData = Array.isArray(event.artists) ? event.artists[0] : event.artists;
-            
-            return {
-              event_id: event.event_id,
-              event_name: event.event_name,
-              event_date: event.event_date,
-              event_time: event.event_time,
-              venue_name: event.venue_name,
-              venue_city: event.venue_city,
-              venue_state: event.venue_state,
-              venue_country: event.venue_country,
-              event_url: event.event_url,
-              artist_uuid: event.artist_uuid,
-              artist_name: artistData?.artist_name || "Unknown Artist",
-              artist_image: artistData?.artist_image || null
-            };
-          });
+        // No filtering needed - just return all events
+        return data.map(event => ({
+          event_id: event.event_id,
+          event_name: event.event_name,
+          event_date: event.event_date,
+          event_time: event.event_time,
+          venue_name: event.venue_name,
+          venue_city: event.venue_city,
+          venue_state: event.venue_state,
+          venue_country: event.venue_country,
+          event_url: event.event_url
+        }));
       };
 
       const weekendEvents = formatEvents(weekendData || []);
@@ -270,10 +249,10 @@ export default function NewsletterPage() {
       const searchTerm = artistSearch.toLowerCase();
       const beforeSearchCount = filtered.length;
       filtered = filtered.filter(event => 
-        event.artist_name.toLowerCase().includes(searchTerm)
+        event.event_name.toLowerCase().includes(searchTerm)
       );
       
-      console.log("🔍 Filtered by artist search:", {
+      console.log("🔍 Filtered by event search:", {
         searchTerm,
         beforeCount: beforeSearchCount,
         afterCount: filtered.length
@@ -311,7 +290,7 @@ export default function NewsletterPage() {
       <>
         <tr className="border-b last:border-0 hover:bg-gray-50 transition-colors">
           <td className="py-3 px-2">
-            <div className="font-medium text-sm">{event.artist_name}</div>
+            <div className="font-medium text-sm">{event.event_name}</div>
           </td>
           <td className="py-3 px-2 text-sm">{event.venue_name}</td>
           <td className="py-3 px-2 text-sm whitespace-nowrap">
@@ -406,7 +385,7 @@ export default function NewsletterPage() {
                       <table className="w-full">
                         <thead className="border-b bg-gray-50">
                           <tr className="text-left text-xs text-gray-600">
-                            <th className="pb-2 px-2 font-medium">Artist</th>
+                            <th className="pb-2 px-2 font-medium">Event</th>
                             <th className="pb-2 px-2 font-medium">Venue</th>
                             <th className="pb-2 px-2 font-medium">Date</th>
                             <th className="pb-2 px-2 font-medium text-right">Tickets</th>
@@ -462,7 +441,7 @@ export default function NewsletterPage() {
                 <table className="w-full">
                   <thead className="border-b bg-gray-50">
                     <tr className="text-left text-xs text-gray-600">
-                      <th className="pb-2 px-2 font-medium">Artist</th>
+                      <th className="pb-2 px-2 font-medium">Event</th>
                       <th className="pb-2 px-2 font-medium">Venue</th>
                       <th className="pb-2 px-2 font-medium">Date</th>
                       <th className="pb-2 px-2 font-medium text-right">Tickets</th>
@@ -544,13 +523,13 @@ export default function NewsletterPage() {
 
               <div className="w-full md:w-64">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
-                  Search Artists
+                  Search Events
                 </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     type="text"
-                    placeholder="Artist name..."
+                    placeholder="Event name..."
                     value={artistSearch}
                     onChange={(e) => setArtistSearch(e.target.value)}
                     className="pl-9"
