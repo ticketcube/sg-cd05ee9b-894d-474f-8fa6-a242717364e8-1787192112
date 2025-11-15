@@ -80,31 +80,45 @@ export default function NewsletterPage() {
   };
 
   const loadEvents = async () => {
-    setLoading(true);
-    try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      // THIS WEEKEND: Today through this coming Sunday
-      const thisSunday = new Date(today);
-      const daysUntilSunday = (7 - today.getDay()) % 7;
-      thisSunday.setDate(today.getDate() + daysUntilSunday);
-      
-      if (today.getDay() === 0) {
-        thisSunday.setDate(today.getDate());
-      }
+  setLoading(true);
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-      // THIS MONTH: Day after this Sunday through end of month
-      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    //
+    // --- THIS WEEKEND (Thu–Sun): unchanged ---
+    //
+    const thisThursday = new Date(today);
+    const day = today.getDay(); // Sun=0, Mon=1, ... Sat=6
 
-      const todayStr = today.toISOString().split('T')[0];
-      const sundayStr = thisSunday.toISOString().split('T')[0];
-      const endOfMonthStr = endOfMonth.toISOString().split('T')[0];
+    // Find upcoming Thursday (this week's)
+    const daysUntilThursday = (4 - day + 7) % 7;
+    thisThursday.setDate(today.getDate() + daysUntilThursday);
 
-      console.log("📅 Loading events for date ranges:", { 
-        weekend: `${todayStr} to ${sundayStr}`,
-        month: `After ${sundayStr} to ${endOfMonthStr}`
-      });
+    const thisSunday = new Date(thisThursday);
+    thisSunday.setDate(thisThursday.getDate() + 3); // Thu + 3 = Sun
+
+    //
+    // --- NEXT WEEKEND (Mon–Sun of next week) ---
+    //
+    const nextMonday = new Date(thisThursday);
+    nextMonday.setDate(thisThursday.getDate() + 4); // Mon after this Sun
+
+    const nextSunday = new Date(nextMonday);
+    nextSunday.setDate(nextMonday.getDate() + 6); // Mon + 6 = Sun
+
+    // Format YYYY-MM-DD
+    const fmt = d => d.toISOString().split("T")[0];
+    const todayStr = fmt(today);
+    const thuStr = fmt(thisThursday);
+    const sunStr = fmt(thisSunday);
+    const nextMonStr = fmt(nextMonday);
+    const nextSunStr = fmt(nextSunday);
+
+    console.log("📅 Loading events for date ranges:", { 
+      thisWeekend: `${thuStr} → ${sunStr}`,
+      nextWeekend: `${nextMonStr} → ${nextSunStr}`
+    });
 
       // Load weekend events
       const { data: weekendData, error: weekendError } = await supabase
@@ -131,7 +145,7 @@ export default function NewsletterPage() {
         console.log("✅ Weekend events loaded:", weekendData?.length || 0);
       }
 
-      // Load month events
+      // Load next week events
       const { data: monthData, error: monthError } = await supabase
         .from("ticketmaster_events")
         .select(`
