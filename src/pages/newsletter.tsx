@@ -636,11 +636,11 @@ export default function NewsletterPage() {
                 </div>
               </div>
             </div>
+                      <div className="space-y-6">
+                          <WeekendEventsSection />
+                          <NextWeekEventsSection />
+                      </div>
 
-            <div className="space-y-6">
-              <WeekendEventsSection />
-              <MonthEventsSection />
-            </div>
 
             {loading && (
               <div className="text-center py-4">
