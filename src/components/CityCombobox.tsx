@@ -39,55 +39,38 @@ export default function CityCombobox({ value, onValueChange, placeholder = "Sele
   const [geoLoading, setGeoLoading] = useState(false);
 
   const fetchCities = async (search?: string) => {
-    console.log("Fetching cities directly from Supabase, search:", search);
+    console.log("Fetching cities from city_latlong table, search:", search);
     setLoading(true);
     try {
-      // Query ticketmaster_events directly for unique cities
+      // Query city_latlong table for stable city list
       let query = supabase
-        .from("ticketmaster_events")
-        .select("venue_city, venue_state, venue_country")
-        .eq("is_active", true)
-        .not("venue_city", "is", null);
+        .from("city_latlong")
+        .select("id, name, normalized_name, state_code, country_code")
+        .not("normalized_name", "is", null);
 
       // Add search filter if provided
       if (search && search.length >= 2) {
-        query = query.ilike("venue_city", `%${search}%`);
+        query = query.ilike("normalized_name", `%${search}%`);
       }
+
+      // Limit results for performance
+      query = query.limit(100);
 
       const { data, error } = await query;
 
       if (error) {
-        console.error("Error fetching cities:", error);
+        console.error("Error fetching cities from city_latlong:", error);
         setCities([]);
         return;
       }
 
-      // Deduplicate cities by name
-      const cityMap = new Map<string, City>();
-      
-      data?.forEach((event, index) => {
-        const cityName = event.venue_city;
-        if (cityName) {
-          const normalizedName = cityName.trim();
-          if (!cityMap.has(normalizedName)) {
-            cityMap.set(normalizedName, {
-              id: index,
-              name: cityName,
-              normalized_name: normalizedName,
-              state_code: event.venue_state || undefined,
-              country_code: event.venue_country || undefined
-            });
-          }
-        }
-      });
-
-      // Convert to array and sort
-      const uniqueCities = Array.from(cityMap.values()).sort((a, b) => 
+      // Sort alphabetically
+      const sortedCities = (data || []).sort((a, b) => 
         a.normalized_name.localeCompare(b.normalized_name)
       );
 
-      console.log("Found", uniqueCities.length, "unique cities");
-      setCities(uniqueCities);
+      console.log("Found", sortedCities.length, "cities from city_latlong table");
+      setCities(sortedCities as City[]);
     } catch (error) {
       console.error('Error fetching cities:', error);
       setCities([]);
