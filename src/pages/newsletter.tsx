@@ -98,7 +98,19 @@ export default function NewsletterPage() {
       const sundayStr = sunday.toISOString().split('T')[0];
       const endOfMonthStr = endOfMonth.toISOString().split('T')[0];
 
-      // Query for weekend events with simpler join syntax
+      console.log("Date ranges:", { thursdayStr, sundayStr, endOfMonthStr });
+
+      // First, let's check if there are ANY active events
+      const { data: allEvents, error: allError } = await supabase
+        .from("ticketmaster_events")
+        .select("event_id, event_date, is_active, artist_uuid")
+        .eq("is_active", true)
+        .limit(10);
+
+      console.log("Sample active events:", allEvents);
+      console.log("Total active events error:", allError);
+
+      // Query for weekend events with proper join
       const { data: weekendData, error: weekendError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -112,7 +124,7 @@ export default function NewsletterPage() {
           venue_country,
           event_url,
           artist_uuid,
-          artists (
+          artists!ticketmaster_events_artist_uuid_fkey (
             artist_name,
             artist_image
           )
@@ -122,12 +134,10 @@ export default function NewsletterPage() {
         .lte("event_date", sundayStr)
         .order("event_date", { ascending: true });
 
-      if (weekendError) {
-        console.error("Weekend query error:", weekendError);
-        throw weekendError;
-      }
+      console.log("Weekend query error:", weekendError);
+      console.log("Weekend data raw:", weekendData);
 
-      // Query for month events with simpler join syntax
+      // Query for month events
       const { data: monthData, error: monthError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -141,7 +151,7 @@ export default function NewsletterPage() {
           venue_country,
           event_url,
           artist_uuid,
-          artists (
+          artists!ticketmaster_events_artist_uuid_fkey (
             artist_name,
             artist_image
           )
@@ -151,40 +161,47 @@ export default function NewsletterPage() {
         .lte("event_date", endOfMonthStr)
         .order("event_date", { ascending: true });
 
-      if (monthError) {
-        console.error("Month query error:", monthError);
-        throw monthError;
-      }
-
-      console.log("Weekend data:", weekendData);
-      console.log("Month data:", monthData);
+      console.log("Month query error:", monthError);
+      console.log("Month data raw:", monthData);
 
       const formatEvents = (data: any[]): NewsletterEvent[] => {
-        return data.map(event => ({
-          event_id: event.event_id,
-          event_name: event.event_name,
-          event_date: event.event_date,
-          event_time: event.event_time,
-          venue_name: event.venue_name,
-          venue_city: event.venue_city,
-          venue_state: event.venue_state,
-          venue_country: event.venue_country,
-          event_url: event.event_url,
-          artist_uuid: event.artist_uuid,
-          artist_name: event.artists?.artist_name || "Unknown Artist",
-          artist_image: event.artists?.artist_image
-        }));
+        if (!data) return [];
+        
+        return data
+          .filter(event => event.artists) // Only include events with artist data
+          .map(event => {
+            // Handle both array and object artist data
+            const artistData = Array.isArray(event.artists) ? event.artists[0] : event.artists;
+            
+            return {
+              event_id: event.event_id,
+              event_name: event.event_name,
+              event_date: event.event_date,
+              event_time: event.event_time,
+              venue_name: event.venue_name,
+              venue_city: event.venue_city,
+              venue_state: event.venue_state,
+              venue_country: event.venue_country,
+              event_url: event.event_url,
+              artist_uuid: event.artist_uuid,
+              artist_name: artistData?.artist_name || "Unknown Artist",
+              artist_image: artistData?.artist_image || null
+            };
+          });
       };
 
       const weekendEvents = formatEvents(weekendData || []);
       const monthEvents = formatEvents(monthData || []);
 
+      console.log("Formatted weekend events:", weekendEvents);
+      console.log("Formatted month events:", monthEvents);
+
       setThisWeekendEvents(weekendEvents);
       setThisMonthEvents(monthEvents);
 
-      const allEvents = [...weekendEvents, ...monthEvents];
+      const allEventsForCities = [...weekendEvents, ...monthEvents];
       const uniqueCities = Array.from(
-        new Set(allEvents.map(e => e.venue_city))
+        new Set(allEventsForCities.map(e => e.venue_city))
       ).sort();
       setAvailableCities(uniqueCities);
 
