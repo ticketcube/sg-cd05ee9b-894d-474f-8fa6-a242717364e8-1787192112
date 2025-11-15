@@ -114,7 +114,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
                           As a member, every Thursday you'll receive an exclusive list of OTW Artists' weekend shows in your city. 
             </p>
             <p>
-                    We Reward Discoverry      ™
+                    We Reward Discovery
 
             </p>
           </div>
