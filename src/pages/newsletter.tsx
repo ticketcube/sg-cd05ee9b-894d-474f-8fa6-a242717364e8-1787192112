@@ -4,7 +4,8 @@ import { NewsletterSignupOverlay } from "@/components/NewsletterSignupOverlay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Calendar, MapPin, ExternalLink } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Calendar, MapPin, ExternalLink, ChevronDown, ChevronUp, Ticket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NewsletterEvent {
@@ -28,7 +29,12 @@ export default function NewsletterPage() {
   const [thisWeekendEvents, setThisWeekendEvents] = useState<NewsletterEvent[]>([]);
   const [thisMonthEvents, setThisMonthEvents] = useState<NewsletterEvent[]>([]);
   const [loading, setLoading] = useState(false);
-  const [cityFilter, setCityFilter] = useState("");
+  const [selectedCity, setSelectedCity] = useState<string>("all");
+  const [artistSearch, setArtistSearch] = useState("");
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
+  const [weekendExpanded, setWeekendExpanded] = useState(true);
+  const [monthExpanded, setMonthExpanded] = useState(true);
 
   useEffect(() => {
     checkSubscriptionStatus();
@@ -39,6 +45,22 @@ export default function NewsletterPage() {
       loadEvents();
     }
   }, [isSubscribed]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setWeekendExpanded(true);
+        setMonthExpanded(false);
+      } else {
+        setWeekendExpanded(true);
+        setMonthExpanded(true);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const checkSubscriptionStatus = async () => {
     const email = localStorage.getItem("newsletter_email");
@@ -61,18 +83,19 @@ export default function NewsletterPage() {
     setLoading(true);
     try {
       const today = new Date();
-      const dayOfWeek = today.getDay();
-      const daysUntilFriday = (5 - dayOfWeek + 7) % 7;
-      const nextFriday = new Date(today);
-      nextFriday.setDate(today.getDate() + daysUntilFriday);
+      today.setHours(0, 0, 0, 0);
       
-      const nextSunday = new Date(nextFriday);
-      nextSunday.setDate(nextFriday.getDate() + 2);
+      const thursday = new Date(today);
+      const daysUntilThursday = (4 - today.getDay() + 7) % 7;
+      thursday.setDate(today.getDate() + daysUntilThursday);
+      
+      const sunday = new Date(thursday);
+      sunday.setDate(thursday.getDate() + 3);
 
       const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-      const fridayStr = nextFriday.toISOString().split('T')[0];
-      const sundayStr = nextSunday.toISOString().split('T')[0];
+      const thursdayStr = thursday.toISOString().split('T')[0];
+      const sundayStr = sunday.toISOString().split('T')[0];
       const endOfMonthStr = endOfMonth.toISOString().split('T')[0];
 
       const { data: weekendData, error: weekendError } = await supabase
@@ -94,10 +117,9 @@ export default function NewsletterPage() {
           )
         `)
         .eq("is_active", true)
-        .gte("event_date", fridayStr)
+        .gte("event_date", thursdayStr)
         .lte("event_date", sundayStr)
-        .order("event_date", { ascending: true })
-        .order("venue_city", { ascending: true });
+        .order("event_date", { ascending: true });
 
       if (weekendError) throw weekendError;
 
@@ -122,8 +144,7 @@ export default function NewsletterPage() {
         .eq("is_active", true)
         .gt("event_date", sundayStr)
         .lte("event_date", endOfMonthStr)
-        .order("event_date", { ascending: true })
-        .order("venue_city", { ascending: true });
+        .order("event_date", { ascending: true });
 
       if (monthError) throw monthError;
 
@@ -144,8 +165,26 @@ export default function NewsletterPage() {
         }));
       };
 
-      setThisWeekendEvents(formatEvents(weekendData || []));
-      setThisMonthEvents(formatEvents(monthData || []));
+      const weekendEvents = formatEvents(weekendData || []);
+      const monthEvents = formatEvents(monthData || []);
+
+      setThisWeekendEvents(weekendEvents);
+      setThisMonthEvents(monthEvents);
+
+      const allEvents = [...weekendEvents, ...monthEvents];
+      const uniqueCities = Array.from(
+        new Set(allEvents.map(e => e.venue_city))
+      ).sort();
+      setAvailableCities(uniqueCities);
+
+      const userHomeCity = localStorage.getItem("newsletter_home_city");
+      if (userHomeCity && uniqueCities.includes(userHomeCity)) {
+        setSelectedCity(userHomeCity);
+      } else if (uniqueCities.includes("Los Angeles")) {
+        setSelectedCity("Los Angeles");
+      } else if (uniqueCities.length > 0) {
+        setSelectedCity(uniqueCities[0]);
+      }
     } catch (error) {
       console.error("Error loading events:", error);
     } finally {
@@ -154,112 +193,216 @@ export default function NewsletterPage() {
   };
 
   const filterEvents = (events: NewsletterEvent[]) => {
-    if (!cityFilter.trim()) return events;
-    
-    const searchTerm = cityFilter.toLowerCase();
-    return events.filter(event => 
-      event.venue_city.toLowerCase().includes(searchTerm) ||
-      event.venue_state?.toLowerCase().includes(searchTerm) ||
-      event.artist_name.toLowerCase().includes(searchTerm)
-    );
+    let filtered = events;
+
+    if (selectedCity && selectedCity !== "all") {
+      filtered = filtered.filter(event => event.venue_city === selectedCity);
+    }
+
+    if (artistSearch.trim()) {
+      const searchTerm = artistSearch.toLowerCase();
+      filtered = filtered.filter(event => 
+        event.artist_name.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return filtered;
+  };
+
+  const groupEventsByDate = (events: NewsletterEvent[]) => {
+    const grouped: { [date: string]: NewsletterEvent[] } = {};
+    events.forEach(event => {
+      if (!grouped[event.event_date]) {
+        grouped[event.event_date] = [];
+      }
+      grouped[event.event_date].push(event);
+    });
+    return grouped;
   };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00');
     return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
+      weekday: "long",
+      month: "long",
       day: "numeric"
     });
   };
 
-  const EventTable = ({ events, title }: { events: NewsletterEvent[]; title: string }) => {
-    const filteredEvents = filterEvents(events);
+  const TicketPurchaseRow = ({ event }: { event: NewsletterEvent }) => {
+    const isExpanded = expandedTicket === event.event_id;
+
+    return (
+      <>
+        <tr className="border-b last:border-0 hover:bg-gray-50 transition-colors">
+          <td className="py-3 px-2">
+            <div className="font-medium text-sm">{event.artist_name}</div>
+          </td>
+          <td className="py-3 px-2 text-sm">{event.venue_name}</td>
+          <td className="py-3 px-2 text-sm whitespace-nowrap">
+            {formatDate(event.event_date)}
+          </td>
+          <td className="py-3 px-2 text-right">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setExpandedTicket(isExpanded ? null : event.event_id)}
+              className="flex items-center gap-1"
+            >
+              <Ticket className="w-4 h-4" />
+              {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </Button>
+          </td>
+        </tr>
+        {isExpanded && (
+          <tr className="bg-gray-50 border-b">
+            <td colSpan={4} className="py-4 px-2">
+              <div className="flex gap-3 justify-center">
+                <Button
+                  asChild
+                  className="flex items-center gap-2"
+                >
+                  <a 
+                    href={event.event_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    Buy Tickets
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {/* Will open WillCall component */}}
+                  className="flex items-center gap-2"
+                >
+                  OTW Live WillCall
+                  <Calendar className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="text-center mt-2 text-xs text-gray-500">
+                OTW Live WillCall - Coming Soon
+              </div>
+            </td>
+          </tr>
+        )}
+      </>
+    );
+  };
+
+  const WeekendEventsSection = () => {
+    const filteredEvents = filterEvents(thisWeekendEvents);
+    const groupedEvents = groupEventsByDate(filteredEvents);
+    const dates = Object.keys(groupedEvents).sort();
 
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">{title}</CardTitle>
-          {filteredEvents.length === 0 ? (
-            <p className="text-sm text-gray-500">No events scheduled</p>
-          ) : (
-            <p className="text-sm text-gray-500">{filteredEvents.length} events</p>
-          )}
+        <CardHeader 
+          className="cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => setWeekendExpanded(!weekendExpanded)}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                🎵 This Weekend
+                {weekendExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </CardTitle>
+              <p className="text-sm text-gray-500 mt-1">
+                {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
+              </p>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
-          {filteredEvents.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
-              <p>No events found{cityFilter ? " for your search" : ""}</p>
+        {weekendExpanded && (
+          <CardContent>
+            {filteredEvents.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
+                <p>No events found</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {dates.map(date => (
+                  <div key={date}>
+                    <h3 className="text-lg font-semibold mb-3 text-gray-700">
+                      {formatDate(date)}
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="border-b bg-gray-50">
+                          <tr className="text-left text-xs text-gray-600">
+                            <th className="pb-2 px-2 font-medium">Artist</th>
+                            <th className="pb-2 px-2 font-medium">Venue</th>
+                            <th className="pb-2 px-2 font-medium">Date</th>
+                            <th className="pb-2 px-2 font-medium text-right">Tickets</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {groupedEvents[date].map(event => (
+                            <TicketPurchaseRow key={event.event_id} event={event} />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        )}
+      </Card>
+    );
+  };
+
+  const MonthEventsSection = () => {
+    const filteredEvents = filterEvents(thisMonthEvents);
+
+    return (
+      <Card>
+        <CardHeader 
+          className="cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => setMonthExpanded(!monthExpanded)}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                📅 This Month
+                {monthExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </CardTitle>
+              <p className="text-sm text-gray-500 mt-1">
+                {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
+              </p>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="border-b">
-                  <tr className="text-left text-sm text-gray-600">
-                    <th className="pb-3 font-medium">Artist</th>
-                    <th className="pb-3 font-medium">Date</th>
-                    <th className="pb-3 font-medium">Venue</th>
-                    <th className="pb-3 font-medium">City</th>
-                    <th className="pb-3 font-medium"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEvents.map((event) => (
-                    <tr key={event.event_id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
-                      <td className="py-4">
-                        <div className="flex items-center gap-3">
-                          {event.artist_image && (
-                            <img 
-                              src={event.artist_image} 
-                              alt={event.artist_name}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                          )}
-                          <div>
-                            <p className="font-medium">{event.artist_name}</p>
-                            <p className="text-sm text-gray-500 truncate max-w-xs">{event.event_name}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 text-sm">
-                        {formatDate(event.event_date)}
-                        {event.event_time && (
-                          <span className="block text-gray-500">{event.event_time}</span>
-                        )}
-                      </td>
-                      <td className="py-4 text-sm">{event.venue_name}</td>
-                      <td className="py-4 text-sm">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-gray-400" />
-                          <span>{event.venue_city}</span>
-                          {event.venue_state && <span>, {event.venue_state}</span>}
-                        </div>
-                      </td>
-                      <td className="py-4">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                        >
-                          <a 
-                            href={event.event_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1"
-                          >
-                            Tickets
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </Button>
-                      </td>
+          </div>
+        </CardHeader>
+        {monthExpanded && (
+          <CardContent>
+            {filteredEvents.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
+                <p>No events found</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="border-b bg-gray-50">
+                    <tr className="text-left text-xs text-gray-600">
+                      <th className="pb-2 px-2 font-medium">Artist</th>
+                      <th className="pb-2 px-2 font-medium">Venue</th>
+                      <th className="pb-2 px-2 font-medium">Date</th>
+                      <th className="pb-2 px-2 font-medium text-right">Tickets</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
+                  </thead>
+                  <tbody>
+                    {filteredEvents.map(event => (
+                      <TicketPurchaseRow key={event.event_id} event={event} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        )}
       </Card>
     );
   };
@@ -273,10 +416,10 @@ export default function NewsletterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">OTW Discovery Newsletter</h1>
+          <h1 className="text-4xl font-bold mb-2">OTW Live</h1>
           <p className="text-gray-600">Never miss a show from your favorite emerging artists</p>
         </div>
 
@@ -288,29 +431,46 @@ export default function NewsletterPage() {
 
         {isSubscribed && (
           <>
-            <div className="mb-6">
-              <div className="relative max-w-md mx-auto">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="text"
-                  placeholder="Search by city, state, or artist..."
-                  value={cityFilter}
-                  onChange={(e) => setCityFilter(e.target.value)}
-                  className="pl-10"
-                />
+            <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center">
+              <div className="w-full md:w-64">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Filter by City
+                </label>
+                <Select value={selectedCity} onValueChange={setSelectedCity}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Cities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Cities</SelectItem>
+                    {availableCities.map(city => (
+                      <SelectItem key={city} value={city}>
+                        {city}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full md:w-64">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Search Artists
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    type="text"
+                    placeholder="Artist name..."
+                    value={artistSearch}
+                    onChange={(e) => setArtistSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
               </div>
             </div>
 
             <div className="space-y-6">
-              <EventTable 
-                events={thisWeekendEvents} 
-                title="🎵 This Weekend" 
-              />
-
-              <EventTable 
-                events={thisMonthEvents} 
-                title="📅 This Month" 
-              />
+              <WeekendEventsSection />
+              <MonthEventsSection />
             </div>
 
             {loading && (
