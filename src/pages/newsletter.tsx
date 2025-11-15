@@ -92,22 +92,36 @@ export default function NewsletterPage() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
-      const thursday = new Date(today);
-      const daysUntilThursday = (4 - today.getDay() + 7) % 7;
-      thursday.setDate(today.getDate() + daysUntilThursday);
+      // THIS WEEKEND: Today through this coming Sunday
+      const thisSunday = new Date(today);
+      const daysUntilSunday = (7 - today.getDay()) % 7; // 0 if today is Sunday
+      thisSunday.setDate(today.getDate() + daysUntilSunday);
       
-      const sunday = new Date(thursday);
-      sunday.setDate(thursday.getDate() + 3);
+      // If today is Sunday, include today
+      if (today.getDay() === 0) {
+        thisSunday.setDate(today.getDate());
+      }
 
+      // THIS MONTH: Day after this Sunday through end of month
+      const nextMonday = new Date(thisSunday);
+      nextMonday.setDate(thisSunday.getDate() + 1);
+      
       const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-      const thursdayStr = thursday.toISOString().split('T')[0];
-      const sundayStr = sunday.toISOString().split('T')[0];
+      const todayStr = today.toISOString().split('T')[0];
+      const sundayStr = thisSunday.toISOString().split('T')[0];
+      const mondayStr = nextMonday.toISOString().split('T')[0];
       const endOfMonthStr = endOfMonth.toISOString().split('T')[0];
 
-      console.log("📅 Date ranges:", { thursdayStr, sundayStr, endOfMonthStr });
+      console.log("📅 Fixed date ranges:", { 
+        today: todayStr, 
+        thisSunday: sundayStr,
+        nextMonday: mondayStr,
+        endOfMonth: endOfMonthStr,
+        todayDayOfWeek: today.getDay()
+      });
 
-      // Query for weekend events - NO ARTIST JOIN
+      // Query for weekend events (today through Sunday)
       const { data: weekendData, error: weekendError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -122,17 +136,18 @@ export default function NewsletterPage() {
           event_url
         `)
         .eq("is_active", true)
-        .gte("event_date", thursdayStr)
+        .gte("event_date", todayStr)
         .lte("event_date", sundayStr)
         .order("event_date", { ascending: true });
 
       console.log("🎫 Weekend query result:", { 
         error: weekendError, 
         count: weekendData?.length,
-        sample: weekendData?.[0]
+        sample: weekendData?.[0],
+        dateRange: `${todayStr} to ${sundayStr}`
       });
 
-      // Query for month events - NO ARTIST JOIN
+      // Query for month events (after Sunday through end of month)
       const { data: monthData, error: monthError } = await supabase
         .from("ticketmaster_events")
         .select(`
@@ -153,7 +168,8 @@ export default function NewsletterPage() {
 
       console.log("📆 Month query result:", { 
         error: monthError, 
-        count: monthData?.length 
+        count: monthData?.length,
+        dateRange: `${mondayStr} to ${endOfMonthStr}`
       });
 
       const formatEvents = (data: any[]): NewsletterEvent[] => {
