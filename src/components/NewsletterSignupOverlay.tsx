@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { newsletterService } from "@/services/newsletterService";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NewsletterSignupOverlayProps {
   onSubscribed: () => void;
@@ -13,7 +14,32 @@ interface NewsletterSignupOverlayProps {
 
 export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSignupOverlayProps) {
   const [email, setEmail] = useState("");
+  const [homeCity, setHomeCity] = useState("");
   const [loading, setLoading] = useState(false);
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+
+  useEffect(() => {
+    loadAvailableCities();
+  }, []);
+
+  const loadAvailableCities = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("ticketmaster_events")
+        .select("venue_city")
+        .eq("is_active", true);
+
+      if (error) throw error;
+
+      const uniqueCities = Array.from(
+        new Set(data?.map(event => event.venue_city).filter(Boolean))
+      ).sort();
+
+      setAvailableCities(uniqueCities as string[]);
+    } catch (error) {
+      console.error("Error loading cities:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,14 +49,24 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
       return;
     }
 
+    if (homeCity && !availableCities.includes(homeCity)) {
+      toast.error("Please select a valid city from the list");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const result = await newsletterService.subscribe(email);
+      const result = await newsletterService.subscribe(email, homeCity || undefined);
 
       if (result.success) {
         toast.success(result.message);
         
+        localStorage.setItem("newsletter_email", email);
+        if (homeCity) {
+          localStorage.setItem("newsletter_home_city", homeCity);
+        }
+
         const response = await fetch("/api/newsletter/send-welcome", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -70,13 +106,13 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
         )}
 
         <CardHeader className="text-center pb-4">
-          <div className="mx-auto mb-4 w-16 h-16 bg-black rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-2xl">OTW</span>
+          <div className="mx-auto mb-4">
+            <img 
+              src="/otwlive.png" 
+              alt="OTW Live" 
+              className="w-16 h-16 object-contain mx-auto"
+            />
           </div>
-          <CardTitle className="text-2xl">OnesToWatch</CardTitle>
-          <CardDescription className="text-base mt-2">
-            OTW Discovery Rewards Newsletter
-          </CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -106,6 +142,26 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
                 required
                 disabled={loading}
               />
+            </div>
+
+            <div>
+              <Input
+                type="text"
+                placeholder="Home City (optional)"
+                value={homeCity}
+                onChange={(e) => setHomeCity(e.target.value)}
+                className="w-full"
+                list="cities-list"
+                disabled={loading}
+              />
+              <datalist id="cities-list">
+                {availableCities.map((city) => (
+                  <option key={city} value={city} />
+                ))}
+              </datalist>
+              <p className="text-xs text-gray-500 mt-1">
+                We'll prioritize shows in your city
+              </p>
             </div>
 
             <Button

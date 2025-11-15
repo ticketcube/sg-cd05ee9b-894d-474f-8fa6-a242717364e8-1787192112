@@ -6,6 +6,7 @@ type NewsletterInsert = Database["public"]["Tables"]["newsletter_subscribers"]["
 
 export interface NewsletterSignupData {
   email: string;
+  home_city?: string;
 }
 
 export interface NewsletterStats {
@@ -16,7 +17,7 @@ export interface NewsletterStats {
 }
 
 class NewsletterService {
-  async subscribe(email: string): Promise<{ success: boolean; message: string; subscriber?: NewsletterSubscriber }> {
+  async subscribe(email: string, homeCity?: string): Promise<{ success: boolean; message: string; subscriber?: NewsletterSubscriber }> {
     try {
       const normalizedEmail = email.toLowerCase().trim();
 
@@ -28,12 +29,18 @@ class NewsletterService {
 
       if (existing) {
         if (existing.status === "unsubscribed") {
+          const updateData: any = { 
+            status: "active",
+            subscribed_at: new Date().toISOString()
+          };
+          
+          if (homeCity) {
+            updateData.home_city = homeCity;
+          }
+
           const { data: resubscribed, error: updateError } = await supabase
             .from("newsletter_subscribers")
-            .update({ 
-              status: "active",
-              subscribed_at: new Date().toISOString()
-            })
+            .update(updateData)
             .eq("email", normalizedEmail)
             .select()
             .single();
@@ -54,12 +61,18 @@ class NewsletterService {
         };
       }
 
+      const insertData: any = {
+        email: normalizedEmail,
+        status: "active"
+      };
+
+      if (homeCity) {
+        insertData.home_city = homeCity;
+      }
+
       const { data: newSubscriber, error: insertError } = await supabase
         .from("newsletter_subscribers")
-        .insert({
-          email: normalizedEmail,
-          status: "active"
-        })
+        .insert(insertData)
         .select()
         .single();
 
