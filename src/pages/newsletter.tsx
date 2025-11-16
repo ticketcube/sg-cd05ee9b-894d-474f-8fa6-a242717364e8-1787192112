@@ -334,7 +334,7 @@ export default function NewsletterPage() {
   return (
     <div className="min-h-screen px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-6 flex justify-center text-2xl font-bold">LIVE THIS WEEK!</div>
+              <div className="mb-6 flex justify-center text-2xl font-bold"> Discover What’s Happening This Week!</div>
 
         {!isSubscribed ? (
           <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
@@ -374,7 +374,7 @@ export default function NewsletterPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input 
-                    type="text-sm" 
+                    type="text-xs" 
                     placeholder="Artist, Event or Venue" 
                     value={searchQuery} 
                     onChange={(e) => setSearchQuery(e.target.value)} 
