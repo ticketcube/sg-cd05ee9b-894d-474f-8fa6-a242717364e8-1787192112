@@ -358,14 +358,9 @@ export default function NewsletterPage() {
                   <CityCombobox
                     value={selectedCity}
                     onValueChange={handleCityChange}
-                    placeholder="Filter by City"
+                    placeholder="Select City"
                   />
-                  {selectedCityName !== "all" && (
-                    <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
-                      <span>✓</span>
-                      <span>Filtered to: {selectedCityName}</span>
-                    </p>
-                  )}
+                 
                 </div>
               <div className="w-full md:w-64">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Search Events</label>
