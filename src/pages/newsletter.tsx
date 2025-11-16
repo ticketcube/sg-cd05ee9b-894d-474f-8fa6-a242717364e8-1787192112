@@ -20,6 +20,9 @@ interface NewsletterEvent {
   venue_state: string | null;
   venue_country: string;
   event_url: string;
+  artist_name?: string | null;
+  artist_image?: string | null;
+  artist_videolink?: string | null;
 }
 
 export default function NewsletterPage() {
@@ -164,7 +167,10 @@ export default function NewsletterPage() {
           venue_city,
           venue_state,
           venue_country,
-          event_url
+          event_url,
+          artist_name,
+          artist_image,
+          artist_videolink
         `)
         .eq("is_active", true)
         .gte("event_date", thuStr)
@@ -185,7 +191,10 @@ export default function NewsletterPage() {
           venue_city,
           venue_state,
           venue_country,
-          event_url
+          event_url,
+          artist_name,
+          artist_image,
+          artist_videolink
         `)
         .eq("is_active", true)
         .gte("event_date", nextMonStr)
