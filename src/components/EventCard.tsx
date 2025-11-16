@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import Image from "next/image";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
+import { generateTicketCubeLink } from "@/lib/ticketcube";
+
 
 interface EventCardProps {
     event: {
