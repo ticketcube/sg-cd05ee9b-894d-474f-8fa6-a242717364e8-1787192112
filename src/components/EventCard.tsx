@@ -126,7 +126,7 @@ export function EventCard({ event }: EventCardProps) {
                                         venue: event.venue_name,
                                         venue_city: event.venue_city,
                                         venue_state: event.venue_state,
-                                        artist_img_url: artistImage,
+                                        primary_attraction_image: artistImage,
                                         venue_img_url: venueImage,
                                     });
                                     window.open(ticketCubeUrl, '_blank');
