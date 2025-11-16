@@ -378,7 +378,7 @@ export default function NewsletterPage() {
                     placeholder="Artist, Event or Venue" 
                     value={searchQuery} 
                     onChange={(e) => setSearchQuery(e.target.value)} 
-                    className="pl-9 h-10"
+                     className="pl-9 h-10 text-xs placeholder:text-xs"
                   />
                 </div>
               </div>
