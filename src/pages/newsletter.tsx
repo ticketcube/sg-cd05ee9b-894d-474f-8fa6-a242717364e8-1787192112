@@ -343,33 +343,62 @@ export default function NewsletterPage() {
 
   if (checkingSubscription) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>;
 
-  return (
-    <div className="min-h-screen px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-4 flex justify-center text-2xl font-bold">LIVE THIS WEEK!</div>
+    return (
+        <div className="min-h-screen px-4 pt-4">
+            <div className="max-w-6xl mx-auto">
 
-        {!isSubscribed ? (
-          <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
-        ) : (
-          <>
-            <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center">
-                <div className="w-full md:w-64">
-                                  <label className="text-sm font-medium text-gray-700 mb-2 block"> <span>Filtered to: {selectedCityName}</span></label>
-                  <CityCombobox
-                    value={selectedCity}
-                    onValueChange={handleCityChange}
-                    placeholder="Select City"
-                  />
-                  {selectedCityName !== "all"}
-                </div>
-              <div className="w-full md:w-64">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Search Events</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input type="text" placeholder="Event name..." value={artistSearch} onChange={(e) => setArtistSearch(e.target.value)} className="pl-9"/>
-                </div>
-              </div>
+                {/* Improved headline */}
+                <h1 className="mb-6 text-center text-3xl font-extrabold tracking-tight text-gray-900">
+                    Discover What’s Happening This Week
+                </h1>
+
+                {!isSubscribed ? (
+                    <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
+                ) : (
+                    <>
+                        {/* ONE ROW even on mobile */}
+                        <div className="mb-6 flex flex-row gap-3 items-center w-full">
+
+                            {/* City Selector */}
+                            <div className="flex-1 min-w-0">
+                                <div className="relative">
+                                    {/* Location icon INSIDE the select box */}
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+
+                                    <CityCombobox
+                                        value={selectedCity}
+                                        onValueChange={handleCityChange}
+                                        placeholder="Select City"
+                                        className="pl-9 py-2 h-10 text-sm"
+                                    />
+                                </div>
+
+                                {/* Subtext */}
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Showing: {selectedCityName}
+                                </p>
+                            </div>
+
+                            {/* Search Field */}
+                            <div className="flex-1 min-w-0">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                    <Input
+                                        type="text"
+                                        placeholder="Search events..."
+                                        value={artistSearch}
+                                        onChange={(e) => setArtistSearch(e.target.value)}
+                                        className="pl-9 py-2 h-10 text-sm"
+                                    />
+                                </div>
+                            </div>
+
+                        </div>
+                    </>
+                )}
             </div>
+        </div>
+    );
 
             <div className="space-y-6">
               <WeekendEventsSection />
