@@ -385,24 +385,6 @@ export default function NewsletterPage() {
                     </div>
                   </div>
             </div>
-                {/* Search Bar */}
-                <div className="flex-1 min-w-0">
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                    Search Events
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input 
-                      type="text" 
-                      placeholder="Artist, Event, or Venue..." 
-                      value={artistSearch} 
-                      onChange={(e) => setArtistSearch(e.target.value)} 
-                      className="pl-9"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
             <div className="space-y-6">
               <WeekendEventsSection />
               <NextWeekEventsSection />
