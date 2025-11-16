@@ -340,8 +340,8 @@ export default function NewsletterPage() {
               <Image
                   src="/otwlive.png"
                   alt="OTW Live"
-                  width={250}      // slightly smaller
-                  height={250}     // slightly smaller
+                  width={100}      // slightly smaller
+                  height={100}     // slightly smaller
                   className="rounded-md"
               />
           </div>
