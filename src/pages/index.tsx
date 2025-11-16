@@ -118,25 +118,28 @@ export default function HomePage() {
                     <WeeklyListCard onArtistClick={handleRegisterClick} />
                 </div>
 
-                  {/* Footer */}
-        <footer className="mt-16 border-t border-gray-200 py-8 text-center">
-          <p className="text-sm text-black">
-            BY CONTINUING PAST THIS PAGE YOU AGREE TO OUR{" "}
-            <a 
-              href="/termsofservice" 
-              className="underline hover:text-gray-600 transition-colors"
-            >
-              TERMS OF USE
-            </a>
-            {" & "}
-            <a 
-              href="/privacypolicy" 
-              className="underline hover:text-gray-600 transition-colors"
-            >
-              PRIVACY POLICY
-            </a>
-          </p>
+                 {/* Footer */}
+        <footer className="w-full mt-16 border-t border-gray-200 py-8">
+          <div className="text-center">
+            <p className="text-sm text-black">
+              BY CONTINUING PAST THIS PAGE YOU AGREE TO OUR{" "}
+              <a 
+                href="/termsofservice" 
+                className="underline hover:text-gray-600 transition-colors"
+              >
+                TERMS OF USE
+              </a>
+              {" & "}
+              <a 
+                href="/privacypolicy" 
+                className="underline hover:text-gray-600 transition-colors"
+              >
+                PRIVACY POLICY
+              </a>
+            </p>
+          </div>
         </footer>
+
             </div>
 
             {/* PWA Install Prompt */}
