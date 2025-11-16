@@ -4,6 +4,13 @@ export interface TicketmasterEvent {
   id: string;
   name: string;
   url: string;
+  images?: Array<{
+    url: string;
+    ratio: string;
+    width: number;
+    height: number;
+    fallback?: boolean;
+  }>;
   dates: {
     start: {
       localDate: string;
@@ -12,6 +19,7 @@ export interface TicketmasterEvent {
   };
   _embedded?: {
     venues?: Array<{
+      id: string;
       name: string;
       city: {
         name: string;
@@ -22,10 +30,24 @@ export interface TicketmasterEvent {
       country: {
         name: string;
       };
+      images?: Array<{
+        url: string;
+        ratio: string;
+        width: number;
+        height: number;
+        fallback?: boolean;
+      }>;
     }>;
     attractions?: Array<{
       id: string;
       name: string;
+      images?: Array<{
+        url: string;
+        ratio: string;
+        width: number;
+        height: number;
+        fallback?: boolean;
+      }>;
     }>;
   };
 }
@@ -158,20 +180,33 @@ export default async function handler(
     }
     
     const formattedEvents = events.map((event: TicketmasterEvent) => {
-      const venue = event._embedded?.venues?.[0];
-      return {
-        id: event.id,
-        name: event.name,
-        url: event.url,
-        date: event.dates.start.localDate,
-        time: event.dates.start.localTime || null,
-        venue_name: venue?.name || "Venue TBA",
-        venue_city: venue?.city.name || "City TBA",
-        venue_state: venue?.state?.name || null,
-        venue_country: venue?.country.name || "Country TBA",
-        attractionId: attractionId
-      };
-    });
+  const venue = event._embedded?.venues?.[0];
+  const attraction = event._embedded?.attractions?.[0];
+  
+  return {
+    id: event.id,
+    name: event.name,
+    url: event.url,
+    date: event.dates.start.localDate,
+    time: event.dates.start.localTime || null,
+    venue_id: venue?.id || null,
+    venue_name: venue?.name || "Venue TBA",
+    venue_city: venue?.city.name || "City TBA",
+    venue_state: venue?.state?.name || null,
+    venue_country: venue?.country.name || "Country TBA",
+    attractionId: attractionId,
+    
+    // IMAGE URLS - Capture everything we can get
+    event_images: event.images || [],
+    venue_images: venue?.images || [],
+    attraction_images: attraction?.images || [],
+    
+    // Helper fields for easy access to primary images
+    primary_event_image: event.images?.[0]?.url || null,
+    primary_venue_image: venue?.images?.[0]?.url || null,
+    primary_attraction_image: attraction?.images?.[0]?.url || null,
+  };
+});
 
     console.log("🎫 ================================\n");
 
