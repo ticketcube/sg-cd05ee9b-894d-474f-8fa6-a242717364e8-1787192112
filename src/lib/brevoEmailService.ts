@@ -1,7 +1,7 @@
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 const SENDER_EMAIL = "admin@onestowatch.live";
-const SENDER_NAME = "OnesToWatch Discovery Club";
+const SENDER_NAME = "OnesToWatch LIVE This Week";
 
 export interface EmailRecipient {
   email: string;
@@ -71,7 +71,7 @@ class BrevoEmailService {
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Welcome to OTW Discovery Club</title>
+        <title>Welcome to OTW Live!</title>
       </head>
       <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
@@ -82,7 +82,7 @@ class BrevoEmailService {
                 <tr>
                   <td style="padding: 40px 40px 20px 40px; text-align: center;">
                     <h1 style="margin: 0; color: #1a1a1a; font-size: 28px; font-weight: bold;">
-                      Welcome to OTW Discovery Club! 🎵
+                      Welcome to OTW Live! 🎵
                     </h1>
                   </td>
                 </tr>
@@ -91,7 +91,7 @@ class BrevoEmailService {
                 <tr>
                   <td style="padding: 0 40px 40px 40px;">
                     <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                      Thank you for subscribing to the OnesToWatch Discovery Club newsletter!
+                      Thank you for joining OnesToWatch LIVE!
                     </p>
                     
                     <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
@@ -110,7 +110,7 @@ class BrevoEmailService {
                     </p>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                      <a href="https://otwchart.com/newsletter" style="display: inline-block; padding: 14px 32px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold;">
+                      <a href="https://onestowatch.live/newsletter" style="display: inline-block; padding: 14px 32px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold;">
                         View This Week's Shows
                       </a>
                     </div>
@@ -142,7 +142,7 @@ class BrevoEmailService {
     const textContent = `
 Welcome to OTW LIVE! 🎵
 
-Thank you for joining the OnesToWatch LIVE Club!
+Thank you for joining OnesToWatch LIVE!
 
 Here's what you'll receive every week:
 - An exclusive list of OTW Artists' shows in cities near you
@@ -152,10 +152,10 @@ Here's what you'll receive every week:
 
 Watch artist videos, discover new music, and never miss a show from the artists you love.
 
-View this week's shows: https://otwchart.com/newsletter
+View this week's shows: https://onestowatch.live/newsletter
 
 ---
-You're receiving this because you subscribed to the OnesToWatch Discovery Club newsletter.
+You're receiving this because you subscribed to the OnesToWatch LIVE newsletter.
 Email: ${email}
 Unsubscribe: ${unsubscribeUrl}
     `.trim();
