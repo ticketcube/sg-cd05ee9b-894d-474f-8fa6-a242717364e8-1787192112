@@ -356,59 +356,70 @@ export default function NewsletterPage() {
                     <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
                 ) : (
                     <>
-                        {/* ONE ROW even on mobile */}
-                        <div className="mb-6 flex flex-row gap-3 items-center w-full">
+                        {/* One-line action bar (always stays one row) */}
+                        <div className="mb-6 flex flex-row items-center gap-3 w-full">
 
                             {/* City Selector */}
                             <div className="flex-1 min-w-0">
                                 <div className="relative">
-                                    {/* Location icon INSIDE the select box */}
-                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth="2"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3zm0 0c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
+                                        />
+                                    </svg>
 
                                     <CityCombobox
                                         value={selectedCity}
                                         onValueChange={handleCityChange}
                                         placeholder="Select City"
-                                        className="pl-9 py-2 h-10 text-sm"
+                                        className="pl-9 h-10 py-2 text-sm"
                                     />
                                 </div>
 
-                                {/* Subtext */}
                                 <p className="mt-1 text-xs text-gray-500">
                                     Showing: {selectedCityName}
                                 </p>
                             </div>
 
-                            {/* Search Field */}
+                            {/* Event Search */}
                             <div className="flex-1 min-w-0">
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                                     <Input
                                         type="text"
-                                        placeholder="Search events..."
+                                        placeholder="Search events…"
                                         value={artistSearch}
                                         onChange={(e) => setArtistSearch(e.target.value)}
-                                        className="pl-9 py-2 h-10 text-sm"
+                                        className="pl-9 h-10 py-2 text-sm"
                                     />
                                 </div>
                             </div>
 
                         </div>
+
+                        {/* Events Sections */}
+                        <div className="space-y-6">
+                            <WeekendEventsSection />
+                            <NextWeekEventsSection />
+                        </div>
+
+                        {loading && (
+                            <div className="text-center py-4">
+                                <p className="text-gray-500">Loading events...</p>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
         </div>
     );
 
-            <div className="space-y-6">
-              <WeekendEventsSection />
-              <NextWeekEventsSection />
-            </div>
-
-            {loading && <div className="text-center py-4"><p className="text-gray-500">Loading events...</p></div>}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
