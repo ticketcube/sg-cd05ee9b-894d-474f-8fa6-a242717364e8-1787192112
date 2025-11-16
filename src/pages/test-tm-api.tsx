@@ -346,23 +346,106 @@ export default function TestTMApi() {
                     </AlertDescription>
                   </Alert>
 
-                  {results.events && results.events.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-sm">📅 Upcoming Events ({results.events.length}):</h3>
-                      <div className="max-h-64 overflow-auto space-y-2">
-                        {results.events.map((event: any, idx: number) => (
-                          <div key={idx} className="p-3 bg-gray-50 rounded text-sm border">
-                            <div className="font-medium text-blue-600">{event.name}</div>
-                            <div className="text-xs text-gray-600 mt-1 space-y-0.5">
-                              <div>📍 {event.venue_name}, {event.venue_city}{event.venue_state ? `, ${event.venue_state}` : ""}</div>
-                              <div>📅 {event.date} {event.time ? `at ${event.time}` : ""}</div>
-                              <div className="font-mono text-xs text-gray-400">ID: {event.id}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+{results.events && results.events.length > 0 && (
+  <div className="space-y-4">
+    <h3 className="font-semibold text-sm">📅 Upcoming Events ({results.events.length}):</h3>
+    <div className="max-h-96 overflow-auto space-y-4">
+      {results.events.map((event: any, idx: number) => (
+        <div key={idx} className="p-4 bg-gray-50 rounded border border-gray-300 space-y-3">
+          <div className="font-medium text-blue-600 text-base">{event.name}</div>
+          
+          <div className="text-xs text-gray-600 space-y-0.5">
+            <div>📍 {event.venue_name}, {event.venue_city}{event.venue_state ? `, ${event.venue_state}` : ""}</div>
+            <div>📅 {event.date} {event.time ? `at ${event.time}` : ""}</div>
+            <div className="font-mono text-xs text-gray-400">Event ID: {event.id}</div>
+            {event.venue_id && <div className="font-mono text-xs text-gray-400">Venue ID: {event.venue_id}</div>}
+          </div>
+
+          {/* IMAGE URLs SECTION - NEW */}
+          <div className="mt-3 pt-3 border-t border-gray-300 space-y-2">
+            <div className="font-semibold text-xs text-gray-700">🖼️ IMAGE URLs CAPTURED:</div>
+            
+            {/* Primary Images */}
+            <div className="space-y-1 text-xs">
+              <div className="font-medium text-purple-700">Primary Images (single URLs):</div>
+              <div className="pl-2 space-y-0.5 text-gray-600">
+                <div>
+                  <span className="font-mono text-purple-600">primary_event_image:</span>{" "}
+                  {event.primary_event_image ? (
+                    <a href={event.primary_event_image} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline break-all">
+                      {event.primary_event_image}
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">null</span>
                   )}
+                </div>
+                <div>
+                  <span className="font-mono text-purple-600">primary_venue_image:</span>{" "}
+                  {event.primary_venue_image ? (
+                    <a href={event.primary_venue_image} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline break-all">
+                      {event.primary_venue_image}
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">null</span>
+                  )}
+                </div>
+                <div>
+                  <span className="font-mono text-purple-600">primary_attraction_image:</span>{" "}
+                  {event.primary_attraction_image ? (
+                    <a href={event.primary_attraction_image} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline break-all">
+                      {event.primary_attraction_image}
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">null</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Image Arrays */}
+            <div className="space-y-1 text-xs">
+              <div className="font-medium text-green-700">Image Arrays (multiple sizes/ratios):</div>
+              <div className="pl-2 space-y-1">
+                <div>
+                  <span className="font-mono text-green-600">event_images:</span>{" "}
+                  <span className="text-gray-500">
+                    {event.event_images?.length || 0} images
+                  </span>
+                </div>
+                <div>
+                  <span className="font-mono text-green-600">venue_images:</span>{" "}
+                  <span className="text-gray-500">
+                    {event.venue_images?.length || 0} images
+                  </span>
+                </div>
+                <div>
+                  <span className="font-mono text-green-600">attraction_images:</span>{" "}
+                  <span className="text-gray-500">
+                    {event.attraction_images?.length || 0} images
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Show first image from each array if available */}
+            {(event.event_images?.[0] || event.venue_images?.[0] || event.attraction_images?.[0]) && (
+              <div className="pt-2 space-y-1">
+                <div className="font-medium text-xs text-gray-700">Sample Image Objects:</div>
+                <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
+{JSON.stringify({
+  event_image_sample: event.event_images?.[0] || null,
+  venue_image_sample: event.venue_images?.[0] || null,
+  attraction_image_sample: event.attraction_images?.[0] || null
+}, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
                   {results.events && results.events.length === 0 && (
                     <Alert>
