@@ -8,7 +8,6 @@ import Image from "next/image";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { generateTicketCubeLink } from "@/lib/ticketcube";
 
-
 interface EventCardProps {
     event: {
         event_id: string;
@@ -115,6 +114,7 @@ export function EventCard({ event }: EventCardProps) {
                                 <Ticket className="w-5 h-5 md:w-6 md:h-6 text-black" />
                             </a>
 
+                            {/* OTW Live Button - Coming Soon */}
                             {/* OTW Live Button - TicketCube Link */}
                             <button
                                 onClick={() => {
