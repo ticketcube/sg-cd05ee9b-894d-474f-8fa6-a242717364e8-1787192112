@@ -160,7 +160,6 @@ export default function NewsletterPage() {
             artist_image,
             artist_videolink,
             primary_venue_image
-`)
         `)
         .eq("is_active", true)
         .gte("event_date", thuStr)
