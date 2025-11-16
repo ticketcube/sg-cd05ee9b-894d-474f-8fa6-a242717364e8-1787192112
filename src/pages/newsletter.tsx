@@ -335,14 +335,16 @@ export default function NewsletterPage() {
   if (checkingSubscription) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>;
 
   return (
-      <div className="min-h-screen justify-center py-5 px-4">
+      <div className="min-h-screen px-4">
+          <div className="max-w-6xl mx-auto">
          <Image
               src="/otwlive.png"
               alt="OTW Live"
               width={400}
               height={400}
               className="rounded-md"
-            />
+              />
+            </div>
       <div className="max-w-6xl mx-auto">
               <div className="mb-6 flex justify-center text-2xl font-bold"> This Week on OnesToWatch LIVE!</div>
 
