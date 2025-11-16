@@ -347,9 +347,9 @@ export default function NewsletterPage() {
               </p>
             </div>
 
-            {/* Three Column Control Row */}
-            <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Location Automation Toggle */}
+            {/* Three Column Control Row - Always 3 columns even on mobile */}
+            <div className="mb-6 grid grid-cols-[auto_1fr_1fr] gap-2">
+              {/* Location Automation Toggle - Small square */}
               <div className="flex items-center">
                 <button
                   onClick={() => setUseLocationAutomation(!useLocationAutomation)}
@@ -360,14 +360,14 @@ export default function NewsletterPage() {
                   }`}
                   title="Use location automation"
                 >
-                  <Navigation className="w-5 h-5" />
+                  <Navigation className="w-3.5 h-3.5" />
                 </button>
               </div>
 
               {/* City Selector */}
               <div>
                 <Select value={selectedCityName} onValueChange={setSelectedCityName}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full h-10">
                     <SelectValue placeholder="Select City" />
                   </SelectTrigger>
                   <SelectContent>
@@ -390,7 +390,7 @@ export default function NewsletterPage() {
                     placeholder="Artist, Event or Venue" 
                     value={searchQuery} 
                     onChange={(e) => setSearchQuery(e.target.value)} 
-                    className="pl-9"
+                    className="pl-9 h-10"
                   />
                 </div>
               </div>
