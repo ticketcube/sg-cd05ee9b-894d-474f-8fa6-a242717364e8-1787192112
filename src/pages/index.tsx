@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import Link from "next/link";
 import AuthDialog from "@/components/AuthDialog";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX } from "lucide-react";
@@ -119,25 +120,23 @@ export default function HomePage() {
                 </div>
 
                  {/* Footer */}
-        <footer className="w-full mt-16 border-t border-gray-200 py-8">
-          <div className="text-center">
-            <p className="text-xs text-black">
-              {" "}
-              <a 
-                href="/termsofservice" 
-                className="underline hover:text-gray-600 transition-colors"
-              >
-                TERMS OF USE
-              </a>
-              {" & "}
-              <a 
-                href="/privacypolicy" 
-                className="underline hover:text-gray-600 transition-colors"
-              >
-                PRIVACY POLICY
-              </a>
-            </p>
-          </div>
+        <footer className="mt-16 border-t border-gray-200 py-8 text-center">
+          <p className="text-sm text-black">
+            BY CONTINUING PAST THIS PAGE YOU AGREE TO OUR{" "}
+            <Link 
+              href="/termsofservice" 
+              className="underline hover:text-gray-600 transition-colors"
+            >
+              TERMS OF USE
+            </Link>
+            {" & "}
+            <Link 
+              href="/privacypolicy" 
+              className="underline hover:text-gray-600 transition-colors"
+            >
+              PRIVACY POLICY
+            </Link>
+          </p>
         </footer>
 
             </div>
