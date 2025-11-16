@@ -146,9 +146,8 @@ export default function NewsletterPage() {
       // --- Fetch THIS WEEKEND ---
       const { data: weekendData, error: weekendError } = await supabase
         .from("ticketmaster_events")
-        .select(`
-         .select(`
-  event_id,
+           .select(`
+            event_id,
             event_name,
             event_date,
             event_time,
