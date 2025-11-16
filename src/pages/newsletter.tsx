@@ -336,12 +336,12 @@ export default function NewsletterPage() {
 
   return (
       <div className="min-h-screen px-4">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-6xl mx-auto pt-4 pb-4">
          <Image
               src="/otwlive.png"
               alt="OTW Live"
-              width={400}
-              height={400}
+              width={300}
+              height={300}
               className="rounded-md"
               />
             </div>
