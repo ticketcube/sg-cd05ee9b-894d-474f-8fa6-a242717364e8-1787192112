@@ -352,7 +352,6 @@ export default function NewsletterPage() {
               />
           </div>
       <div className="max-w-6xl mx-auto">
-              <div className="mb-6 flex justify-center text-2xl font-bold"> This Week on OnesToWatch LIVE!</div>
 
         {!isSubscribed ? (
           <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
