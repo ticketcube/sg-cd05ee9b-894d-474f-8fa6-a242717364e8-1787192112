@@ -147,18 +147,21 @@ export default function NewsletterPage() {
       const { data: weekendData, error: weekendError } = await supabase
         .from("ticketmaster_events")
         .select(`
-          event_id,
-          event_name,
-          event_date,
-          event_time,
-          venue_name,
-          venue_city,
-          venue_state,
-          venue_country,
-          event_url,
-          artist_name,
-          artist_image,
-          artist_videolink
+         .select(`
+  event_id,
+            event_name,
+            event_date,
+            event_time,
+            venue_name,
+            venue_city,
+            venue_state,
+            venue_country,
+            event_url,
+            artist_name,
+            artist_image,
+            artist_videolink,
+            primary_venue_image
+`)
         `)
         .eq("is_active", true)
         .gte("event_date", thuStr)
@@ -170,20 +173,21 @@ export default function NewsletterPage() {
       // --- Fetch NEXT WEEK ---
       const { data: nextWeekData, error: nextWeekError } = await supabase
         .from("ticketmaster_events")
-        .select(`
-          event_id,
-          event_name,
-          event_date,
-          event_time,
-          venue_name,
-          venue_city,
-          venue_state,
-          venue_country,
-          event_url,
-          artist_name,
-          artist_image,
-          artist_videolink
-        `)
+           .select(`
+            event_id,
+            event_name,
+            event_date,
+            event_time,
+            venue_name,
+            venue_city,
+            venue_state,
+            venue_country,
+            event_url,
+            artist_name,
+            artist_image,
+            artist_videolink,
+            primary_venue_image
+            `)
         .eq("is_active", true)
         .gte("event_date", nextMonStr)
         .lte("event_date", nextSunStr)
