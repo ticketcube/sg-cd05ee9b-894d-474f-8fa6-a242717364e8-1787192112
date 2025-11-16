@@ -268,7 +268,8 @@ export default function NewsletterPage() {
                                     <h3 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
                                         {formatDate(date)}
                                     </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {/* Updated grid: 1 column mobile, 2 columns desktop */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                                         {grouped[date].map(event => (
                                             <EventCard key={event.event_id} event={event} />
                                         ))}
@@ -315,7 +316,8 @@ export default function NewsletterPage() {
                                     <h3 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
                                         {formatDate(date)}
                                     </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {/* Updated grid: 1 column mobile, 2 columns desktop */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                                         {grouped[date].map(event => (
                                             <EventCard key={event.event_id} event={event} />
                                         ))}

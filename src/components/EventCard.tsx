@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, ExternalLink, MapPin, Clock, Ticket } from "lucide-react";
+import { ExternalLink, Ticket, PlayCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { X } from "lucide-react";
+import Image from "next/image";
+import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 
 interface EventCardProps {
     event: {
@@ -14,103 +18,122 @@ interface EventCardProps {
         venue_state: string | null;
         venue_country: string;
         event_url: string;
+        artist_name?: string | null;
+        artist_image?: string | null;
+        artist_videolink?: string | null;
     };
 }
 
 export function EventCard({ event }: EventCardProps) {
-    const [showTicketOptions, setShowTicketOptions] = useState(false);
+    const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
-    const formatDate = (dateStr: string) => {
-        const date = new Date(dateStr + 'T00:00:00');
-        return date.toLocaleDateString("en-US", {
-            weekday: "short",
-            month: "short",
-            day: "numeric"
-        });
+    const artistForPlayer = {
+        artist_name: event.artist_name || event.event_name,
+        artist_videolink: event.artist_videolink || null,
+        artist_image: event.artist_image || null,
     };
 
-    const formatTime = (timeStr: string | null) => {
-        if (!timeStr) return "Time TBA";
-        const [hours, minutes] = timeStr.split(":");
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? "PM" : "AM";
-        const displayHour = hour % 12 || 12;
-        return `${displayHour}:${minutes} ${ampm}`;
-    };
+    const hasVideo = event.artist_videolink && event.artist_videolink.trim() !== "";
+    const artistImage = event.artist_image || "/placeholder-artist.jpg";
 
     return (
-        <Card className="hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-black">
-            <CardContent className="p-4">
-                {/* Event Name */}
-                <h3 className="font-bold text-lg mb-3 line-clamp-2 text-gray-900">
-                    {event.event_name}
-                </h3>
+        <>
+            <Card className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+                <CardContent className="p-0">
+                    {/* 16:9 Aspect Ratio Container */}
+                    <div className="relative aspect-video w-full">
+                        {/* Background Image */}
+                        <Image
+                            src={artistImage}
+                            alt={event.artist_name || event.event_name}
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-cover"
+                            priority={false}
+                        />
 
-                {/* Event Details Grid */}
-                <div className="space-y-2 mb-4">
-                    {/* Venue */}
-                    <div className="flex items-start gap-2 text-sm">
-                        <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                            <p className="font-medium text-gray-900">{event.venue_name}</p>
-                            <p className="text-gray-600">
-                                {event.venue_city}
-                                {event.venue_state && `, ${event.venue_state}`}
+                        {/* Dark Overlay for Text Readability */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+
+                        {/* Text Overlay - Lower Left */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
+                            <h3 className="text-white font-bold text-lg md:text-xl mb-1 line-clamp-2 drop-shadow-lg">
+                                {event.artist_name || event.event_name}
+                            </h3>
+                            <p className="text-white/90 text-sm md:text-base font-normal drop-shadow-lg">
+                                {event.venue_name}
                             </p>
                         </div>
-                    </div>
 
-                    {/* Date & Time */}
-                    <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-gray-500" />
-                            <span className="text-gray-700">{formatDate(event.event_date)}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-gray-500" />
-                            <span className="text-gray-700">{formatTime(event.event_time)}</span>
-                        </div>
-                    </div>
-                </div>
+                        {/* Action Buttons - Right Side */}
+                        <div className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+                            {/* Play Video Button */}
+                            {hasVideo ? (
+                                <button
+                                    onClick={() => setIsVideoModalOpen(true)}
+                                    className="bg-white/90 hover:bg-white p-2 md:p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 group"
+                                    title="Watch Video"
+                                >
+                                    <PlayCircle className="w-5 h-5 md:w-6 md:h-6 text-black" />
+                                </button>
+                            ) : (
+                                <div
+                                    className="bg-gray-400/50 p-2 md:p-3 rounded-full shadow-lg cursor-not-allowed"
+                                    title="No video available"
+                                >
+                                    <PlayCircle className="w-5 h-5 md:w-6 md:h-6 text-white/50" />
+                                </div>
+                            )}
 
-                {/* Ticket Actions */}
-                {!showTicketOptions ? (
-                    <Button
-                        onClick={() => setShowTicketOptions(true)}
-                        className="w-full bg-black hover:bg-gray-800 flex items-center justify-center gap-2"
-                    >
-                        <Ticket className="w-4 h-4" />
-                        Get Tickets
-                    </Button>
-                ) : (
-                    <div className="space-y-2">
-                        <Button
-                            asChild
-                            className="w-full bg-black hover:bg-gray-800 flex items-center justify-center gap-2"
-                        >
-                            <a href={event.event_url} target="_blank" rel="noopener noreferrer">
-                                <ExternalLink className="w-4 h-4" />
-                                Buy on Ticketmaster
+                            {/* Buy Tickets Button */}
+                            <a
+                                href={event.event_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-white/90 hover:bg-white p-2 md:p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+                                title="Buy Tickets"
+                            >
+                                <Ticket className="w-5 h-5 md:w-6 md:h-6 text-black" />
                             </a>
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="w-full flex items-center justify-center gap-2 border-gray-300"
-                            disabled
-                        >
-                            <Calendar className="w-4 h-4" />
-                            OTW Live WillCall
-                            <span className="text-xs text-gray-500 ml-1">(Coming Soon)</span>
-                        </Button>
-                        <button
-                            onClick={() => setShowTicketOptions(false)}
-                            className="w-full text-sm text-gray-600 hover:text-gray-900 py-1"
-                        >
-                            Cancel
-                        </button>
+
+                            {/* OTW Live Button - Coming Soon */}
+                            <div
+                                className="bg-purple-500/80 p-2 md:p-3 rounded-full shadow-lg cursor-not-allowed relative group"
+                                title="OTW Live - Coming Soon"
+                            >
+                                <ExternalLink className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                                <span className="absolute right-full mr-2 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                                    Coming Soon
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                )}
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+
+            {/* Video Modal */}
+            <Dialog open={isVideoModalOpen} onOpenChange={setIsVideoModalOpen}>
+                <DialogContent className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-4xl h-[80vh] bg-black border-4 border-white text-white rounded-2xl shadow-2xl p-0">
+                    <DialogClose asChild>
+                        <button
+                            className="absolute right-4 top-4 z-50 rounded-full bg-black/50 backdrop-blur-sm p-2 text-white hover:bg-black/70 transition-all duration-200 hover:scale-110"
+                            onClick={() => setIsVideoModalOpen(false)}
+                        >
+                            <X className="h-6 w-6 font-bold stroke-[3]" />
+                            <span className="sr-only">Close</span>
+                        </button>
+                    </DialogClose>
+
+                    <div className="w-full h-full relative">
+                        {hasVideo && (
+                            <ArtistVideoPlayer
+                                artist={artistForPlayer}
+                                isEmbed={true}
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

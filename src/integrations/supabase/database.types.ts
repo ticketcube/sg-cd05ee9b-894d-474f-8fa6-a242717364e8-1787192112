@@ -1046,7 +1046,10 @@ export type Database = {
       }
       ticketmaster_events: {
         Row: {
+          artist_image: string | null
+          artist_name: string | null
           artist_uuid: string | null
+          artist_videolink: string | null
           attractionId: string | null
           created_at: string | null
           event_date: string
@@ -1064,7 +1067,10 @@ export type Database = {
           venue_state: string | null
         }
         Insert: {
+          artist_image?: string | null
+          artist_name?: string | null
           artist_uuid?: string | null
+          artist_videolink?: string | null
           attractionId?: string | null
           created_at?: string | null
           event_date: string
@@ -1082,7 +1088,10 @@ export type Database = {
           venue_state?: string | null
         }
         Update: {
+          artist_image?: string | null
+          artist_name?: string | null
           artist_uuid?: string | null
+          artist_videolink?: string | null
           attractionId?: string | null
           created_at?: string | null
           event_date?: string
