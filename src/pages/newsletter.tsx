@@ -344,9 +344,9 @@ export default function NewsletterPage() {
   if (checkingSubscription) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>;
 
   return (
-    <div className="min-h-screen pt-1 px-4">
+    <div className="min-h-screen py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-2 flex justify-center text-2xl font-bold">OTW LIVE THIS WEEK!</div>
+        <div className="mb-4 flex justify-center text-2xl font-bold">OTW LIVE THIS WEEK!</div>
 
         {!isSubscribed ? (
           <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
