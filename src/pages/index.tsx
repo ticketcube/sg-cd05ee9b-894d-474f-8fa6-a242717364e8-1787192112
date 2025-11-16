@@ -121,8 +121,8 @@ export default function HomePage() {
                  {/* Footer */}
         <footer className="w-full mt-16 border-t border-gray-200 py-8">
           <div className="text-center">
-            <p className="text-sm text-black">
-              BY CONTINUING PAST THIS PAGE YOU AGREE TO OUR{" "}
+            <p className="text-xs text-black">
+              {" "}
               <a 
                 href="/termsofservice" 
                 className="underline hover:text-gray-600 transition-colors"
