@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Menu, LogOut } from "lucide-react";
 
 import { useUserProfile } from "@/contexts/UserProfileContext";
-import { useMobile } from "@/hooks/use-mobile";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,7 +29,6 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function UserNav() {
   const { user, profile, loading, logout } = useUserProfile();
-  const isMobileHook = useMobile();
   const [mounted, setMounted] = useState(false);
   const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
