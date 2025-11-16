@@ -343,81 +343,43 @@ export default function NewsletterPage() {
 
   if (checkingSubscription) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>;
 
-    return (
-        <div className="min-h-screen px-4 pt-4">
-            <div className="max-w-6xl mx-auto">
+  return (
+    <div className="min-h-screen px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-4 flex justify-center text-2xl font-bold">LIVE THIS WEEK!</div>
 
-                {/* Improved headline */}
-                <h1 className="mb-6 text-center text-3xl font-extrabold tracking-tight text-gray-900">
-                    Discover What’s Happening This Week
-                </h1>
-
-                {!isSubscribed ? (
-                    <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
-                ) : (
-                    <>
-                            {/* Action Bar: vertical on mobile, horizontal on md+ */}
-                            <div className="mb-6 flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full">
-
-                                {/* City Selector */}
-                                <div className="w-full md:flex-1">
-                                    <div className="relative">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth="2"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3zm0 0c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"
-                                            />
-                                        </svg>
-
-                                        <CityCombobox
-                                            value={selectedCity}
-                                            onValueChange={handleCityChange}
-                                            placeholder="Select City"
-                                            className="pl-9 h-10 py-2 text-sm"
-                                        />
-                                    </div>
-
-                                    <p className="mt-1 text-xs text-gray-500">
-                                        Showing: {selectedCityName}
-                                    </p>
-                                </div>
-
-                                {/* Search Events */}
-                                <div className="w-full md:flex-1">
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                                        <Input
-                                            type="text"
-                                            placeholder="Search events…"
-                                            value={artistSearch}
-                                            onChange={(e) => setArtistSearch(e.target.value)}
-                                            className="pl-9 h-10 py-2 text-sm"
-                                        />
-                                    </div>
-                                </div>
-
-                            </div>
-                        {/* Events Sections */}
-                        <div className="space-y-6">
-                            <WeekendEventsSection />
-                            <NextWeekEventsSection />
-                        </div>
-
-                        {loading && (
-                            <div className="text-center py-4">
-                                <p className="text-gray-500">Loading events...</p>
-                            </div>
-                        )}
-                    </>
-                )}
+        {!isSubscribed ? (
+          <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
+        ) : (
+          <>
+            <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center">
+                <div className="w-full md:w-64">
+                                  <label className="text-sm font-medium text-gray-700 mb-2 block"> <span>Filtered to: {selectedCityName}</span></label>
+                  <CityCombobox
+                    value={selectedCity}
+                    onValueChange={handleCityChange}
+                    placeholder="Select City"
+                  />
+                  {selectedCityName !== "all"}
+                </div>
+              <div className="w-full md:w-64">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Search Events</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input type="text" placeholder="Event name..." value={artistSearch} onChange={(e) => setArtistSearch(e.target.value)} className="pl-9"/>
+                </div>
+              </div>
             </div>
-        </div>
-    );
+
+            <div className="space-y-6">
+              <WeekendEventsSection />
+              <NextWeekEventsSection />
+            </div>
+
+            {loading && <div className="text-center py-4"><p className="text-gray-500">Loading events...</p></div>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
