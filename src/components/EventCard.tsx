@@ -22,6 +22,8 @@ interface EventCardProps {
         artist_image?: string | null;
         artist_videolink?: string | null;
         primary_venue_image?: string | null;
+        primary_event_image?: string | null;
+        primary_attraction_image?: string | null;
     };
 }
 
@@ -35,9 +37,15 @@ export function EventCard({ event }: EventCardProps) {
     };
 
     const hasVideo = event.artist_videolink && event.artist_videolink.trim() !== "";
-    const artistImage = event.artist_image && event.artist_image !== "null" 
-    ? event.artist_image 
-    : "/otwcolor-md6dlfkk.png";
+    
+    // Smart fallback: artist_image → primary_attraction_image → primary_event_image → default
+    const artistImage = event.artist_image && event.artist_image !== "null"
+        ? event.artist_image
+        : event.primary_attraction_image && event.primary_attraction_image !== "null"
+        ? event.primary_attraction_image
+        : event.primary_event_image && event.primary_event_image !== "null"
+        ? event.primary_event_image
+        : "/otwcolor-md6dlfkk.png";
     return (
         <>
             <Card className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
