@@ -114,7 +114,7 @@ export function EventCard({ event }: EventCardProps) {
 
             {/* Video Modal */}
             <Dialog open={isVideoModalOpen} onOpenChange={setIsVideoModalOpen}>
-                <DialogContent className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-2xl bg-black border-4 border-white text-white rounded-2xl shadow-2xl p-0">
+                <DialogContent className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-2xl bg-black border-4 border-white text-white -2xl shadow-1xl p-0">
                     <DialogClose asChild>
                         <button
                             className="absolute right-4 top-4 z-50 rounded-full bg-black/50 backdrop-blur-sm p-2 text-white hover:bg-black/70 transition-all duration-200 hover:scale-110"
