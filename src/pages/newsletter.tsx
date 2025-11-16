@@ -336,7 +336,7 @@ export default function NewsletterPage() {
 
   return (
       <div className="min-h-screen px-4">
-          <div className="max-w-6xl mx-auto items-center pt-6 pb-4">
+          <div className="max-w-4xl mx-auto items-center pt-6 pb-4">
          <Image
               src="/otwlive.png"
               alt="OTW Live"
