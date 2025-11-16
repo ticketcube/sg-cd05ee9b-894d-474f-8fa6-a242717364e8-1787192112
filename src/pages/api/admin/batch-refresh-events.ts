@@ -154,21 +154,25 @@ async function processArtistEvents(
     // Process each event
     for (const event of events) {
       try {
-        const eventData = {
-          event_id: event.id,
-          artist_uuid: artistUuid,
-          attractionId: attractionId,
-          event_name: event.name,
-          event_date: event.date,
-          event_time: event.time || null,
-          venue_name: event.venue_name || "",
-          venue_city: event.venue_city || "",
-          venue_state: event.venue_state || null,
-          venue_country: event.venue_country || "",
-          event_url: event.url || "",
-          is_active: true,
-          updated_at: new Date().toISOString(),
-        };
+          const eventData = {
+              event_id: event.id,
+              artist_uuid: artistUuid,
+              attractionId: attractionId,
+              event_name: event.name,
+              event_date: event.date,
+              event_time: event.time || null,
+              venue_name: event.venue_name || "",
+              venue_city: event.venue_city || "",
+              venue_state: event.venue_state || null,
+              venue_country: event.venue_country || "",
+              event_url: event.url || null,
+              // 🖼️ NEW: Add image URLs
+              primary_event_image: event.primary_event_image || null,
+              primary_venue_image: event.primary_venue_image || null,
+              primary_attraction_image: event.primary_attraction_image || null,
+              is_active: true,
+              updated_at: new Date().toISOString(),
+          };
 
         const { error: upsertError } = await supabaseAdmin
           .from("ticketmaster_events")
