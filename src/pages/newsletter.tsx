@@ -360,7 +360,7 @@ export default function NewsletterPage() {
                     onValueChange={handleCityChange}
                     placeholder="Select City"
                   />
-                 
+                  {selectedCityName !== "all"}
                 </div>
               <div className="w-full md:w-64">
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Search Events</label>
