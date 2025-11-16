@@ -73,22 +73,29 @@ async function fetchEventsFromTicketmaster(attractionId: string) {
       console.log(`  📅 First event: ${events[0].name} on ${events[0].dates?.start?.localDate}`);
     }
     
-    // Format events to match our expected structure
-    const formattedEvents = events.map((event: any) => {
-      const venue = event._embedded?.venues?.[0];
-      return {
-        id: event.id,
-        name: event.name,
-        url: event.url,
-        date: event.dates.start.localDate,
-        time: event.dates.start.localTime || null,
-        venue_name: venue?.name || "Venue TBA",
-        venue_city: venue?.city.name || "City TBA",
-        venue_state: venue?.state?.name || null,
-        venue_country: venue?.country.name || "Country TBA",
-        attractionId: attractionId
-      };
-    });
+      // Format events to match our expected structure
+      const formattedEvents = events.map((event: any) => {
+          const venue = event._embedded?.venues?.[0];
+          const attraction = event._embedded?.attractions?.[0];
+
+          return {
+              id: event.id,
+              name: event.name,
+              url: event.url,
+              date: event.dates.start.localDate,
+              time: event.dates.start.localTime || null,
+              venue_name: venue?.name || "Venue TBA",
+              venue_city: venue?.city.name || "City TBA",
+              venue_state: venue?.state?.name || null,
+              venue_country: venue?.country.name || "Country TBA",
+              attractionId: attractionId,
+
+              // 🖼️ IMAGE URLs - Match events-by-attraction.ts format
+              primary_event_image: event.images?.[0]?.url || null,
+              primary_venue_image: venue?.images?.[0]?.url || null,
+              primary_attraction_image: attraction?.images?.[0]?.url || null,
+          };
+      });
 
     console.log(`  ✅ Formatted ${formattedEvents.length} events\n`);
     return formattedEvents;
