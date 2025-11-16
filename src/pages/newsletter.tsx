@@ -336,15 +336,15 @@ export default function NewsletterPage() {
 
   return (
       <div className="min-h-screen px-4">
-          <div className="max-w-4xl mx-auto items-center pt-6 pb-4">
-         <Image
-              src="/otwlive.png"
-              alt="OTW Live"
-              width={300}
-              height={300}
-              className="rounded-md"
+          <div className="max-w-4xl mx-auto flex justify-center py-6">
+              <Image
+                  src="/otwlive.png"
+                  alt="OTW Live"
+                  width={250}      // slightly smaller
+                  height={250}     // slightly smaller
+                  className="rounded-md"
               />
-            </div>
+          </div>
       <div className="max-w-6xl mx-auto">
               <div className="mb-6 flex justify-center text-2xl font-bold"> This Week on OnesToWatch LIVE!</div>
 
