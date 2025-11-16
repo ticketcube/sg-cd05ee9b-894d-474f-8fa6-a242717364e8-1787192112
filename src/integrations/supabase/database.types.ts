@@ -1107,6 +1107,9 @@ export type Database = {
                     event_url: string | null
                     id: string
                     is_active: boolean | null
+                    primary_attraction_image: string | null
+                    primary_event_image: string | null
+                    primary_venue_image: string | null
                     search_keyword: string | null
                     updated_at: string | null
                     venue_city: string | null
@@ -1128,6 +1131,9 @@ export type Database = {
                     event_url?: string | null
                     id?: string
                     is_active?: boolean | null
+                    primary_attraction_image?: string | null
+                    primary_event_image?: string | null
+                    primary_venue_image?: string | null
                     search_keyword?: string | null
                     updated_at?: string | null
                     venue_city?: string | null
@@ -1149,6 +1155,9 @@ export type Database = {
                     event_url?: string | null
                     id?: string
                     is_active?: boolean | null
+                    primary_attraction_image?: string | null
+                    primary_event_image?: string | null
+                    primary_venue_image?: string | null
                     search_keyword?: string | null
                     updated_at?: string | null
                     venue_city?: string | null
