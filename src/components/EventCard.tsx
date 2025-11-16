@@ -21,6 +21,7 @@ interface EventCardProps {
         artist_name?: string | null;
         artist_image?: string | null;
         artist_videolink?: string | null;
+        primary_venue_image?: string | null;
     };
 }
 
