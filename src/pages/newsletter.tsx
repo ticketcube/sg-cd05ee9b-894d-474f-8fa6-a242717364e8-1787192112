@@ -351,17 +351,7 @@ export default function NewsletterPage() {
             <div className="mb-6 grid grid-cols-[auto_1fr_1fr] gap-2">
               {/* Location Automation Toggle - Small square */}
               <div className="flex items-center">
-                <button
-                  onClick={() => setUseLocationAutomation(!useLocationAutomation)}
-                  className={`w-10 h-10 rounded-md border-2 flex items-center justify-center transition-all ${
-                    useLocationAutomation 
-                      ? "bg-blue-500 border-blue-600 text-white" 
-                      : "bg-white border-gray-300 text-gray-400 hover:border-gray-400"
-                  }`}
-                  title="Use location automation"
-                >
-                  <Navigation className="w-3.5 h-3.5" />
-                </button>
+             
               </div>
 
               {/* City Selector */}
