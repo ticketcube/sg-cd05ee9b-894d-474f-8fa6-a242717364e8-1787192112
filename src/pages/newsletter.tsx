@@ -358,7 +358,7 @@ export default function NewsletterPage() {
                   <CityCombobox
                     value={selectedCity}
                     onValueChange={handleCityChange}
-                    placeholder="All Cities"
+                    placeholder="{selectedCityName}"
                   />
                   {selectedCityName !== "all" && (
                     <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
