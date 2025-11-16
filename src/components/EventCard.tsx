@@ -34,8 +34,9 @@ export function EventCard({ event }: EventCardProps) {
     };
 
     const hasVideo = event.artist_videolink && event.artist_videolink.trim() !== "";
-    const artistImage = event.artist_image || "/placeholder-artist.jpg";
-
+    const artistImage = event.artist_image && event.artist_image !== "null" 
+    ? event.artist_image 
+    : "/otwcolor-md6dlfkk.png";
     return (
         <>
             <Card className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
