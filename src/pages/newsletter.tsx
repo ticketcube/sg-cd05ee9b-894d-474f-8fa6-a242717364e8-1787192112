@@ -352,39 +352,25 @@ export default function NewsletterPage() {
           <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
         ) : (
           <>
-          <div className="mb-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* City Filter */}
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-700">
-                        Filtered by: {selectedCityName}
-                      </label>
-                      <CityCombobox
-                        value={selectedCity}
-                        onValueChange={handleCityChange}
-                        placeholder="All Cities"
-                        showAllOption={true}
-                      />
-                    </div>
-
-                    {/* Search Bar */}
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-700">
-                        Search Events
-                      </label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input 
-                          type="text" 
-                          placeholder="Artist, Event, or Venue..." 
-                          value={artistSearch} 
-                          onChange={(e) => setArtistSearch(e.target.value)} 
-                          className="pl-9"
-                        />
-                      </div>
-                    </div>
-                  </div>
+            <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center">
+                <div className="w-full md:w-64">
+                                  <label className="text-sm font-medium text-gray-700 mb-2 block"> <span>Filtered to: {selectedCityName}</span></label>
+                  <CityCombobox
+                    value={selectedCity}
+                    onValueChange={handleCityChange}
+                    placeholder="Select City"
+                  />
+                  {selectedCityName !== "all"}
+                </div>
+              <div className="w-full md:w-64">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Search Events</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input type="text" placeholder="Event name..." value={artistSearch} onChange={(e) => setArtistSearch(e.target.value)} className="pl-9"/>
+                </div>
+              </div>
             </div>
+
             <div className="space-y-6">
               <WeekendEventsSection />
               <NextWeekEventsSection />
