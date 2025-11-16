@@ -350,9 +350,7 @@ export default function NewsletterPage() {
             {/* Three Column Control Row - Always 3 columns even on mobile */}
             <div className="mb-6 grid grid-cols-[auto_1fr_1fr] gap-2">
               {/* Location Automation Toggle - Small square */}
-              <div className="flex items-center">
-             
-              </div>
+              
 
               {/* City Selector */}
               <div>
