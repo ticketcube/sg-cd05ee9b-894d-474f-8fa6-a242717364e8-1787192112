@@ -346,7 +346,7 @@ export default function NewsletterPage() {
   return (
     <div className="min-h-screen py-4 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-4 flex justify-center text-2xl font-bold">OTW LIVE THIS WEEK!</div>
+        <div className="mb-2 flex justify-center text-2xl font-bold">OTW LIVE THIS WEEK!</div>
 
         {!isSubscribed ? (
           <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
