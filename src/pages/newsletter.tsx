@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Calendar, ExternalLink, ChevronDown, ChevronUp, Ticket } from "lucide-react";
-import CityCombobox from "@/components/CityCombobox";
+import { Search, Calendar, MapPin, Navigation } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EventCard } from "@/components/EventCard";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface NewsletterEvent {
   event_id: string;
@@ -31,11 +31,10 @@ export default function NewsletterPage() {
   const [thisWeekendEvents, setThisWeekendEvents] = useState<NewsletterEvent[]>([]);
   const [nextWeekEvents, setnextWeekEvents] = useState<NewsletterEvent[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<{ id: number; name: string; normalized_name: string } | null>(null);
   const [selectedCityName, setSelectedCityName] = useState<string>("all");
-  const [artistSearch, setArtistSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [availableCities, setAvailableCities] = useState<string[]>([]);
-  const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
+  const [useLocationAutomation, setUseLocationAutomation] = useState(false);
   const [weekendExpanded, setWeekendExpanded] = useState(true);
   const [nextWeekExpanded, setnextWeekExpanded] = useState(true);
 
@@ -49,48 +48,34 @@ export default function NewsletterPage() {
     if (isSubscribed) loadEvents();
   }, [isSubscribed]);
 
-    const handleCityChange = (city: any, customInput?: string) => {
-      if (city) {
-        setSelectedCity(city);
-        setSelectedCityName(city.normalized_name);
-      } else if (customInput) {
-        setSelectedCity(null);
-        setSelectedCityName(customInput);
-      } else {
-        setSelectedCity(null);
-        setSelectedCityName("all");
-      }
-    };
+  // Set default city from localStorage or default to Los Angeles
+  useEffect(() => {
+    if (isSubscribed && availableCities.length > 0) {
+      const savedHomeCity = localStorage.getItem("newsletter_home_city");
 
-    // Set default city from localStorage or default to Los Angeles
-    useEffect(() => {
-        if (isSubscribed && availableCities.length > 0) {
-            const savedHomeCity = localStorage.getItem("newsletter_home_city");
+      if (savedHomeCity) {
+        const cityMatch = availableCities.find(
+          city => city.toLowerCase() === savedHomeCity.toLowerCase()
+        );
 
-            if (savedHomeCity) {
-                // Check if saved city exists in available cities (case-insensitive)
-                const cityMatch = availableCities.find(
-                    city => city.toLowerCase() === savedHomeCity.toLowerCase()
-                );
-
-                if (cityMatch) {
-                    console.log("✅ Setting filter to saved home city:", cityMatch);
-                    setSelectedCityName(cityMatch);
-                    return;
-                }
-            }
-
-            // Default to Los Angeles if no match or no saved city
-            const losAngeles = availableCities.find(
-                city => city.toLowerCase() === "los angeles"
-            );
-
-            if (losAngeles) {
-                console.log("✅ Defaulting filter to Los Angeles");
-                setSelectedCityName(losAngeles);
-            }
+        if (cityMatch) {
+          console.log("✅ Setting filter to saved home city:", cityMatch);
+          setSelectedCityName(cityMatch);
+          return;
         }
-    }, [isSubscribed, availableCities]);
+      }
+
+      // Default to Los Angeles if no match or no saved city
+      const losAngeles = availableCities.find(
+        city => city.toLowerCase() === "los angeles"
+      );
+
+      if (losAngeles) {
+        console.log("✅ Defaulting filter to Los Angeles");
+        setSelectedCityName(losAngeles);
+      }
+    }
+  }, [isSubscribed, availableCities]);
 
   // Handle mobile expand/collapse
   useEffect(() => {
@@ -210,8 +195,6 @@ export default function NewsletterPage() {
       const allEvents = [...(weekendData || []), ...(nextWeekData || [])];
       const uniqueCities = [...new Set(allEvents.map(e => e.venue_city))].sort();
       setAvailableCities(uniqueCities);
-      setSelectedCity(null);
-      setSelectedCityName("all");
     } catch (err) {
       console.error("💥 Error loading events:", err);
     } finally {
@@ -221,12 +204,22 @@ export default function NewsletterPage() {
 
   const filterEvents = (events: NewsletterEvent[]) => {
     let filtered = events;
+    
+    // Filter by city
     if (selectedCityName !== "all") {
       filtered = filtered.filter(e => e.venue_city.toLowerCase() === selectedCityName.toLowerCase());
     }
-    if (artistSearch.trim()) {
-      filtered = filtered.filter(e => e.event_name.toLowerCase().includes(artistSearch.toLowerCase()));
+    
+    // Filter by search query (artist, event, or venue)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(e => 
+        e.artist_name?.toLowerCase().includes(query) ||
+        e.event_name.toLowerCase().includes(query) ||
+        e.venue_name.toLowerCase().includes(query)
+      );
     }
+    
     return filtered;
   };
 
@@ -244,11 +237,9 @@ export default function NewsletterPage() {
     return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   };
 
-
-
   const WeekendEventsSection = () => {
-      const filtered = filterEvents(thisWeekendEvents);
-      if (filtered.length === 0) return null;
+    const filtered = filterEvents(thisWeekendEvents);
+    if (filtered.length === 0) return null;
     const grouped = groupEventsByDate(filtered);
     const dates = Object.keys(grouped).sort();
     return (
@@ -263,40 +254,38 @@ export default function NewsletterPage() {
             </div>
           </div>
         </CardHeader>
-            {weekendExpanded && (
-                <CardContent>
-                    {filtered.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500">
-                            <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
-                            <p>No events found</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-8">
-                            {dates.map(date => (
-                                <div key={date}>
-                                    <h3 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
-                                        {formatDate(date)}
-                                    </h3>
-                                    {/* Updated grid: 1 column mobile, 2 columns desktop */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-                                        {grouped[date].map(event => (
-                                            <EventCard key={event.event_id} event={event} />
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
+        {weekendExpanded && (
+          <CardContent>
+            {filtered.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
+                <p>No events found</p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {dates.map(date => (
+                  <div key={date}>
+                    <h3 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                      {formatDate(date)}
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                      {grouped[date].map(event => (
+                        <EventCard key={event.event_id} event={event} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
+          </CardContent>
+        )}
       </Card>
     );
   };
 
   const NextWeekEventsSection = () => {
-      const filtered = filterEvents(nextWeekEvents);
-      if (filtered.length === 0) return null;
-
+    const filtered = filterEvents(nextWeekEvents);
+    if (filtered.length === 0) return null;
     const grouped = groupEventsByDate(filtered);
     const dates = Object.keys(grouped).sort();
     return (
@@ -311,32 +300,31 @@ export default function NewsletterPage() {
             </div>
           </div>
         </CardHeader>
-            {nextWeekExpanded && (
-                <CardContent>
-                    {filtered.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500">
-                            <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
-                            <p>No events found</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-8">
-                            {dates.map(date => (
-                                <div key={date}>
-                                    <h3 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
-                                        {formatDate(date)}
-                                    </h3>
-                                    {/* Updated grid: 1 column mobile, 2 columns desktop */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-                                        {grouped[date].map(event => (
-                                            <EventCard key={event.event_id} event={event} />
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
+        {nextWeekExpanded && (
+          <CardContent>
+            {filtered.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Calendar className="mx-auto mb-2 w-12 h-12 opacity-30" />
+                <p>No events found</p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {dates.map(date => (
+                  <div key={date}>
+                    <h3 className="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">
+                      {formatDate(date)}
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                      {grouped[date].map(event => (
+                        <EventCard key={event.event_id} event={event} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
+          </CardContent>
+        )}
       </Card>
     );
   };
@@ -346,27 +334,64 @@ export default function NewsletterPage() {
   return (
     <div className="min-h-screen px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-4 flex justify-center text-2xl font-bold">LIVE THIS WEEK!</div>
+        <div className="mb-6 flex justify-center text-2xl font-bold">LIVE THIS WEEK!</div>
 
         {!isSubscribed ? (
           <NewsletterSignupOverlay onSubscribed={handleSubscribed} />
         ) : (
           <>
-            <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center">
-                <div className="w-full md:w-64">
-                                  <label className="text-sm font-medium text-gray-700 mb-2 block"> <span>Filtered to: {selectedCityName}</span></label>
-                  <CityCombobox
-                    value={selectedCity}
-                    onValueChange={handleCityChange}
-                    placeholder="Select City"
-                  />
-                  {selectedCityName !== "all"}
-                </div>
-              <div className="w-full md:w-64">
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Search Events</label>
+            {/* Current City Label */}
+            <div className="mb-2">
+              <p className="text-sm font-semibold text-gray-700">
+                Current City: <span className="text-gray-900">{selectedCityName === "all" ? "All Cities" : selectedCityName}</span>
+              </p>
+            </div>
+
+            {/* Three Column Control Row */}
+            <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Location Automation Toggle */}
+              <div className="flex items-center">
+                <button
+                  onClick={() => setUseLocationAutomation(!useLocationAutomation)}
+                  className={`w-10 h-10 rounded-md border-2 flex items-center justify-center transition-all ${
+                    useLocationAutomation 
+                      ? "bg-blue-500 border-blue-600 text-white" 
+                      : "bg-white border-gray-300 text-gray-400 hover:border-gray-400"
+                  }`}
+                  title="Use location automation"
+                >
+                  <Navigation className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* City Selector */}
+              <div>
+                <Select value={selectedCityName} onValueChange={setSelectedCityName}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select City" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Cities</SelectItem>
+                    {availableCities.map(city => (
+                      <SelectItem key={city} value={city}>
+                        {city}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Search Box */}
+              <div>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input type="text" placeholder="Event name..." value={artistSearch} onChange={(e) => setArtistSearch(e.target.value)} className="pl-9"/>
+                  <Input 
+                    type="text" 
+                    placeholder="Artist, Event or Venue" 
+                    value={searchQuery} 
+                    onChange={(e) => setSearchQuery(e.target.value)} 
+                    className="pl-9"
+                  />
                 </div>
               </div>
             </div>
