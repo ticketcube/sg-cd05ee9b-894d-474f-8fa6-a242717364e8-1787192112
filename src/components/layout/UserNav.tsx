@@ -38,9 +38,20 @@ export default function UserNav() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+ const [isMobile, setIsMobile] = useState(false);
+
+useEffect(() => {
+  setMounted(true);
+  // Only check mobile after mount
+  setIsMobile(window.innerWidth < 768);
+  
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+  
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}, []);
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -140,7 +151,7 @@ export default function UserNav() {
    
 
   // After mount, render responsive version
-  if (isMobileHook) {
+  if (isMobile) {
     return (
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetTrigger asChild>
