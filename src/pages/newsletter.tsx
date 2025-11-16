@@ -339,9 +339,9 @@ export default function NewsletterPage() {
          <Image
               src="/otwlive.png"
               alt="OTW Live"
-              width={40}
-              height={40}
-              className="rounded-md"
+              width={400}
+              height={400}
+              className="rounded-md justify-center py-5"
             />
       <div className="max-w-6xl mx-auto">
               <div className="mb-6 flex justify-center text-2xl font-bold"> This Week on OnesToWatch LIVE!</div>
