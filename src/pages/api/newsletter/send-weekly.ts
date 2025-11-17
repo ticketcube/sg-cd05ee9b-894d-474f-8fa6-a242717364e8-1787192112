@@ -105,32 +105,29 @@ export default async function handler(
 
     let sent = 0;
     let failed = 0;
-    let skipped = 0;
     const errors: string[] = [];
 
     for (const subscriber of subscribers) {
       try {
-        // CRITICAL: Skip if subscriber has no home city set
-        if (!subscriber.home_city) {
-          skipped++;
-          console.log(`⏭️ Skipping ${subscriber.email} - no home city set`);
-          continue;
-        }
+        let weekendFiltered: NewsletterEvent[];
+        let nextWeekFiltered: NewsletterEvent[];
+        let subject: string;
 
-        // Filter events by subscriber's home city
-        const normalizedCity = subscriber.home_city.toLowerCase();
-        const weekendFiltered = (weekendEvents || []).filter(e => 
-          e.venue_city.toLowerCase() === normalizedCity
-        );
-        const nextWeekFiltered = (nextWeekEvents || []).filter(e => 
-          e.venue_city.toLowerCase() === normalizedCity
-        );
-
-        // Skip if no events in subscriber's city
-        if (weekendFiltered.length === 0 && nextWeekFiltered.length === 0) {
-          skipped++;
-          console.log(`⏭️ Skipping ${subscriber.email} - no events in ${subscriber.home_city}`);
-          continue;
+        if (subscriber.home_city) {
+          const normalizedCity = subscriber.home_city.toLowerCase();
+          weekendFiltered = (weekendEvents || []).filter(e => 
+            e.venue_city.toLowerCase() === normalizedCity
+          );
+          nextWeekFiltered = (nextWeekEvents || []).filter(e => 
+            e.venue_city.toLowerCase() === normalizedCity
+          );
+          subject = `🎵 OTW LIVE This Week in ${subscriber.home_city}`;
+          console.log(`📍 Filtered to ${subscriber.home_city}: ${weekendFiltered.length} weekend, ${nextWeekFiltered.length} next week`);
+        } else {
+          weekendFiltered = weekendEvents || [];
+          nextWeekFiltered = nextWeekEvents || [];
+          subject = `🎵 OTW LIVE This Week`;
+          console.log(`🌍 Sending ALL events (no city set): ${weekendFiltered.length} weekend, ${nextWeekFiltered.length} next week`);
         }
 
         const unsubscribeUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://otwchart.com"}/newsletter/unsubscribe?token=${subscriber.unsubscribe_token}`;
@@ -139,7 +136,7 @@ export default async function handler(
         const emailData = {
           weekendEvents: weekendFiltered as NewsletterEvent[],
           nextWeekEvents: nextWeekFiltered as NewsletterEvent[],
-          subscriberCity: subscriber.home_city,
+          subscriberCity: subscriber.home_city || undefined,
           unsubscribeUrl,
           subscriberEmail: subscriber.email,
           newsletterPageUrl
@@ -147,8 +144,6 @@ export default async function handler(
 
         const htmlContent = weeklyEmailGenerator.generateWeeklyEmailHTML(emailData);
         const textContent = weeklyEmailGenerator.generateWeeklyEmailText(emailData);
-
-        const subject = `🎵 OTW LIVE This Week in ${subscriber.home_city}`;
 
         const result = testMode 
           ? await brevoEmailService.sendTestEmail(subscriber.email, subject, htmlContent, textContent)
@@ -184,7 +179,7 @@ export default async function handler(
       }
     }
 
-    console.log(`✅ Weekly email send complete: ${sent} sent, ${failed} failed, ${skipped} skipped`);
+    console.log(`✅ Weekly email send complete: ${sent} sent, ${failed} failed`);
 
     return res.status(200).json({
       success: true,
@@ -192,7 +187,6 @@ export default async function handler(
       stats: {
         sent,
         failed,
-        skipped,
         totalSubscribers: subscribers.length,
         weekendEvents: weekendEvents?.length || 0,
         nextWeekEvents: nextWeekEvents?.length || 0

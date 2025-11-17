@@ -74,7 +74,6 @@ export class WeeklyEmailGenerator {
     const hasVideo = event.artist_videolink && event.artist_videolink.trim() !== "";
     const artistName = event.artist_name || event.event_name;
 
-    // SVG icons as base64 data URIs
     const playIconSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpolygon points='10 8 16 12 10 16 10 8'%3E%3C/polygon%3E%3C/svg%3E`;
     const ticketIconSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'%3E%3C/path%3E%3Cpath d='M13 5v2'%3E%3C/path%3E%3Cpath d='M13 17v2'%3E%3C/path%3E%3Cpath d='M13 11v2'%3E%3C/path%3E%3C/svg%3E`;
 
@@ -83,19 +82,15 @@ export class WeeklyEmailGenerator {
         <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
             <td style="position: relative; padding: 0;">
-              <!-- Container for 1:1 aspect ratio (SQUARE) -->
               <div style="position: relative; width: 100%; padding-bottom: 100%; background-color: #000;">
-                <!-- Background Image -->
                 <img 
                   src="${artistImage}" 
                   alt="${artistName}"
                   style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
                 />
                 
-                <!-- Dark Gradient Overlay -->
                 <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);"></div>
                 
-                <!-- Text Overlay - Lower Left -->
                 <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 24px;">
                   <h3 style="margin: 0 0 8px 0; color: #ffffff; font-size: 20px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
                     ${artistName}
@@ -105,7 +100,6 @@ export class WeeklyEmailGenerator {
                   </p>
                 </div>
                 
-                <!-- Action Buttons - Right Side -->
                 <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%);">
                   <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                     ${hasVideo ? `
@@ -173,6 +167,15 @@ export class WeeklyEmailGenerator {
     const weekendSection = this.generateEventsSection("This Weekend", "🎵", weekendEvents, newsletterPageUrl);
     const nextWeekSection = this.generateEventsSection("Next Week", "🎟️", nextWeekEvents, newsletterPageUrl);
 
+    // Different messaging for users with/without city
+    const noCityMessage = !subscriberCity ? `
+      <div style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 16px; margin: 24px 0; border-radius: 4px;">
+        <p style="margin: 0; color: #1e40af; font-size: 14px;">
+          💡 <strong>Tip:</strong> Set your city in your preferences to receive personalized emails with only shows near you!
+        </p>
+      </div>
+    ` : '';
+
     return `
       <!DOCTYPE html>
       <html>
@@ -190,7 +193,6 @@ export class WeeklyEmailGenerator {
           <tr>
             <td align="center">
               <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; max-width: 600px;">
-                <!-- Header -->
                 <tr>
                   <td style="padding: 40px 40px 20px 40px; text-align: center; background-color: #000000;">
                     <img src="https://onestowatch.live/otwlive.png" alt="OTW Live" style="width: 100px; height: 100px; margin: 0 auto 16px auto; border-radius: 8px;" />
@@ -203,9 +205,10 @@ export class WeeklyEmailGenerator {
                   </td>
                 </tr>
                 
-                <!-- Body -->
                 <tr>
                   <td style="padding: 40px;">
+                    ${noCityMessage}
+                    
                     ${totalEvents === 0 ? `
                       <div style="text-align: center; padding: 40px 0;">
                         <p style="font-size: 18px; color: #666666; margin: 0 0 16px 0;">
@@ -231,7 +234,6 @@ export class WeeklyEmailGenerator {
                   </td>
                 </tr>
                 
-                <!-- Footer -->
                 <tr>
                   <td style="padding: 20px 40px; background-color: #f8f8f8; border-top: 1px solid #eeeeee;">
                     <p style="margin: 0 0 10px 0; color: #666666; font-size: 12px; line-height: 1.6;">
@@ -239,7 +241,7 @@ export class WeeklyEmailGenerator {
                     </p>
                     <p style="margin: 0 0 10px 0; color: #666666; font-size: 12px; line-height: 1.6;">
                       <strong>Email:</strong> ${subscriberEmail}
-                      ${subscriberCity ? `<br><strong>City:</strong> ${subscriberCity}` : ""}
+                      ${subscriberCity ? `<br><strong>City:</strong> ${subscriberCity}` : `<br><em>No city set - <a href="${newsletterPageUrl}" style="color: #3b82f6;">Update your preferences</a></em>`}
                     </p>
                     <p style="margin: 0; color: #666666; font-size: 12px; line-height: 1.6;">
                       <a href="${unsubscribeUrl}" style="color: #666666; text-decoration: underline;">Unsubscribe</a> | 
@@ -263,6 +265,10 @@ export class WeeklyEmailGenerator {
     const totalEvents = weekendEvents.length + nextWeekEvents.length;
 
     let text = `OTW LIVE This Week\n\n${totalEvents} shows ${cityFilter} this week\n\n`;
+
+    if (!subscriberCity) {
+      text += `💡 TIP: Set your city to receive personalized emails with only shows near you!\n\n`;
+    }
 
     if (totalEvents === 0) {
       text += `No shows scheduled ${cityFilter} this week.\nCheck back next week for new shows!\n\nView All Shows: ${newsletterPageUrl}\n`;
@@ -310,6 +316,8 @@ export class WeeklyEmailGenerator {
     text += `Email: ${subscriberEmail}\n`;
     if (subscriberCity) {
       text += `City: ${subscriberCity}\n`;
+    } else {
+      text += `No city set - Update your preferences: ${newsletterPageUrl}\n`;
     }
     text += `\nUnsubscribe: ${unsubscribeUrl}\n`;
     text += `Update Preferences: ${newsletterPageUrl}\n`;
