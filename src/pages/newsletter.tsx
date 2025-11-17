@@ -259,7 +259,7 @@ export default function NewsletterPage() {
     const dates = Object.keys(grouped).sort();
     return (
       <Card>
-        <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setWeekendExpanded(!weekendExpanded)}>
+            <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleWithScrollLock(setWeekendExpanded, !weekendExpanded)}>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-2xl flex items-center gap-2">
@@ -305,7 +305,7 @@ export default function NewsletterPage() {
     const dates = Object.keys(grouped).sort();
     return (
       <Card>
-        <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setnextWeekExpanded(!nextWeekExpanded)}>
+            <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleWithScrollLock(setnextWeekExpanded, !nextWeekExpanded)}>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-2xl flex items-center gap-2">
