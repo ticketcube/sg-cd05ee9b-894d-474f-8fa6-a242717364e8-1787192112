@@ -246,6 +246,12 @@ export default function NewsletterPage() {
     return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   };
 
+    const toggleWithScrollLock = (setter, value) => {
+        const y = window.scrollY;     // save scroll position
+        setter(value);                // toggle section
+        setTimeout(() => window.scrollTo(0, y), 0);  // restore position
+    };
+
   const WeekendEventsSection = () => {
     const filtered = filterEvents(thisWeekendEvents);
     if (filtered.length === 0) return null;
