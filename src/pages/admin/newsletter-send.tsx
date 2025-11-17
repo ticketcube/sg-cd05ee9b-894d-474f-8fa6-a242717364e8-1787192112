@@ -13,15 +13,16 @@ export default function NewsletterSendPage() {
   const [result, setResult] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
 
-  // Load stats on mount
-  useEffect(() => {
-    loadStats();
-  }, []);
-
+  // Define loadStats function BEFORE useEffect
   const loadStats = async () => {
     const data = await newsletterService.getStats();
     setStats(data);
   };
+
+  // Load stats on mount
+  useEffect(() => {
+    loadStats();
+  }, []);
 
   const handleSendTest = async () => {
     if (!adminSecret || !testEmail) {
