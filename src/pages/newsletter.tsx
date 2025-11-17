@@ -81,20 +81,13 @@ export default function NewsletterPage() {
   }, [isSubscribed, availableCities]);
 
   // Handle mobile expand/collapse
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setWeekendExpanded(true);
-        setnextWeekExpanded(false);
-      } else {
-        setWeekendExpanded(true);
-        setnextWeekExpanded(true);
-      }
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+        useEffect(() => {
+        const isMobile = window.innerWidth < 768;
+        if (isMobile) {
+            setWeekendExpanded(true);
+            setnextWeekExpanded(false);
+        }
+        }, []);
 
   const checkSubscriptionStatus = async () => {
     const email = localStorage.getItem("newsletter_email");
