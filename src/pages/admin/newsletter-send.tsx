@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,9 +14,9 @@ export default function NewsletterSendPage() {
   const [stats, setStats] = useState<any>(null);
 
   // Load stats on mount
-  useState(() => {
+  useEffect(() => {
     loadStats();
-  });
+  }, []);
 
   const loadStats = async () => {
     const data = await newsletterService.getStats();
