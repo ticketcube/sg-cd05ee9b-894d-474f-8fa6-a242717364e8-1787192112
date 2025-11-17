@@ -41,8 +41,8 @@ export function EventCard({ event }: EventCardProps) {
     
     // Artist Image Fallback: artist_image → primary_attraction_image → primary_event_image → default
     const artistImage = event.artist_image && event.artist_image !== "null"
-        ? event.artist_image
-        : event.primary_attraction_image && event.primary_attraction_image !== "null"
+        ? event.primary_attraction_image
+        : event.artist_image && event.primary_attraction_image !== "null"
         ? event.primary_attraction_image
         : event.primary_event_image && event.primary_event_image !== "null"
         ? event.primary_event_image
