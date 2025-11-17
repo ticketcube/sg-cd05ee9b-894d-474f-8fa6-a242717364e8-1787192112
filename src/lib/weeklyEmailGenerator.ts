@@ -1,4 +1,3 @@
-
 import type { Database } from "@/integrations/supabase/types";
 
 type NewsletterEvent = {
@@ -14,6 +13,9 @@ type NewsletterEvent = {
   artist_name?: string | null;
   artist_image?: string | null;
   artist_videolink?: string | null;
+  primary_venue_image?: string | null;
+  primary_event_image?: string | null;
+  primary_attraction_image?: string | null;
 };
 
 interface WeeklyEmailData {
@@ -53,38 +55,73 @@ export class WeeklyEmailGenerator {
     }, {} as Record<string, NewsletterEvent[]>);
   }
 
+  private getArtistImage(event: NewsletterEvent): string {
+    if (event.artist_image && event.artist_image !== "null") {
+      return event.artist_image;
+    }
+    if (event.primary_attraction_image && event.primary_attraction_image !== "null") {
+      return event.primary_attraction_image;
+    }
+    if (event.primary_event_image && event.primary_event_image !== "null") {
+      return event.primary_event_image;
+    }
+    return "https://onestowatch.live/otwcolor-md6dlfkk.png";
+  }
+
   private generateEventCard(event: NewsletterEvent): string {
-    const artistImage = event.artist_image || "/otwlive.png";
-    const time = this.formatTime(event.event_time);
-    
+    const artistImage = this.getArtistImage(event);
+    const hasVideo = event.artist_videolink && event.artist_videolink.trim() !== "";
+    const artistName = event.artist_name || event.event_name;
+
     return `
-      <div style="margin-bottom: 20px; padding: 16px; background-color: #f8f8f8; border-radius: 8px; border: 1px solid #e0e0e0;">
-        <table width="100%" cellpadding="0" cellspacing="0">
+      <div style="margin-bottom: 24px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
-            <td width="80" valign="top" style="padding-right: 16px;">
-              <img src="${artistImage}" alt="${event.artist_name || event.event_name}" style="width: 80px; height: 80px; border-radius: 8px; object-fit: cover;" />
-            </td>
-            <td valign="top">
-              <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a1a1a; font-weight: bold;">
-                ${event.artist_name || event.event_name}
-              </h3>
-              <p style="margin: 0 0 4px 0; font-size: 14px; color: #666666;">
-                <strong>📍 ${event.venue_name}</strong>
-              </p>
-              <p style="margin: 0 0 4px 0; font-size: 14px; color: #666666;">
-                ${event.venue_city}${event.venue_state ? ", " + event.venue_state : ""}
-              </p>
-              <p style="margin: 0 0 12px 0; font-size: 14px; color: #666666;">
-                🕐 ${time}
-              </p>
-              <a href="${event.event_url}" style="display: inline-block; padding: 8px 16px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: bold;">
-                Get Tickets
-              </a>
-              ${event.artist_videolink ? `
-                <a href="${event.artist_videolink}" style="display: inline-block; padding: 8px 16px; margin-left: 8px; background-color: #ffffff; color: #000000; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: bold; border: 1px solid #000000;">
-                  Watch Video
-                </a>
-              ` : ""}
+            <td style="position: relative; padding: 0;">
+              <!-- Container for 16:9 aspect ratio -->
+              <div style="position: relative; width: 100%; padding-bottom: 56.25%; background-color: #000;">
+                <!-- Background Image -->
+                <img 
+                  src="${artistImage}" 
+                  alt="${artistName}"
+                  style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
+                />
+                
+                <!-- Dark Gradient Overlay -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);"></div>
+                
+                <!-- Text Overlay - Lower Left -->
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 24px;">
+                  <h3 style="margin: 0 0 8px 0; color: #ffffff; font-size: 20px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                    ${artistName}
+                  </h3>
+                  <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 16px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                    ${event.venue_name}
+                  </p>
+                </div>
+                
+                <!-- Action Buttons - Right Side -->
+                <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%);">
+                  <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                    ${hasVideo ? `
+                      <tr>
+                        <td style="padding-bottom: 12px;">
+                          <a href="${event.artist_videolink}" target="_blank" style="display: block; width: 48px; height: 48px; background-color: rgba(255,255,255,0.9); border-radius: 50%; text-align: center; line-height: 48px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                            <span style="color: #000000; font-size: 24px;">▶</span>
+                          </a>
+                        </td>
+                      </tr>
+                    ` : ''}
+                    <tr>
+                      <td>
+                        <a href="${event.event_url}" target="_blank" style="display: block; width: 48px; height: 48px; background-color: rgba(255,255,255,0.9); border-radius: 50%; text-align: center; line-height: 48px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                          <span style="color: #000000; font-size: 20px;">🎫</span>
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
             </td>
           </tr>
         </table>
@@ -102,20 +139,20 @@ export class WeeklyEmailGenerator {
 
     let html = `
       <div style="margin-bottom: 40px;">
-        <h2 style="margin: 0 0 20px 0; font-size: 24px; color: #1a1a1a; font-weight: bold;">
+        <h2 style="margin: 0 0 24px 0; font-size: 28px; color: #1a1a1a; font-weight: bold;">
           ${emoji} ${title}
         </h2>
     `;
 
     sortedDates.forEach(date => {
       html += `
-        <h3 style="margin: 0 0 16px 0; font-size: 18px; color: #333333; font-weight: bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px;">
+        <h3 style="margin: 0 0 20px 0; font-size: 18px; color: #333333; font-weight: bold; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px;">
           ${this.formatDate(date)}
         </h3>
+        <div style="margin-bottom: 32px;">
+          ${groupedByDate[date].map(event => this.generateEventCard(event)).join('')}
+        </div>
       `;
-      groupedByDate[date].forEach(event => {
-        html += this.generateEventCard(event);
-      });
     });
 
     html += "</div>";
@@ -138,16 +175,20 @@ export class WeeklyEmailGenerator {
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OTW LIVE - This Week's Shows</title>
+        <style>
+          body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; }
+          img { display: block; }
+        </style>
       </head>
-      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+      <body style="margin: 0; padding: 0; background-color: #f4f4f4;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
           <tr>
             <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; max-width: 600px;">
                 <!-- Header -->
                 <tr>
                   <td style="padding: 40px 40px 20px 40px; text-align: center; background-color: #000000;">
-                    <img src="https://onestowatch.live/otwlive.png" alt="OTW Live" style="width: 80px; height: 80px; margin-bottom: 16px;" />
+                    <img src="https://onestowatch.live/otwlive.png" alt="OTW Live" style="width: 100px; height: 100px; margin: 0 auto 16px auto; border-radius: 8px;" />
                     <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">
                       OTW LIVE This Week
                     </h1>
@@ -165,14 +206,12 @@ export class WeeklyEmailGenerator {
                         <p style="font-size: 18px; color: #666666; margin: 0 0 16px 0;">
                           No shows scheduled ${cityFilter} this week.
                         </p>
-                        <p style="font-size: 14px; color: #999999; margin: 0;">
+                        <p style="font-size: 14px; color: #999999; margin: 0 0 24px 0;">
                           Check back next week for new shows!
                         </p>
-                        <div style="margin-top: 24px;">
-                          <a href="https://onestowatch.live/newsletter" style="display: inline-block; padding: 12px 24px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: bold;">
-                            View All Shows
-                          </a>
-                        </div>
+                        <a href="https://onestowatch.live/newsletter" style="display: inline-block; padding: 12px 24px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: bold;">
+                          View All Shows
+                        </a>
                       </div>
                     ` : `
                       ${weekendSection}
@@ -232,7 +271,11 @@ export class WeeklyEmailGenerator {
             text += `- ${event.artist_name || event.event_name}\n`;
             text += `  📍 ${event.venue_name}, ${event.venue_city}\n`;
             text += `  🕐 ${this.formatTime(event.event_time)}\n`;
-            text += `  🎟️ ${event.event_url}\n\n`;
+            text += `  🎟️ ${event.event_url}\n`;
+            if (event.artist_videolink) {
+              text += `  ▶️ ${event.artist_videolink}\n`;
+            }
+            text += `\n`;
           });
         });
       }
@@ -246,7 +289,11 @@ export class WeeklyEmailGenerator {
             text += `- ${event.artist_name || event.event_name}\n`;
             text += `  📍 ${event.venue_name}, ${event.venue_city}\n`;
             text += `  🕐 ${this.formatTime(event.event_time)}\n`;
-            text += `  🎟️ ${event.event_url}\n\n`;
+            text += `  🎟️ ${event.event_url}\n`;
+            if (event.artist_videolink) {
+              text += `  ▶️ ${event.artist_videolink}\n`;
+            }
+            text += `\n`;
           });
         });
       }
