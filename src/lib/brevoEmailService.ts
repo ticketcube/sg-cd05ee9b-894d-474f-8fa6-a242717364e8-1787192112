@@ -233,6 +233,22 @@ Unsubscribe: ${unsubscribeUrl}
 
     return this.sendRequest(payload);
   }
+
+  async sendEmail(options: SendEmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const payload = {
+      sender: {
+        email: SENDER_EMAIL,
+        name: SENDER_NAME
+      },
+      to: options.to,
+      subject: options.subject,
+      htmlContent: options.htmlContent,
+      textContent: options.textContent,
+      replyTo: options.replyTo
+    };
+
+    return this.sendRequest(payload);
+  }
 }
 
 export const brevoEmailService = new BrevoEmailService();

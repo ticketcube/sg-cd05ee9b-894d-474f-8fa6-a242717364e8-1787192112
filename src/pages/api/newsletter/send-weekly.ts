@@ -139,11 +139,7 @@ export default async function handler(
 
         const result = testMode 
           ? await brevoEmailService.sendTestEmail(subscriber.email, subject, htmlContent, textContent)
-          : await brevoEmailService.sendRequest({
-              sender: {
-                email: "admin@onestowatch.live",
-                name: "OnesToWatch LIVE This Week"
-              },
+          : await brevoEmailService.sendEmail({
               to: [{ email: subscriber.email }],
               subject,
               htmlContent,
