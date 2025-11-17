@@ -24,6 +24,7 @@ interface WeeklyEmailData {
   subscriberCity?: string;
   unsubscribeUrl: string;
   subscriberEmail: string;
+  newsletterPageUrl: string;
 }
 
 export class WeeklyEmailGenerator {
@@ -68,18 +69,22 @@ export class WeeklyEmailGenerator {
     return "https://onestowatch.live/otwcolor-md6dlfkk.png";
   }
 
-  private generateEventCard(event: NewsletterEvent): string {
+  private generateEventCard(event: NewsletterEvent, newsletterPageUrl: string): string {
     const artistImage = this.getArtistImage(event);
     const hasVideo = event.artist_videolink && event.artist_videolink.trim() !== "";
     const artistName = event.artist_name || event.event_name;
+
+    // SVG icons as base64 data URIs
+    const playIconSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpolygon points='10 8 16 12 10 16 10 8'%3E%3C/polygon%3E%3C/svg%3E`;
+    const ticketIconSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'%3E%3C/path%3E%3Cpath d='M13 5v2'%3E%3C/path%3E%3Cpath d='M13 17v2'%3E%3C/path%3E%3Cpath d='M13 11v2'%3E%3C/path%3E%3C/svg%3E`;
 
     return `
       <div style="margin-bottom: 24px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
         <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
             <td style="position: relative; padding: 0;">
-              <!-- Container for 16:9 aspect ratio -->
-              <div style="position: relative; width: 100%; padding-bottom: 56.25%; background-color: #000;">
+              <!-- Container for 1:1 aspect ratio (SQUARE) -->
+              <div style="position: relative; width: 100%; padding-bottom: 100%; background-color: #000;">
                 <!-- Background Image -->
                 <img 
                   src="${artistImage}" 
@@ -106,8 +111,8 @@ export class WeeklyEmailGenerator {
                     ${hasVideo ? `
                       <tr>
                         <td style="padding-bottom: 12px;">
-                          <a href="${event.artist_videolink}" target="_blank" style="display: block; width: 48px; height: 48px; background-color: rgba(255,255,255,0.9); border-radius: 50%; text-align: center; line-height: 48px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                            <span style="color: #000000; font-size: 24px;">▶</span>
+                          <a href="${newsletterPageUrl}" target="_blank" style="display: block; width: 48px; height: 48px; background-color: rgba(255,255,255,0.9); border-radius: 50%; text-align: center; line-height: 48px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                            <img src="${playIconSvg}" alt="Play" style="width: 24px; height: 24px; vertical-align: middle;" />
                           </a>
                         </td>
                       </tr>
@@ -115,7 +120,7 @@ export class WeeklyEmailGenerator {
                     <tr>
                       <td>
                         <a href="${event.event_url}" target="_blank" style="display: block; width: 48px; height: 48px; background-color: rgba(255,255,255,0.9); border-radius: 50%; text-align: center; line-height: 48px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                          <span style="color: #000000; font-size: 20px;">🎫</span>
+                          <img src="${ticketIconSvg}" alt="Ticket" style="width: 24px; height: 24px; vertical-align: middle;" />
                         </a>
                       </td>
                     </tr>
@@ -129,7 +134,7 @@ export class WeeklyEmailGenerator {
     `;
   }
 
-  private generateEventsSection(title: string, emoji: string, events: NewsletterEvent[]): string {
+  private generateEventsSection(title: string, emoji: string, events: NewsletterEvent[], newsletterPageUrl: string): string {
     if (events.length === 0) {
       return "";
     }
@@ -150,7 +155,7 @@ export class WeeklyEmailGenerator {
           ${this.formatDate(date)}
         </h3>
         <div style="margin-bottom: 32px;">
-          ${groupedByDate[date].map(event => this.generateEventCard(event)).join('')}
+          ${groupedByDate[date].map(event => this.generateEventCard(event, newsletterPageUrl)).join('')}
         </div>
       `;
     });
@@ -160,13 +165,13 @@ export class WeeklyEmailGenerator {
   }
 
   generateWeeklyEmailHTML(data: WeeklyEmailData): string {
-    const { weekendEvents, nextWeekEvents, subscriberCity, unsubscribeUrl, subscriberEmail } = data;
+    const { weekendEvents, nextWeekEvents, subscriberCity, unsubscribeUrl, subscriberEmail, newsletterPageUrl } = data;
 
-    const cityFilter = subscriberCity ? `in ${subscriberCity}` : "near you";
+    const cityFilter = subscriberCity ? `in ${subscriberCity}` : "";
     const totalEvents = weekendEvents.length + nextWeekEvents.length;
 
-    const weekendSection = this.generateEventsSection("This Weekend", "🎵", weekendEvents);
-    const nextWeekSection = this.generateEventsSection("Next Week", "🎟️", nextWeekEvents);
+    const weekendSection = this.generateEventsSection("This Weekend", "🎵", weekendEvents, newsletterPageUrl);
+    const nextWeekSection = this.generateEventsSection("Next Week", "🎟️", nextWeekEvents, newsletterPageUrl);
 
     return `
       <!DOCTYPE html>
@@ -209,7 +214,7 @@ export class WeeklyEmailGenerator {
                         <p style="font-size: 14px; color: #999999; margin: 0 0 24px 0;">
                           Check back next week for new shows!
                         </p>
-                        <a href="https://onestowatch.live/newsletter" style="display: inline-block; padding: 12px 24px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: bold;">
+                        <a href="${newsletterPageUrl}" style="display: inline-block; padding: 12px 24px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: bold;">
                           View All Shows
                         </a>
                       </div>
@@ -218,7 +223,7 @@ export class WeeklyEmailGenerator {
                       ${nextWeekSection}
                       
                       <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
-                        <a href="https://onestowatch.live/newsletter" style="display: inline-block; padding: 14px 32px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold;">
+                        <a href="${newsletterPageUrl}" style="display: inline-block; padding: 14px 32px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold;">
                           View Full Calendar
                         </a>
                       </div>
@@ -238,7 +243,7 @@ export class WeeklyEmailGenerator {
                     </p>
                     <p style="margin: 0; color: #666666; font-size: 12px; line-height: 1.6;">
                       <a href="${unsubscribeUrl}" style="color: #666666; text-decoration: underline;">Unsubscribe</a> | 
-                      <a href="https://onestowatch.live/newsletter" style="color: #666666; text-decoration: underline;">Update Preferences</a>
+                      <a href="${newsletterPageUrl}" style="color: #666666; text-decoration: underline;">Update Preferences</a>
                     </p>
                   </td>
                 </tr>
@@ -252,15 +257,15 @@ export class WeeklyEmailGenerator {
   }
 
   generateWeeklyEmailText(data: WeeklyEmailData): string {
-    const { weekendEvents, nextWeekEvents, subscriberCity, unsubscribeUrl, subscriberEmail } = data;
+    const { weekendEvents, nextWeekEvents, subscriberCity, unsubscribeUrl, subscriberEmail, newsletterPageUrl } = data;
 
-    const cityFilter = subscriberCity ? `in ${subscriberCity}` : "near you";
+    const cityFilter = subscriberCity ? `in ${subscriberCity}` : "";
     const totalEvents = weekendEvents.length + nextWeekEvents.length;
 
     let text = `OTW LIVE This Week\n\n${totalEvents} shows ${cityFilter} this week\n\n`;
 
     if (totalEvents === 0) {
-      text += `No shows scheduled ${cityFilter} this week.\nCheck back next week for new shows!\n\nView All Shows: https://onestowatch.live/newsletter\n`;
+      text += `No shows scheduled ${cityFilter} this week.\nCheck back next week for new shows!\n\nView All Shows: ${newsletterPageUrl}\n`;
     } else {
       if (weekendEvents.length > 0) {
         text += "🎵 THIS WEEKEND\n\n";
@@ -273,7 +278,7 @@ export class WeeklyEmailGenerator {
             text += `  🕐 ${this.formatTime(event.event_time)}\n`;
             text += `  🎟️ ${event.event_url}\n`;
             if (event.artist_videolink) {
-              text += `  ▶️ ${event.artist_videolink}\n`;
+              text += `  ▶️ ${newsletterPageUrl}\n`;
             }
             text += `\n`;
           });
@@ -291,14 +296,14 @@ export class WeeklyEmailGenerator {
             text += `  🕐 ${this.formatTime(event.event_time)}\n`;
             text += `  🎟️ ${event.event_url}\n`;
             if (event.artist_videolink) {
-              text += `  ▶️ ${event.artist_videolink}\n`;
+              text += `  ▶️ ${newsletterPageUrl}\n`;
             }
             text += `\n`;
           });
         });
       }
 
-      text += "\nView Full Calendar: https://onestowatch.live/newsletter\n";
+      text += `\nView Full Calendar: ${newsletterPageUrl}\n`;
     }
 
     text += `\n---\nYou're receiving this weekly newsletter because you subscribed to OTW LIVE.\n`;
@@ -307,7 +312,7 @@ export class WeeklyEmailGenerator {
       text += `City: ${subscriberCity}\n`;
     }
     text += `\nUnsubscribe: ${unsubscribeUrl}\n`;
-    text += `Update Preferences: https://onestowatch.live/newsletter\n`;
+    text += `Update Preferences: ${newsletterPageUrl}\n`;
 
     return text;
   }
