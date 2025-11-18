@@ -78,57 +78,76 @@ export class WeeklyEmailGenerator {
     // Wrap event URL with Impact affiliate tracking for newsletter
     const affiliateUrl = wrapWithImpactTracking(event.event_url, "newsletter");
 
-    const playIconSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpolygon points='10 8 16 12 10 16 10 8'%3E%3C/polygon%3E%3C/svg%3E`;
-    const ticketIconSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'%3E%3C/path%3E%3Cpath d='M13 5v2'%3E%3C/path%3E%3Cpath d='M13 17v2'%3E%3C/path%3E%3Cpath d='M13 11v2'%3E%3C/path%3E%3C/svg%3E`;
-
     return `
-      <div style="margin-bottom: 24px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-          <tr>
-            <td style="position: relative; padding: 0;">
-              <div style="position: relative; width: 100%; padding-bottom: 100%; background-color: #000;">
-                <img 
-                  src="${artistImage}" 
-                  alt="${artistName}"
-                  style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
-                />
-                
-                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);"></div>
-                
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 24px;">
-                  <h3 style="margin: 0 0 8px 0; color: #ffffff; font-size: 20px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
-                    ${artistName}
-                  </h3>
-                  <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 16px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
-                    ${event.venue_name}
-                  </p>
-                </div>
-                
-                <div style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%);">
-                  <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
-                    ${hasVideo ? `
-                      <tr>
-                        <td style="padding-bottom: 12px;">
-                          <a href="${newsletterPageUrl}" target="_blank" style="display: block; width: 48px; height: 48px; background-color: rgba(255,255,255,0.9); border-radius: 50%; text-align: center; line-height: 48px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                            <img src="${playIconSvg}" alt="Play" style="width: 24px; height: 24px; vertical-align: middle;" />
-                          </a>
-                        </td>
-                      </tr>
-                    ` : ''}
-                    <tr>
-                      <td>
-                        <a href="${affiliateUrl}" target="_blank" style="display: block; width: 48px; height: 48px; background-color: rgba(255,255,255,0.9); border-radius: 50%; text-align: center; line-height: 48px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                          <img src="${ticketIconSvg}" alt="Ticket" style="width: 24px; height: 24px; vertical-align: middle;" />
-                        </a>
-                      </td>
-                    </tr>
-                  </table>
-                </div>
+      <!-- EVENT CARD -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px; border-collapse: collapse;">
+        <tr>
+          <!-- Square Image Column -->
+          <td width="40%" valign="top" style="padding-right: 0; position: relative;">
+            <div style="width: 100%; max-width: 200px; position: relative;">
+              <img src="${artistImage}" alt="${artistName}" width="100%" style="display: block; border-radius: 8px;" />
+
+              <!-- TEXT OVERLAY -->
+              <div style="
+                position: absolute;
+                left: 8px;
+                bottom: 8px;
+                background: rgba(0,0,0,0.55);
+                padding: 6px 10px;
+                border-radius: 6px;
+              ">
+                <span style="color: #ffffff; font-size: 14px; font-weight: bold;">${artistName}</span><br/>
+                <span style="color: #cccccc; font-size: 12px;">${event.venue_name}</span>
               </div>
-            </td>
-          </tr>
-        </table>
-      </div>
+            </div>
+          </td>
+
+          <!-- Buttons Column -->
+          <td width="60%" valign="middle" style="padding-left: 16px;">
+            <table cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <a href="${affiliateUrl}" target="_blank" style="
+                    display: inline-block;
+                    padding: 12px 18px;
+                    background: #000;
+                    color: #fff;
+                    text-decoration: none;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    margin-bottom: 8px;
+                    width: 180px;
+                    text-align: center;
+                  ">
+                    🎟️ Get Tickets
+                  </a>
+                </td>
+              </tr>
+              ${hasVideo ? `
+              <tr>
+                <td>
+                  <a href="${newsletterPageUrl}" target="_blank" style="
+                    display: inline-block;
+                    padding: 12px 18px;
+                    background: #444;
+                    color: #fff;
+                    text-decoration: none;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    width: 180px;
+                    text-align: center;
+                  ">
+                    ▶ Watch
+                  </a>
+                </td>
+              </tr>
+              ` : ''}
+            </table>
+          </td>
+        </tr>
+      </table>
     `;
   }
 
