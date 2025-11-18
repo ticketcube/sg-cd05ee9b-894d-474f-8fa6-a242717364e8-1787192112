@@ -83,8 +83,8 @@ export class WeeklyEmailGenerator {
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px; border-collapse: collapse;">
         <tr>
           <!-- Square Image Column -->
-          <td width="40%" valign="top" style="padding-right: 0; position: relative;">
-            <div style="width: 100%; max-width: 200px; position: relative;">
+          <td width="60%" valign="top" style="padding-right: 0; position: relative;">
+            <div style="width: 100%; max-width: 300px; position: relative;">
               <img src="${artistImage}" alt="${artistName}" width="100%" style="display: block; border-radius: 8px;" />
 
               <!-- TEXT OVERLAY -->
@@ -103,7 +103,7 @@ export class WeeklyEmailGenerator {
           </td>
 
           <!-- Buttons Column -->
-          <td width="60%" valign="middle" style="padding-left: 16px;">
+          <td width="40%" valign="middle" style="padding-left: 16px;">
             <table cellpadding="0" cellspacing="0">
               <tr>
                 <td>
