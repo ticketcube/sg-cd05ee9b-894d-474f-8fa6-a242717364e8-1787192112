@@ -109,25 +109,45 @@ export default async function handler(
 
     for (const subscriber of subscribers) {
       try {
+        // 🔍 VERIFICATION LOG: Check what home_city value we have BEFORE filtering
+        console.log(`\n🔍 PROCESSING SUBSCRIBER: ${subscriber.email}`);
+        console.log(`   📍 Home City from DB: ${subscriber.home_city || "(none - will send all events)"}`);
+        console.log(`   📊 Total Weekend Events Available: ${weekendEvents?.length || 0}`);
+        console.log(`   📊 Total Next Week Events Available: ${nextWeekEvents?.length || 0}`);
+
         let weekendFiltered: NewsletterEvent[];
         let nextWeekFiltered: NewsletterEvent[];
         let subject: string;
 
         if (subscriber.home_city) {
           const normalizedCity = subscriber.home_city.toLowerCase();
+          
+          // 🔍 BEFORE FILTERING
+          console.log(`   🔄 FILTERING to city: "${normalizedCity}"`);
+          
           weekendFiltered = (weekendEvents || []).filter(e => 
             e.venue_city.toLowerCase() === normalizedCity
           );
           nextWeekFiltered = (nextWeekEvents || []).filter(e => 
             e.venue_city.toLowerCase() === normalizedCity
           );
+          
+          // 🔍 AFTER FILTERING
+          console.log(`   ✅ FILTERED Weekend Events: ${weekendFiltered.length}`);
+          console.log(`   ✅ FILTERED Next Week Events: ${nextWeekFiltered.length}`);
+          
           subject = `🎵 OTW LIVE This Week in ${subscriber.home_city}`;
-          console.log(`📍 Filtered to ${subscriber.home_city}: ${weekendFiltered.length} weekend, ${nextWeekFiltered.length} next week`);
+          
+          // 🔍 Show a sample of what cities we're seeing in the events
+          if (weekendFiltered.length === 0 && (weekendEvents?.length || 0) > 0) {
+            const sampleCities = [...new Set(weekendEvents.slice(0, 5).map(e => e.venue_city))];
+            console.log(`   ⚠️ NO MATCHES FOUND. Sample cities in database: ${sampleCities.join(", ")}`);
+          }
         } else {
           weekendFiltered = weekendEvents || [];
           nextWeekFiltered = nextWeekEvents || [];
           subject = `🎵 OTW LIVE This Week`;
-          console.log(`🌍 Sending ALL events (no city set): ${weekendFiltered.length} weekend, ${nextWeekFiltered.length} next week`);
+          console.log(`   🌍 NO CITY SET - sending ALL events`);
         }
 
         const unsubscribeUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://otwchart.com"}/newsletter/unsubscribe?token=${subscriber.unsubscribe_token}`;
