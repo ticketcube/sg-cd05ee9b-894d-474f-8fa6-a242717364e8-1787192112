@@ -127,7 +127,7 @@ export class WeeklyEmailGenerator {
               ${hasVideo ? `
               <tr>
                 <td>
-                  <a href="${newsletterPageUrl}" target="_blank" style="
+                  <a href="${event.artist_videolink}" target="_blank" style="
                     display: inline-block;
                     padding: 12px 18px;
                     background: #444;
@@ -308,7 +308,7 @@ export class WeeklyEmailGenerator {
             text += `  🕐 ${this.formatTime(event.event_time)}\n`;
             text += `  🎟️ ${affiliateUrl}\n`;
             if (event.artist_videolink) {
-              text += `  ▶️ ${newsletterPageUrl}\n`;
+              text += `  ▶️ ${event.artist_videolink}\n`;
             }
             text += `\n`;
           });
@@ -327,7 +327,7 @@ export class WeeklyEmailGenerator {
             text += `  🕐 ${this.formatTime(event.event_time)}\n`;
             text += `  🎟️ ${affiliateUrl}\n`;
             if (event.artist_videolink) {
-              text += `  ▶️ ${newsletterPageUrl}\n`;
+              text += `  ▶️ ${event.artist_videolink}\n`;
             }
             text += `\n`;
           });
