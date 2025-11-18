@@ -98,7 +98,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
         <CardHeader className="text-center pb-4">
           <div className="mx-auto mb-4">
             <img 
-              src="/otwlive.png" 
+              src="/OTWLogo_BW.png" 
               alt="OTW Live" 
                           className="w-16 h-16 object-contain mx-auto rounded-md"
             />
