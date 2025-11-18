@@ -253,7 +253,7 @@ class NewsletterService {
     try {
       const { data, error } = await supabase
         .from("newsletter_subscribers")
-        .select("*")
+        .select("id, email, home_city, status, unsubscribe_token, subscribed_at, last_email_sent_at, created_at")
         .eq("email", email.toLowerCase().trim())
         .eq("status", "active")
         .single();

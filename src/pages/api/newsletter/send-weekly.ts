@@ -95,7 +95,7 @@ export default async function handler(
     } else {
       const { data, error: subError } = await supabase
         .from("newsletter_subscribers")
-        .select("*")
+        .select("email, home_city, unsubscribe_token, status")
         .eq("status", "active");
 
       if (subError) throw subError;
