@@ -493,10 +493,41 @@ export default function NewsletterPage() {
   if (checkingSubscription) return <div className="min-h-screen flex items-center justify-center"><p className="text-gray-500">Loading...</p></div>;
 
   return (
-      <div className="min-h-screen px-4">
-          <div className="text-3xl max-w-4xl mx-auto flex justify-center py-6">
-             
-          OnesToWatch Artists On Tour!      </div>
+      <div className="min-h-screen">
+          {/* Black Header with Logo */}
+          <header className="bg-black border-b border-gray-800">
+              <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                  <div className="flex items-center">
+                      <Image 
+                          src="https://s3-us-west-2.amazonaws.com/onestowatch-v2/logo-o2w-1635877647.svg" 
+                          alt="Ones to Watch" 
+                          width={120} 
+                          height={40}
+                          className="h-8 w-auto"
+                      />
+                  </div>
+                  
+                  {/* Optional navigation items can go here */}
+                  <div className="flex items-center gap-4">
+                      {/* Placeholder for future nav items */}
+                  </div>
+              </div>
+          </header>
+
+          {/* Hero Headline */}
+          <div className="bg-gradient-to-b from-gray-50 to-white border-b border-gray-200">
+              <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-2">
+                      OnesToWatch Artists On Tour!
+                  </h1>
+                  <p className="text-lg text-gray-600 mt-4">
+                      Discover the hottest emerging artists performing near you
+                  </p>
+              </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="px-4 py-8">
         <div className="max-w-6xl mx-auto">
 
         {!isSubscribed ? (
@@ -589,5 +620,6 @@ export default function NewsletterPage() {
         )}
       </div>
     </div>
+      </div>
   );
 }
