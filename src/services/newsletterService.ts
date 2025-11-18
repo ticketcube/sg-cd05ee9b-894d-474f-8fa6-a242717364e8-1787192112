@@ -207,6 +207,12 @@ class NewsletterService {
   async updateHomeCity(email: string, homeCity: string | null): Promise<{ success: boolean; message: string }> {
     try {
       const normalizedEmail = email.toLowerCase().trim();
+      
+      console.log("🔍 Attempting to update home_city:", { 
+        email: normalizedEmail, 
+        homeCity,
+        timestamp: new Date().toISOString()
+      });
 
       const { data, error } = await supabase
         .from("newsletter_subscribers")
@@ -216,14 +222,27 @@ class NewsletterService {
         .select()
         .single();
 
-      if (error) throw error;
+      console.log("📊 Update result:", { data, error });
+
+      if (error) {
+        console.error("❌ Update error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        throw error;
+      }
 
       if (!data) {
+        console.warn("⚠️ No data returned after update");
         return {
           success: false,
           message: "Subscriber not found or inactive."
         };
       }
+
+      console.log("✅ Update successful:", data);
 
       return {
         success: true,
@@ -231,11 +250,16 @@ class NewsletterService {
           ? `City preference updated to ${homeCity}!` 
           : "City preference cleared."
       };
-    } catch (error) {
-      console.error("Error updating home city:", error);
+    } catch (error: any) {
+      console.error("💥 Error updating home city:", {
+        error,
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint
+      });
       return {
         success: false,
-        message: "Failed to update city preference. Please try again."
+        message: `Failed to update: ${error?.message || "Unknown error"}`
       };
     }
   }
