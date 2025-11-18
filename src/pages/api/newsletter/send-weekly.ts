@@ -90,8 +90,26 @@ export default async function handler(
 
     let subscribers;
     if (testMode && testEmail) {
-      subscribers = [{ email: testEmail, home_city: null, unsubscribe_token: "test-token" }];
-      console.log(`🧪 TEST MODE: Sending to ${testEmail}`);
+      // FIX: Fetch actual subscriber data for test email instead of creating fake subscriber
+      console.log(`🧪 TEST MODE: Fetching real subscriber data for ${testEmail}`);
+      
+      const { data: testSubscriber, error: testSubError } = await supabase
+        .from("newsletter_subscribers")
+        .select("email, home_city, unsubscribe_token, status")
+        .eq("email", testEmail.toLowerCase().trim())
+        .eq("status", "active")
+        .single();
+
+      if (testSubError || !testSubscriber) {
+        console.error("❌ Test subscriber not found or error:", testSubError);
+        return res.status(404).json({
+          success: false,
+          message: `Test email ${testEmail} not found in subscribers database`
+        });
+      }
+
+      subscribers = [testSubscriber];
+      console.log(`✅ Found test subscriber with home_city: ${testSubscriber.home_city || "(none)"}`);
     } else {
       const { data, error: subError } = await supabase
         .from("newsletter_subscribers")
