@@ -495,8 +495,8 @@ export default function NewsletterPage() {
   return (
       <div className="min-h-screen px-4">
           <div className="max-w-4xl mx-auto flex justify-center py-6">
-              <Image
-OnesToWatch Artists On Tour!       </div>
+             
+OnesToWatch Artists On Tour!      
       <div className="max-w-6xl mx-auto">
 
         {!isSubscribed ? (
