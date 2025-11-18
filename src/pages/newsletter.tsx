@@ -496,13 +496,7 @@ export default function NewsletterPage() {
       <div className="min-h-screen px-4">
           <div className="max-w-4xl mx-auto flex justify-center py-6">
               <Image
-                  src="/otwlive.png"
-                  alt="OTW Live"
-                  width={100}      // slightly smaller
-                  height={100}     // slightly smaller
-                  className="rounded-md"
-              />
-          </div>
+OnesToWatch Artists On Tour!       </div>
       <div className="max-w-6xl mx-auto">
 
         {!isSubscribed ? (
