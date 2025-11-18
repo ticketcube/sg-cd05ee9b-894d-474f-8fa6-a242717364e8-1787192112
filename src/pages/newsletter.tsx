@@ -275,10 +275,33 @@ export default function NewsletterPage() {
           localStorage.removeItem("newsletter_home_city");
         }
         
+        // Force immediate UI refresh after successful save
+        console.log("✅ City saved successfully, refreshing UI state");
+        
         toast({
           title: "Success!",
           description: result.message,
         });
+        
+        // Verify the update by fetching fresh subscriber data
+        const subscriber = await newsletterService.getSubscriberByEmail(userEmail);
+        if (subscriber?.home_city) {
+          console.log("🔄 Verified home_city from database:", subscriber.home_city);
+          localStorage.setItem("newsletter_home_city", subscriber.home_city);
+          
+          // Ensure the filter reflects the saved city
+          const matchedCity = availableCities.find(
+            c => c.toLowerCase() === subscriber.home_city.toLowerCase()
+          );
+          if (matchedCity && matchedCity !== selectedCityName) {
+            setSelectedCityName(matchedCity);
+            console.log("🔄 Updated filter to match saved city:", matchedCity);
+          }
+        } else if (!cityToSave) {
+          // If user cleared their city, set to "all"
+          setSelectedCityName("all");
+          console.log("🔄 Updated filter to 'all' (no city set)");
+        }
       } else {
         toast({
           title: "Error",
