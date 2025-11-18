@@ -185,14 +185,35 @@ export class WeeklyEmailGenerator {
     const { weekendEvents, nextWeekEvents, subscriberCity, unsubscribeUrl, subscriberEmail, newsletterPageUrl } = data;
 
     const cityFilter = subscriberCity ? `in ${subscriberCity}` : "";
-    const totalEvents = weekendEvents.length + nextWeekEvents.length;
-
-    const weekendSection = this.generateEventsSection("This Weekend", "🎵", weekendEvents, newsletterPageUrl);
     
     // Construct newsletter URL with city parameter
     const newsletterUrlWithCity = subscriberCity 
       ? `${newsletterPageUrl}?city=${encodeURIComponent(subscriberCity)}`
       : newsletterPageUrl;
+
+    // FIX #2: If no city selected, limit to first day with events
+    let displayWeekendEvents = weekendEvents;
+    let displayNextWeekEvents = nextWeekEvents;
+    let buttonText = "View All Events";
+    
+    if (!subscriberCity) {
+      // Get first day with any events
+      const allEvents = [...weekendEvents, ...nextWeekEvents];
+      if (allEvents.length > 0) {
+        const groupedByDate = this.groupEventsByDate(allEvents);
+        const sortedDates = Object.keys(groupedByDate).sort();
+        const firstDay = sortedDates[0];
+        
+        // Only show events from the first day
+        const firstDayEvents = groupedByDate[firstDay];
+        displayWeekendEvents = firstDayEvents.filter(e => weekendEvents.some(we => we.event_id === e.event_id));
+        displayNextWeekEvents = firstDayEvents.filter(e => nextWeekEvents.some(nwe => nwe.event_id === e.event_id));
+      }
+      buttonText = "SELECT CITY TO SEE MORE EVENTS";
+    }
+
+    const weekendSection = this.generateEventsSection("This Weekend", "🎵", displayWeekendEvents, newsletterPageUrl);
+    const nextWeekSection = this.generateEventsSection("Next Week", "📅", displayNextWeekEvents, newsletterPageUrl);
 
     // Different messaging for users with/without city
     const noCityMessage = !subscriberCity ? `
@@ -202,6 +223,8 @@ export class WeeklyEmailGenerator {
         </p>
       </div>
     ` : '';
+
+    const totalDisplayedEvents = displayWeekendEvents.length + displayNextWeekEvents.length;
 
     return `
       <!DOCTYPE html>
@@ -224,10 +247,10 @@ export class WeeklyEmailGenerator {
                   <td style="padding: 40px 40px 20px 40px; text-align: center; background-color: #000000;">
                     <img src="https://onestowatch.live/otwlive.png" alt="OTW Live" style="width: 100px; height: 100px; margin: 0 auto 16px auto; border-radius: 8px;" />
                     <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">
-                      OTW LIVE This Weekend
+                      OTW LIVE This Week
                     </h1>
                     <p style="margin: 8px 0 0 0; color: #cccccc; font-size: 14px;">
-                      ${weekendEvents.length} shows ${cityFilter} this weekend
+                      ${totalDisplayedEvents} shows ${cityFilter} this week
                     </p>
                   </td>
                 </tr>
@@ -236,27 +259,28 @@ export class WeeklyEmailGenerator {
                   <td style="padding: 40px;">
                     ${noCityMessage}
                     
-                    ${weekendEvents.length === 0 ? `
+                    ${totalDisplayedEvents === 0 ? `
                       <div style="text-align: center; padding: 40px 0;">
                         <p style="font-size: 18px; color: #666666; margin: 0 0 16px 0;">
-                          No shows scheduled ${cityFilter} this weekend.
+                          No shows scheduled ${cityFilter} this week.
                         </p>
                         <p style="font-size: 14px; color: #999999; margin: 0 0 24px 0;">
-                          Check next week for new shows!
+                          Check back soon for new shows!
                         </p>
                         <a href="${newsletterUrlWithCity}" style="display: inline-block; padding: 12px 24px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: bold;">
-                          View Next Week
+                          View Newsletter
                         </a>
                       </div>
                     ` : `
                       ${weekendSection}
+                      ${nextWeekSection}
                       
                       <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
                         <a href="${newsletterUrlWithCity}" style="display: inline-block; padding: 16px 40px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold; margin-bottom: 12px;">
-                          📅 NEXT WEEK
+                          ${buttonText}
                         </a>
                         <p style="margin: 8px 0 0 0; color: #999999; font-size: 12px;">
-                          See what's coming up next week
+                          ${subscriberCity ? "See all events in your city" : "Set your city to see personalized events"}
                         </p>
                       </div>
                     `}
@@ -297,33 +321,75 @@ export class WeeklyEmailGenerator {
       ? `${newsletterPageUrl}?city=${encodeURIComponent(subscriberCity)}`
       : newsletterPageUrl;
 
-    let text = `OTW LIVE This Weekend\n\n${weekendEvents.length} shows ${cityFilter} this weekend\n\n`;
+    // FIX #2: If no city selected, limit to first day with events
+    let displayWeekendEvents = weekendEvents;
+    let displayNextWeekEvents = nextWeekEvents;
+    let buttonText = "View All Events";
+    
+    if (!subscriberCity) {
+      const allEvents = [...weekendEvents, ...nextWeekEvents];
+      if (allEvents.length > 0) {
+        const groupedByDate = this.groupEventsByDate(allEvents);
+        const sortedDates = Object.keys(groupedByDate).sort();
+        const firstDay = sortedDates[0];
+        
+        const firstDayEvents = groupedByDate[firstDay];
+        displayWeekendEvents = firstDayEvents.filter(e => weekendEvents.some(we => we.event_id === e.event_id));
+        displayNextWeekEvents = firstDayEvents.filter(e => nextWeekEvents.some(nwe => nwe.event_id === e.event_id));
+      }
+      buttonText = "SELECT CITY TO SEE MORE EVENTS";
+    }
+
+    const totalDisplayedEvents = displayWeekendEvents.length + displayNextWeekEvents.length;
+
+    let text = `OTW LIVE This Week\n\n${totalDisplayedEvents} shows ${cityFilter} this week\n\n`;
 
     if (!subscriberCity) {
       text += `💡 TIP: Set your city to receive personalized emails with only shows near you!\n\n`;
     }
 
-    if (weekendEvents.length === 0) {
-      text += `No shows scheduled ${cityFilter} this weekend.\nCheck next week for new shows!\n\nView Next Week: ${newsletterUrlWithCity}\n`;
+    if (totalDisplayedEvents === 0) {
+      text += `No shows scheduled ${cityFilter} this week.\nCheck back soon for new shows!\n\nView Newsletter: ${newsletterUrlWithCity}\n`;
     } else {
-      text += "🎵 THIS WEEKEND\n\n";
-      const weekendGrouped = this.groupEventsByDate(weekendEvents);
-      Object.keys(weekendGrouped).sort().forEach(date => {
-        text += `${this.formatDate(date)}\n`;
-        weekendGrouped[date].forEach(event => {
-          const affiliateUrl = wrapWithImpactTracking(event.event_url, "newsletter");
-          text += `- ${event.artist_name || event.event_name}\n`;
-          text += `  📍 ${event.venue_name}, ${event.venue_city}\n`;
-          text += `  🕐 ${this.formatTime(event.event_time)}\n`;
-          text += `  🎟️ ${affiliateUrl}\n`;
-          if (event.artist_videolink) {
-            text += `  ▶️ ${event.artist_videolink}\n`;
-          }
-          text += `\n`;
+      if (displayWeekendEvents.length > 0) {
+        text += "🎵 THIS WEEKEND\n\n";
+        const weekendGrouped = this.groupEventsByDate(displayWeekendEvents);
+        Object.keys(weekendGrouped).sort().forEach(date => {
+          text += `${this.formatDate(date)}\n`;
+          weekendGrouped[date].forEach(event => {
+            const affiliateUrl = wrapWithImpactTracking(event.event_url, "newsletter");
+            text += `- ${event.artist_name || event.event_name}\n`;
+            text += `  📍 ${event.venue_name}, ${event.venue_city}\n`;
+            text += `  🕐 ${this.formatTime(event.event_time)}\n`;
+            text += `  🎟️ ${affiliateUrl}\n`;
+            if (event.artist_videolink) {
+              text += `  ▶️ ${event.artist_videolink}\n`;
+            }
+            text += `\n`;
+          });
         });
-      });
+      }
 
-      text += `\n📅 NEXT WEEK\nSee what's coming up next week: ${newsletterUrlWithCity}\n`;
+      if (displayNextWeekEvents.length > 0) {
+        text += "\n📅 NEXT WEEK\n\n";
+        const nextWeekGrouped = this.groupEventsByDate(displayNextWeekEvents);
+        Object.keys(nextWeekGrouped).sort().forEach(date => {
+          text += `${this.formatDate(date)}\n`;
+          nextWeekGrouped[date].forEach(event => {
+            const affiliateUrl = wrapWithImpactTracking(event.event_url, "newsletter");
+            text += `- ${event.artist_name || event.event_name}\n`;
+            text += `  📍 ${event.venue_name}, ${event.venue_city}\n`;
+            text += `  🕐 ${this.formatTime(event.event_time)}\n`;
+            text += `  🎟️ ${affiliateUrl}\n`;
+            if (event.artist_videolink) {
+              text += `  ▶️ ${event.artist_videolink}\n`;
+            }
+            text += `\n`;
+          });
+        });
+      }
+
+      text += `\n${buttonText}: ${newsletterUrlWithCity}\n`;
     }
 
     text += `\n---\nYou're receiving this weekly newsletter because you subscribed to OTW LIVE.\n`;
