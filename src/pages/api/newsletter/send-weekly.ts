@@ -122,12 +122,21 @@ export default async function handler(
         if (subscriber.home_city) {
           const normalizedCity = subscriber.home_city.toLowerCase();
           
-          // 🔍 BEFORE FILTERING
+          // 🔍 BEFORE FILTERING - Show what we're looking for
           console.log(`   🔄 FILTERING to city: "${normalizedCity}"`);
-          
-          weekendFiltered = (weekendEvents || []).filter(e => 
-            e.venue_city.toLowerCase() === normalizedCity
+          console.log(`   📋 Sample venue_city values from events:`, 
+            [...new Set((weekendEvents || []).slice(0, 5).map(e => e.venue_city))].join(", ")
           );
+          
+          weekendFiltered = (weekendEvents || []).filter(e => {
+            const match = e.venue_city.toLowerCase() === normalizedCity;
+            // Log first few comparisons for debugging
+            if ((weekendEvents || []).indexOf(e) < 3) {
+              console.log(`      🔍 Comparing "${e.venue_city.toLowerCase()}" === "${normalizedCity}": ${match}`);
+            }
+            return match;
+          });
+          
           nextWeekFiltered = (nextWeekEvents || []).filter(e => 
             e.venue_city.toLowerCase() === normalizedCity
           );
@@ -138,10 +147,16 @@ export default async function handler(
           
           subject = `🎵 OTW LIVE This Week in ${subscriber.home_city}`;
           
-          // 🔍 Show a sample of what cities we're seeing in the events
-          if (weekendFiltered.length === 0 && (weekendEvents?.length || 0) > 0) {
-            const sampleCities = [...new Set(weekendEvents.slice(0, 5).map(e => e.venue_city))];
-            console.log(`   ⚠️ NO MATCHES FOUND. Sample cities in database: ${sampleCities.join(", ")}`);
+          // 🔍 Show a sample of what cities we're seeing in ALL events if no matches
+          if (weekendFiltered.length === 0 && nextWeekFiltered.length === 0) {
+            const allEventCities = [
+              ...(weekendEvents || []).map(e => e.venue_city),
+              ...(nextWeekEvents || []).map(e => e.venue_city)
+            ];
+            const uniqueCities = [...new Set(allEventCities)].slice(0, 10);
+            console.log(`   ⚠️ NO MATCHES FOUND FOR "${subscriber.home_city}"`);
+            console.log(`   📍 Available cities in database:`, uniqueCities.join(", "));
+            console.log(`   💡 Check if city name matches exactly (case-insensitive)`);
           }
         } else {
           weekendFiltered = weekendEvents || [];
