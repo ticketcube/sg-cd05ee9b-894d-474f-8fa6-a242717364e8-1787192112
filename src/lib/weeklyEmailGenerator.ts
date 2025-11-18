@@ -246,12 +246,8 @@ export class WeeklyEmailGenerator {
                 <tr>
                   <td style="padding: 40px 40px 20px 40px; text-align: center; background-color: #000000;">
                     <img src="https://onestowatch.live/otwlive.png" alt="OTW Live" style="width: 100px; height: 100px; margin: 0 auto 16px auto; border-radius: 8px;" />
-                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">
-                      OTW LIVE This Week
-                    </h1>
-                    <p style="margin: 8px 0 0 0; color: #cccccc; font-size: 14px;">
-                      ${totalDisplayedEvents} shows ${cityFilter} this week
-                    </p>
+                  
+                  
                   </td>
                 </tr>
                 
