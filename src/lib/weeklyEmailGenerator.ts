@@ -1,4 +1,5 @@
 import type { Database } from "@/integrations/supabase/types";
+import { wrapWithImpactTracking } from "@/lib/affiliateTracking";
 
 type NewsletterEvent = {
   event_id: string;
@@ -74,6 +75,9 @@ export class WeeklyEmailGenerator {
     const hasVideo = event.artist_videolink && event.artist_videolink.trim() !== "";
     const artistName = event.artist_name || event.event_name;
 
+    // Wrap event URL with Impact affiliate tracking for newsletter
+    const affiliateUrl = wrapWithImpactTracking(event.event_url, "newsletter");
+
     const playIconSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpolygon points='10 8 16 12 10 16 10 8'%3E%3C/polygon%3E%3C/svg%3E`;
     const ticketIconSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'%3E%3C/path%3E%3Cpath d='M13 5v2'%3E%3C/path%3E%3Cpath d='M13 17v2'%3E%3C/path%3E%3Cpath d='M13 11v2'%3E%3C/path%3E%3C/svg%3E`;
 
@@ -113,7 +117,7 @@ export class WeeklyEmailGenerator {
                     ` : ''}
                     <tr>
                       <td>
-                        <a href="${event.event_url}" target="_blank" style="display: block; width: 48px; height: 48px; background-color: rgba(255,255,255,0.9); border-radius: 50%; text-align: center; line-height: 48px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        <a href="${affiliateUrl}" target="_blank" style="display: block; width: 48px; height: 48px; background-color: rgba(255,255,255,0.9); border-radius: 50%; text-align: center; line-height: 48px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                           <img src="${ticketIconSvg}" alt="Ticket" style="width: 24px; height: 24px; vertical-align: middle;" />
                         </a>
                       </td>
@@ -279,10 +283,11 @@ export class WeeklyEmailGenerator {
         Object.keys(weekendGrouped).sort().forEach(date => {
           text += `${this.formatDate(date)}\n`;
           weekendGrouped[date].forEach(event => {
+            const affiliateUrl = wrapWithImpactTracking(event.event_url, "newsletter");
             text += `- ${event.artist_name || event.event_name}\n`;
             text += `  📍 ${event.venue_name}, ${event.venue_city}\n`;
             text += `  🕐 ${this.formatTime(event.event_time)}\n`;
-            text += `  🎟️ ${event.event_url}\n`;
+            text += `  🎟️ ${affiliateUrl}\n`;
             if (event.artist_videolink) {
               text += `  ▶️ ${newsletterPageUrl}\n`;
             }
@@ -297,10 +302,11 @@ export class WeeklyEmailGenerator {
         Object.keys(nextWeekGrouped).sort().forEach(date => {
           text += `${this.formatDate(date)}\n`;
           nextWeekGrouped[date].forEach(event => {
+            const affiliateUrl = wrapWithImpactTracking(event.event_url, "newsletter");
             text += `- ${event.artist_name || event.event_name}\n`;
             text += `  📍 ${event.venue_name}, ${event.venue_city}\n`;
             text += `  🕐 ${this.formatTime(event.event_time)}\n`;
-            text += `  🎟️ ${event.event_url}\n`;
+            text += `  🎟️ ${affiliateUrl}\n`;
             if (event.artist_videolink) {
               text += `  ▶️ ${newsletterPageUrl}\n`;
             }
@@ -319,7 +325,8 @@ export class WeeklyEmailGenerator {
     } else {
       text += `No city set - Update your preferences: ${newsletterPageUrl}\n`;
     }
-    text += `\nUnsubscribe: ${unsubscribeUrl}\n`;
+    text += `\n`;
+    text += `Unsubscribe: ${unsubscribeUrl}\n`;
     text += `Update Preferences: ${newsletterPageUrl}\n`;
 
     return text;

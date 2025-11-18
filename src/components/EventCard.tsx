@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 import Image from "next/image";
 import ArtistVideoPlayer from "@/components/ArtistVideoPlayer";
 import { generateTicketCubeLink } from "@/lib/ticketcube";
+import { wrapWithImpactTracking } from "@/lib/affiliateTracking";
 
 interface EventCardProps {
     event: {
@@ -38,6 +39,9 @@ export function EventCard({ event }: EventCardProps) {
     };
 
       const hasVideo = event.artist_videolink && event.artist_videolink.trim() !== "";
+    
+    // Wrap event URL with Impact affiliate tracking
+    const affiliateUrl = wrapWithImpactTracking(event.event_url, "website");
     
     // Artist Image Fallback: artist_image → primary_attraction_image → primary_event_image → default
     const artistImage = event.artist_image && event.artist_image !== "null"
@@ -105,7 +109,7 @@ export function EventCard({ event }: EventCardProps) {
 
                             {/* Buy Tickets Button */}
                             <a
-                                href={event.event_url}
+                                href={affiliateUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="bg-white/90 hover:bg-white p-2 md:p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
