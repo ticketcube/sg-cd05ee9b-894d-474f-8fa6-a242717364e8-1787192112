@@ -203,6 +203,59 @@ class NewsletterService {
       return false;
     }
   }
+
+  async updateHomeCity(email: string, homeCity: string | null): Promise<{ success: boolean; message: string }> {
+    try {
+      const normalizedEmail = email.toLowerCase().trim();
+
+      const { data, error } = await supabase
+        .from("newsletter_subscribers")
+        .update({ home_city: homeCity })
+        .eq("email", normalizedEmail)
+        .eq("status", "active")
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (!data) {
+        return {
+          success: false,
+          message: "Subscriber not found or inactive."
+        };
+      }
+
+      return {
+        success: true,
+        message: homeCity 
+          ? `City preference updated to ${homeCity}!` 
+          : "City preference cleared."
+      };
+    } catch (error) {
+      console.error("Error updating home city:", error);
+      return {
+        success: false,
+        message: "Failed to update city preference. Please try again."
+      };
+    }
+  }
+
+  async getSubscriberByEmail(email: string): Promise<NewsletterSubscriber | null> {
+    try {
+      const { data, error } = await supabase
+        .from("newsletter_subscribers")
+        .select("*")
+        .eq("email", email.toLowerCase().trim())
+        .eq("status", "active")
+        .single();
+
+      if (error || !data) return null;
+      return data;
+    } catch (error) {
+      console.error("Error fetching subscriber:", error);
+      return null;
+    }
+  }
 }
 
 export const newsletterService = new NewsletterService();

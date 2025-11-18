@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Calendar, MapPin, Navigation } from "lucide-react";
+import { Search, Calendar, MapPin, Navigation, Save, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EventCard } from "@/components/EventCard";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
+import { useToast } from "@/hooks/use-toast";
 
 
 
@@ -40,6 +41,10 @@ export default function NewsletterPage() {
   const [useLocationAutomation, setUseLocationAutomation] = useState(false);
   const [weekendExpanded, setWeekendExpanded] = useState(true);
   const [nextWeekExpanded, setnextWeekExpanded] = useState(true);
+  const [savingCity, setSavingCity] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
+  const { toast } = useToast();
 
   // Check subscription status on mount
   useEffect(() => {
@@ -92,8 +97,17 @@ export default function NewsletterPage() {
   const checkSubscriptionStatus = async () => {
     const email = localStorage.getItem("newsletter_email");
     if (email) {
+      setUserEmail(email);
       const subscribed = await newsletterService.isEmailSubscribed(email);
       setIsSubscribed(subscribed);
+      
+      // Load subscriber's home_city from database
+      if (subscribed) {
+        const subscriber = await newsletterService.getSubscriberByEmail(email);
+        if (subscriber?.home_city) {
+          localStorage.setItem("newsletter_home_city", subscriber.home_city);
+        }
+      }
     }
     setCheckingSubscription(false);
   };
@@ -239,6 +253,122 @@ export default function NewsletterPage() {
     return date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
   };
 
+  const handleSaveCity = async () => {
+    if (!userEmail) {
+      toast({
+        title: "Error",
+        description: "No email found. Please sign up again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setSavingCity(true);
+    try {
+      const cityToSave = selectedCityName === "all" ? null : selectedCityName;
+      const result = await newsletterService.updateHomeCity(userEmail, cityToSave);
+
+      if (result.success) {
+        if (cityToSave) {
+          localStorage.setItem("newsletter_home_city", cityToSave);
+        } else {
+          localStorage.removeItem("newsletter_home_city");
+        }
+        
+        toast({
+          title: "Success!",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.message,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error saving city:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save city preference.",
+        variant: "destructive"
+      });
+    } finally {
+      setSavingCity(false);
+    }
+  };
+
+  const handleGetLocation = async () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Not Supported",
+        description: "Geolocation is not supported by your browser.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          // Use reverse geocoding to get city from coordinates
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+          );
+          const data = await response.json();
+          
+          const city = data.address?.city || data.address?.town || data.address?.village;
+          
+          if (city) {
+            // Try to match with available cities
+            const matchedCity = availableCities.find(
+              c => c.toLowerCase() === city.toLowerCase()
+            );
+            
+            if (matchedCity) {
+              setSelectedCityName(matchedCity);
+              toast({
+                title: "Location Found!",
+                description: `Set to ${matchedCity}. Click "Save City" to remember this.`,
+              });
+            } else {
+              toast({
+                title: "City Not Available",
+                description: `${city} doesn't have events yet. Showing all cities.`,
+              });
+            }
+          } else {
+            toast({
+              title: "Location Error",
+              description: "Couldn't determine your city. Please select manually.",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error("Geocoding error:", error);
+          toast({
+            title: "Error",
+            description: "Failed to get your location. Please select manually.",
+            variant: "destructive"
+          });
+        } finally {
+          setGettingLocation(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        toast({
+          title: "Location Access Denied",
+          description: "Please enable location access or select city manually.",
+          variant: "destructive"
+        });
+        setGettingLocation(false);
+      }
+    );
+  };
+
     const toggleWithScrollLock = (setter, value) => {
         const y = window.scrollY;     // save scroll position
         setter(value);                // toggle section
@@ -363,13 +493,11 @@ export default function NewsletterPage() {
               </p>
             </div>
 
-            {/* Three Column Control Row - Always 3 columns even on mobile */}
-            <div className="mb-6 grid grid-cols-[auto_1fr_1fr] gap-2">
-              {/* Location Automation Toggle - Small square */}
-              
-
-              {/* City Selector */}
-              <div>
+            {/* City Controls and Search */}
+            <div className="mb-6 space-y-3">
+              {/* City Selection Row */}
+              <div className="grid grid-cols-[1fr_auto_auto] gap-2">
+                {/* City Selector */}
                 <Select value={selectedCityName} onValueChange={setSelectedCityName}>
                   <SelectTrigger className="w-full h-10">
                     <SelectValue placeholder="Select City" />
@@ -383,20 +511,54 @@ export default function NewsletterPage() {
                     ))}
                   </SelectContent>
                 </Select>
+
+                {/* Geo-location Button */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleGetLocation}
+                  disabled={gettingLocation}
+                  className="h-10 w-10"
+                  title="Use my location"
+                >
+                  {gettingLocation ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Navigation className="w-4 h-4" />
+                  )}
+                </Button>
+
+                {/* Save City Button */}
+                <Button
+                  variant="default"
+                  onClick={handleSaveCity}
+                  disabled={savingCity}
+                  className="h-10 px-4"
+                >
+                  {savingCity ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save City
+                    </>
+                  )}
+                </Button>
               </div>
 
-              {/* Search Box */}
-              <div>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input 
-                    type="text-xs" 
-                    placeholder="Artist, Event or Venue" 
-                    value={searchQuery} 
-                    onChange={(e) => setSearchQuery(e.target.value)} 
-                     className="pl-9 h-10 text-xs placeholder:text-xs"
-                  />
-                </div>
+              {/* Search Box - Full Width */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input 
+                  type="text" 
+                  placeholder="Search by Artist, Event or Venue" 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                  className="pl-9 h-10"
+                />
               </div>
             </div>
 
