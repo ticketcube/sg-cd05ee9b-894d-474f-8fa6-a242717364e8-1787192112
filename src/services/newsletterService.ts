@@ -208,55 +208,40 @@ class NewsletterService {
     try {
       const normalizedEmail = email.toLowerCase().trim();
       
-      console.log("🔍 Attempting to update home_city:", { 
+      console.log("🔍 Calling API to update home_city:", { 
         email: normalizedEmail, 
         homeCity,
         timestamp: new Date().toISOString()
       });
 
-      const { data, error } = await supabase
-        .from("newsletter_subscribers")
-        .update({ home_city: homeCity })
-        .eq("email", normalizedEmail)
-        .eq("status", "active")
-        .select()
-        .single();
+      const response = await fetch("/api/newsletter/update-city", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          homeCity
+        })
+      });
 
-      console.log("📊 Update result:", { data, error });
+      const result = await response.json();
 
-      if (error) {
-        console.error("❌ Update error details:", {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
-        throw error;
-      }
+      console.log("📊 API response:", result);
 
-      if (!data) {
-        console.warn("⚠️ No data returned after update");
+      if (!response.ok || !result.success) {
         return {
           success: false,
-          message: "Subscriber not found or inactive."
+          message: result.message || "Failed to update city preference."
         };
       }
 
-      console.log("✅ Update successful:", data);
-
       return {
         success: true,
-        message: homeCity 
-          ? `City preference updated to ${homeCity}!` 
-          : "City preference cleared."
+        message: result.message
       };
     } catch (error: any) {
-      console.error("💥 Error updating home city:", {
-        error,
-        message: error?.message,
-        details: error?.details,
-        hint: error?.hint
-      });
+      console.error("💥 Error calling update-city API:", error);
       return {
         success: false,
         message: `Failed to update: ${error?.message || "Unknown error"}`
