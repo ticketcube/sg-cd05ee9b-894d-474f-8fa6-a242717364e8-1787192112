@@ -210,22 +210,111 @@ export function ArtistLookupPage() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Artist Lookup
-            </h1>
-            <p className="text-gray-400 mt-2">Search, view, and manage artist profiles</p>
-          </div>
-          
-          <Button 
-            onClick={resetToCreateMode}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Artist
-          </Button>
-        </div>
+       <div className="space-y-6 mb-8">
+  {/* Page Header */}
+  <div className="flex justify-between items-center">
+    <div>
+      <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+        Artist Lookup
+      </h1>
+      <p className="text-gray-400 mt-2">Search, view, and manage artist profiles</p>
+    </div>
+    
+    <Button 
+      onClick={resetToCreateMode}
+      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+    >
+      <Plus className="w-4 h-4 mr-2" />
+      Create Artist
+    </Button>
+  </div>
+
+  {/* Q4 2025 Campaign Section */}
+  <Card className="bg-gradient-to-r from-orange-900/20 to-yellow-900/20 border-orange-500/30">
+    <CardHeader>
+      <div className="space-y-2">
+        <CardTitle className="text-2xl font-bold text-orange-400">
+          🎯 ARTIST Q4 2025 UPDATE CAMPAIGN
+        </CardTitle>
+        <p className="text-gray-300 text-sm">
+          Please help us complete Genres, Home Cities and Vibes for our Artist Database
+        </p>
+        <p className="text-gray-400 text-xs">
+          Click one of these buttons and the dropdown below will filter for Artists for whom we need info.
+        </p>
+        <p className="text-yellow-400 text-xs font-medium">
+          We need Genres and Home Cities. Vibes and Top_List are optional.
+        </p>
+      </div>
+    </CardHeader>
+    <CardContent>
+      <div className="flex flex-wrap gap-3">
+        <Button
+          variant={filterMode === 'no_genre' ? 'default' : 'outline'}
+          onClick={() => {
+            if (filterMode === 'no_genre') {
+              setFilterMode('none');
+              setCampaignFilterActive(false);
+            } else {
+              setFilterMode('no_genre');
+              setCampaignFilterActive(true);
+            }
+          }}
+          className={filterMode === 'no_genre' 
+            ? 'bg-orange-600 hover:bg-orange-700' 
+            : 'border-orange-500 text-orange-400 hover:bg-orange-900/30'
+          }
+        >
+          {filterMode === 'no_genre' ? '✓ ' : ''}NO GENRE
+        </Button>
+
+        <Button
+          variant={filterMode === 'no_home_city' ? 'default' : 'outline'}
+          onClick={() => {
+            if (filterMode === 'no_home_city') {
+              setFilterMode('none');
+              setCampaignFilterActive(false);
+            } else {
+              setFilterMode('no_home_city');
+              setCampaignFilterActive(true);
+            }
+          }}
+          className={filterMode === 'no_home_city' 
+            ? 'bg-orange-600 hover:bg-orange-700' 
+            : 'border-orange-500 text-orange-400 hover:bg-orange-900/30'
+          }
+        >
+          {filterMode === 'no_home_city' ? '✓ ' : ''}NO HOME CITY
+        </Button>
+
+        <Button
+          variant={filterMode === 'no_top_list' ? 'default' : 'outline'}
+          onClick={() => {
+            if (filterMode === 'no_top_list') {
+              setFilterMode('none');
+              setCampaignFilterActive(false);
+            } else {
+              setFilterMode('no_top_list');
+              setCampaignFilterActive(true);
+            }
+          }}
+          className={filterMode === 'no_top_list' 
+            ? 'bg-orange-600 hover:bg-orange-700' 
+            : 'border-orange-500 text-orange-400 hover:bg-orange-900/30'
+          }
+        >
+          {filterMode === 'no_top_list' ? '✓ ' : ''}NO TOP LIST
+        </Button>
+
+        {campaignFilterActive && (
+          <Badge variant="secondary" className="bg-orange-600 text-white px-3 py-1">
+            Filter Active
+          </Badge>
+        )}
+      </div>
+    </CardContent>
+  </Card>
+</div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column */}
