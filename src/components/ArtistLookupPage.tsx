@@ -298,7 +298,7 @@ useEffect(() => {
                     {/* LEFT COLUMN */}
                     <div className="space-y-6">
                         {/* Q4 2025 Campaign Section */}
-                        <Card className="bg-gradient-to-r from-orange-900/20 to-yellow-900/20 border-orange-500/30">
+                      <Card className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 border-purple-500/30">
                             <CardHeader>
                                 <div className="space-y-2">
                                     <CardTitle className="text-2xl font-bold text-blk">
