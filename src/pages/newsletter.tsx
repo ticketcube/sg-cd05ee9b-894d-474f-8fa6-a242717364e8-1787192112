@@ -151,8 +151,8 @@ export default function NewsletterPage() {
       });
 
       // --- Fetch THIS WEEKEND ---
-      const { data: weekendData, error: weekendError } = await supabase
-        .from("ticketmaster_events")
+        const { data: weekendData, error: weekendError } = await supabase
+            .from("ticketmaster_events")
             .select(`
             event_id,
             event_name,
@@ -168,19 +168,22 @@ export default function NewsletterPage() {
             artist_videolink,
             primary_venue_image,
             primary_event_image,
-            primary_attraction_image
+            primary_attraction_image,
+            artists!inner(artist_ticketcube)
         `)
-        .eq("is_active", true)
-        .gte("event_date", thuStr)
-        .lte("event_date", sunStr)
-        .order("event_date");
+            .eq("is_active", true)
+            .gte("event_date", thuStr)
+            .lte("event_date", sunStr)
+            .order("event_date");
 
       if (weekendError) console.error("Weekend fetch error:", weekendError);
 
       // --- Fetch NEXT WEEK ---
       const { data: nextWeekData, error: nextWeekError } = await supabase
         .from("ticketmaster_events")
-              .select(`
+        const { data: nextWeekData, error: nextWeekError } = await supabase
+            .from("ticketmaster_events")
+            .select(`
             event_id,
             event_name,
             event_date,
@@ -195,12 +198,13 @@ export default function NewsletterPage() {
             artist_videolink,
             primary_venue_image,
             primary_event_image,
-            primary_attraction_image
-            `)
-        .eq("is_active", true)
-        .gte("event_date", nextMonStr)
-        .lte("event_date", nextSunStr)
-        .order("event_date");
+            primary_attraction_image,
+            artists!inner(artist_ticketcube)
+        `)
+            .eq("is_active", true)
+            .gte("event_date", nextMonStr)
+            .lte("event_date", nextSunStr)
+            .order("event_date");
 
       if (nextWeekError) console.error("Next week fetch error:", nextWeekError);
 
