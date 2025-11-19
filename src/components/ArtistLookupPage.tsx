@@ -306,13 +306,13 @@ useEffect(() => {
           <CardTitle className="text-2xl font-bold text-blk">
             🎯 ARTIST Q4 2025 UPDATE CAMPAIGN
           </CardTitle>
-          <p className="text-gray-300 text-sm">
+             <p className="text-blk text-sm">
             Please help us complete Genres, Home Cities and Vibes for our Artist Database
           </p>
-          <p className="text-gray-400 text-xs">
+                  <p className="text-blk text-xs">
             Click one of these buttons and the dropdown below will filter for Artists for whom we need info.
           </p>
-          <p className="text-yellow-400 text-xs font-medium">
+          <p className="text-blk text-xs font-medium">
             We need Genres and Home Cities. Vibes and Top_List are optional.
           </p>
         </div>
