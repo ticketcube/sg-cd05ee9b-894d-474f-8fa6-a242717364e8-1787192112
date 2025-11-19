@@ -3,378 +3,211 @@ import { Check, ChevronsUpDown, MapPin, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 
 interface City {
-  id: number;
-  name: string;
-  normalized_name: string;
-  country_code?: string;
-  state_code?: string;
+    id: number;
+    name: string;
+    normalized_name: string;
+    country_code?: string;
+    state_code?: string;
 }
 
 interface CityComboboxProps {
-  value?: City | null;
-  onValueChange: (city: City | null, customInput?: string) => void;
-  placeholder?: string;
+    value?: City | null;
+    onValueChange: (city: City | null, customInput?: string) => void;
+    placeholder?: string;
+    className?: string; // <-- added
 }
 
-export default function CityCombobox({ value, onValueChange, placeholder = "Select city..." }: CityComboboxProps) {
-  const [open, setOpen] = useState(false);
-  const [cities, setCities] = useState<City[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const [geoLoading, setGeoLoading] = useState(false);
+export default function CityCombobox({
+    value,
+    onValueChange,
+    placeholder = "Select city...",
+    className,
+}: CityComboboxProps) {
+    const [open, setOpen] = useState(false);
+    const [cities, setCities] = useState < City[] > ([]);
+    const [loading, setLoading] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
+    const [geoLoading, setGeoLoading] = useState(false);
 
-  const fetchCities = async (search?: string) => {
-    console.log("🔍 [CityCombobox] fetchCities called, search:", search);
-    setLoading(true);
-    try {
-      // Query city_latlong table for stable city list
-      let query = supabase
-        .from("city_latlong")
-        .select("id, name, normalized_name, state_code, country_code")
-        .not("normalized_name", "is", null);
-
-      console.log("📊 [CityCombobox] Building query for city_latlong table");
-
-      // Add search filter if provided
-      if (search && search.length >= 2) {
-        console.log("🔎 [CityCombobox] Adding search filter:", search);
-        query = query.ilike("normalized_name", `%${search}%`);
-      }
-
-      // Limit results for performance
-      query = query.limit(100);
-
-      console.log("⏳ [CityCombobox] Executing query...");
-      const { data, error } = await query;
-
-      console.log("📦 [CityCombobox] Query result:", {
-        error: error?.message,
-        dataCount: data?.length,
-        sample: data?.[0]
-      });
-
-      if (error) {
-        console.error("❌ [CityCombobox] Error fetching cities from city_latlong:", error);
-        setCities([]);
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        console.warn("⚠️ [CityCombobox] No cities found in city_latlong table!");
-        console.warn("⚠️ [CityCombobox] This table might be empty. Check your database.");
-        setCities([]);
-        return;
-      }
-
-      // Sort alphabetically
-      const sortedCities = (data || []).sort((a, b) => 
-        a.normalized_name.localeCompare(b.normalized_name)
-      );
-
-      console.log("✅ [CityCombobox] Successfully fetched", sortedCities.length, "cities from city_latlong table");
-      console.log("📋 [CityCombobox] First 5 cities:", sortedCities.slice(0, 5).map(c => c.normalized_name));
-      
-      setCities(sortedCities as City[]);
-    } catch (error) {
-      console.error('💥 [CityCombobox] Unexpected error fetching cities:', error);
-      setCities([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Geolocation function
-  const getCurrentLocation = async () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by this browser.");
-      return;
-    }
-
-    setGeoLoading(true);
-    
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
+    const fetchCities = async (search?: string) => {
+        setLoading(true);
         try {
-          const { latitude, longitude } = position.coords;
-          
-          const response = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-          );
-          
-          if (!response.ok) {
-            throw new Error('Failed to get location details');
-          }
-          
-          const locationData = await response.json();
-          const cityName = locationData.city || locationData.locality || locationData.principalSubdivision;
-          
-          if (cityName) {
-            // Search our cities for a match
-            const matchingCity = cities.find((city: City) => 
-              city.normalized_name.toLowerCase() === cityName.toLowerCase()
-            );
-            
-            if (matchingCity) {
-              onValueChange(matchingCity);
-            } else {
-              // Use as custom city if not found
-              const normalizedCustom = cityName.replace(/\b\w/g, (l: string) => l.toUpperCase());
-              onValueChange(null, normalizedCustom);
+            let query = supabase
+                .from("city_latlong")
+                .select("id, name, normalized_name, state_code, country_code")
+                .not("normalized_name", "is", null);
+
+            if (search && search.length >= 2) query = query.ilike("normalized_name", `%${search}%`);
+
+            query = query.limit(100);
+
+            const { data, error } = await query;
+
+            if (error || !data) {
+                setCities([]);
+                return;
             }
-          } else {
-            alert("Could not determine your city from your location. Please select manually.");
-          }
-        } catch (error) {
-          console.error('Error getting city from coordinates:', error);
-          alert("Could not determine your city. Please select manually.");
+
+            setCities(data.sort((a, b) => a.normalized_name.localeCompare(b.normalized_name)));
         } finally {
-          setGeoLoading(false);
+            setLoading(false);
         }
-      },
-      (error) => {
-        console.error('Geolocation error:', error);
-        setGeoLoading(false);
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            alert("Location access denied. Please select your city manually.");
-            break;
-          case error.POSITION_UNAVAILABLE:
-            alert("Location information unavailable. Please select your city manually.");
-            break;
-          case error.TIMEOUT:
-            alert("Location request timed out. Please select your city manually.");
-            break;
-          default:
-            alert("An error occurred while getting your location. Please select your city manually.");
-            break;
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000
-      }
-    );
-  };
+    };
 
-  // Initial load of cities
-  useEffect(() => {
-    console.log("🚀 [CityCombobox] Component mounted, fetching initial cities...");
-    fetchCities();
-  }, []);
-
-  // Debounced search effect
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchValue.length >= 2) {
-        console.log("🔍 [CityCombobox] Search triggered for:", searchValue);
-        fetchCities(searchValue);
-      } else if (searchValue.length === 0) {
-        console.log("🔄 [CityCombobox] Search cleared, fetching all cities");
+    useEffect(() => {
         fetchCities();
-      }
-    }, 300);
+    }, []);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchValue]);
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (searchValue.length >= 2) fetchCities(searchValue);
+            else if (searchValue.length === 0) fetchCities();
+        }, 300);
+        return () => clearTimeout(timeout);
+    }, [searchValue]);
 
-  const displayValue = value ? 
-    `${value.normalized_name}${value.state_code ? `, ${value.state_code}` : ''}` :
-    searchValue.trim() ? 
-      `Typing: "${searchValue}"...` :  // ← More obvious feedback
-      placeholder;
+    const displayValue = value
+        ? `${value.normalized_name}${value.state_code ? `, ${value.state_code}` : ""}`
+        : searchValue.trim()
+            ? `Typing: "${searchValue}"...`
+            : placeholder;
 
-  const handleSelectCity = (cityName: string) => {
-    console.log("Selecting city with name:", cityName);
-    const selectedCity = cities.find(city => city.normalized_name === cityName);
-    if (selectedCity) {
-      console.log("Found city:", selectedCity);
-      onValueChange(selectedCity);
-      setOpen(false);
-      setSearchValue(""); // Clear search after selection
-    }
-  };
+    const handleSelectCity = (cityName: string) => {
+        const selectedCity = cities.find((c) => c.normalized_name === cityName);
+        if (selectedCity) {
+            onValueChange(selectedCity);
+            setOpen(false);
+            setSearchValue("");
+        }
+    };
 
-  const handleCustomCity = () => {
-    if (searchValue.trim()) {
-      const normalizedCustom = searchValue.trim().replace(/\b\w/g, l => l.toUpperCase());
-      console.log("Adding custom city:", normalizedCustom);
-      onValueChange(null, normalizedCustom);
-      setOpen(false);
-      setSearchValue(""); // Clear search after selection
-    }
-  };
+    const handleCustomCity = () => {
+        if (searchValue.trim()) {
+            const normalizedCustom = searchValue
+                .trim()
+                .replace(/\b\w/g, (l) => l.toUpperCase());
+            onValueChange(null, normalizedCustom);
+            setOpen(false);
+            setSearchValue("");
+        }
+    };
 
-  // Auto-select if only one city matches and user presses Enter
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && cities.length === 1) {
-      e.preventDefault();
-      handleSelectCity(cities[0].normalized_name);
-    } else if (e.key === "Enter" && cities.length === 0 && searchValue.trim()) {
-      e.preventDefault();
-      handleCustomCity();
-    }
-  };
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && cities.length === 1) {
+            e.preventDefault();
+            handleSelectCity(cities[0].normalized_name);
+        } else if (e.key === "Enter" && cities.length === 0 && searchValue.trim()) {
+            e.preventDefault();
+            handleCustomCity();
+        }
+    };
 
-  // Auto-select if only one city matches
-  useEffect(() => {
-    if (cities.length === 1 && searchValue.length >= 2) {
-      console.log("Auto-selecting single matching city:", cities[0]);
-    }
-  }, [cities, searchValue]);
+    return (
+        <div className="flex gap-2 items-center">
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className={cn(
+                            "flex-1 justify-between text-left min-h-[44px] bg-black text-white border-gray-600 hover:bg-gray-900 focus:bg-gray-900",
+                            className // <-- apply parent className
+                        )}
+                        type="button"
+                    >
+                        <span className="truncate">{displayValue}</span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-white opacity-50" />
+                    </Button>
+                </PopoverTrigger>
 
-  return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className={cn(
-                "flex-1 justify-between text-left min-h-[44px]",
-                searchValue.trim() && !value && "border-blue-500 ring-2 ring-blue-200 animate-pulse"
-              )}
-              type="button"
-            >
-              <span className="truncate">{displayValue}</span>
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 z-[99999]" align="start">
-            {searchValue.trim() && (
-              <div className="px-3 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b text-sm flex items-center gap-2 animate-in fade-in-50 slide-in-from-top-2">
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span className="text-gray-700">
-                    Searching: <strong className="text-blue-700">"{searchValue}"</strong>
-                  </span>
-                </div>
-                {cities.length > 0 && (
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-                    {cities.length} {cities.length === 1 ? 'match' : 'matches'}
-                  </span>
-                )}
-              </div>
-            )}
-            <Command className="w-full">
-              <CommandInput 
-                placeholder="Type to search cities..."
-                value={searchValue}
-                onValueChange={setSearchValue}
-                onKeyDown={handleKeyDown}
-                className="text-base"
-              />
-              <CommandList className="max-h-[200px]">
-                <CommandEmpty>
-                  {loading ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
-                      Searching for cities...
-                    </div>
-                  ) : searchValue.length >= 2 ? (
-                    <div className="p-4 text-center space-y-3">
-                      <p className="text-sm text-muted-foreground">
-                        No existing cities match "{searchValue}"
-                      </p>
-                      <div className="space-y-2">
-                        <Button
-                          variant="default"
-                          onClick={handleCustomCity}
-                          className="w-full"
-                          type="button"
-                        >
-                          ✓ Add "{searchValue}" as my city
-                        </Button>
-                        <p className="text-xs text-muted-foreground">
-                          Or press <kbd className="px-1 py-0.5 bg-gray-100 border rounded text-xs">Enter</kbd>
-                        </p>
-                      </div>
-                    </div>
-                  ) : searchValue.length === 1 ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      <p className="mb-1">Keep typing...</p>
-                      <p className="text-xs">Type at least 2 characters</p>
-                    </div>
-                  ) : (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      <p className="mb-2">Start typing to search cities</p>
-                      <p className="text-xs text-gray-400">Example: "Los Angeles", "New York"</p>
-                    </div>
-                  )}
-                </CommandEmpty>
-                {cities.length > 0 && (
-                  <CommandGroup>
-                    {cities.length === 1 && searchValue.length >= 2 && (
-                      <div className="px-2 py-1.5 text-xs text-muted-foreground bg-blue-50 border-b">
-                        💡 Press <kbd className="px-1 py-0.5 bg-white border rounded text-xs">Enter</kbd> to select this city
-                      </div>
+                <PopoverContent
+                    align="start"
+                    className={cn(
+                        "w-[var(--radix-popover-trigger-width)] p-0 bg-black text-white max-h-64 overflow-auto",
+                        className
                     )}
-                    {cities.map((city) => (
-                      <CommandItem
-                        key={city.id}
-                        value={city.normalized_name}
-                        onSelect={handleSelectCity}
-                        className="cursor-pointer"
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            value?.id === city.id ? "opacity-100" : "opacity-0"
-                          )}
+                >
+                    <Command className="w-full">
+                        <CommandInput
+                            placeholder="Type to search cities..."
+                            value={searchValue}
+                            onValueChange={setSearchValue}
+                            onKeyDown={handleKeyDown}
+                            className="bg-black text-white"
                         />
-                        <div className="flex-1">
-                          <div className="font-medium">{city.normalized_name}</div>
-                          {(city.state_code || city.country_code) && (
-                            <div className="text-sm text-muted-foreground">
-                              {city.state_code && city.country_code ? 
-                                `${city.state_code}, ${city.country_code}` :
-                                city.state_code || city.country_code
-                              }
-                            </div>
-                          )}
-                        </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                )}
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+                        <CommandList>
+                            <CommandEmpty>
+                                {loading ? (
+                                    <div className="p-4 text-center text-white">
+                                        <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
+                                        Searching for cities...
+                                    </div>
+                                ) : searchValue.length >= 2 ? (
+                                    <div className="p-4 text-center text-white">
+                                        No existing cities match "{searchValue}"
+                                        <Button className="mt-2 w-full" onClick={handleCustomCity}>
+                                            ✓ Add "{searchValue}" as my city
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="p-4 text-center text-white">Start typing to search cities</div>
+                                )}
+                            </CommandEmpty>
 
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={getCurrentLocation}
-          disabled={geoLoading}
-          type="button"
-          title="Use current location"
-          className="min-h-[44px] min-w-[44px]"
-        >
-          {geoLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <MapPin className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
-    </div>
-  );
+                            {cities.length > 0 && (
+                                <CommandGroup>
+                                    {cities.map((city) => (
+                                        <CommandItem
+                                            key={city.id}
+                                            value={city.normalized_name}
+                                            onSelect={handleSelectCity}
+                                            className="cursor-pointer text-white"
+                                        >
+                                            <Check
+                                                className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    value?.id === city.id ? "opacity-100" : "opacity-0"
+                                                )}
+                                            />
+                                            <div className="flex-1">
+                                                <div className="font-medium">{city.normalized_name}</div>
+                                                {(city.state_code || city.country_code) && (
+                                                    <div className="text-sm text-gray-400">
+                                                        {city.state_code && city.country_code
+                                                            ? `${city.state_code}, ${city.country_code}`
+                                                            : city.state_code || city.country_code}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            )}
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
+
+            <Button
+                variant="outline"
+                size="icon"
+                onClick={() => alert("Add geolocation")}
+                className="min-h-[44px] min-w-[44px] bg-black text-white"
+            >
+                <MapPin className="h-4 w-4" />
+            </Button>
+        </div>
+    );
 }
