@@ -108,7 +108,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
         <CardContent>
                   <div className="mb-6 space-y-3 text-sm text-center text-white">
             <p>
-              <strong className="text-white">Get updated when OTW Artists are in your town.</strong>
+              <strong className="text-white text-xl">Get updated when OTW Artists are in your town.</strong>
             </p>
             <p>
                           Subscribers receive a weekly list of OTW Artists' weekend shows in your city. 
@@ -141,10 +141,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
                 placeholder="Enter City (optional)."
               />
               {!homeCity && !customCity && (
-                <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
-                  <span>💡</span>
-                  
-                </p>
+              
               )}
               {(homeCity || customCity) && (
                 <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
