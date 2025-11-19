@@ -143,7 +143,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
             </div>
 
             {(homeCity || customCity) && (
-              <p className="text-xs text-purple-deep flex items-center gap-1">
+              <p className="text-xs text-purple-med flex items-center gap-1">
                 <span>✓</span>
                 <span>Selected: {homeCity?.normalized_name || customCity}</span>
               </p>
