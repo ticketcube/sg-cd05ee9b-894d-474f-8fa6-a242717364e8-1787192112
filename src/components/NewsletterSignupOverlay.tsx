@@ -135,12 +135,23 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
 
             <div>
             
-              <CityCombobox
-                 value={homeCity}
-                 className="w-full bg-black text-xl text-white hover:bg-gray-800"
-                onValueChange={handleCityChange}
-                placeholder="Enter City (optional)."
-              />
+                          <CityCombobox
+                              value={homeCity}
+                              onValueChange={handleCityChange}
+                              placeholder="Enter City (optional)."
+                              className="
+                            w-full 
+                            bg-black 
+                            text-white
+                            border border-gray-600
+                            hover:bg-gray-900
+                            focus:bg-gray-900
+                            data-[state=open]:bg-gray-900
+                            [&>button]:text-white
+                            [&>button>svg]:text-white
+                        "
+                                                />
+
               {!homeCity && !customCity && (
                 <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
                  
