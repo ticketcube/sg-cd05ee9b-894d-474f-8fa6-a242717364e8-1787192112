@@ -67,7 +67,7 @@ export class WeeklyEmailGenerator {
     if (event.primary_event_image && event.primary_event_image !== "null") {
       return event.primary_event_image;
     }
-    return "https://onestowatch.live/otwcolor-md6dlfkk.png";
+    return "https://onestowatch.live/OTWLogo_BW.png";
   }
 
   private generateEventCard(event: NewsletterEvent, newsletterPageUrl: string): string {
