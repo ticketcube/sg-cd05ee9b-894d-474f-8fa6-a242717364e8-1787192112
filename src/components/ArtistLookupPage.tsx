@@ -89,6 +89,51 @@ export function ArtistLookupPage() {
     debouncedSearch(searchQuery);
   }, [searchQuery, debouncedSearch]);
 
+  // Campaign filter effect - fetches artists based on filter mode
+useEffect(() => {
+  const fetchFilteredArtists = async () => {
+    if (!campaignFilterActive || filterMode === 'none') {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { supabase } = await import("@/integrations/supabase/client");
+      
+      let query = supabase
+        .from('artists')
+        .select('*')
+        .order('artist_name', { ascending: true })
+        .limit(50);
+
+      // Apply the appropriate filter based on filterMode
+      if (filterMode === 'no_genre') {
+        query = query.or('artist_genre.is.null,artist_genre.eq.');
+      } else if (filterMode === 'no_home_city') {
+        query = query.or('artist_home.is.null,artist_home.eq.');
+      } else if (filterMode === 'no_top_list') {
+        query = query.or('top_list.is.null,top_list.eq.');
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Filter error:", error);
+        setSearchResults([]);
+      } else {
+        setSearchResults(data || []);
+      }
+    } catch (error) {
+      console.error("Campaign filter error:", error);
+      setSearchResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchFilteredArtists();
+}, [campaignFilterActive, filterMode]);
+
   const handleArtistSelect = (artist: Artist) => {
     setSelectedArtist(artist);
     setFormData({
