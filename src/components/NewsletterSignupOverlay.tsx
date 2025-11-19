@@ -84,7 +84,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-blk backdrop-blur-sm p-4">
-      <Card className="w-full max-w-md relative bg-black border-none shadow-none">
+      <Card className="w-full max-w-md relative bg-black p-4 rounded-xlw-full max-w-md relative bg-black p-4 rounded-xl">
         {onClose && (
           <button
             onClick={onClose}
