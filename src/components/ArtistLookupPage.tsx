@@ -89,53 +89,75 @@ export function ArtistLookupPage() {
     debouncedSearch(searchQuery);
   }, [searchQuery, debouncedSearch]);
 
-      // Campaign filter effect - fetches artists based on filter mode
-    useEffect(() => {
-      const fetchFilteredArtists = async () => {
-        if (!campaignFilterActive || filterMode === 'none') {
-          return;
-        }
+     // Campaign filter effect - fetches artists based on filter mode
+useEffect(() => {
+  const fetchFilteredArtists = async () => {
+    if (!campaignFilterActive || filterMode === 'none') {
+      return;
+    }
 
-        try {
-          setLoading(true);
-          const { supabase } = await import("@/integrations/supabase/client");
-          
-          // Base query
-          let query = supabase
-            .from('artists')
-            .select('*')
-            .order('artist_name', { ascending: true })
-            .limit(100);
+    try {
+      setLoading(true);
+      const { supabase } = await import("@/integrations/supabase/client");
+      
+      // Base query - get ALL artists first, then we'll filter
+      const { data, error } = await supabase
+        .from('artists')
+        .select('*')
+        .order('artist_name', { ascending: true });
 
-          // Apply the appropriate filter based on filterMode
-          if (filterMode === 'no_genre') {
-            query = query.or('artist_genre.is.NULL,artist_genre.eq.');
-          } else if (filterMode === 'no_home_city') {
-            query = query.or('artist_home.is.NULL,artist_home.eq.');
-          } else if (filterMode === 'no_top_list') {
-            query = query.or('top_list.is.NULL,top_list.eq.');
-          }
+      if (error) {
+        console.error("Filter error:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
+        setSearchResults([]);
+        return;
+      }
 
-          const { data, error } = await query;
+      // Client-side filtering to catch ALL empty/null variations
+      let filteredData = data || [];
+      
+      if (filterMode === 'no_genre') {
+        filteredData = filteredData.filter(artist => 
+          !artist.artist_genre || 
+          artist.artist_genre.trim() === '' || 
+          artist.artist_genre.toLowerCase() === 'null' ||
+          artist.artist_genre === '0'
+        );
+      } else if (filterMode === 'no_home_city') {
+        filteredData = filteredData.filter(artist => 
+          !artist.artist_home || 
+          artist.artist_home.trim() === '' || 
+          artist.artist_home.toLowerCase() === 'null' ||
+          artist.artist_home === '0'
+        );
+      } else if (filterMode === 'no_top_list') {
+        filteredData = filteredData.filter(artist => 
+          !artist.top_list || 
+          artist.top_list.trim() === '' || 
+          artist.top_list.toLowerCase() === 'null' ||
+          artist.top_list === '0'
+        );
+      }
 
-          if (error) {
-            console.error("Filter error:", error);
-            console.error("Error details:", JSON.stringify(error, null, 2));
-            setSearchResults([]);
-          } else {
-            console.log(`Found ${data?.length || 0} artists with filter: ${filterMode}`);
-            setSearchResults(data || []);
-          }
-        } catch (error) {
-          console.error("Campaign filter error:", error);
-          setSearchResults([]);
-        } finally {
-          setLoading(false);
-        }
-      };
+      console.log(`Found ${filteredData.length} artists with filter: ${filterMode}`);
+      console.log('First 3 results:', filteredData.slice(0, 3).map(a => ({
+        name: a.artist_name,
+        genre: a.artist_genre,
+        home: a.artist_home,
+        topList: a.top_list
+      })));
 
-      fetchFilteredArtists();
-    }, [campaignFilterActive, filterMode]);
+      setSearchResults(filteredData);
+    } catch (error) {
+      console.error("Campaign filter error:", error);
+      setSearchResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchFilteredArtists();
+}, [campaignFilterActive, filterMode]);
 
   const handleArtistSelect = (artist: Artist) => {
     setSelectedArtist(artist);
