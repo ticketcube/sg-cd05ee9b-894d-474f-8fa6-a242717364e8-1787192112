@@ -107,12 +107,13 @@ useEffect(() => {
         .limit(50);
 
       // Apply the appropriate filter based on filterMode
+      // Check for: null, empty string, '0', 'NULL', or whitespace
       if (filterMode === 'no_genre') {
-        query = query.or('artist_genre.is.null,artist_genre.eq.');
+        query = query.or('artist_genre.is.null,artist_genre.eq.,artist_genre.eq.0,artist_genre.eq.NULL,artist_genre.eq. ');
       } else if (filterMode === 'no_home_city') {
-        query = query.or('artist_home.is.null,artist_home.eq.');
+        query = query.or('artist_home.is.null,artist_home.eq.,artist_home.eq.0,artist_home.eq.NULL,artist_home.eq. ');
       } else if (filterMode === 'no_top_list') {
-        query = query.or('top_list.is.null,top_list.eq.');
+        query = query.or('top_list.is.null,top_list.eq.,top_list.eq.0,top_list.eq.NULL,top_list.eq. ');
       }
 
       const { data, error } = await query;
