@@ -83,7 +83,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-blk backdrop-blur-sm p-4">
       <Card className="w-full max-w-md relative bg-white">
         {onClose && (
           <button
@@ -100,15 +100,15 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
             <img 
               src="/OTWLogo_BW.png" 
               alt="OTW Live" 
-                          className="w-16 h-16 object-contain mx-auto rounded-md"
+                          className="w-50 h-50 object-contain mx-auto rounded-md"
             />
           </div>
         </CardHeader>
 
         <CardContent>
-                  <div className="mb-6 space-y-3 text-sm text-center text-gray-900">
+                  <div className="mb-6 space-y-3 text-sm text-center text-white">
             <p>
-              <strong className="text-gray-900">Welcome to OTW LIVE!</strong>
+              <strong className="text-white">Welcome to OTW LIVE!</strong>
             </p>
             <p>
                           As a member, every Thursday you'll receive an exclusive list of OTW Artists' weekend shows in your city. 
