@@ -89,51 +89,53 @@ export function ArtistLookupPage() {
     debouncedSearch(searchQuery);
   }, [searchQuery, debouncedSearch]);
 
-  // Campaign filter effect - fetches artists based on filter mode
-useEffect(() => {
-  const fetchFilteredArtists = async () => {
-    if (!campaignFilterActive || filterMode === 'none') {
-      return;
-    }
+      // Campaign filter effect - fetches artists based on filter mode
+    useEffect(() => {
+      const fetchFilteredArtists = async () => {
+        if (!campaignFilterActive || filterMode === 'none') {
+          return;
+        }
 
-    try {
-      setLoading(true);
-      const { supabase } = await import("@/integrations/supabase/client");
-      
-      let query = supabase
-        .from('artists')
-        .select('*')
-        .order('artist_name', { ascending: true })
-        .limit(50);
+        try {
+          setLoading(true);
+          const { supabase } = await import("@/integrations/supabase/client");
+          
+          // Base query
+          let query = supabase
+            .from('artists')
+            .select('*')
+            .order('artist_name', { ascending: true })
+            .limit(100);
 
-      // Apply the appropriate filter based on filterMode
-      // Check for: null, empty string, '0', 'NULL', or whitespace
-      if (filterMode === 'no_genre') {
-        query = query.or('artist_genre.is.null,artist_genre.eq.,artist_genre.eq.0,artist_genre.eq.NULL,artist_genre.eq. ');
-      } else if (filterMode === 'no_home_city') {
-        query = query.or('artist_home.is.null,artist_home.eq.,artist_home.eq.0,artist_home.eq.NULL,artist_home.eq. ');
-      } else if (filterMode === 'no_top_list') {
-        query = query.or('top_list.is.null,top_list.eq.,top_list.eq.0,top_list.eq.NULL,top_list.eq. ');
-      }
+          // Apply the appropriate filter based on filterMode
+          if (filterMode === 'no_genre') {
+            query = query.or('artist_genre.is.null,artist_genre.eq.');
+          } else if (filterMode === 'no_home_city') {
+            query = query.or('artist_home.is.null,artist_home.eq.');
+          } else if (filterMode === 'no_top_list') {
+            query = query.or('top_list.is.null,top_list.eq.');
+          }
 
-      const { data, error } = await query;
+          const { data, error } = await query;
 
-      if (error) {
-        console.error("Filter error:", error);
-        setSearchResults([]);
-      } else {
-        setSearchResults(data || []);
-      }
-    } catch (error) {
-      console.error("Campaign filter error:", error);
-      setSearchResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+          if (error) {
+            console.error("Filter error:", error);
+            console.error("Error details:", JSON.stringify(error, null, 2));
+            setSearchResults([]);
+          } else {
+            console.log(`Found ${data?.length || 0} artists with filter: ${filterMode}`);
+            setSearchResults(data || []);
+          }
+        } catch (error) {
+          console.error("Campaign filter error:", error);
+          setSearchResults([]);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-  fetchFilteredArtists();
-}, [campaignFilterActive, filterMode]);
+      fetchFilteredArtists();
+    }, [campaignFilterActive, filterMode]);
 
   const handleArtistSelect = (artist: Artist) => {
     setSelectedArtist(artist);
