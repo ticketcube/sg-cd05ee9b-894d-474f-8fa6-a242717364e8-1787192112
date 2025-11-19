@@ -156,10 +156,10 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
 
             <Button
               type="submit"
-              className="w-full bg-black hover:bg-gray-800"
+              className="w-full bg-white text-xl text-black hover:bg-gray-800"
               disabled={loading}
             >
-              {loading ? "Subscribing..." : "Subscribe"}
+              {loading ? "Subscribing..." : "Subscribe Now"}
             </Button>
           </form>
 
