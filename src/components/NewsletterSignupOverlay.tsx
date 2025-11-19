@@ -84,7 +84,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-blk backdrop-blur-sm p-4">
-      <Card className="w-full max-w-md relative bg-white">
+      <Card className="w-full max-w-md relative bg-blk">
         {onClose && (
           <button
             onClick={onClose}
@@ -108,10 +108,10 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
         <CardContent>
                   <div className="mb-6 space-y-3 text-sm text-center text-white">
             <p>
-              <strong className="text-white">Welcome to OTW LIVE!</strong>
+              <strong className="text-white">Get updated when OTW Artists are in your town.</strong>
             </p>
             <p>
-                          As a member, every Thursday you'll receive an exclusive list of OTW Artists' weekend shows in your city. 
+                          Subscribers receive a weekly list of OTW Artists' weekend shows in your city. 
             </p>
             <p>
                    
