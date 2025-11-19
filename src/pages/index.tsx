@@ -1,155 +1,174 @@
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/router";
-import Head from "next/head";
-import Link from "next/link";
-import AuthDialog from "@/components/AuthDialog";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Volume2, VolumeX } from "lucide-react";
-import { useUserProfile } from "@/contexts/UserProfileContext";
-import WeeklyListCard from "@/components/dashboard/WeeklyListCard";
-import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { X } from "lucide-react";
+import { newsletterService } from "@/services/newsletterService";
+import { toast } from "sonner";
+import CityCombobox from "@/components/CityCombobox";
 
-export default function HomePage() {
-    const router = useRouter();
-    const [isAuthDialogOpen, setAuthDialogOpen] = useState(false);
-    const [isMuted, setIsMuted] = useState(true);
-    const videoRef = useRef < HTMLVideoElement > (null);
+interface NewsletterSignupOverlayProps {
+    onSubscribed: () => void;
+    onClose?: () => void;
+}
 
-    const { isAuthenticated, sessionLoading, loading: profileLoading } = useUserProfile();
-    const [isRedirecting, setIsRedirecting] = useState(false);
+export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSignupOverlayProps) {
+    const [email, setEmail] = useState("");
+    const [homeCity, setHomeCity] = useState < { id: number; name: string; normalized_name: string } | null > (null);
+    const [customCity, setCustomCity] = useState < string > ("");
+    const [loading, setLoading] = useState(false);
 
-    // Handle redirect after auth check
-    useEffect(() => {
-        if (!sessionLoading && !profileLoading && isAuthenticated) {
-            setIsRedirecting(true);
-            router.replace("/discovery-dashboard");
-        }
-    }, [isAuthenticated, sessionLoading, profileLoading, router]);
-
-    // Show a loader if session still checking or redirecting
-    const isLoading = sessionLoading || profileLoading || isRedirecting;
-
-    const handleRegisterClick = () => {
-        if (isAuthenticated) {
-            setIsRedirecting(true);
-            router.push("/discovery-dashboard");
-        } else {
-            setAuthDialogOpen(true);
+    const handleCityChange = (city: any, customInput?: string) => {
+        console.log("City selected:", city, "Custom input:", customInput);
+        if (city) {
+            setHomeCity(city);
+            setCustomCity("");
+        } else if (customInput) {
+            setHomeCity(null);
+            setCustomCity(customInput);
         }
     };
 
-    const toggleMute = () => {
-        if (videoRef.current) {
-            videoRef.current.muted = !videoRef.current.muted;
-            setIsMuted(videoRef.current.muted);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!email || !email.includes("@")) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
+
+        // Get final city value (from CityCombobox or custom input)
+        const finalCity = homeCity?.normalized_name || customCity;
+        const normalizedCity = finalCity?.trim();
+
+        console.log("Submitting with city:", normalizedCity);
+
+        setLoading(true);
+
+        try {
+            const result = await newsletterService.subscribe(email, normalizedCity || undefined);
+
+            if (result.success) {
+                toast.success(result.message);
+
+                localStorage.setItem("newsletter_email", email);
+                if (normalizedCity) {
+                    localStorage.setItem("newsletter_home_city", normalizedCity);
+                    console.log("✅ Saved home city to localStorage:", normalizedCity);
+                }
+
+                const response = await fetch("/api/newsletter/send-welcome", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email,
+                        unsubscribeToken: result.subscriber?.unsubscribe_token
+                    })
+                });
+
+                if (!response.ok) {
+                    console.warn("Welcome email failed to send, but subscription succeeded");
+                }
+
+                onSubscribed();
+            } else {
+                toast.error(result.message);
+            }
+        } catch (error) {
+            console.error("Subscription error:", error);
+            toast.error("Failed to subscribe. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
-                <div className="text-center space-y-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-                    <p className="text-white text-lg">
-                        {isRedirecting ? "Redirecting..." : "Loading..."}
-                    </p>
-                </div>
-            </div>
-        );
-    }
 
     return (
-        <>
-            <Head>
-                <title>OnesToWatch</title>
-                <meta
-                    name="description"
-                    content="Your personal OTW Chart profile, survey, and favorite artists."
-                />
-                <meta
-                    name="impact-site-verification"
-                    content="fe37854f-ba34-4601-b522-0ed2f2e0336b"
-                />
-            </Head>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <Card className="w-full max-w-md relative bg-white">
+                {onClose && (
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+                        aria-label="Close"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                )}
 
-            <div className="min-h-screen bg-white flex flex-col items-center justify-start">
-                {/* Hero Section */}
-                <div className="w-full flex flex-col items-center text-center px-4 lg:px-0 pt-0 lg:pt-4">
-                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4 lg:mb-6">
-                        We Reward Discovery
-                    </h1>
-
-                    {/* Hero Video */}
-                    <div className="relative w-full max-w-4xl lg:max-w-5xl aspect-video overflow-hidden rounded-xl shadow-lg mb-6">
-                        <video
-                            ref={videoRef}
-                            className="w-full h-full object-cover"
-                            src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
+                <CardHeader className="text-center pb-4">
+                    <div className="mx-auto mb-4">
+                        <img
+                            src="/OTWLogo_BW.png"
+                            alt="OTW Live"
+                            className="w-16 h-16 object-contain mx-auto rounded-md"
                         />
-                        <button
-                            onClick={toggleMute}
-                            className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
-                        >
-                            {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-                        </button>
+                    </div>
+                </CardHeader>
+
+                <CardContent>
+                    <div className="mb-6 space-y-3 text-sm text-center text-gray-900">
+                        <p>
+                            <strong className="text-gray-900">Welcome to OTW LIVE!</strong>
+                        </p>
+                        <p>
+                            As a member, every Thursday you'll receive an exclusive list of OTW Artists' weekend shows in your city.
+                        </p>
+                        <p>
+
+
+                        </p>
                     </div>
 
-                    <p className="text-base sm:text-lg lg:text-xl text-gray-800 max-w-3xl mb-8 lg:mb-12">
-                        Earn points for discovering new artists. We'll reward you with prizes,
-                        exclusive merch, and insider access!
-                    </p>
 
-                    {/* CTA Button */}
-                    <div className="w-full flex justify-center">
+                    <form onSubmit={handleSubmit} className="space-y-4 text-blk">
+                        <div>
+                            <Input
+                                type="email"
+                                placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full"
+                                required
+                                disabled={loading}
+                            />
+                        </div>
+
+                        <div>
+
+                            <CityCombobox
+                                value={homeCity}
+                                onValueChange={handleCityChange}
+                                placeholder="Enter City (optional)."
+                            />
+                            {!homeCity && !customCity && (
+                                <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                                    <span>💡</span>
+
+                                </p>
+                            )}
+                            {(homeCity || customCity) && (
+                                <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                                    <span>✓</span>
+                                    <span>Selected: {homeCity?.normalized_name || customCity}</span>
+                                </p>
+                            )}
+                        </div>
+
                         <Button
-                            onClick={handleRegisterClick}
-                            className="bg-purple-deep hover:bg-red-700 text-white text-lg sm:text-xl lg:text-2xl px-6 sm:px-8 lg:px-10 py-3 sm:py-4 lg:py-5 rounded-lg shadow-md hover:shadow-lg transition-all"
+                            type="submit"
+                            className="w-full bg-black hover:bg-gray-800"
+                            disabled={loading}
                         >
-                            {isAuthenticated ? "Go to Dashboard" : "Register to Discover Rewards"}
+                            {loading ? "Subscribing..." : "Subscribe"}
                         </Button>
-                    </div>
-                </div>
+                    </form>
 
-                {/* Weekly list section */}
-                <div className="w-full px-4 lg:px-0 py-8 max-w-6xl mx-auto">
-                    <WeeklyListCard onArtistClick={handleRegisterClick} />
-                </div>
-
-                 {/* Footer */}
-        <footer className="mt-16 border-t border-gray-200 py-8 text-center">
-          <p className="text-sm text-black">
-            BY CONTINUING PAST THIS PAGE YOU AGREE TO OUR{" "}
-            <Link 
-              href="/termsofservice" 
-              className="underline hover:text-gray-600 transition-colors"
-            >
-              TERMS OF USE
-            </Link>
-            {" & "}
-            <Link 
-              href="/privacypolicy" 
-              className="underline hover:text-gray-600 transition-colors"
-            >
-              PRIVACY POLICY
-            </Link>
-          </p>
-        </footer>
-
-            </div>
-
-            {/* PWA Install Prompt */}
-            <PWAInstallPrompt />
-
-            {/* Signup Dialog */}
-            <AuthDialog
-                isOpen={isAuthDialogOpen}
-                onClose={() => setAuthDialogOpen(false)}
-                title="Join OnesToWatch"
-            />
-        </>
+                    <p className="text-xs text-center text-gray-500 mt-4">
+                        By subscribing, you agree to receive weekly emails from OnesToWatch.
+                        You can unsubscribe at any time.
+                    </p>
+                </CardContent>
+            </Card>
+        </div>
     );
 }
