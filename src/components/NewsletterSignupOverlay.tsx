@@ -106,7 +106,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
         >
           <div className="mb-6 space-y-3 text-sm text-center">
             <p>
-              <strong className="text-white text-xl block mb-2">
+              <strong className="text-white text-2xl block mb-2">
                 Get updated when OTW Artists are in your town.
               </strong>
             </p>
