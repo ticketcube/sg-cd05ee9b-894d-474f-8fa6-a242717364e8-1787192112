@@ -11,8 +11,8 @@ export default function Header() {
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Image
-              src="/otwlive.png"
-              alt="OTW Live"
+              src="/otwcolor-md6dlfkk.png"
+              alt="OTW"
               width={40}
               height={40}
               className="rounded-md"
