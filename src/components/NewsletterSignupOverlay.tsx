@@ -83,8 +83,8 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <Card className="w-full max-w-md relative bg-black">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-blk backdrop-blur-sm p-4">
+      <Card className="w-full max-w-md relative bg-black p-4 rounded-xlw-full max-w-md relative bg-black p-4 rounded-xl">
         {onClose && (
           <button
             onClick={onClose}
@@ -100,18 +100,18 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
             <img 
               src="/OTWLogo_BW.png" 
               alt="OTW Live" 
-                          className="w-16 h-16 object-contain mx-auto rounded-md"
+                          className="w-50 h-50 object-contain mx-auto rounded-md"
             />
           </div>
         </CardHeader>
 
         <CardContent>
-                  <div className="mb-6 space-y-3 text-sm text-center text-gray-900">
+                  <div className="mb-6 space-y-3 text-sm text-center text-white">
             <p>
-              <strong className="text-gray-900">Welcome to OTW LIVE!</strong>
+              <strong className="text-white text-xl">Get updated when OTW Artists are in your town.</strong>
             </p>
             <p>
-                          As a member, every Thursday you'll receive an exclusive list of OTW Artists' weekend shows in your city. 
+                          Subscribers receive a weekly list of OTW Artists' weekend shows in your city. 
             </p>
             <p>
                    
@@ -120,14 +120,14 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
           </div>
           
 
-          <form onSubmit={handleSubmit} className="space-y-4 text-white">
+          <form onSubmit={handleSubmit} className="space-y-4 text-blk">
             <div>
               <Input
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full text-white"
+                className="w-full"
                 required
                 disabled={loading}
               />
@@ -141,13 +141,13 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
                 placeholder="Enter City (optional)."
               />
               {!homeCity && !customCity && (
-                <p className="text-xs text-white mt-2 flex items-center gap-1">
-                  <span>💡</span>
+                <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                 
                   
                 </p>
               )}
               {(homeCity || customCity) && (
-                <p className="text-xs text-white mt-2 flex items-center gap-1">
+                <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
                   <span>✓</span>
                   <span>Selected: {homeCity?.normalized_name || customCity}</span>
                 </p>
@@ -156,14 +156,14 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
 
             <Button
               type="submit"
-              className="w-full bg-black hover:bg-gray-800"
+              className="w-full bg-white text-xl text-black hover:bg-gray-800"
               disabled={loading}
             >
-              {loading ? "Subscribing..." : "Subscribe"}
+              {loading ? "Subscribing..." : "Subscribe Now"}
             </Button>
           </form>
 
-          <p className="text-xs text-center text-white mt-4">
+          <p className="text-xs text-center text-gray-500 mt-4">
             By subscribing, you agree to receive weekly emails from OnesToWatch. 
             You can unsubscribe at any time.
           </p>
