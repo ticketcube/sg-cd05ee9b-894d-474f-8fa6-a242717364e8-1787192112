@@ -120,7 +120,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
           </div>
           
 
-          <form onSubmit={handleSubmit} className="space-y-4 text-blk">
+          <form onSubmit={handleSubmit} className="space-y-4 text-white">
             <div>
               <Input
                 type="email"
