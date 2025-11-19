@@ -133,12 +133,12 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
                                 value={homeCity}
                                 onValueChange={handleCityChange}
                                 placeholder="Enter City (optional)."
-                                // ---- choose one of the selector options below ----
-                                className={
-                                    // Option A: targets a button and the icon SVG inside the combobox trigger
-                                    "w-full bg-black text-white hover:bg-gray-900 focus:bg-gray-900 data-[state=open]:bg-gray-900 [&>button]:text-white [&>button>svg]:text-white"
-                                }
+                               
                           
+                            className={
+                              "w-full bg-black text-white hover:bg-gray-900 focus:bg-gray-900 data-[state=open]:bg-gray-900 [&_[data-slot=icon]]:text-white [&_[data-slot=icon]>svg]:text-white"
+                            }
+                           
                             />
 
                             {!homeCity && !customCity && (
