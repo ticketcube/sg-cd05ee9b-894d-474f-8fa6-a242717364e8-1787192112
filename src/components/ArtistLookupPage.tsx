@@ -562,7 +562,7 @@ export function ArtistLookupPage() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="artist_otwcoverage" className="text-white">OTW Coverage</Label>
+                      <Label htmlFor="artist_otwcoverage" className="text-white">Class of (e.g. 2020)</Label>
                       <Input
                         id="artist_otwcoverage"
                         type="number"
