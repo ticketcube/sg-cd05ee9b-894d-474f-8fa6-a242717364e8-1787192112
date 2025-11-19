@@ -8,153 +8,166 @@ import { toast } from "sonner";
 import CityCombobox from "@/components/CityCombobox";
 
 interface NewsletterSignupOverlayProps {
-    onSubscribed: () => void;
-    onClose?: () => void;
+  onSubscribed: () => void;
+  onClose?: () => void;
 }
 
 export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSignupOverlayProps) {
-    const [email, setEmail] = useState("");
-    const [homeCity, setHomeCity] = useState < { id: number; name: string; normalized_name: string } | null > (null);
-    const [customCity, setCustomCity] = useState < string > ("");
-    const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [homeCity, setHomeCity] = useState<{ id: number; name: string; normalized_name: string } | null>(null);
+  const [customCity, setCustomCity] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
-    const handleCityChange = (city: any, customInput?: string) => {
-        if (city) {
-            setHomeCity(city);
-            setCustomCity("");
-        } else if (customInput) {
-            setHomeCity(null);
-            setCustomCity(customInput);
+  const handleCityChange = (city: any, customInput?: string) => {
+    if (city) {
+      setHomeCity(city);
+      setCustomCity("");
+    } else if (customInput) {
+      setHomeCity(null);
+      setCustomCity(customInput);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email || !email.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    const finalCity = homeCity?.normalized_name || customCity;
+    const normalizedCity = finalCity?.trim();
+
+    setLoading(true);
+
+    try {
+      const result = await newsletterService.subscribe(email, normalizedCity || undefined);
+
+      if (result.success) {
+        toast.success(result.message);
+        localStorage.setItem("newsletter_email", email);
+        if (normalizedCity) {
+          localStorage.setItem("newsletter_home_city", normalizedCity);
         }
-    };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+        const response = await fetch("/api/newsletter/send-welcome", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, unsubscribeToken: result.subscriber?.unsubscribe_token }),
+        });
 
-        if (!email || !email.includes("@")) {
-            toast.error("Please enter a valid email address");
-            return;
-        }
+        if (!response.ok) console.warn("Welcome email failed to send, but subscription succeeded");
 
-        const finalCity = homeCity?.normalized_name || customCity;
-        const normalizedCity = finalCity?.trim();
+        onSubscribed();
+      } else {
+        toast.error(result.message);
+      }
+    } catch (error) {
+      console.error("Subscription error:", error);
+      toast.error("Failed to subscribe. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setLoading(true);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <Card 
+        className="w-full max-w-md relative shadow-2xl rounded-xl overflow-hidden"
+        style={{ backgroundColor: '#000000', borderColor: '#374151' }}
+      >
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 text-gray-400 hover:text-white transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
 
-        try {
-            const result = await newsletterService.subscribe(email, normalizedCity || undefined);
+        <CardHeader 
+          className="text-center pb-4 pt-6"
+          style={{ backgroundColor: '#000000' }}
+        >
+          <div className="mx-auto mb-4">
+            <img
+              src="/OTWLogo_BW.png"
+              alt="OTW Live"
+              className="w-32 h-32 object-contain mx-auto"
+            />
+          </div>
+        </CardHeader>
 
-            if (result.success) {
-                toast.success(result.message);
-                localStorage.setItem("newsletter_email", email);
-                if (normalizedCity) {
-                    localStorage.setItem("newsletter_home_city", normalizedCity);
-                }
+        <CardContent 
+          className="px-6 pb-6"
+          style={{ backgroundColor: '#000000' }}
+        >
+          <div className="mb-6 space-y-3 text-sm text-center">
+            <p>
+              <strong className="text-white text-xl block mb-2">
+                Get updated when OTW Artists are in your town.
+              </strong>
+            </p>
+            <p className="text-gray-300">
+              Subscribers receive a weekly list of OTW Artists' weekend shows in your city.
+            </p>
+          </div>
 
-                const response = await fetch("/api/newsletter/send-welcome", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, unsubscribeToken: result.subscriber?.unsubscribe_token }),
-                });
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full"
+                style={{ 
+                  backgroundColor: '#000000', 
+                  color: 'white', 
+                  borderColor: '#4b5563' 
+                }}
+                required
+                disabled={loading}
+              />
+            </div>
 
-                if (!response.ok) console.warn("Welcome email failed to send, but subscription succeeded");
+            <div>
+              <CityCombobox
+                value={homeCity}
+                onValueChange={handleCityChange}
+                placeholder="Enter City (optional)"
+                className="w-full"
+              />
+            </div>
 
-                onSubscribed();
-            } else {
-                toast.error(result.message);
-            }
-        } catch (error) {
-            console.error("Subscription error:", error);
-            toast.error("Failed to subscribe. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
+            {(homeCity || customCity) && (
+              <p className="text-xs text-green-400 flex items-center gap-1">
+                <span>✓</span>
+                <span>Selected: {homeCity?.normalized_name || customCity}</span>
+              </p>
+            )}
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-blk backdrop-blur-sm p-4">
-            <Card className="w-full max-w-md relative bg-black p-4 rounded-xl">
-                {onClose && (
-                    <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                        aria-label="Close"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                )}
+            <Button
+              type="submit"
+              className="w-full text-lg font-semibold py-6"
+              style={{
+                backgroundColor: 'white',
+                color: 'black'
+              }}
+              disabled={loading}
+            >
+              {loading ? "Subscribing..." : "Subscribe Now"}
+            </Button>
+          </form>
 
-                <CardHeader className="text-center pb-4">
-                    <div className="mx-auto mb-4">
-                        <img
-                            src="/OTWLogo_BW.png"
-                            alt="OTW Live"
-                            className="w-50 h-50 object-contain mx-auto rounded-md"
-                        />
-                    </div>
-                </CardHeader>
-
-                <CardContent>
-                    <div className="mb-6 space-y-3 text-sm text-center text-white">
-                        <p>
-                            <strong className="text-white text-xl">
-                                Get updated when OTW Artists are in your town.
-                            </strong>
-                        </p>
-                        <p>
-                            Subscribers receive a weekly list of OTW Artists' weekend shows in your city.
-                        </p>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-4 text-white">
-                        <div>
-                            <Input
-                                type="email"
-                                placeholder="Enter your email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-black text-white border-gray-600"
-                                required
-                                disabled={loading}
-                            />
-                        </div>
-
-                        <div className="flex gap-2">
-                            <CityCombobox
-                                value={homeCity}
-                                onValueChange={handleCityChange}
-                                placeholder="Enter City (optional)."
-                                className="flex-1 bg-black text-white border-gray-600 hover:bg-gray-900 focus:bg-gray-900 [&>button]:bg-black [&>button]:text-white [&_.radix-popover-content]:bg-black [&_.radix-popover-content]:text-white [&_input]:bg-black [&_input]:text-white [&_item]:text-white"
-                            />
-
-                            {/* Optional: Add "use current location" button */}
-                        </div>
-
-                        {!homeCity && !customCity && (
-                            <p className="text-xs text-blue-600 mt-2 flex items-center gap-1"></p>
-                        )}
-                        {(homeCity || customCity) && (
-                            <p className="text-xs text-white mt-2 flex items-center gap-1">
-                                <span>✓</span>
-                                <span>Selected: {homeCity?.normalized_name || customCity}</span>
-                            </p>
-                        )}
-
-                        <Button
-                            type="submit"
-                            className="w-full bg-white text-xl text-black hover:bg-gray-800"
-                            disabled={loading}
-                        >
-                            {loading ? "Subscribing..." : "Subscribe Now"}
-                        </Button>
-                    </form>
-
-                    <p className="text-xs text-center text-gray-500 mt-4">
-                        By subscribing, you agree to receive weekly emails from OnesToWatch.
-                        You can unsubscribe at any time.
-                    </p>
-                </CardContent>
-            </Card>
-        </div>
-    );
+          <p className="text-xs text-center text-gray-500 mt-6">
+            By subscribing, you agree to receive weekly emails from OnesToWatch.
+            You can unsubscribe at any time.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

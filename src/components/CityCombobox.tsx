@@ -25,7 +25,7 @@ interface CityComboboxProps {
     value?: City | null;
     onValueChange: (city: City | null, customInput?: string) => void;
     placeholder?: string;
-    className?: string; // <-- added
+    className?: string;
 }
 
 export default function CityCombobox({
@@ -35,7 +35,7 @@ export default function CityCombobox({
     className,
 }: CityComboboxProps) {
     const [open, setOpen] = useState(false);
-    const [cities, setCities] = useState < City[] > ([]);
+    const [cities, setCities] = useState<City[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchValue, setSearchValue] = useState("");
     const [geoLoading, setGeoLoading] = useState(false);
@@ -122,8 +122,10 @@ export default function CityCombobox({
                         role="combobox"
                         aria-expanded={open}
                         className={cn(
-                            "flex-1 justify-between text-left min-h-[44px] bg-black text-white border-gray-600 hover:bg-gray-900 focus:bg-gray-900",
-                            className // <-- apply parent className
+                            "flex-1 justify-between text-left min-h-[44px]",
+                            "!bg-black !text-white !border-gray-600",
+                            "hover:!bg-gray-900 focus:!bg-gray-900",
+                            className
                         )}
                         type="button"
                     >
@@ -135,20 +137,24 @@ export default function CityCombobox({
                 <PopoverContent
                     align="start"
                     className={cn(
-                        "w-[var(--radix-popover-trigger-width)] p-0 bg-black text-white max-h-64 overflow-auto",
+                        "w-[var(--radix-popover-trigger-width)] p-0",
+                        "!bg-black !text-white !border-gray-600",
+                        "max-h-64 overflow-auto",
                         className
                     )}
+                    style={{ backgroundColor: '#000000', color: 'white', borderColor: '#4b5563' }}
                 >
-                    <Command className="w-full">
+                    <Command className="w-full !bg-black !text-white" style={{ backgroundColor: '#000000' }}>
                         <CommandInput
                             placeholder="Type to search cities..."
                             value={searchValue}
                             onValueChange={setSearchValue}
                             onKeyDown={handleKeyDown}
-                            className="bg-black text-white"
+                            className="!bg-black !text-white !border-gray-700 placeholder:!text-gray-400"
+                            style={{ backgroundColor: '#000000', color: 'white' }}
                         />
-                        <CommandList>
-                            <CommandEmpty>
+                        <CommandList className="!bg-black" style={{ backgroundColor: '#000000' }}>
+                            <CommandEmpty className="!bg-black !text-white" style={{ backgroundColor: '#000000', color: 'white' }}>
                                 {loading ? (
                                     <div className="p-4 text-center text-white">
                                         <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
@@ -157,7 +163,10 @@ export default function CityCombobox({
                                 ) : searchValue.length >= 2 ? (
                                     <div className="p-4 text-center text-white">
                                         No existing cities match "{searchValue}"
-                                        <Button className="mt-2 w-full" onClick={handleCustomCity}>
+                                        <Button 
+                                            className="mt-2 w-full !bg-white !text-black hover:!bg-gray-200" 
+                                            onClick={handleCustomCity}
+                                        >
                                             ✓ Add "{searchValue}" as my city
                                         </Button>
                                     </div>
@@ -167,13 +176,14 @@ export default function CityCombobox({
                             </CommandEmpty>
 
                             {cities.length > 0 && (
-                                <CommandGroup>
+                                <CommandGroup className="!bg-black" style={{ backgroundColor: '#000000' }}>
                                     {cities.map((city) => (
                                         <CommandItem
                                             key={city.id}
                                             value={city.normalized_name}
                                             onSelect={handleSelectCity}
-                                            className="cursor-pointer text-white"
+                                            className="cursor-pointer !text-white hover:!bg-gray-800"
+                                            style={{ color: 'white' }}
                                         >
                                             <Check
                                                 className={cn(
@@ -204,7 +214,7 @@ export default function CityCombobox({
                 variant="outline"
                 size="icon"
                 onClick={() => alert("Add geolocation")}
-                className="min-h-[44px] min-w-[44px] bg-black text-white"
+                className="min-h-[44px] min-w-[44px] !bg-black !text-white !border-gray-600 hover:!bg-gray-900"
             >
                 <MapPin className="h-4 w-4" />
             </Button>
