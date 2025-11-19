@@ -141,13 +141,13 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
                 placeholder="Enter City (optional)."
               />
               {!homeCity && !customCity && (
-                <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                <p className="text-xs text-white mt-2 flex items-center gap-1">
                   <span>💡</span>
                   
                 </p>
               )}
               {(homeCity || customCity) && (
-                <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                <p className="text-xs text-white mt-2 flex items-center gap-1">
                   <span>✓</span>
                   <span>Selected: {homeCity?.normalized_name || customCity}</span>
                 </p>
