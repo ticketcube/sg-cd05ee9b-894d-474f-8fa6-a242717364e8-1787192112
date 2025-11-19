@@ -245,7 +245,7 @@ export class WeeklyEmailGenerator {
               <table width="600" cellpadding="0" cellspacing="0" style="background-color: #000000; border-radius: 8px; overflow: hidden; max-width: 600px;">
                 <tr>
                   <td style="padding: 40px 40px 20px 40px; text-align: center; background-color: #000000;">
-                    <img src="https://onestowatch.live/OTWLogoBW.png" alt="OTW Live" style="width: 100px; height: 100px; margin: 0 auto 16px auto; border-radius: 8px;" />
+                    <img src="https://onestowatch.live/OTWLogo_BW.png" alt="OTW Live" style="width: 100px; height: 100px; margin: 0 auto 16px auto; border-radius: 8px; background-color: #000000;" />
                   
                   
                   </td>
