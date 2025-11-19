@@ -109,11 +109,11 @@ export function ArtistLookupPage() {
 
           // Apply the appropriate filter based on filterMode
           if (filterMode === 'no_genre') {
-            query = query.or('artist_genre.is.null,artist_genre.eq.');
+            query = query.or('artist_genre.is.NULL,artist_genre.eq.');
           } else if (filterMode === 'no_home_city') {
-            query = query.or('artist_home.is.null,artist_home.eq.');
+            query = query.or('artist_home.is.NULL,artist_home.eq.');
           } else if (filterMode === 'no_top_list') {
-            query = query.or('top_list.is.null,top_list.eq.');
+            query = query.or('top_list.is.NULL,top_list.eq.');
           }
 
           const { data, error } = await query;
