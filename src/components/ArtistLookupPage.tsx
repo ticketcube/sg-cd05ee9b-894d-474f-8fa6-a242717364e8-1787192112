@@ -283,7 +283,14 @@ useEffect(() => {
        <div className="space-y-6 mb-8">
       {/* Page Header */}
       <div className="flex justify-between items-center">
-      
+        <div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Artist Lookup
+          </h1>
+          <p className="text-gray-400 mt-2">Search, view, and manage artist profiles</p>
+        </div>
+        
+     
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* LEFT COLUMN */}
                     <div className="space-y-6">
