@@ -11,10 +11,10 @@ export default function Header() {
         <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Image
-              src="/otwcolor-md6dlfkk.png"
+              src="/OTWLogo_BW.png"
               alt="OTW"
-              width={40}
-              height={40}
+              width={60}
+              height={60}
               className="rounded-md"
             />
             <span className="hidden font-bold sm:inline-block">
