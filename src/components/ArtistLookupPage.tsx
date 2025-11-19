@@ -310,11 +310,69 @@ export function ArtistLookupPage() {
             <Badge variant="secondary" className="bg-orange-600 text-white px-3 py-1">
               Filter Active
             </Badge>
-          )}
+             )}
+      </div>
+
+      {/* Filtered Artists Dropdown - Shows when campaign filter is active */}
+      {campaignFilterActive && (
+        <div className="mt-6 space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-orange-300 font-semibold">
+              Artists Missing {filterMode === 'no_genre' ? 'Genre' : filterMode === 'no_home_city' ? 'Home City' : 'Top List'} Data
+            </Label>
+            <Badge variant="secondary" className="bg-orange-700 text-white">
+              {searchResults.length} found
+            </Badge>
+          </div>
+
+          <div className="max-h-64 overflow-y-auto space-y-2 bg-gray-900/50 rounded-lg p-3 border border-orange-500/30">
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full mx-auto" />
+                <p className="text-gray-400 mt-2 text-sm">Searching...</p>
+              </div>
+            ) : searchResults.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                No artists found with missing {filterMode === 'no_genre' ? 'genre' : filterMode === 'no_home_city' ? 'home city' : 'top list'} data
+              </div>
+            ) : (
+              searchResults.map((artist) => (
+                <div
+                  key={artist.uuid}
+                  onClick={() => handleArtistSelect(artist)}
+                  className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                    selectedArtist?.uuid === artist.uuid
+                      ? "bg-orange-900/70 border border-orange-400"
+                      : "bg-gray-800/70 hover:bg-gray-700/70"
+                  }`}
+                >
+                  <div className="font-medium text-white">{artist.artist_name}</div>
+                  <div className="text-sm text-gray-400 mt-1 flex flex-wrap gap-2">
+                    {!artist.artist_genre && (
+                      <Badge variant="outline" className="border-red-500 text-red-400 text-xs">
+                        No Genre
+                      </Badge>
+                    )}
+                    {!artist.artist_home && (
+                      <Badge variant="outline" className="border-red-500 text-red-400 text-xs">
+                        No Home City
+                      </Badge>
+                    )}
+                    {!artist.top_list && (
+                      <Badge variant="outline" className="border-yellow-500 text-yellow-400 text-xs">
+                        No Top List
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </CardContent>
-    </Card>
-  </div>
+      )}
+    </CardContent>
+  </Card>
+</div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column */}
