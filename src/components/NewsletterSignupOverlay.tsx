@@ -140,15 +140,11 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
                               onValueChange={handleCityChange}
                               placeholder="Enter City (optional)."
                               className="
-                            w-full 
-                            bg-black 
-                            text-white
-                            border border-gray-600
-                            hover:bg-gray-900
-                            focus:bg-gray-900
+                            w-full bg-black text-white
+                            hover:bg-gray-900 focus:bg-gray-900
                             data-[state=open]:bg-gray-900
-                            [&>button]:text-white
-                            [&>button>svg]:text-white
+                            [&_[data-slot=icon]]:text-white
+                            "
                         "
                                                 />
 
