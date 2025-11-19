@@ -82,95 +82,94 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
     }
   };
 
- return (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-blk backdrop-blur-sm p-4">
-    <Card className=""w-full bg-black text-white hover:bg-gray-900 focus:bg-gray-900 data-[state=open]:bg-gray-900 [&>button]:text-white [&>button>svg]:text-white">
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      )}
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-blk backdrop-blur-sm p-4">
+      <Card className="w-full max-w-md relative bg-black p-4 rounded-xlw-full max-w-md relative bg-black p-4 rounded-xl">
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
 
-      <CardHeader className="text-center pb-4">
-        <div className="mx-auto mb-4">
-          <img
-            src="/OTWLogo_BW.png"
-            alt="OTW Live"
-            className="w-50 h-50 object-contain mx-auto rounded-md"
-          />
-        </div>
-      </CardHeader>
+        <CardHeader className="text-center pb-4">
+          <div className="mx-auto mb-4">
+            <img 
+              src="/OTWLogo_BW.png" 
+              alt="OTW Live" 
+                          className="w-50 h-50 object-contain mx-auto rounded-md"
+            />
+          </div>
+        </CardHeader>
 
-      <CardContent>
-        <div className="mb-6 space-y-3 text-sm text-center text-white">
-          <p>
-            <strong className="text-white text-xl">
-              Get updated when OTW Artists are in your town.
-            </strong>
-          </p>
-          <p>Subscribers receive a weekly list of OTW Artists' weekend shows in your city.</p>
-        </div>
+        <CardContent>
+                  <div className="mb-6 space-y-3 text-sm text-center text-white">
+            <p>
+              <strong className="text-white text-xl">Get updated when OTW Artists are in your town.</strong>
+            </p>
+            <p>
+                          Subscribers receive a weekly list of OTW Artists' weekend shows in your city. 
+            </p>
+            <p>
+                   
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-white">
-          <div>
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full"
-              required
+            </p>
+          </div>
+          
+
+          <form onSubmit={handleSubmit} className="space-y-4 text-white">
+            <div>
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full"
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+            
+              <CityCombobox
+                 value={homeCity}
+                 className="w-full bg-black text-xl text-white hover:bg-gray-800"
+                onValueChange={handleCityChange}
+                placeholder="Enter City (optional)."
+              />
+              {!homeCity && !customCity && (
+                <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                 
+                  
+                </p>
+              )}
+              {(homeCity || customCity) && (
+                <p className="text-xs text-black mt-2 flex items-center gap-1">
+                  <span>✓</span>
+                  <span>Selected: {homeCity?.normalized_name || customCity}</span>
+                </p>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-white text-xl text-black hover:bg-gray-800"
               disabled={loading}
-            />
-          </div>
+            >
+              {loading ? "Subscribing..." : "Subscribe Now"}
+            </Button>
+          </form>
 
-          <div>
-            <CityCombobox
-              value={homeCity}
-              onValueChange={handleCityChange}
-              placeholder="Enter City (optional)."
-              // ---- choose one of the selector options below ----
-              className={
-                // Option A: targets a button and the icon SVG inside the combobox trigger
-                "w-full bg-black text-white hover:bg-gray-900 focus:bg-gray-900 data-[state=open]:bg-gray-900 [&>button]:text-white [&>button>svg]:text-white"
-              }
-              /*
-              // Option B: if the icon lives in a nested element with data-slot="icon"
-              className={
-                "w-full bg-black text-white hover:bg-gray-900 focus:bg-gray-900 data-[state=open]:bg-gray-900 [&_[data-slot=icon]]:text-white [&_[data-slot=icon]>svg]:text-white"
-              }
-              */
-              /*
-              // Option C: fallback - apply a custom class so you can target it in global CSS
-              className="w-full bg-black text-white city-combobox"
-              */
-            />
-
-            {!homeCity && !customCity && (
-              <p className="text-xs text-blue-600 mt-2 flex items-center gap-1"></p>
-            )}
-            {(homeCity || customCity) && (
-              <p className="text-xs text-black mt-2 flex items-center gap-1">
-                <span>✓</span>
-                <span>Selected: {homeCity?.normalized_name || customCity}</span>
-              </p>
-            )}
-          </div>
-
-          <Button type="submit" className="w-full bg-white text-xl text-black hover:bg-gray-800" disabled={loading}>
-            {loading ? "Subscribing..." : "Subscribe Now"}
-          </Button>
-        </form>
-
-        <p className="text-xs text-center text-gray-500 mt-4">
-          By subscribing, you agree to receive weekly emails from OnesToWatch. You can unsubscribe at any time.
-        </p>
-      </CardContent>
-    </Card>
-  </div>
-);
+          <p className="text-xs text-center text-gray-500 mt-4">
+            By subscribing, you agree to receive weekly emails from OnesToWatch. 
+            You can unsubscribe at any time.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
