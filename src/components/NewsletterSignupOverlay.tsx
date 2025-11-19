@@ -83,8 +83,8 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-blk backdrop-blur-sm p-4">
-      <Card className="w-full max-w-md relative bg-black p-4 rounded-xlw-full max-w-md relative bg-black p-4 rounded-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <Card className="w-full max-w-md relative bg-white">
         {onClose && (
           <button
             onClick={onClose}
@@ -100,18 +100,18 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
             <img 
               src="/OTWLogo_BW.png" 
               alt="OTW Live" 
-                          className="w-50 h-50 object-contain mx-auto rounded-md"
+                          className="w-16 h-16 object-contain mx-auto rounded-md"
             />
           </div>
         </CardHeader>
 
         <CardContent>
-                  <div className="mb-6 space-y-3 text-sm text-center text-white">
+                  <div className="mb-6 space-y-3 text-sm text-center text-gray-900">
             <p>
-              <strong className="text-white text-xl">Get updated when OTW Artists are in your town.</strong>
+              <strong className="text-gray-900">Welcome to OTW LIVE!</strong>
             </p>
             <p>
-                          Subscribers receive a weekly list of OTW Artists' weekend shows in your city. 
+                          As a member, every Thursday you'll receive an exclusive list of OTW Artists' weekend shows in your city. 
             </p>
             <p>
                    
@@ -120,7 +120,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
           </div>
           
 
-          <form onSubmit={handleSubmit} className="space-y-4 text-blk">
+          <form onSubmit={handleSubmit} className="space-y-4 text-white">
             <div>
               <Input
                 type="email"
@@ -142,7 +142,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
               />
               {!homeCity && !customCity && (
                 <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
-                 
+                  <span>💡</span>
                   
                 </p>
               )}
@@ -156,10 +156,10 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
 
             <Button
               type="submit"
-              className="w-full bg-white text-xl text-black hover:bg-gray-800"
+              className="w-full bg-black hover:bg-gray-800"
               disabled={loading}
             >
-              {loading ? "Subscribing..." : "Subscribe Now"}
+              {loading ? "Subscribing..." : "Subscribe"}
             </Button>
           </form>
 
