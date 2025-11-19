@@ -59,7 +59,9 @@ export function ArtistLookupPage() {
   const [formData, setFormData] = useState<ArtistFormData>(initialFormData);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [weeklyListId, setWeeklyListId] = useState("");
-  const [addingToList, setAddingToList] = useState(false);
+    const [addingToList, setAddingToList] = useState(false);
+    const [filterMode, setFilterMode] = useState < 'none' | 'no_genre' | 'no_home_city' | 'no_top_list' > ('none');
+    const [campaignFilterActive, setCampaignFilterActive] = useState(false);
 
   // Debounced search function
   const debouncedSearch = useCallback(
