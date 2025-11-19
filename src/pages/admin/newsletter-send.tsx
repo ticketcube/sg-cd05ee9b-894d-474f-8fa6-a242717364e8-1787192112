@@ -1,28 +1,68 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Send, TestTube, Clock, Users, Mail, AlertCircle, CheckCircle } from "lucide-react";
+import { Send, TestTube, Clock, Users, Mail, AlertCircle, CheckCircle, Lock } from "lucide-react";
 import { newsletterService } from "@/services/newsletterService";
 
 export default function NewsletterSendPage() {
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [adminSecret, setAdminSecret] = useState("");
   const [testEmail, setTestEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
 
-  // Define loadStats function BEFORE useEffect
+  // Check authentication and role on mount
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Check if user is authenticated
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        router.push("/");
+        return;
+      }
+
+      // Check user's role from profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+
+      if (profileError || !profile || profile.role !== "otwstaff") {
+        // Unauthorized - redirect to home
+        router.push("/");
+        return;
+      }
+
+      // User is authenticated and has otwstaff role
+      setIsAuthorized(true);
+      loadStats();
+    } catch (error) {
+      console.error("Auth check error:", error);
+      router.push("/");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const loadStats = async () => {
     const data = await newsletterService.getStats();
     setStats(data);
   };
-
-  // Load stats on mount
-  useEffect(() => {
-    loadStats();
-  }, []);
 
   const handleSendTest = async () => {
     if (!adminSecret || !testEmail) {
@@ -92,12 +132,53 @@ export default function NewsletterSendPage() {
     }
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-96">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="text-gray-600">Verifying access...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Unauthorized state (should not be visible due to redirect, but just in case)
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-96">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <Lock className="w-12 h-12 text-red-500" />
+              <h2 className="text-xl font-bold">Access Denied</h2>
+              <p className="text-gray-600">You do not have permission to access this page.</p>
+              <Button onClick={() => router.push("/")} className="mt-4">
+                Return Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Authorized - show the newsletter admin interface
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">📧 Newsletter Admin</h1>
           <p className="text-gray-600">Send weekly newsletters to subscribers</p>
+          <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+            <CheckCircle className="w-4 h-4" />
+            OTW Staff Access
+          </div>
         </div>
 
         {/* Stats Overview */}
