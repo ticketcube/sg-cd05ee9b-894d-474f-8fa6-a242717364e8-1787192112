@@ -106,7 +106,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
         >
           <div className="mb-6 space-y-3 text-sm text-center">
             <p>
-              <strong className="text-white text-2xl block mb-2">
+              <strong className="text-white text-3xl block mb-2">
                 Get updated when OTW Artists are in your town.
               </strong>
             </p>
@@ -143,7 +143,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
             </div>
 
             {(homeCity || customCity) && (
-              <p className="text-xs text-green-400 flex items-center gap-1">
+              <p className="text-xs text-purple-deep flex items-center gap-1">
                 <span>✓</span>
                 <span>Selected: {homeCity?.normalized_name || customCity}</span>
               </p>
