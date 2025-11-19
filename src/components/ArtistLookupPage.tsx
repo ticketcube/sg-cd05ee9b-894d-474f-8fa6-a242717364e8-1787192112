@@ -303,7 +303,7 @@ useEffect(() => {
     <Card className="bg-gradient-to-r from-orange-900/20 to-yellow-900/20 border-orange-500/30">
       <CardHeader>
         <div className="space-y-2">
-          <CardTitle className="text-2xl font-bold text-black">
+          <CardTitle className="text-2xl font-bold text-blk">
             🎯 ARTIST Q4 2025 UPDATE CAMPAIGN
           </CardTitle>
           <p className="text-gray-300 text-sm">
