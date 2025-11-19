@@ -163,7 +163,7 @@ export function NewsletterSignupOverlay({ onSubscribed, onClose }: NewsletterSig
             </Button>
           </form>
 
-          <p className="text-xs text-center text-gray-500 mt-4">
+          <p className="text-xs text-center text-white mt-4">
             By subscribing, you agree to receive weekly emails from OnesToWatch. 
             You can unsubscribe at any time.
           </p>
