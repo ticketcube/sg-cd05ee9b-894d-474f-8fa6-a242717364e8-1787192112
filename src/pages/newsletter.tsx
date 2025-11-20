@@ -510,16 +510,13 @@ export default function NewsletterPage() {
                       />
                   </div>
 
-                  {/* Right side: button */}
+                  {/* Right side: button as link */}
                   <div className="flex items-center gap-4">
-                      <Link href="/rewardshome">
-                          <Button
-                              variant="default"
-                              onClick={handleNavigationClick}
-                          >
+                      <Button asChild variant="default">
+                          <Link href="/rewardshome" onClick={handleNavigationClick}>
                               Discover Rewards
-                          </Button>
-                      </Link>
+                          </Link>
+                      </Button>
                   </div>
               </div>
           </header>
