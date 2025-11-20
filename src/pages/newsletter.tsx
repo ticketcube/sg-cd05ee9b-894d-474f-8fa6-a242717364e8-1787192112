@@ -512,11 +512,11 @@ export default function NewsletterPage() {
 
                   {/* Right side: button as link */}
                   <div className="flex items-center gap-4">
-                      <Button asChild variant="default">
-                          <Link href="/rewardshome">
+                      <Link href="/rewardshome">
+                          <Button variant="default">
                               Discover Rewards
-                          </Link>
-                      </Button>
+                          </Button>
+                      </Link>
                   </div>
               </div>
           </header>
