@@ -11,6 +11,8 @@ import { EventCard } from "@/components/EventCard";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+
 
 
 
