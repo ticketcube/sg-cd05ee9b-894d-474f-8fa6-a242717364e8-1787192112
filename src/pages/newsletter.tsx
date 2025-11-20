@@ -497,24 +497,26 @@ export default function NewsletterPage() {
           {/* Black Header with Logo */}
           <header className="bg-black border-b border-gray-800">
               <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                  {/* Left side: logo */}
                   <div className="flex items-center">
-                      <Image 
-                          src="https://s3-us-west-2.amazonaws.com/onestowatch-v2/logo-o2w-1635877647.svg" 
-                          alt="Ones to Watch" 
-                          width={120} 
+                      <Image
+                          src="https://s3-us-west-2.amazonaws.com/onestowatch-v2/logo-o2w-1635877647.svg"
+                          alt="Ones to Watch"
+                          width={120}
                           height={40}
                           className="h-8 w-auto"
                       />
                   </div>
-                  
-                  {/* Optional navigation items can go here */}
+
+                  {/* Right side: button */}
                   <div className="flex items-center gap-4">
-                      <Link
-                          href="/rewardshome"
-                          className="text-sm px-2 py-1.5 hover:bg-accent rounded-md"
-                          onClick={handleNavigationClick}
-                      >
-                           Discover Rewards
+                      <Link href="/rewardshome">
+                          <Button
+                              variant="default"
+                              onClick={handleNavigationClick}
+                          >
+                              Discover Rewards
+                          </Button>
                       </Link>
                   </div>
               </div>
