@@ -44,7 +44,7 @@ export default function NewsletterSendPage() {
 
       if (profileError || !profile || profile.role !== "otwstaff") {
         // Unauthorized - redirect to home
-        router.push("/");
+        router.push("/profile");
         return;
       }
 
@@ -53,7 +53,7 @@ export default function NewsletterSendPage() {
       loadStats();
     } catch (error) {
       console.error("Auth check error:", error);
-      router.push("/");
+      router.push("/profile");
     } finally {
       setIsLoading(false);
     }
