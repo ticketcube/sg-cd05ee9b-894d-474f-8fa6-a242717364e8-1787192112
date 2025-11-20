@@ -509,7 +509,13 @@ export default function NewsletterPage() {
                   
                   {/* Optional navigation items can go here */}
                   <div className="flex items-center gap-4">
-                      {/* Placeholder for future nav items */}
+                      <Link
+                          href="/rewardshome"
+                          className="text-sm px-2 py-1.5 hover:bg-accent rounded-md"
+                          onClick={handleNavigationClick}
+                      >
+                           Discover Rewards
+                      </Link>
                   </div>
               </div>
           </header>
