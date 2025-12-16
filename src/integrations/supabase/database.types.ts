@@ -1,4 +1,4 @@
- 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 export type Json =
   | string
   | number
@@ -839,7 +839,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          created_by: string
+          created_by?: string
           description?: string | null
           id?: string
           title: string
@@ -858,6 +858,7 @@ export type Database = {
       project_columns: {
         Row: {
           board_id: string
+          color: string | null
           created_at: string | null
           id: string
           position: number
@@ -865,6 +866,7 @@ export type Database = {
         }
         Insert: {
           board_id: string
+          color?: string | null
           created_at?: string | null
           id?: string
           position?: number
@@ -872,6 +874,7 @@ export type Database = {
         }
         Update: {
           board_id?: string
+          color?: string | null
           created_at?: string | null
           id?: string
           position?: number
@@ -890,6 +893,7 @@ export type Database = {
       project_tasks: {
         Row: {
           assigned_to: string | null
+          board_id: string | null
           column_id: string
           created_at: string | null
           created_by: string
@@ -903,9 +907,10 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          board_id?: string | null
           column_id: string
           created_at?: string | null
-          created_by: string
+          created_by?: string
           description?: string | null
           due_date?: string | null
           id?: string
@@ -916,6 +921,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          board_id?: string | null
           column_id?: string
           created_at?: string | null
           created_by?: string
@@ -928,6 +934,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "project_tasks_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "project_boards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_tasks_column_id_fkey"
             columns: ["column_id"]
