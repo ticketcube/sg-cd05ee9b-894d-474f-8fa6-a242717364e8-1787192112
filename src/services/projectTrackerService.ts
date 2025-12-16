@@ -21,10 +21,10 @@ export const getAllBoards = async (): Promise<ProjectBoard[]> => {
   return data || [];
 };
 
-export const createBoard = async (name: string, description?: string): Promise<ProjectBoard> => {
+export const createBoard = async (title: string, description?: string): Promise<ProjectBoard> => {
   const { data, error } = await supabase
     .from("project_boards")
-    .insert({ name, description })
+    .insert({ title, description })
     .select()
     .single();
 
@@ -66,7 +66,7 @@ export const getColumnsByBoard = async (boardId: string): Promise<ProjectColumn[
   return data || [];
 };
 
-export const createColumn = async (boardId: string, name: string, color?: string): Promise<ProjectColumn> => {
+export const createColumn = async (boardId: string, title: string, color?: string): Promise<ProjectColumn> => {
   // Get max position for this board
   const { data: columns } = await supabase
     .from("project_columns")
@@ -81,7 +81,7 @@ export const createColumn = async (boardId: string, name: string, color?: string
     .from("project_columns")
     .insert({ 
       board_id: boardId, 
-      name, 
+      title, 
       color: color || "#64748b",
       position: maxPosition + 1 
     })

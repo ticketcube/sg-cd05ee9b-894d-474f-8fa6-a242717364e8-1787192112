@@ -22,7 +22,8 @@ import {
   AlertCircle,
   File,
   Image as ImageIcon,
-  X
+  X,
+  KanbanSquare
 } from "lucide-react";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -416,6 +417,43 @@ export function StaffDashboard() {
                   Access Database
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
+              </CardContent>
+            </Card>
+
+            {/* NEW: Project Tracker Card */}
+            <Card 
+              className="bg-gradient-to-br from-purple-600 to-pink-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer group lg:col-span-2"
+              onClick={() => router.push("/admin/project-tracker")}
+            >
+              <CardContent className="p-8 flex flex-col sm:flex-row items-center justify-between gap-8">
+                <div className="flex-1">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">
+                      <KanbanSquare className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-2">
+                        Project Tracker
+                      </h3>
+                      <p className="text-purple-100 leading-relaxed max-w-xl">
+                        Manage internal projects, track tasks, and collaborate with the team using our simple Kanban boards.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="shrink-0">
+                  <Button 
+                    className="bg-white hover:bg-purple-50 text-purple-700 font-semibold shadow-lg group-hover:shadow-xl transition-all px-8 py-6 h-auto text-lg"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push("/admin/project-tracker");
+                    }}
+                  >
+                    Open Tracker
+                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>

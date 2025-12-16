@@ -10,7 +10,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -51,7 +50,7 @@ export function KanbanColumn({
   const [isEditingColumn, setIsEditingColumn] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
-  const [columnName, setColumnName] = useState(column.name);
+  const [columnTitle, setColumnTitle] = useState(column.title);
   const [loading, setLoading] = useState(false);
 
   const { setNodeRef } = useDroppable({
@@ -83,11 +82,11 @@ export function KanbanColumn({
   };
 
   const handleUpdateColumn = async () => {
-    if (!columnName.trim()) return;
+    if (!columnTitle.trim()) return;
 
     try {
       setLoading(true);
-      const updated = await updateColumn(column.id, { name: columnName });
+      const updated = await updateColumn(column.id, { title: columnTitle });
       onColumnUpdate(updated);
       setIsEditingColumn(false);
       toast.success("Column updated");
@@ -126,7 +125,7 @@ export function KanbanColumn({
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: column.color || "#64748b" }}
               />
-              <h3 className="font-semibold text-slate-800 truncate">{column.name}</h3>
+              <h3 className="font-semibold text-slate-800 truncate">{column.title}</h3>
               <span className="text-xs text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full">
                 {tasks.length}
               </span>
@@ -235,8 +234,8 @@ export function KanbanColumn({
                 Column Name
               </label>
               <Input
-                value={columnName}
-                onChange={(e) => setColumnName(e.target.value)}
+                value={columnTitle}
+                onChange={(e) => setColumnTitle(e.target.value)}
                 placeholder="Column name..."
                 autoFocus
               />
@@ -247,7 +246,7 @@ export function KanbanColumn({
               </Button>
               <Button
                 onClick={handleUpdateColumn}
-                disabled={!columnName.trim() || loading}
+                disabled={!columnTitle.trim() || loading}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}

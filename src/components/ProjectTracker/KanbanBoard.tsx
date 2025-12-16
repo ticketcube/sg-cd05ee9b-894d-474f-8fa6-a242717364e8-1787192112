@@ -20,7 +20,6 @@ import {
   getTasksByBoard,
   createColumn,
   moveTask,
-  reorderTasksInColumn,
   type ProjectColumn,
   type ProjectTask,
 } from "@/services/projectTrackerService";
@@ -35,7 +34,7 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
   const [tasks, setTasks] = useState<ProjectTask[]>([]);
   const [activeTask, setActiveTask] = useState<ProjectTask | null>(null);
   const [loading, setLoading] = useState(true);
-  const [newColumnName, setNewColumnName] = useState("");
+  const [newColumnTitle, setNewColumnTitle] = useState("");
   const [isAddingColumn, setIsAddingColumn] = useState(false);
 
   const sensors = useSensors(
@@ -68,13 +67,13 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
   };
 
   const handleAddColumn = async () => {
-    if (!newColumnName.trim()) return;
+    if (!newColumnTitle.trim()) return;
 
     try {
       setIsAddingColumn(true);
-      const newColumn = await createColumn(boardId, newColumnName);
+      const newColumn = await createColumn(boardId, newColumnTitle);
       setColumns([...columns, newColumn]);
-      setNewColumnName("");
+      setNewColumnTitle("");
       toast.success("Column added");
     } catch (error) {
       console.error("Error adding column:", error);
@@ -171,7 +170,7 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-4 overflow-x-auto pb-4 h-full">
           <SortableContext items={columns.map((c) => c.id)} strategy={horizontalListSortingStrategy}>
             {columns.map((column) => (
               <KanbanColumn
@@ -192,9 +191,9 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
             <div className="bg-slate-100 rounded-lg p-3">
               <div className="flex gap-2">
                 <Input
-                  value={newColumnName}
-                  onChange={(e) => setNewColumnName(e.target.value)}
-                  placeholder="Column name..."
+                  value={newColumnTitle}
+                  onChange={(e) => setNewColumnTitle(e.target.value)}
+                  placeholder="Column title..."
                   className="bg-white"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -204,7 +203,7 @@ export function KanbanBoard({ boardId }: KanbanBoardProps) {
                 />
                 <Button
                   onClick={handleAddColumn}
-                  disabled={!newColumnName.trim() || isAddingColumn}
+                  disabled={!newColumnTitle.trim() || isAddingColumn}
                   size="icon"
                   className="bg-blue-600 hover:bg-blue-700"
                 >
