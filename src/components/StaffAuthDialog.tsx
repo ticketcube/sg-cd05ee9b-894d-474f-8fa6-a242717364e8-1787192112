@@ -42,18 +42,16 @@ export default function StaffAuthDialog({ isOpen, onClose }: StaffAuthDialogProp
       
       console.log("🔄 [StaffAuthDialog] Starting Google OAuth sign in for staff dashboard");
       
-      // Use the current page path for redirect after auth
-      const redirectUrl = `${window.location.origin}/staffdashboard`;
-      
+      // ✅ FIX: Pass only the PATH, not the full URL
       const { error } = await authService.signInWithGoogle({ 
-        redirectTo: redirectUrl 
+        redirectTo: "/staffdashboard"
       });
 
       if (error) {
         console.error("❌ [StaffAuthDialog] OAuth error:", error);
         setError(error.message);
       } else {
-        console.log("✅ [StaffAuthDialog] Google OAuth initiated successfully");
+        console.log("✅ [StaffAuthDialog] Google OAuth initiated successfully with redirect to /staffdashboard");
       }
     } catch (err) {
       console.error("❌ [StaffAuthDialog] Unexpected error:", err);
@@ -70,18 +68,16 @@ export default function StaffAuthDialog({ isOpen, onClose }: StaffAuthDialogProp
       
       console.log("🔄 [StaffAuthDialog] Starting Apple OAuth sign in for staff dashboard");
       
-      // Use the current page path for redirect after auth
-      const redirectUrl = `${window.location.origin}/staffdashboard`;
-      
+      // ✅ FIX: Pass only the PATH, not the full URL
       const { error } = await authService.signInWithApple({ 
-        redirectTo: redirectUrl 
+        redirectTo: "/staffdashboard"
       });
 
       if (error) {
         console.error("❌ [StaffAuthDialog] Apple OAuth error:", error);
         setError(error.message);
       } else {
-        console.log("✅ [StaffAuthDialog] Apple OAuth initiated successfully");
+        console.log("✅ [StaffAuthDialog] Apple OAuth initiated successfully with redirect to /staffdashboard");
       }
     } catch (err) {
       console.error("❌ [StaffAuthDialog] Unexpected error during Apple Sign in:", err);
