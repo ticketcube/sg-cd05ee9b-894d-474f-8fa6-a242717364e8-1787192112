@@ -54,75 +54,150 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Golden Ratio Layout: Buttons (38%) on Left, Video (62%) on Right */}
-            <div className="grid lg:grid-cols-[38fr_62fr] gap-8 items-center">
-              {/* Left Side - Three Stacked Buttons */}
-              <div className="flex flex-col gap-6">
-                {/* For Fans */}
-                <Card className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/50 p-8 hover:scale-105 transition-transform">
-                  <div className="flex flex-col space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                        <Music className="w-8 h-8 text-purple-400" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-2xl font-bold text-white mb-1">For Fans</h3>
-                        <p className="text-gray-300 text-sm">
-                          Discover new artists, rate music, and earn rewards for your engagement
-                        </p>
-                      </div>
-                    </div>
-                    <Link href="/newsletter" className="w-full">
-                      <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-6 text-lg">
-                        Get Started
-                      </Button>
-                    </Link>
+            {/* Mobile: Video First, Then Buttons */}
+            <div className="lg:hidden space-y-6">
+              {/* Video on Mobile */}
+              <div className="relative w-full aspect-video overflow-hidden rounded-xl shadow-2xl">
+                <video
+                  ref={videoRef}
+                  className="w-full h-full object-cover"
+                  src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+                <button
+                  onClick={toggleMute}
+                  className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
+                >
+                  {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                </button>
+              </div>
+
+              {/* Three Buttons - Equal Size on Mobile */}
+              <Card className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/50 p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                    <Music className="w-6 h-6 text-purple-400" />
                   </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white">For Fans</h3>
+                    <p className="text-gray-300 text-sm">
+                      Discover new artists, rate music, and earn rewards
+                    </p>
+                  </div>
+                </div>
+                <Link href="/newsletter" className="w-full">
+                  <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-4">
+                    Get Started
+                  </Button>
+                </Link>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-pink-900/50 to-pink-800/30 border-pink-500/50 p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-pink-500/20 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-6 h-6 text-pink-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white">For Artists</h3>
+                    <p className="text-gray-300 text-sm">
+                      Get discovered by fans who love finding new music first
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleArtistsClick}
+                  className="w-full bg-pink-500/50 hover:bg-pink-500/70 text-white font-semibold py-4 cursor-not-allowed"
+                >
+                  Coming Soon
+                </Button>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-blue-900/50 to-blue-800/30 border-blue-500/50 p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <Users className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white">For OTW Curators</h3>
+                    <p className="text-gray-300 text-sm">
+                      Access your curator dashboard and manage content
+                    </p>
+                  </div>
+                </div>
+                <Link href="/staffdashboard" className="w-full">
+                  <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4">
+                    Staff Dashboard
+                  </Button>
+                </Link>
+              </Card>
+            </div>
+
+            {/* Desktop: Golden Ratio Layout (38% Buttons / 62% Video) */}
+            <div className="hidden lg:grid lg:grid-cols-[38fr_62fr] gap-8 items-stretch">
+              {/* Left Side - Three Stacked Buttons (Match Video Height) */}
+              <div className="flex flex-col gap-4">
+                {/* For Fans */}
+                <Card className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/50 p-6 hover:scale-105 transition-transform flex-1 flex flex-col">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                      <Music className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-white">For Fans</h3>
+                      <p className="text-gray-300 text-xs leading-tight">
+                        Discover new artists, rate music, and earn rewards
+                      </p>
+                    </div>
+                  </div>
+                  <Link href="/newsletter" className="w-full mt-auto">
+                    <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3">
+                      Get Started
+                    </Button>
+                  </Link>
                 </Card>
 
                 {/* For Artists */}
-                <Card className="bg-gradient-to-br from-pink-900/50 to-pink-800/30 border-pink-500/50 p-8 hover:scale-105 transition-transform">
-                  <div className="flex flex-col space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-pink-500/20 flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="w-8 h-8 text-pink-400" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-2xl font-bold text-white mb-1">For Artists</h3>
-                        <p className="text-gray-300 text-sm">
-                          Get discovered by fans who love finding new music first
-                        </p>
-                      </div>
+                <Card className="bg-gradient-to-br from-pink-900/50 to-pink-800/30 border-pink-500/50 p-6 hover:scale-105 transition-transform flex-1 flex flex-col">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-full bg-pink-500/20 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-6 h-6 text-pink-400" />
                     </div>
-                    <Button 
-                      onClick={handleArtistsClick}
-                      className="w-full bg-pink-500/50 hover:bg-pink-500/70 text-white font-semibold py-6 text-lg cursor-not-allowed"
-                    >
-                      Coming Soon
-                    </Button>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-white">For Artists</h3>
+                      <p className="text-gray-300 text-xs leading-tight">
+                        Get discovered by fans who love finding new music first
+                      </p>
+                    </div>
                   </div>
+                  <Button 
+                    onClick={handleArtistsClick}
+                    className="w-full bg-pink-500/50 hover:bg-pink-500/70 text-white font-semibold py-3 cursor-not-allowed mt-auto"
+                  >
+                    Coming Soon
+                  </Button>
                 </Card>
 
                 {/* For OTW Curators */}
-                <Card className="bg-gradient-to-br from-blue-900/50 to-blue-800/30 border-blue-500/50 p-8 hover:scale-105 transition-transform">
-                  <div className="flex flex-col space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                        <Users className="w-8 h-8 text-blue-400" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-2xl font-bold text-white mb-1">For OTW Curators</h3>
-                        <p className="text-gray-300 text-sm">
-                          Access your curator dashboard and manage content
-                        </p>
-                      </div>
+                <Card className="bg-gradient-to-br from-blue-900/50 to-blue-800/30 border-blue-500/50 p-6 hover:scale-105 transition-transform flex-1 flex flex-col">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                      <Users className="w-6 h-6 text-blue-400" />
                     </div>
-                    <Link href="/staffdashboard" className="w-full">
-                      <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-6 text-lg">
-                        Staff Dashboard
-                      </Button>
-                    </Link>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-white">For OTW Curators</h3>
+                      <p className="text-gray-300 text-xs leading-tight">
+                        Access your curator dashboard and manage content
+                      </p>
+                    </div>
                   </div>
+                  <Link href="/staffdashboard" className="w-full mt-auto">
+                    <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3">
+                      Staff Dashboard
+                    </Button>
+                  </Link>
                 </Card>
               </div>
 
