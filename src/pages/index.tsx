@@ -54,7 +54,23 @@ export default function HomePage() {
             </p>
 
             {/* Hero Video - Half Size */}
-       
+            <div className="relative w-full max-w-2xl mx-auto aspect-video overflow-hidden rounded-xl shadow-2xl mb-12">
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+              <button
+                onClick={toggleMute}
+                className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
+              >
+                {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+              </button>
+            </div>
 
             {/* Three Main Sections */}
             <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -112,24 +128,7 @@ export default function HomePage() {
                   </Link>
                 </div>
               </Card>
-                      </div>
-                      <div className="relative w-full max-w-2xl mx-auto aspect-video overflow-hidden rounded-xl shadow-2xl mb-12">
-                          <video
-                              ref={videoRef}
-                              className="w-full h-full object-cover"
-                              src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
-                              autoPlay
-                              loop
-                              muted
-                              playsInline
-                          />
-                          <button
-                              onClick={toggleMute}
-                              className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
-                          >
-                              {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-                          </button>
-                      </div>
+            </div>
 
             {/* Additional Info */}
             <div className="mt-16 text-center">
