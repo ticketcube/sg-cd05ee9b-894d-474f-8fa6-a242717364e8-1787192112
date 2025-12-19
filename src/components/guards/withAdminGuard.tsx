@@ -12,33 +12,44 @@ import StaffAuthDialog from "@/components/StaffAuthDialog";
 export function withAdminGuard<P extends object>(WrappedComponent: ComponentType<P>) {
     const ComponentWithAdminGuard = (props: P) => {
         const router = useRouter();
-        const { user, role, loading } = useUserProfile();
+        const { user, role, loading, sessionLoading } = useUserProfile();
         const [showAuthDialog, setShowAuthDialog] = useState(false);
+        const [isAuthenticating, setIsAuthenticating] = useState(false);
 
         useEffect(() => {
             // Wait for auth and profile to load
-            if (loading) return;
+            if (loading || sessionLoading) {
+                console.log("🔄 [AdminGuard] Loading auth/profile state...");
+                return;
+            }
 
             // Show auth dialog if not authenticated
             if (!user) {
                 console.log("🔐 [AdminGuard] No authenticated user - showing auth dialog");
                 setShowAuthDialog(true);
+                setIsAuthenticating(false);
                 return;
             }
 
+            // User is authenticated - hide dialog and check role
+            console.log(`✅ [AdminGuard] User authenticated with role: ${role}`);
+            setShowAuthDialog(false);
+            setIsAuthenticating(false);
+
             // Redirect to home if authenticated but not admin
-            if (role !== "otwstaff") {
+            if (role && role !== "otwstaff") {
                 console.log(`🚫 [AdminGuard] User role '${role}' is not admin - redirecting to home`);
                 router.replace("/");
                 return;
             }
 
-            console.log("✅ [AdminGuard] Admin access granted");
-            setShowAuthDialog(false);
-        }, [user, role, loading, router]);
+            if (role === "otwstaff") {
+                console.log("✅ [AdminGuard] Admin access granted");
+            }
+        }, [user, role, loading, sessionLoading, router]);
 
         // Show loading spinner while checking auth
-        if (loading) {
+        if (loading || sessionLoading || isAuthenticating) {
             return (
                 <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-blue-900">
                     <div className="text-center text-white space-y-4">
@@ -68,15 +79,25 @@ export function withAdminGuard<P extends object>(WrappedComponent: ComponentType
                     </div>
                     <StaffAuthDialog 
                         isOpen={showAuthDialog} 
-                        onClose={() => router.push("/")}
+                        onClose={() => {
+                            console.log("🔐 [AdminGuard] Auth dialog closed without authentication");
+                            router.push("/");
+                        }}
                     />
                 </>
             );
         }
 
-        // Don't render anything while redirecting non-admin users
-        if (role !== "otwstaff") {
-            return null;
+        // Don't render anything while checking role or redirecting non-admin users
+        if (!role || role !== "otwstaff") {
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-blue-900">
+                    <div className="text-center text-white space-y-4">
+                        <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto" />
+                        <div className="text-lg">Checking permissions...</div>
+                    </div>
+                </div>
+            );
         }
 
         return <WrappedComponent {...props} />;

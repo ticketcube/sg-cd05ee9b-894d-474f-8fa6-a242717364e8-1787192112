@@ -40,9 +40,14 @@ export default function StaffAuthDialog({ isOpen, onClose }: StaffAuthDialogProp
       setIsLoading(true);
       setError(null);
       
-      console.log("🔄 [StaffAuthDialog] Starting Google OAuth sign in");
+      console.log("🔄 [StaffAuthDialog] Starting Google OAuth sign in for staff dashboard");
       
-      const { error } = await authService.signInWithGoogle();
+      // Use the current page path for redirect after auth
+      const redirectUrl = `${window.location.origin}/staffdashboard`;
+      
+      const { error } = await authService.signInWithGoogle({ 
+        redirectTo: redirectUrl 
+      });
 
       if (error) {
         console.error("❌ [StaffAuthDialog] OAuth error:", error);
@@ -63,8 +68,14 @@ export default function StaffAuthDialog({ isOpen, onClose }: StaffAuthDialogProp
       setIsLoading(true);
       setError(null);
       
-      console.log("🔄 [StaffAuthDialog] Starting Apple OAuth sign in");
-      const { error } = await authService.signInWithApple();
+      console.log("🔄 [StaffAuthDialog] Starting Apple OAuth sign in for staff dashboard");
+      
+      // Use the current page path for redirect after auth
+      const redirectUrl = `${window.location.origin}/staffdashboard`;
+      
+      const { error } = await authService.signInWithApple({ 
+        redirectTo: redirectUrl 
+      });
 
       if (error) {
         console.error("❌ [StaffAuthDialog] Apple OAuth error:", error);
@@ -97,7 +108,7 @@ export default function StaffAuthDialog({ isOpen, onClose }: StaffAuthDialogProp
       setIsLoading(true);
       setError(null);
 
-      console.log("🔄 [StaffAuthDialog] Starting email sign in");
+      console.log("🔄 [StaffAuthDialog] Starting email sign in for staff dashboard");
       
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -110,8 +121,8 @@ export default function StaffAuthDialog({ isOpen, onClose }: StaffAuthDialogProp
         return;
       }
 
-      console.log("✅ [StaffAuthDialog] Email sign in successful");
-      onClose(); // Close dialog on successful sign in
+      console.log("✅ [StaffAuthDialog] Email sign in successful - staying on staff dashboard");
+      // Don't close dialog - let the guard handle the transition
       
     } catch (err) {
       console.error("❌ [StaffAuthDialog] Unexpected error:", err);
