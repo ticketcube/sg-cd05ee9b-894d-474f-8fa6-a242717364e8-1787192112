@@ -29,16 +29,21 @@ const getRedirectURL = (path = "/auth/callback") => {
 
 class AuthService {
   async signInWithGoogle(options: OAuthRedirectOptions = {}): Promise<{ error: AuthError | null }> {
+    console.log('🔄 [AuthService] Google OAuth - Received options:', options);
+    
     // Store the intended redirect destination in sessionStorage
     // This will be read by the callback page after OAuth completes
     if (options.redirectTo) {
       sessionStorage.setItem('auth_redirect_after_signin', options.redirectTo);
-      console.log('🔄 [AuthService] Stored redirect destination:', options.redirectTo);
+      console.log('✅ [AuthService] Stored redirect destination in sessionStorage:', options.redirectTo);
+    } else {
+      console.log('⚠️ [AuthService] No redirectTo specified, will use default');
     }
     
     // Always redirect OAuth callback to /auth/callback
     // The callback page will then redirect to the intended destination
     const callbackUrl = getRedirectURL("auth/callback");
+    console.log('🔄 [AuthService] OAuth callback URL:', callbackUrl);
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -51,18 +56,29 @@ class AuthService {
       },
     });
 
+    if (error) {
+      console.error('❌ [AuthService] OAuth error:', error);
+    } else {
+      console.log('✅ [AuthService] OAuth initiated successfully');
+    }
+
     return { error };
   }
 
   async signInWithApple(options: OAuthRedirectOptions = {}): Promise<{ error: AuthError | null }> {
+    console.log('🔄 [AuthService] Apple OAuth - Received options:', options);
+    
     // Store the intended redirect destination in sessionStorage
     if (options.redirectTo) {
       sessionStorage.setItem('auth_redirect_after_signin', options.redirectTo);
-      console.log('🔄 [AuthService] Stored redirect destination:', options.redirectTo);
+      console.log('✅ [AuthService] Stored redirect destination in sessionStorage:', options.redirectTo);
+    } else {
+      console.log('⚠️ [AuthService] No redirectTo specified, will use default');
     }
     
     // Always redirect OAuth callback to /auth/callback
     const callbackUrl = getRedirectURL("auth/callback");
+    console.log('🔄 [AuthService] OAuth callback URL:', callbackUrl);
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "apple",
@@ -72,8 +88,11 @@ class AuthService {
     });
     
     if (error) {
-      console.error("Error signing in with Apple:", error.message);
+      console.error("❌ [AuthService] Apple OAuth error:", error.message);
+    } else {
+      console.log('✅ [AuthService] Apple OAuth initiated successfully');
     }
+    
     return { error };
   }
 

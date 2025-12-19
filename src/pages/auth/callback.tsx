@@ -11,8 +11,13 @@ export default function AuthCallback() {
     const handleAuthCallback = async () => {
       try {
         console.log('🔄 [AuthCallback] Starting OAuth callback processing');
+        console.log('🔄 [AuthCallback] Current URL:', window.location.href);
         
-        // ✅ ENHANCED: More comprehensive session handling
+        // Check sessionStorage for intended redirect
+        const intendedRedirect = sessionStorage.getItem('auth_redirect_after_signin');
+        console.log('🔍 [AuthCallback] Checking sessionStorage for redirect:', intendedRedirect);
+        
+        // ✅ Enhanced session handling
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -24,7 +29,7 @@ export default function AuthCallback() {
         if (!sessionData.session || !sessionData.session.user) {
           console.error('❌ [AuthCallback] No session found, checking URL params');
           
-          // ✅ NEW: Handle URL hash fragments for OAuth
+          // Handle URL hash fragments for OAuth
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const urlParams = new URLSearchParams(window.location.search);
           
@@ -42,15 +47,18 @@ export default function AuthCallback() {
         const user = sessionData.session.user;
         console.log('✅ [AuthCallback] OAuth user authenticated:', user.id);
 
-        // ✅ FIX: Read the redirect destination from sessionStorage
-        // This was set by authService before initiating OAuth
-        const intendedRedirect = sessionStorage.getItem('auth_redirect_after_signin');
-        sessionStorage.removeItem('auth_redirect_after_signin'); // Clean up
-        
+        // Read and clean up the redirect destination
         const redirectPath = intendedRedirect || '/discovery-dashboard';
-        console.log('✅ [AuthCallback] Redirecting to:', redirectPath);
+        console.log('✅ [AuthCallback] Final redirect destination:', redirectPath);
+        
+        // Clean up sessionStorage
+        if (intendedRedirect) {
+          sessionStorage.removeItem('auth_redirect_after_signin');
+          console.log('🧹 [AuthCallback] Cleaned up sessionStorage');
+        }
 
         // Use router.replace for clean navigation
+        console.log('🚀 [AuthCallback] Executing redirect to:', redirectPath);
         router.replace(redirectPath);
 
       } catch (error) {
@@ -61,7 +69,7 @@ export default function AuthCallback() {
       }
     };
 
-    // ✅ ENHANCED: Immediate processing with fallback
+    // Immediate processing with fallback
     handleAuthCallback();
   }, [router]);
 
