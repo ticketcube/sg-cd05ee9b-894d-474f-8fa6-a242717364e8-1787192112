@@ -1,74 +1,177 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { NewsletterSignupOverlay } from "@/components/NewsletterSignupOverlay";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Volume2, VolumeX, Music, Users, Sparkles } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
-  const [checkingSubscription, setCheckingSubscription] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Check if user is already subscribed
-  useEffect(() => {
-    const email = localStorage.getItem("newsletter_email");
-    if (email) {
-      // User already subscribed, redirect to newsletter page
-      router.replace("/newsletter");
-    } else {
-      setCheckingSubscription(false);
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setIsMuted(videoRef.current.muted);
     }
-  }, [router]);
-
-  const handleSubscribed = () => {
-    // After successful subscription, redirect to newsletter page
-    router.push("/newsletter");
   };
 
-  if (checkingSubscription) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
-          <p className="text-gray-600 text-lg">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleArtistsClick = () => {
+    alert("Coming soon! Artist features are currently in development.");
+  };
 
   return (
     <>
       <Head>
-        <title>OnesToWatch - Subscribe to OTW Live</title>
+        <title>OnesToWatch - Watch Videos, Earn Rewards</title>
         <meta
           name="description"
-          content="Subscribe to receive weekly updates on emerging artists performing in your city."
+          content="Discover emerging artists, earn rewards, and shape the future of music."
         />
       </Head>
 
-      {/* Full-screen overlay - this is what user sees first */}
-      <NewsletterSignupOverlay 
-        onSubscribed={handleSubscribed}
-        // No onClose prop - user cannot close it without subscribing
-      />
+      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
+        {/* Hero Section */}
+        <section className="relative min-h-screen flex items-center justify-center px-4 py-20">
+          {/* Animated Background */}
+          <div className="absolute inset-0 overflow-hidden opacity-20">
+            <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-blue-500/30 rounded-full blur-3xl animate-pulse delay-1000" />
+          </div>
+
+          <div className="relative z-10 max-w-6xl mx-auto text-center">
+            {/* Main Heading */}
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+              Watch Videos.
+              <br />
+              Earn Rewards.
+            </h1>
+
+            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
+              Discover emerging artists, shape the future of music, and get rewarded for your taste.
+            </p>
+
+            {/* Hero Video - Half Size */}
+            <div className="relative w-full max-w-2xl mx-auto aspect-video overflow-hidden rounded-xl shadow-2xl mb-12">
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+              />
+              <button
+                onClick={toggleMute}
+                className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
+              >
+                {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+              </button>
+            </div>
+
+            {/* Three Main Sections */}
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {/* For Fans */}
+              <Card className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/50 p-8 hover:scale-105 transition-transform">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center">
+                    <Music className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">For Fans</h3>
+                  <p className="text-gray-300">
+                    Discover new artists, rate music, and earn rewards for your engagement
+                  </p>
+                  <Link href="/newsletter" className="w-full">
+                    <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-6 text-lg">
+                      Get Started
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+
+              {/* For Artists */}
+              <Card className="bg-gradient-to-br from-pink-900/50 to-pink-800/30 border-pink-500/50 p-8 hover:scale-105 transition-transform">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-pink-500/20 flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-pink-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">For Artists</h3>
+                  <p className="text-gray-300">
+                    Get discovered by fans who love finding new music first
+                  </p>
+                  <Button 
+                    onClick={handleArtistsClick}
+                    className="w-full bg-pink-500/50 hover:bg-pink-500/70 text-white font-semibold py-6 text-lg cursor-not-allowed"
+                  >
+                    Coming Soon
+                  </Button>
+                </div>
+              </Card>
+
+              {/* For OTW Curators */}
+              <Card className="bg-gradient-to-br from-blue-900/50 to-blue-800/30 border-blue-500/50 p-8 hover:scale-105 transition-transform">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <Users className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">For OTW Curators</h3>
+                  <p className="text-gray-300">
+                    Access your curator dashboard and manage content
+                  </p>
+                  <Link href="/staffdashboard" className="w-full">
+                    <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-6 text-lg">
+                      Staff Dashboard
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            </div>
+
+            {/* Additional Info */}
+            <div className="mt-16 text-center">
+              <p className="text-gray-400 text-lg mb-4">
+                Join thousands of music fans discovering the next big artists
+              </p>
+              <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-500">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-400">750+</div>
+                  <div>Artists Covered</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-400">50K+</div>
+                  <div>Fans Reached</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-400">5K+</div>
+                  <div>Active Discoverers</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-8 px-4 border-t border-gray-800">
+          <div className="max-w-6xl mx-auto text-center space-y-4">
+            <p className="text-gray-500 text-sm">
+              BY CONTINUING PAST THIS PAGE YOU AGREE TO OUR{" "}
+              <Link href="/termsofservice" className="underline hover:text-gray-400 transition-colors">
+                TERMS OF USE
+              </Link>
+              {" & "}
+              <Link href="/privacypolicy" className="underline hover:text-gray-400 transition-colors">
+                PRIVACY POLICY
+              </Link>
+            </p>
+            <p className="text-gray-600 text-sm">
+              © {new Date().getFullYear()} OTW Chart. Discover music, shape culture.
+            </p>
+          </div>
+        </footer>
+      </div>
     </>
   );
-
-    {/* Footer */ }
-    <footer className="mt-16 border-t border-gray-200 py-8 text-center">
-        <p className="text-sm text-black">
-            BY CONTINUING PAST THIS PAGE YOU AGREE TO OUR{" "}
-            <Link
-                href="/termsofservice"
-                className="underline hover:text-gray-600 transition-colors"
-            >
-                TERMS OF USE
-            </Link>
-            {" & "}
-            <Link
-                href="/privacypolicy"
-                className="underline hover:text-gray-600 transition-colors"
-            >
-                PRIVACY POLICY
-            </Link>
-        </p>
-    </footer>
 }
