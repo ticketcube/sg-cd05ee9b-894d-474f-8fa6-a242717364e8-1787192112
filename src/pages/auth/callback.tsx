@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,12 +42,16 @@ export default function AuthCallback() {
         const user = sessionData.session.user;
         console.log('✅ [AuthCallback] OAuth user authenticated:', user.id);
 
+        // ✅ FIX: Read the redirect destination from sessionStorage
+        // This was set by authService before initiating OAuth
+        const intendedRedirect = sessionStorage.getItem('auth_redirect_after_signin');
+        sessionStorage.removeItem('auth_redirect_after_signin'); // Clean up
+        
+        const redirectPath = intendedRedirect || '/discovery-dashboard';
+        console.log('✅ [AuthCallback] Redirecting to:', redirectPath);
 
-       // ✅ SIMPLE: Just redirect without sessionStorage interference
-console.log('✅ [AuthCallback] Redirecting to dashboard');
-
-// Use router.push for normal navigation
-router.replace('/discovery-dashboard');
+        // Use router.replace for clean navigation
+        router.replace(redirectPath);
 
       } catch (error) {
         console.error('❌ [AuthCallback] Error in auth callback:', error);

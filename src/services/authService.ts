@@ -29,12 +29,21 @@ const getRedirectURL = (path = "/auth/callback") => {
 
 class AuthService {
   async signInWithGoogle(options: OAuthRedirectOptions = {}): Promise<{ error: AuthError | null }> {
-    const redirectTo = options.redirectTo || getRedirectURL("discovery-dashboard");
+    // Store the intended redirect destination in sessionStorage
+    // This will be read by the callback page after OAuth completes
+    if (options.redirectTo) {
+      sessionStorage.setItem('auth_redirect_after_signin', options.redirectTo);
+      console.log('🔄 [AuthService] Stored redirect destination:', options.redirectTo);
+    }
+    
+    // Always redirect OAuth callback to /auth/callback
+    // The callback page will then redirect to the intended destination
+    const callbackUrl = getRedirectURL("auth/callback");
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo,
+        redirectTo: callbackUrl,
         queryParams: {
           access_type: "offline",
           prompt: "consent",
@@ -46,13 +55,22 @@ class AuthService {
   }
 
   async signInWithApple(options: OAuthRedirectOptions = {}): Promise<{ error: AuthError | null }> {
-    const redirectTo = options.redirectTo || getRedirectURL("discovery-dashboard");
+    // Store the intended redirect destination in sessionStorage
+    if (options.redirectTo) {
+      sessionStorage.setItem('auth_redirect_after_signin', options.redirectTo);
+      console.log('🔄 [AuthService] Stored redirect destination:', options.redirectTo);
+    }
+    
+    // Always redirect OAuth callback to /auth/callback
+    const callbackUrl = getRedirectURL("auth/callback");
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "apple",
       options: {
-        redirectTo,
+        redirectTo: callbackUrl,
       },
     });
+    
     if (error) {
       console.error("Error signing in with Apple:", error.message);
     }
