@@ -51,4 +51,24 @@ export default function HomePage() {
       />
     </>
   );
+
+    {/* Footer */ }
+    <footer className="mt-16 border-t border-gray-200 py-8 text-center">
+        <p className="text-sm text-black">
+            BY CONTINUING PAST THIS PAGE YOU AGREE TO OUR{" "}
+            <Link
+                href="/termsofservice"
+                className="underline hover:text-gray-600 transition-colors"
+            >
+                TERMS OF USE
+            </Link>
+            {" & "}
+            <Link
+                href="/privacypolicy"
+                className="underline hover:text-gray-600 transition-colors"
+            >
+                PRIVACY POLICY
+            </Link>
+        </p>
+    </footer>
 }
