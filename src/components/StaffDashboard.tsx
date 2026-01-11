@@ -1,5 +1,5 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -223,43 +223,49 @@ export function StaffDashboard() {
                   </TabsList>
 
                   {/* Brandfolder Upload Tab */}
-                  <TabsContent value="brandfolder" className="mt-0">
-                    <div className="space-y-4">
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="p-2 bg-blue-100 rounded-lg">
-                            <ExternalLink className="w-5 h-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-slate-600 mb-1">External Upload via Brandfolder</p>
-                            <p className="text-lg font-semibold text-slate-900">
-                              {profile?.username || user?.email}
-                            </p>
+                  <TabsContent value="brandfolder" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Brandfolder Upload</CardTitle>
+                        <CardDescription>
+                          Upload files directly to Brandfolder for external collaborators
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <p className="text-sm text-muted-foreground">
+                            Click below to open the Brandfolder upload interface in a new window. 
+                            The window will stay on top for easy access while you work.
+                          </p>
+                          <Button
+                            onClick={() => {
+                              const width = 900;
+                              const height = 700;
+                              const left = (window.screen.width - width) / 2;
+                              const top = (window.screen.height - height) / 2;
+                              
+                              window.open(
+                                'https://brandfolder.com/guest_upload/4wm45s566vvsmfcscp6g6mh',
+                                'BrandfolderUpload',
+                                `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes,status=yes`
+                              );
+                            }}
+                            className="w-full"
+                          >
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Open Brandfolder Upload Window
+                          </Button>
+                          <div className="rounded-lg border border-muted bg-muted/50 p-4">
+                            <p className="text-sm font-medium mb-2">After uploading:</p>
+                            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                              <li>Files will be available in Brandfolder immediately</li>
+                              <li>You can close the upload window when complete</li>
+                              <li>Return to this dashboard to continue working</li>
+                            </ul>
                           </div>
                         </div>
-                        
-                        <p className="text-sm text-slate-600 mb-4">
-                          Brandfolder's guest upload page will open in a new tab. Files uploaded there will be available in the shared folder.
-                        </p>
-
-                        <Button
-                          onClick={() => window.open("https://brandfolder.com/guest_upload/4wm45s566vvsmfcscp6g6mh", "_blank")}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6"
-                        >
-                          <ExternalLink className="w-5 h-5 mr-2" />
-                          Open Brandfolder Upload Page
-                        </Button>
-                      </div>
-
-                      <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                        <p className="text-xs text-slate-600 mb-2 font-medium">Why not embedded?</p>
-                        <p className="text-xs text-slate-500">
-                          Brandfolder's security settings prevent embedding their upload page in iframes. 
-                          For large file uploads with their advanced features, use the external page. 
-                          For quick internal uploads, use the AIMC tab.
-                        </p>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   </TabsContent>
 
                   {/* AIMC Upload Tab (Supabase Storage) */}

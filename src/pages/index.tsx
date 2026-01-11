@@ -4,19 +4,11 @@ import Head from "next/head";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Volume2, VolumeX, Music, Users, Sparkles } from "lucide-react";
+import { Music, Users, Sparkles } from "lucide-react";
+import Image from "next/image";
 
 export default function HomePage() {
   const router = useRouter();
-  const [isMuted, setIsMuted] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
-    }
-  };
 
   const handleArtistsClick = () => {
     alert("Coming soon! Artist features are currently in development.");
@@ -54,25 +46,18 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Mobile: Video First, Then Buttons */}
+            {/* Mobile: Logo First, Then Buttons */}
             <div className="lg:hidden space-y-6">
-              {/* Video on Mobile */}
-              <div className="relative w-full aspect-video overflow-hidden rounded-xl shadow-2xl">
-                <video
-                  ref={videoRef}
-                  className="w-full h-full object-cover"
-                  src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
+              {/* Logo on Mobile */}
+              <div className="relative w-full flex justify-center py-8">
+                <Image
+                  src="/OTWLogocolor.png"
+                  alt="OnesToWatch Logo"
+                  width={400}
+                  height={400}
+                  className="w-full max-w-md object-contain"
+                  priority
                 />
-                <button
-                  onClick={toggleMute}
-                  className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
-                >
-                  {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-                </button>
               </div>
 
               {/* Three Buttons - Equal Size on Mobile */}
@@ -135,7 +120,7 @@ export default function HomePage() {
               </Card>
             </div>
 
-            {/* Desktop: Golden Ratio Layout (38% Buttons / 62% Video) */}
+            {/* Desktop: Golden Ratio Layout (38% Buttons / 62% Logo) */}
             <div className="hidden lg:grid lg:grid-cols-[38fr_62fr] gap-8 items-stretch">
               {/* Left Side - Three Stacked Buttons (Match Video Height) */}
               <div className="flex flex-col gap-4">
@@ -201,23 +186,16 @@ export default function HomePage() {
                 </Card>
               </div>
 
-              {/* Right Side - Video (Golden Ratio: 62%) */}
-              <div className="relative w-full aspect-video overflow-hidden rounded-xl shadow-2xl">
-                <video
-                  ref={videoRef}
-                  className="w-full h-full object-cover"
-                  src="https://cdn.brandfolder.io/364H2QNG/as/n56ftqn44kcpxgt6xgbfwqt9/AR_RRP.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
+              {/* Right Side - Logo (Golden Ratio: 62%) */}
+              <div className="relative w-full flex items-center justify-center">
+                <Image
+                  src="/OTWLogocolor.png"
+                  alt="OnesToWatch Logo"
+                  width={600}
+                  height={600}
+                  className="w-full max-w-2xl object-contain"
+                  priority
                 />
-                <button
-                  onClick={toggleMute}
-                  className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full shadow-lg transition-all"
-                >
-                  {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-                </button>
               </div>
             </div>
 
