@@ -508,6 +508,36 @@ export type Database = {
           },
         ]
       }
+      fandragon_waitlist: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string | null
+          primary_interest: string | null
+          social_handle: string | null
+          user_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          name?: string | null
+          primary_interest?: string | null
+          social_handle?: string | null
+          user_type: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string | null
+          primary_interest?: string | null
+          social_handle?: string | null
+          user_type?: string
+        }
+        Relationships: []
+      }
       ln_venues: {
         Row: {
           id: number

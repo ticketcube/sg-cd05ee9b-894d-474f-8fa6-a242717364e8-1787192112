@@ -18,6 +18,8 @@ export interface UploadMetadata {
 /**
  * Upload a file to Supabase Storage with progress tracking
  * Supabase automatically handles large files (up to 50GB) with chunking
+ * 
+ * REQUIRES: Storage bucket 'staff-uploads' with RLS policies checking role='otwstaff'
  */
 export async function uploadToSupabaseStorage(
   file: File,
