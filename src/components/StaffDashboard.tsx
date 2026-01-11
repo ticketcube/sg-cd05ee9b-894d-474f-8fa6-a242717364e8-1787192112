@@ -27,6 +27,7 @@ import {
   KanbanSquare,
   ExternalLink
 } from "lucide-react";
+import { uploadToSupabaseStorage } from "@/services/staffUploadService";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
@@ -87,47 +88,24 @@ export function StaffDashboard() {
     setErrorMessage("");
 
     try {
-      const formData = new FormData();
-      formData.append("file", selectedFile.file);
-      formData.append("fileName", selectedFile.file.name);
-      formData.append("fileType", selectedFile.file.type);
-      formData.append(
-        "userName",
-        profile?.username || user?.email || "Anonymous"
-      );
-      if (description.trim()) {
-        formData.append("description", description.trim());
-      }
-
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => Math.min(prev + Math.random() * 15, 90));
-      }, 400);
-
-      const response = await fetch("/api/brandfolder/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Upload successful:", result);
-        setUploadStatus("success");
-      } else {
-        const contentType = response.headers.get("content-type");
-        let errorMsg = "Upload failed";
-
-        if (contentType?.includes("application/json")) {
-          const errData = await response.json();
-          errorMsg = errData.error || errData.message || errorMsg;
-        } else {
-          const text = await response.text();
-          errorMsg = `Server error (${response.status}): ${text.slice(0, 200)}`;
+      const result = await uploadToSupabaseStorage(
+        selectedFile.file,
+        {
+          description: description.trim(),
+          uploadedBy: profile.username || "Unknown",
+          uploadedByEmail: user.email || "unknown@email.com",
+          originalFileName: selectedFile.file.name,
+          fileSize: selectedFile.file.size,
+          mimeType: selectedFile.file.type,
+        },
+        (progress) => {
+          setUploadProgress(progress.percentage);
         }
-        throw new Error(errorMsg);
-      }
+      );
+
+      console.log("Upload successful:", result);
+      setUploadStatus("success");
+      setUploadProgress(100);
     } catch (err) {
       console.error("Upload error:", err);
       setUploadStatus("error");
@@ -247,29 +225,44 @@ export function StaffDashboard() {
                   {/* Brandfolder Upload Tab */}
                   <TabsContent value="brandfolder" className="mt-0">
                     <div className="space-y-4">
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-                        <p className="text-sm text-slate-600 mb-1">Uploading as</p>
-                        <p className="text-lg font-semibold text-slate-900">
-                          {profile?.username || user?.email}
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <ExternalLink className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-slate-600 mb-1">External Upload via Brandfolder</p>
+                            <p className="text-lg font-semibold text-slate-900">
+                              {profile?.username || user?.email}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-slate-600 mb-4">
+                          Brandfolder's guest upload page will open in a new tab. Files uploaded there will be available in the shared folder.
                         </p>
-                      </div>
-                      
-                      <div className="rounded-lg overflow-hidden border-2 border-slate-200 shadow-sm">
-                        <iframe
-                          src="https://brandfolder.com/guest_upload/4wm45s566vvsmfcscp6g6mh"
-                          className="w-full h-[500px] border-0"
-                          title="Brandfolder Upload"
-                          allow="camera; microphone"
-                        />
+
+                        <Button
+                          onClick={() => window.open("https://brandfolder.com/guest_upload/4wm45s566vvsmfcscp6g6mh", "_blank")}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6"
+                        >
+                          <ExternalLink className="w-5 h-5 mr-2" />
+                          Open Brandfolder Upload Page
+                        </Button>
                       </div>
 
-                      <p className="text-xs text-slate-500 text-center">
-                        Files uploaded through Brandfolder will be available in the shared folder
-                      </p>
+                      <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-2 font-medium">Why not embedded?</p>
+                        <p className="text-xs text-slate-500">
+                          Brandfolder's security settings prevent embedding their upload page in iframes. 
+                          For large file uploads with their advanced features, use the external page. 
+                          For quick internal uploads, use the AIMC tab.
+                        </p>
+                      </div>
                     </div>
                   </TabsContent>
 
-                  {/* AIMC Upload Tab (Custom Upload) */}
+                  {/* AIMC Upload Tab (Supabase Storage) */}
                   <TabsContent value="aimc" className="mt-0">
                     {uploadStatus === "success" ? (
                       <div className="text-center py-8">
@@ -280,7 +273,7 @@ export function StaffDashboard() {
                           Upload Successful!
                         </h3>
                         <p className="text-slate-600 mb-6">
-                          Your file has been uploaded to AIMC storage.
+                          Your file has been securely uploaded to Supabase Storage.
                         </p>
                         <Button
                           onClick={resetUpload}
@@ -293,13 +286,22 @@ export function StaffDashboard() {
                       <div className="space-y-6">
                         {/* User Info */}
                         <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
-                          <p className="text-sm text-slate-600 mb-1">Uploading as</p>
-                          <p className="text-lg font-semibold text-slate-900">
-                            {profile?.username || user?.email}
-                          </p>
-                          <p className="text-xs text-purple-600 mt-1">
-                            AIMC Internal Storage
-                          </p>
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-100 rounded-lg">
+                              <Database className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-600 mb-1">Uploading as</p>
+                              <p className="text-lg font-semibold text-slate-900">
+                                {profile?.username || user?.email}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-3 pt-3 border-t border-purple-200">
+                            <p className="text-xs text-purple-600 font-medium">
+                              ✓ Supabase Storage • Up to 50GB per file • Automatic chunking
+                            </p>
+                          </div>
                         </div>
 
                         {/* File Selection or Preview */}
@@ -310,13 +312,16 @@ export function StaffDashboard() {
                           >
                             <Upload className="w-12 h-12 text-slate-400 mx-auto mb-3" />
                             <h4 className="font-semibold text-slate-700 mb-1">Browse Files</h4>
-                            <p className="text-slate-500 text-sm">
-                              Select images or videos up to 15GB
+                            <p className="text-slate-500 text-sm mb-2">
+                              Select images, videos, or any file up to 50GB
+                            </p>
+                            <p className="text-xs text-purple-600">
+                              Large files handled automatically by Supabase
                             </p>
                             <input
                               ref={fileInputRef}
                               type="file"
-                              accept="image/*,video/*"
+                              accept="image/*,video/*,application/*"
                               onChange={handleFileSelect}
                               className="hidden"
                             />
@@ -401,19 +406,25 @@ export function StaffDashboard() {
                           {uploadStatus === "uploading" ? (
                             <>
                               <Upload className="w-5 h-5 mr-2 animate-pulse" />
-                              Uploading...
+                              Uploading to Supabase...
                             </>
                           ) : (
                             <>
                               <Upload className="w-5 h-5 mr-2" />
-                              Upload to AIMC Storage
+                              Upload to Supabase Storage
                             </>
                           )}
                         </Button>
 
-                        <p className="text-xs text-slate-500 text-center">
-                          Note: AIMC storage integration coming soon. Currently uses legacy API.
-                        </p>
+                        <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                          <p className="text-xs text-green-700 font-medium mb-1">
+                            ✓ Why Supabase Storage?
+                          </p>
+                          <p className="text-xs text-green-600">
+                            Handles large files automatically (up to 50GB), secure storage with RLS policies, 
+                            integrated with your staff authentication, and no complex API calls required.
+                          </p>
+                        </div>
                       </div>
                     )}
                   </TabsContent>
