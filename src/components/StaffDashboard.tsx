@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import { useRouter } from "next/router";
 import { useState, useRef } from "react";
@@ -23,7 +24,8 @@ import {
   File,
   Image as ImageIcon,
   X,
-  KanbanSquare
+  KanbanSquare,
+  ExternalLink
 } from "lucide-react";
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
@@ -221,153 +223,201 @@ export function StaffDashboard() {
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Brandfolder Upload - Consolidated Section */}
+            {/* Media Upload - Tabbed Interface */}
             <Card className="bg-white border-slate-200 shadow-xl hover:shadow-2xl transition-all duration-300">
               <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50">
                 <CardTitle className="flex items-center gap-2 text-slate-900">
                   <Upload className="w-5 h-5 text-blue-600" />
-                  Brandfolder Media Upload
+                  Media Upload
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                {uploadStatus === "success" ? (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle className="w-8 h-8 text-green-600" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                      Upload Successful!
-                    </h3>
-                    <p className="text-slate-600 mb-6">
-                      Your file has been uploaded to Brandfolder.
-                    </p>
-                    <Button
-                      onClick={resetUpload}
-                      className="bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      Upload Another File
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {/* User Info */}
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-                      <p className="text-sm text-slate-600 mb-1">Uploading as</p>
-                      <p className="text-lg font-semibold text-slate-900">
-                        {profile?.username || user?.email}
-                      </p>
-                    </div>
+                <Tabs defaultValue="brandfolder" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="brandfolder" className="flex items-center gap-2">
+                      <ExternalLink className="w-4 h-4" />
+                      Brandfolder
+                    </TabsTrigger>
+                    <TabsTrigger value="aimc" className="flex items-center gap-2">
+                      <Database className="w-4 h-4" />
+                      AIMC
+                    </TabsTrigger>
+                  </TabsList>
 
-                    {/* File Selection or Preview */}
-                    {!selectedFile ? (
-                      <div
-                        className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Upload className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                        <h4 className="font-semibold text-slate-700 mb-1">Browse Files</h4>
-                        <p className="text-slate-500 text-sm">
-                          Select images or videos up to 15GB
+                  {/* Brandfolder Upload Tab */}
+                  <TabsContent value="brandfolder" className="mt-0">
+                    <div className="space-y-4">
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                        <p className="text-sm text-slate-600 mb-1">Uploading as</p>
+                        <p className="text-lg font-semibold text-slate-900">
+                          {profile?.username || user?.email}
                         </p>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*,video/*"
-                          onChange={handleFileSelect}
-                          className="hidden"
+                      </div>
+                      
+                      <div className="rounded-lg overflow-hidden border-2 border-slate-200 shadow-sm">
+                        <iframe
+                          src="https://brandfolder.com/guest_upload/4wm45s566vvsmfcscp6g6mh"
+                          className="w-full h-[500px] border-0"
+                          title="Brandfolder Upload"
+                          allow="camera; microphone"
                         />
                       </div>
+
+                      <p className="text-xs text-slate-500 text-center">
+                        Files uploaded through Brandfolder will be available in the shared folder
+                      </p>
+                    </div>
+                  </TabsContent>
+
+                  {/* AIMC Upload Tab (Custom Upload) */}
+                  <TabsContent value="aimc" className="mt-0">
+                    {uploadStatus === "success" ? (
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <CheckCircle className="w-8 h-8 text-green-600" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                          Upload Successful!
+                        </h3>
+                        <p className="text-slate-600 mb-6">
+                          Your file has been uploaded to AIMC storage.
+                        </p>
+                        <Button
+                          onClick={resetUpload}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          Upload Another File
+                        </Button>
+                      </div>
                     ) : (
-                      <div className="space-y-4">
-                        <div className="relative bg-slate-50 rounded-lg p-4 border border-slate-200">
-                          <button
-                            onClick={resetUpload}
-                            className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center hover:bg-slate-100 shadow-sm border border-slate-200"
+                      <div className="space-y-6">
+                        {/* User Info */}
+                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+                          <p className="text-sm text-slate-600 mb-1">Uploading as</p>
+                          <p className="text-lg font-semibold text-slate-900">
+                            {profile?.username || user?.email}
+                          </p>
+                          <p className="text-xs text-purple-600 mt-1">
+                            AIMC Internal Storage
+                          </p>
+                        </div>
+
+                        {/* File Selection or Preview */}
+                        {!selectedFile ? (
+                          <div
+                            className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all"
+                            onClick={() => fileInputRef.current?.click()}
                           >
-                            <X className="w-4 h-4 text-slate-600" />
-                          </button>
-                          {selectedFile.type === "image" && (
-                            <img
-                              src={selectedFile.preview}
-                              alt="Preview"
-                              className="w-full h-48 object-cover rounded-lg mb-3"
+                            <Upload className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                            <h4 className="font-semibold text-slate-700 mb-1">Browse Files</h4>
+                            <p className="text-slate-500 text-sm">
+                              Select images or videos up to 15GB
+                            </p>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*,video/*"
+                              onChange={handleFileSelect}
+                              className="hidden"
                             />
-                          )}
-                          {selectedFile.type === "video" && (
-                            <video
-                              src={selectedFile.preview}
-                              controls
-                              className="w-full h-48 rounded-lg mb-3"
-                            />
-                          )}
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              {getFileIcon(selectedFile.type)}
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="relative bg-slate-50 rounded-lg p-4 border border-slate-200">
+                              <button
+                                onClick={resetUpload}
+                                className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center hover:bg-slate-100 shadow-sm border border-slate-200"
+                              >
+                                <X className="w-4 h-4 text-slate-600" />
+                              </button>
+                              {selectedFile.type === "image" && (
+                                <img
+                                  src={selectedFile.preview}
+                                  alt="Preview"
+                                  className="w-full h-48 object-cover rounded-lg mb-3"
+                                />
+                              )}
+                              {selectedFile.type === "video" && (
+                                <video
+                                  src={selectedFile.preview}
+                                  controls
+                                  className="w-full h-48 rounded-lg mb-3"
+                                />
+                              )}
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-purple-100 rounded-lg">
+                                  {getFileIcon(selectedFile.type)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-slate-800 truncate">
+                                    {selectedFile.file.name}
+                                  </p>
+                                  <p className="text-sm text-slate-500">
+                                    {(selectedFile.file.size / (1024 * 1024)).toFixed(2)} MB
+                                  </p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-slate-800 truncate">
-                                {selectedFile.file.name}
-                              </p>
-                              <p className="text-sm text-slate-500">
-                                {(selectedFile.file.size / (1024 * 1024)).toFixed(2)} MB
-                              </p>
+
+                            <div>
+                              <label className="text-sm font-medium text-slate-700 mb-2 block">
+                                Description (Optional)
+                              </label>
+                              <Textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Add a description for this file..."
+                                className="bg-white border-slate-300 text-slate-800 resize-none"
+                                rows={3}
+                              />
                             </div>
                           </div>
-                        </div>
+                        )}
 
-                        <div>
-                          <label className="text-sm font-medium text-slate-700 mb-2 block">
-                            Description (Optional)
-                          </label>
-                          <Textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Add a description for this file..."
-                            className="bg-white border-slate-300 text-slate-800 resize-none"
-                            rows={3}
-                          />
-                        </div>
-                      </div>
-                    )}
+                        {/* Upload Progress */}
+                        {uploadStatus === "uploading" && (
+                          <div className="space-y-2">
+                            <Progress value={uploadProgress} className="h-2" />
+                            <p className="text-sm text-slate-600 text-center">
+                              Uploading... {Math.round(uploadProgress)}%
+                            </p>
+                          </div>
+                        )}
 
-                    {/* Upload Progress */}
-                    {uploadStatus === "uploading" && (
-                      <div className="space-y-2">
-                        <Progress value={uploadProgress} className="h-2" />
-                        <p className="text-sm text-slate-600 text-center">
-                          Uploading... {Math.round(uploadProgress)}%
+                        {/* Error Message */}
+                        {errorMessage && (
+                          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                            <span>{errorMessage}</span>
+                          </div>
+                        )}
+
+                        {/* Upload Button */}
+                        <Button
+                          onClick={handleUpload}
+                          disabled={!selectedFile || uploadStatus === "uploading"}
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-6"
+                        >
+                          {uploadStatus === "uploading" ? (
+                            <>
+                              <Upload className="w-5 h-5 mr-2 animate-pulse" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-5 h-5 mr-2" />
+                              Upload to AIMC Storage
+                            </>
+                          )}
+                        </Button>
+
+                        <p className="text-xs text-slate-500 text-center">
+                          Note: AIMC storage integration coming soon. Currently uses legacy API.
                         </p>
                       </div>
                     )}
-
-                    {/* Error Message */}
-                    {errorMessage && (
-                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                        <span>{errorMessage}</span>
-                      </div>
-                    )}
-
-                    {/* Upload Button */}
-                    <Button
-                      onClick={handleUpload}
-                      disabled={!selectedFile || uploadStatus === "uploading"}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-6"
-                    >
-                      {uploadStatus === "uploading" ? (
-                        <>
-                          <Upload className="w-5 h-5 mr-2 animate-pulse" />
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-5 h-5 mr-2" />
-                          Upload to Brandfolder
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
 
