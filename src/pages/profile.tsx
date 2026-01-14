@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { FavoriteArtistsGrid } from "@/components/profile/FavoriteArtistsGrid";
 import { MvpSurvey } from "@/components/profile/MvpSurvey";
-import { User, Mail, Edit, KeyRound, Shield } from "lucide-react";
+import { User, Mail, Edit, KeyRound, Shield, Video } from "lucide-react";
 import { useRouter } from "next/router";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -107,6 +107,11 @@ export default function ProfilePage() {
     } finally {
       setIsResettingPassword(false);
     }
+  };
+
+  const handleGoLive = () => {
+    const vdoNinjaUrl = "https://vdo.ninja/v24/?director=GolfMusic&password=Episode1&push=zENy5bR";
+    window.open(vdoNinjaUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -236,6 +241,36 @@ export default function ProfilePage() {
                 <FavoriteArtistsGrid />
               </div>
             </div>
+
+            {/* Go Live Section - Staff Only */}
+            {isAdmin && (
+              <Card className="bg-gradient-to-br from-red-50 via-pink-50 to-purple-50 border-2 border-red-300 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl">
+                <CardContent className="p-6">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center shadow-md">
+                        <Video className="w-7 h-7 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-900 mb-1">
+                          Staff Live Streaming
+                        </h3>
+                        <p className="text-slate-600 text-sm">
+                          Start a live streaming session with VDO.ninja Director
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleGoLive}
+                      className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-bold px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap"
+                    >
+                      <Video className="w-5 h-5 mr-2" />
+                      Go Live
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Survey */}
             <div className="overflow-hidden">
