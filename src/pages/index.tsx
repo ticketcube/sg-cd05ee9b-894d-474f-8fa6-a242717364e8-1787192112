@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Music, Users, Sparkles } from "lucide-react";
 import Image from "next/image";
 
+// Force rebuild to clear HMR cache
 export default function HomePage() {
   const router = useRouter();
 
