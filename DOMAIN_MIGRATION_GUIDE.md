@@ -5,7 +5,8 @@ This guide will help you migrate your OTWL project from `onestowatch.live` to a 
 
 ## Current Setup
 - **Project**: OTWL (Ones To Watch Live)
-- **Current Domain**: onestowatch.live
+- **Current Domain**: onestowatch.live (being migrated)
+- **New Domain**: https://otwl-prd.vercel.app
 - **Redirect Target**: https://ticketcube.org/otw
 - **Supabase Project ID**: buhfuaxrtaozpqlxgerj
 - **Deployment**: Vercel
@@ -16,26 +17,19 @@ This guide will help you migrate your OTWL project from `onestowatch.live` to a 
 
 ### Step 1: Choose Your New Domain
 
-**Option A: Use Vercel Auto-Generated Domain (Free)**
-- After removing onestowatch.live, Vercel will auto-assign a domain like:
-  - `otwl-abc123.vercel.app`
-- No cost, works immediately
-- You can always add a custom domain later
+✅ **Decision Made: https://otwl-prd.vercel.app**
 
-**Option B: Register a New Custom Domain**
-- Suggested names: `otwlapp.com`, `otwlive.com`, `discovermusic.live`, etc.
-- Register through: Vercel Domains, Namecheap, GoDaddy, Cloudflare, etc.
-- Cost: ~$10-15/year
+Your OTWL project is already deployed on this Vercel domain. No additional domain configuration needed unless you want to add a custom domain later.
 
-**Option C: Use a Subdomain**
-- If you own another domain: `app.yourdomain.com`, `music.yourdomain.com`
-- Free if you already own the parent domain
+~~**Option A: Use Vercel Auto-Generated Domain (Free)**~~
+~~**Option B: Register a New Custom Domain**~~
+~~**Option C: Use a Subdomain**~~
 
 ---
 
 ### Step 2: Update Supabase Configuration (CRITICAL!)
 
-⚠️ **Do this BEFORE changing domains in Vercel to avoid authentication breaking**
+⚠️ **Do this FIRST to avoid authentication breaking**
 
 1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
 2. Select your project: `buhfuaxrtaozpqlxgerj`
@@ -45,14 +39,14 @@ This guide will help you migrate your OTWL project from `onestowatch.live` to a 
    **Site URL:**
    ```
    OLD: https://onestowatch.live
-   NEW: https://your-new-domain.com
+   NEW: https://otwl-prd.vercel.app
    ```
 
    **Redirect URLs:**
    Add these patterns (keep existing OAuth URLs):
    ```
-   https://your-new-domain.com/**
-   https://your-new-domain.com/auth/callback
+   https://otwl-prd.vercel.app/**
+   https://otwl-prd.vercel.app/auth/callback
    http://localhost:3000/** (for local development)
    ```
 
@@ -62,16 +56,18 @@ This guide will help you migrate your OTWL project from `onestowatch.live` to a 
 
 ### Step 3: Update Environment Variables
 
-1. Open your `.env.local` file
-2. Update this line:
+✅ **Local environment updated**
+
+1. ~~Open your `.env.local` file~~ (Already updated)
+2. ~~Update this line:~~ (Already set to https://otwl-prd.vercel.app)
    ```env
-   NEXT_PUBLIC_SITE_URL=https://your-actual-new-domain.com
+   NEXT_PUBLIC_SITE_URL=https://otwl-prd.vercel.app
    ```
 
-3. Also update in **Vercel Dashboard**:
-   - Go to your project → **Settings** → **Environment Variables**
+3. **Still need to update in Vercel Dashboard:**
+   - Go to your OTWL project → **Settings** → **Environment Variables**
    - Find `NEXT_PUBLIC_SITE_URL`
-   - Update value to your new domain
+   - Update value to: `https://otwl-prd.vercel.app`
    - Click **Save**
 
 ---
@@ -82,20 +78,13 @@ This guide will help you migrate your OTWL project from `onestowatch.live` to a 
 2. Select your OTWL project
 3. Navigate to **Settings** → **Domains**
 
-4. **Remove old domain:**
-   - Find `onestowatch.live`
-   - Click the three dots → **Remove**
-   - Confirm removal
+4. **Check current domains:**
+   - Your project should already be using `otwl-prd.vercel.app`
+   - If `onestowatch.live` is still listed:
+     - Click the three dots → **Remove**
+     - Confirm removal
 
-5. **Add new domain (if custom):**
-   - Click **Add Domain**
-   - Enter your new domain (e.g., `otwlapp.com`)
-   - Follow DNS configuration instructions
-   - Vercel will provide nameservers or CNAME records to add to your domain registrar
-
-6. **Or just use Vercel domain:**
-   - After removing onestowatch.live, note the auto-generated domain
-   - Use this in all configurations above
+5. **No additional domain changes needed** - you're using the Vercel domain
 
 ---
 
@@ -244,7 +233,7 @@ After migration, test these critical flows:
 
 **Error**: "Redirect URL not allowed"
 - **Cause**: New domain not in Supabase redirect URLs
-- **Fix**: Add `https://your-new-domain.com/**` to Supabase Auth config
+- **Fix**: Add `https://otwl-prd.vercel.app/**` to Supabase Auth config
 
 ### Old Domain Still Shows OTWL
 
@@ -323,12 +312,19 @@ If you encounter issues:
 
 ## Next Steps
 
-**Tell me:**
-1. What new domain will you use for OTWL?
-   - Custom domain you'll register?
-   - Use Vercel auto-domain?
-   - Use a subdomain?
+**Configuration Status:**
+- ✅ New domain decided: https://otwl-prd.vercel.app
+- ✅ Local .env.local updated
+- ⏳ Need to update Supabase Auth config
+- ⏳ Need to update Vercel environment variables
+- ⏳ Need to deploy redirect project for onestowatch.live
 
-2. What external website should onestowatch.live redirect to?
+**Your Action Items:**
+1. Update Supabase Auth configuration (Step 2) - **DO THIS FIRST**
+2. Update Vercel environment variables (Step 3)
+3. Remove onestowatch.live from Vercel if present (Step 4)
+4. Deploy the redirect project (in `redirect-project/` folder)
+5. Add onestowatch.live domain to redirect project
+6. Test everything works
 
-Once you decide, I can help with any additional configuration needed!
+See the detailed steps above for complete instructions!

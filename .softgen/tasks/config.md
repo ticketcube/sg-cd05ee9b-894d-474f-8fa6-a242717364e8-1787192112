@@ -10,21 +10,21 @@ position: 1
 ---
 
 ## Notes
-Migrating OTWL project from onestowatch.live to a new domain while redirecting onestowatch.live to https://ticketcube.org/otw. The Supabase database will remain connected to this project.
+Migrating OTWL project from onestowatch.live to https://otwl-prd.vercel.app while redirecting onestowatch.live to https://ticketcube.org/otw. The Supabase database will remain connected to this project.
 
 ## Checklist
-- [ ] Decide on new domain for OTWL project (Vercel auto-domain or custom)
+- [x] Decide on new domain for OTWL project (https://otwl-prd.vercel.app)
 - [ ] Update Supabase Auth configuration (Site URL + Redirect URLs)
-- [ ] Update .env.local with NEXT_PUBLIC_SITE_URL
+- [x] Update .env.local with NEXT_PUBLIC_SITE_URL
 - [ ] Update Vercel environment variables
-- [ ] Remove onestowatch.live from Vercel domains
-- [ ] Add new domain to Vercel (if custom)
-- [ ] Redeploy project
-- [ ] Set up redirect: onestowatch.live → https://ticketcube.org/otw
-- [ ] Test authentication flows on new domain
-- [ ] Verify old domain redirects correctly
+- [ ] Remove onestowatch.live from Vercel domains (if present)
+- [ ] Deploy redirect project to new Vercel project
+- [ ] Add onestowatch.live domain to redirect project
+- [ ] Configure DNS for onestowatch.live redirect
+- [ ] Test authentication flows on https://otwl-prd.vercel.app
+- [ ] Verify onestowatch.live redirects to https://ticketcube.org/otw
 
 ## Acceptance
-- OTWL project runs successfully on new domain
+- OTWL project runs successfully on https://otwl-prd.vercel.app
 - User authentication works on new domain
 - onestowatch.live redirects to https://ticketcube.org/otw
