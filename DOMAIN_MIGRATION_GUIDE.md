@@ -152,14 +152,61 @@ You have two options:
 
 #### Option B: Vercel Redirect Project
 
-If your registrar doesn't support URL forwarding, I can create a minimal Vercel project:
+**I've created a complete redirect project for you in the `redirect-project/` folder.**
 
-**I'll create:**
-1. A new Next.js project with automatic redirect
-2. You point onestowatch.live to this project in Vercel
-3. All traffic gets 301 redirected to https://ticketcube.org/otw
+**Deployment Steps:**
 
-**Let me know if you need Option B and I'll create the redirect project now.**
+1. **Navigate to the redirect project:**
+   ```bash
+   cd redirect-project
+   npm install
+   ```
+
+2. **Test locally (optional):**
+   ```bash
+   npm run dev
+   ```
+   Visit http://localhost:3000 - you should be redirected to ticketcube.org/otw
+
+3. **Deploy to Vercel:**
+   - Visit [vercel.com](https://vercel.com)
+   - Click "Add New" → "Project"
+   - Import the `redirect-project` folder (NOT the parent OTWL folder)
+   - Vercel will auto-detect Next.js and deploy automatically
+
+4. **Add onestowatch.live to the redirect project:**
+   - After deployment completes, go to the redirect project's Settings → Domains
+   - Click "Add Domain"
+   - Enter: `onestowatch.live`
+   - Vercel will provide DNS instructions
+
+5. **Configure DNS:**
+   - Go to your domain registrar (where you purchased onestowatch.live)
+   - Update DNS records according to Vercel's instructions
+   - Usually: Add CNAME record pointing to `cname.vercel-dns.com`
+
+6. **Verify:**
+   - Wait 10-60 minutes for DNS propagation
+   - Visit https://onestowatch.live
+   - Should immediately redirect to https://ticketcube.org/otw
+   - Check browser network tab: should show "301 Moved Permanently"
+
+**Testing the redirect:**
+```bash
+curl -I https://onestowatch.live
+# Should return: HTTP/1.1 301 Moved Permanently
+# Location: https://ticketcube.org/otw
+```
+
+**What's included:**
+- ✅ Server-side 301 redirect (fastest)
+- ✅ Client-side fallback redirect
+- ✅ "Redirecting..." message with manual link
+- ✅ Minimal build (~30 seconds)
+- ✅ Zero maintenance required
+- ✅ Free on Vercel Hobby plan
+
+See `redirect-project/README.md` for full documentation.
 
 ---
 
