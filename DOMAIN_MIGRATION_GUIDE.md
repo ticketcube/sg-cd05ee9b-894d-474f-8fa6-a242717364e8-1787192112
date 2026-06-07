@@ -6,6 +6,7 @@ This guide will help you migrate your OTWL project from `onestowatch.live` to a 
 ## Current Setup
 - **Project**: OTWL (Ones To Watch Live)
 - **Current Domain**: onestowatch.live
+- **Redirect Target**: https://ticketcube.org/otw
 - **Supabase Project ID**: buhfuaxrtaozpqlxgerj
 - **Deployment**: Vercel
 
@@ -111,7 +112,7 @@ This guide will help you migrate your OTWL project from `onestowatch.live` to a 
 
 ---
 
-### Step 6: Redirect onestowatch.live to External Website
+### Step 6: Redirect onestowatch.live to ticketcube.org/otw
 
 You have two options:
 
@@ -127,9 +128,9 @@ You have two options:
 3. Configure:
    ```
    From: onestowatch.live
-   To: https://your-external-website.com
+   To: https://ticketcube.org/otw
    Type: 301 Permanent Redirect
-   Forward Path: Yes (if you want to preserve URL paths)
+   Forward Path: No (preserve the exact URL)
    ```
 
 4. Save changes
@@ -143,15 +144,22 @@ You have two options:
 - Configuration varies by registrar
 - May take 24-48 hours to fully propagate
 
+**Common Registrars:**
+- **Namecheap**: Domain List → Manage → Redirect Domain
+- **GoDaddy**: Domain Settings → Forwarding → Add Forwarding
+- **Cloudflare**: DNS → Page Rules → Forwarding URL
+- **Google Domains**: DNS → Synthetic records → Subdomain forward
+
 #### Option B: Vercel Redirect Project
 
-If your registrar doesn't support URL forwarding, I can create a minimal Vercel project that just redirects:
+If your registrar doesn't support URL forwarding, I can create a minimal Vercel project:
 
-1. Create a new Vercel project with just redirects
-2. Point onestowatch.live to this project
-3. All traffic gets 301 redirected to your external site
+**I'll create:**
+1. A new Next.js project with automatic redirect
+2. You point onestowatch.live to this project in Vercel
+3. All traffic gets 301 redirected to https://ticketcube.org/otw
 
-**Let me know if you need Option B and I'll create the redirect project for you.**
+**Let me know if you need Option B and I'll create the redirect project now.**
 
 ---
 
