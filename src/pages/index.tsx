@@ -32,7 +32,7 @@ export default function HomePage() {
              
                       <div className="fixed inset-0 w-full h-full">
                           <iframe
-                              src="https://maestro.tv/working-bear?embed=theater"
+                              src="https://ticketcube.org/events"
                               className="w-full h-full border-0"
                               title="StubHub Arts"
                               allowFullScreen
