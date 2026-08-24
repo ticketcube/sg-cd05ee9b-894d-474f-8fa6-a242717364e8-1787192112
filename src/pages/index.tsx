@@ -27,27 +27,22 @@ export default function HomePage() {
 
       <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
         {/* Hero Section */}
-              import {SEO} from "@/components/SEO";
+        <section className="relative min-h-screen flex items-center justify-center px-4 py-20">
 
-              export default function Home() {
-  return (
-              <>
-                  <SEO
-                      title="StubHub Arts"
-
-                  />
-                  <div className="fixed inset-0 w-full h-full">
-                      <iframe
-                          src="https://maestro.tv/working-bear?embed=theater"
-                          className="w-full h-full border-0"
-                          title="StubHub Arts"
-                          allowFullScreen
-                          allow="autoplay; fullscreen; picture-in-picture"
-                      />
-                  </div>
-              </>
-              );
+             
+                      <div className="fixed inset-0 w-full h-full">
+                          <iframe
+                              src="https://maestro.tv/working-bear?embed=theater"
+                              className="w-full h-full border-0"
+                              title="StubHub Arts"
+                              allowFullScreen
+                              allow="autoplay; fullscreen; picture-in-picture"
+                          />
+                      </div>
+                
 }
+          
+        </section>
 
         {/* Footer */}
         <footer className="py-8 px-4 border-t border-gray-800">
